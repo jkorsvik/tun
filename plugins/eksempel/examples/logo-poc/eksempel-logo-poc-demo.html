@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eksempel AS-logo — positiv/negativ POC</title>
+<!--
+  PROVENANCE
+    Source data : none — proof-of-concept, not a real report
+    Built       : 2026-10-06 19:37
+    Built by    : RAIWork
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Generator   : plugins/eksempel/examples/logo-poc/build_logo_poc_demo.py
+    Eksempel AS is fictional; the wordmark and colours were drawn for this example.
+-->
+<style>
+  body { font-family: -apple-system, Arial, sans-serif; background:#f4f4f6; padding:40px; margin:0; }
+  h1 { font-size:18px; color:#333; margin-bottom:4px; }
+  .sub { color:#737373; font-size:13px; margin-bottom:32px; }
+  .row { display:flex; gap:24px; flex-wrap:wrap; }
+  .card { border-radius:8px; padding:32px 28px; width:320px; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+  .card.positive { background:#ffffff; border:1px solid #ebebeb; }
+  .card.negative { background:#1B2A4A; }
+  .card.neutral { background:#ffffff; border:1px dashed #ccc; opacity:0.85; }
+  .card svg { height:56px; display:block; margin-bottom:20px; }
+  .label { font-size:13px; font-weight:600; margin-bottom:4px; }
+  .label.on-light { color:#333; }
+  .label.on-dark { color:#FFF8EE; }
+  .hex { font-family: 'Courier New', monospace; font-size:12px; }
+  .source { font-size:11px; color:#999; margin-top:12px; line-height:1.5; }
+  .source.on-dark { color:#B8C4DA; }
+  footer { margin-top:36px; font-size:12px; color:#737373; max-width:720px; line-height:1.6; }
+  code { background:#ebebeb; padding:1px 5px; border-radius:3px; }
+  .on-dark code { background:#2B3B5E; }
+</style>
+</head>
+<body>
+
+<h1>Eksempel AS-logo: positiv og negativ — proof of concept</h1>
+<div class="sub">Eksempel AS er en oppdiktet organisasjon. Merket og fargene er tegnet for dette eksempelet.</div>
+
+<div class="row">
+  <div class="card positive">
+    <svg viewBox="0 0 116 80" fill="#2F5D9E" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Eksempel AS">
+      <path d="M8 8h56v14H22v11h36v14H22v11h42v14H8z" /><circle cx="96" cy="65" r="9" />
+</svg>
+    <div class="label on-light">Positiv (lys bakgrunn)</div>
+    <div class="hex on-light" style="color:#2F5D9E">#2F5D9E — Blue</div>
+    <div class="source ">Kilde: <code>--eksempel-blue</code> i <code>plugins/eksempel/tokens/palette.css</code>, primærfargen.</div>
+  </div>
+
+  <div class="card negative">
+    <svg viewBox="0 0 116 80" fill="#FFF8EE" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Eksempel AS">
+      <path d="M8 8h56v14H22v11h36v14H22v11h42v14H8z" /><circle cx="96" cy="65" r="9" />
+</svg>
+    <div class="label on-dark">Negativ (mørk bakgrunn)</div>
+    <div class="hex on-dark" style="color:#FFF8EE">#FFF8EE — Cream</div>
+    <div class="source on-dark">Kilde: <code>--eksempel-cream</code>, palettens verdi for tekst og logo på mørk bakgrunn. Aldri ren hvit på den mørke merkeflaten.</div>
+  </div>
+
+  <div class="card neutral">
+    <svg viewBox="0 0 116 80" fill="#000000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Eksempel AS">
+      <path d="M8 8h56v14H22v11h36v14H22v11h42v14H8z" /><circle cx="96" cy="65" r="9" />
+</svg>
+    <div class="label on-light">Til sammenligning</div>
+    <div class="hex on-light" style="color:#000000">#000000 — nøytral sort</div>
+    <div class="source ">Uten merkefarge. Viser hvor mye av gjenkjennelsen som ligger i fargen, ikke formen.</div>
+  </div>
+</div>
+
+<footer>
+  <strong>Metode:</strong> ett <code>&lt;path&gt;</code> og én <code>&lt;circle&gt;</code> limt inn tre
+  ganger av dette skriptet, kun <code>fill</code> endret per kort. Fargene er hentet fra pluginens egen
+  palett. En ekte merkevare-plugin bytter ut merket og paletten, og beholder mønsteret.
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Eksempel AS brand tokens
+   ==========================================================================
+   Eksempel AS is a fictional organisation. These values were invented for this
+   plugin so that the plugin seam can be demonstrated with a real-looking brand
+   and no real organisation's identity. Replace this file with your own brand.
+
+   This file is a BUILD-TIME source of truth read by the builder scripts
+   (tools/build_dashboard.py, tools/build_cube_dashboard.py) and inlined into
+   the shipped .html. It is never fetched by the shipped file itself — that
+   would violate design principle 1 in docs/00-vision.md (no CDN, no server).
+
+   Do NOT use these for status/semantic colour (positive/negative, error/
+   success). See status-semantic.css for that — this is brand chrome only.
+   ========================================================================== */
+:root{
+  --eksempel-night:       #101828; /* darkest background */
+  --eksempel-navy:        #1B2A4A; /* dark background / text-on-light */
+  --eksempel-blue:        #2F5D9E; /* PRIMARY — headers, largest visual weight */
+  --eksempel-amber:       #E8912D; /* vibrant accent — NOT reliable as text on white, see status-semantic.css note */
+  --eksempel-flame:       #FF6B2C; /* CTA/highlight of a single word only — never a fill */
+  --eksempel-sand:        #F6C98B; /* highlight / numbers on dark background */
+  --eksempel-mist:        #DCE6F5; /* light background */
+  --eksempel-paper:       #F4F7FC; /* lightest background */
+  --eksempel-cream:       #FFF8EE; /* text/logo on DARK background. Never a background. */
+  --eksempel-black:       #000000; /* body text */
+  --eksempel-plum-80:     #6B3FA0; /* accent — use sparingly, never a fill or body text colour */
+  --eksempel-plum-70:     #7D55B0;
+  --eksempel-plum-60:     #9070C0;
+  --eksempel-plum-40:     #B49CD8;
+  --eksempel-plum-20:     #D9CCEC;
+  --eksempel-plum-10:     #EEE7F7;
+  --eksempel-grey:        #757575; /* subtext / hint — practical, not core brand */
+  --eksempel-light-grey:  #CCCCCC; /* border / line — practical, not core brand */
+  --eksempel-white:       #FFFFFF;
+}
+
+/* ==========================================================================
+   Plugin seam: the eight semantic palette slots core asks for.
+
+   Core's theme files (tools/tokens/theme-light.css, theme-dark.css) reference
+   the neutral slot names below, never a brand's own variable names, so brand
+   names and brand IP stay out of core. This block is where a brand maps onto
+   them. See docs/22-plugin-contract.md.
+
+   Only eight of the nineteen brand values above are load-bearing for core. The
+   rest stay here because they are part of the brand, not because core needs
+   them.
+   ========================================================================== */
+:root{
+  --palette-ink:             var(--eksempel-black);
+  --palette-surface:         var(--eksempel-white);
+  --palette-primary:         var(--eksempel-blue);
+  --palette-primary-dark:    var(--eksempel-navy);
+  --palette-primary-darkest: var(--eksempel-night);
+  --palette-accent:          var(--eksempel-amber);
+  --palette-accent-light:    var(--eksempel-sand);
+  --palette-on-dark:         var(--eksempel-cream);
+}

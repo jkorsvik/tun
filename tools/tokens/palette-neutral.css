@@ -1,0 +1,34 @@
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Palette: neutral (core default)
+
+   The eight semantic slots the theme files consume, with values that belong to
+   nobody. This file is what makes core shippable without a brand plugin: with
+   plugins/ empty, a build still produces a coherent artefact rather than an
+   artefact full of unresolved var() references, which would render as
+   invisible or wrong colours and pass every other gate.
+
+   A brand plugin replaces this file by providing `tokens` (see
+   docs/22-plugin-contract.md). It does not patch it.
+
+   The values are a deliberately plain slate-and-amber pair: legible, adequate
+   contrast, and obviously not any real organisation's brand. They are an
+   example, not a recommendation. Do not treat them as a design system.
+   ========================================================================== */
+:root{
+  --palette-ink:             #111418;  /* body text */
+  --palette-surface:         #FFFFFF;  /* page background */
+  --palette-primary:         #2B4C7E;  /* primary data colour, links, focus */
+  --palette-primary-dark:    #1B3559;  /* header background */
+  --palette-primary-darkest: #0E1C2E;  /* darkest surface */
+  --palette-accent:          #B8860B;  /* secondary series, decorative only */
+  --palette-accent-light:    #E8D48B;  /* highlight on dark */
+  --palette-on-dark:         #F7F5EF;  /* text on a dark surface */
+}

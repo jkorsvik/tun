@@ -1,0 +1,43 @@
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Theme: light (default)
+   ==========================================================================
+   Maps the semantic roles the templates already use (--ink, --muted, --bg,
+   --brand, etc.) onto the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css) and status-semantic.css, instead of
+   each template hardcoding its own hex values as it does today.
+
+   NOT YET WIRED INTO templates: html files — this file documents the
+   intended mapping so it can be reviewed before any template changes. Load
+   order for a future build: the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css), then status-semantic.css,
+   then this file (so the palette- and status- prefixed variables it references
+   already exist).
+
+   Rationale for a light default: a dashboard is read repeatedly and at
+   length — Nielsen Norman Group and general dashboard-UX guidance favour a
+   neutral, low-chroma background with colour reserved for data, not the
+   bold colour-dominant background a presentation theme documents for slides.
+   See docs/09-usability-and-navigation-principles.md §4.
+   ========================================================================== */
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);      /* body text */
+  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --line:       #ebebeb;               /* neutral grey: borders, gridlines */
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
+  --brand:      var(--palette-primary);        /* primary data colour, links, focus */
+  --brand-dark: var(--palette-primary-dark);    /* header background */
+  --series-2:   var(--palette-accent);     /* secondary chart series — decorative use only, not text */
+
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-bg:var(--status-negative-bg);
+}

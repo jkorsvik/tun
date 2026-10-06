@@ -1,0 +1,39 @@
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<!--
+  GENERIC PROVENANCE BLOCK — Layer 1, see docs/08-generic-artifact-model.md and
+  docs/14-generic-layer-manifest.md. Extracted from templates/single-file-dashboard.html,
+  which is one specialisation of this (its dashboard-only row-count line has been
+  generalised here to the free-form ARTIFACT_SPECIFIC_LINE slot below, written without
+  braces here so prose is never mistaken for an unsubstituted token).
+
+  This is not a template to render on its own — it is the block a builder script should
+  fill in and inline into whatever <head> it is producing. Checked for by
+  tools/verify_standalone_core.py's check_provenance() — that check looks for the literal
+  strings "PROVENANCE", "Source data", "Built" and "Made with", so keep those labels if you
+  adapt this rather than renaming them.
+
+  {{ARTIFACT_TITLE}}
+  PROVENANCE  (do not delete — this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Built by    : {{BUILT_BY}}
+    Repo        : {{REPO_NAME}}
+    Made with   : Tún — tun.community
+    {{ARTIFACT_SPECIFIC_LINE}}
+  This is a self-contained artefact: no server, no CDN dependency, no licence required
+  to view. It works offline and from a OneDrive/SharePoint-synced folder.
+
+  ⚠ SECURITY: all content below is readable by anyone who can open this file. If
+     different viewers must see different content, this file must not exist as a single
+     shared copy — split by audience/folder before generating it (see
+     tun AGENTS.md rule 1 for the reasoning, which applies beyond
+     dashboards: the security boundary is the folder, not anything inside the file).
+-->

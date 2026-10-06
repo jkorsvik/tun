@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tema-demo: lys/mørk-bryter</title>
+<!--
+  Tema-demo: lys/mørk-bryter
+  PROVENANCE
+    Source data : none — synthetic KPI numbers, not a real report
+    Built       : 2026-10-06 19:37
+    Requested by: the product owner
+    Built by    : RAIWork, per docs/09-usability-and-navigation-principles.md
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Generator   : examples/05-theme-toggle-demo/build_theme_toggle_demo.py
+  STATUS: experimental demo, NOT a production template. Proves the
+  light/dark toggle mechanism and the 2026 token files work when inlined —
+  does not decide whether either belongs in templates/*.html.
+  Open items before this graduates (see docs/09 §4):
+    - dark-theme contrast for status colours is UNCHECKED (light-theme
+      numbers only, see tools/tokens/status-semantic.css)
+    - localStorage persistence per file under file:// is UNMEASURED
+  Tier 1, STANDALONE: fully self-contained, no server, no CDN.
+-->
+<style>
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Palette: neutral (core default)
+
+   The eight semantic slots the theme files consume, with values that belong to
+   nobody. This file is what makes core shippable without a brand plugin: with
+   plugins/ empty, a build still produces a coherent artefact rather than an
+   artefact full of unresolved var() references, which would render as
+   invisible or wrong colours and pass every other gate.
+
+   A brand plugin replaces this file by providing `tokens` (see
+   docs/22-plugin-contract.md). It does not patch it.
+
+   The values are a deliberately plain slate-and-amber pair: legible, adequate
+   contrast, and obviously not any real organisation's brand. They are an
+   example, not a recommendation. Do not treat them as a design system.
+   ========================================================================== */
+:root{
+  --palette-ink:             #111418;  /* body text */
+  --palette-surface:         #FFFFFF;  /* page background */
+  --palette-primary:         #2B4C7E;  /* primary data colour, links, focus */
+  --palette-primary-dark:    #1B3559;  /* header background */
+  --palette-primary-darkest: #0E1C2E;  /* darkest surface */
+  --palette-accent:          #B8860B;  /* secondary series, decorative only */
+  --palette-accent-light:    #E8D48B;  /* highlight on dark */
+  --palette-on-dark:         #F7F5EF;  /* text on a dark surface */
+}
+
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Status / semantic colour tokens — positive, negative, neutral
+   Owned by core, not by any brand plugin: status colour is a functional
+   signal, so it must work the same whichever plugin supplies the brand.
+
+   Why not reuse the brand palette: brand accents are chosen to look good,
+   not to be read as text. A KPI delta must pass the WCAG 2.2 text minimum
+   (4.5:1 against #FFFFFF), and typical warm brand accents do not.
+
+   Contrast against #FFFFFF, computed with the WCAG relative-luminance formula:
+     Ember  #C9372C  ->  5.16:1  PASS
+     Moss   #1F7A5C  ->  5.25:1  PASS
+   For comparison, the example plugin's warm accents (Amber, Flame; see
+   plugins/eksempel/tokens/palette.css) measure 2.47:1 and 2.84:1, below even
+   the 3:1 icon minimum, so neither is usable for status.
+
+   Default status pair: Ember/Moss (WCAG AA, see contrast table above).
+   A project may use a different pair if it passes the same contrast test;
+   see docs/09-usability-and-navigation-principles.md §3.
+
+   Per WCAG 2.2 criterion 1.4.1 (Use of Color): colour alone must never be the only
+   signal. Pair these with an icon or text label (e.g. an arrow, or the words
+   "opp"/"ned"), not colour by itself.
+   ========================================================================== */
+:root{
+  --status-negative:          #C9372C; /* Ember — text, icon, delta value */
+  --status-negative-bg:       #fbeded; /* Ember 8% — row/card background tint only */
+  --status-positive:          #1F7A5C; /* Moss — text, icon, delta value */
+  --status-positive-bg-25:    #d7ece3; /* Moss 25% — background tint only */
+  --status-positive-bg-12:    #eaf5f0; /* Moss 12% — subtler background tint */
+  --status-neutral:           #737373; /* neutral grey — no change / n.a. */
+}
+
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Theme: light (default)
+   ==========================================================================
+   Maps the semantic roles the templates already use (--ink, --muted, --bg,
+   --brand, etc.) onto the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css) and status-semantic.css, instead of
+   each template hardcoding its own hex values as it does today.
+
+   NOT YET WIRED INTO templates: html files — this file documents the
+   intended mapping so it can be reviewed before any template changes. Load
+   order for a future build: the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css), then status-semantic.css,
+   then this file (so the palette- and status- prefixed variables it references
+   already exist).
+
+   Rationale for a light default: a dashboard is read repeatedly and at
+   length — Nielsen Norman Group and general dashboard-UX guidance favour a
+   neutral, low-chroma background with colour reserved for data, not the
+   bold colour-dominant background a presentation theme documents for slides.
+   See docs/09-usability-and-navigation-principles.md §4.
+   ========================================================================== */
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);      /* body text */
+  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --line:       #ebebeb;               /* neutral grey: borders, gridlines */
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
+  --brand:      var(--palette-primary);        /* primary data colour, links, focus */
+  --brand-dark: var(--palette-primary-dark);    /* header background */
+  --series-2:   var(--palette-accent);     /* secondary chart series — decorative use only, not text */
+
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-bg:var(--status-negative-bg);
+}
+
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Theme: dark (experimental — demo only, not in any production template)
+   ==========================================================================
+   Builds on the neutral palette's dark slots (--palette-primary-dark,
+   --palette-primary-darkest) rather than inventing a separate dark
+   colour set, so a brand plugin re-skins dark mode by filling the same slots.
+
+   STATUS: not wired into templates/*.html. Exists only for
+   examples/05-theme-toggle-demo/, so the pattern can be looked at before
+   anyone decides it belongs in a real dashboard. See
+   docs/09-usability-and-navigation-principles.md §4 for the two things
+   that must be checked before this could graduate out of the demo:
+     1. The status-colour contrast numbers in status-semantic.css were
+        measured against a WHITE background only. Ember and Moss
+        must be re-measured against --palette-primary-dark/--palette-primary-darkest before
+        they can be trusted here — do not assume the light-theme numbers
+        carry over.
+     2. Whether a theme choice persists per file (not just per browser)
+        under file:// via localStorage is unmeasured. Log the result in
+        docs/01-tenant-constraints.md before relying on it.
+
+   Activated via [data-theme="dark"] on <html> or <body>, toggled by a
+   script — see the demo for the actual toggle wiring.
+   ========================================================================== */
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark); /* text on dark surface */
+  --muted:      #B4C0D0;                 /* neutral light slate: dimmed label text, 6.7:1 on --bg, 9.3:1 on --panel */
+  --line:       #33496B;                 /* neutral slate separator between --bg and --panel */
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary);
+  --brand-dark: var(--palette-primary-darkest);
+  --series-2:   var(--palette-accent-light);
+
+  /* Status TEXT colours (--ok, --bad) are still UNCHECKED for the case of
+     being read directly on --bg/--panel with no chip background of their
+     own — do not ship that combination without re-measuring against
+     --palette-primary-dark/--palette-primary-darkest first.
+     The CHIP backgrounds below (--ok-bg, --bad-bg) ARE checked: a
+     low-opacity dark overlay measured too low a contrast against the text
+     colour to pass WCAG AA (4.5:1) at the delta badges' font size, so these
+     use the same light, near-white tints as the light theme instead of a
+     darkened variant. A light chip on a dark page is a deliberate,
+     conventional pattern (seen e.g. in GitHub's own dark mode labels), not
+     an inconsistency.
+       Moss on Moss 12% (#eaf5f0):                4.71:1 — PASS
+       Ember on Ember 8% (#fbeded):                4.53:1 — PASS
+       Ember on white (#ffffff):                   5.16:1 — PASS, used instead */
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-bg:var(--palette-surface);
+}
+
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
+    font-size:1rem;line-height:1.5;transition:background .15s,color .15s}
+  header{background:var(--brand-dark);color:var(--palette-on-dark);
+    padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+  header h1{margin:0;font-size:1.5rem;line-height:2rem;font-weight:500}
+  header .meta{opacity:.85;font-size:.875rem;line-height:1.5rem;margin-top:.5rem}
+  #theme-toggle{padding:.5rem .9rem;border:1px solid var(--palette-on-dark);border-radius:.25rem;
+    background:transparent;color:var(--palette-on-dark);font-family:inherit;font-size:.875rem;
+    cursor:pointer;white-space:nowrap}
+  #theme-toggle:hover{background:var(--palette-on-dark);color:var(--brand-dark)}
+  #theme-toggle:focus-visible{outline:2px solid var(--palette-accent-light);outline-offset:2px}
+  nav{display:flex;gap:1rem;background:var(--panel);padding:1rem 2rem;border-bottom:1px solid var(--line)}
+  .navbtn{padding:.5rem .9rem;border:1px solid var(--line);border-radius:.25rem;
+    background:var(--bg);font-family:inherit;font-size:.875rem;cursor:pointer;color:var(--ink)}
+  .navbtn:hover{border-color:var(--brand);color:var(--brand)}
+  .navbtn.active{background:var(--brand);color:var(--palette-surface);border-color:var(--brand)}
+  .navbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  main{padding:1.5rem 2rem;max-width:52rem;margin:0 auto}
+  .page h2{font-weight:500}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:1rem;margin:1rem 0}
+  .kpi{background:var(--panel);border-left:.25rem solid var(--brand);padding:1rem;border-radius:.25rem}
+  .kpi .label{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .kpi .value{font-size:1.75rem;font-weight:500;margin-top:.25rem;font-variant-numeric:tabular-nums}
+  .kpi .delta{font-size:.875rem;margin-top:.25rem;display:inline-flex;align-items:center;gap:.3rem}
+  .kpi .delta.up{color:var(--ok);background:var(--ok-bg);padding:.1rem .4rem;border-radius:.2rem}
+  .kpi .delta.down{color:var(--bad);background:var(--bad-bg);padding:.1rem .4rem;border-radius:.2rem}
+  .note{background:var(--panel);border:1px dashed var(--line);border-radius:.25rem;padding:1rem;
+    font-size:.875rem;color:var(--muted);margin-top:1.5rem}
+  .note code{color:var(--ink)}
+  @media print{nav,#theme-toggle{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Tema-demo: lys/mørk-bryter</h1>
+    <div class="meta">Ingen ekte data · viser kun mekanismen, ikke en beslutning</div>
+  </div>
+  <button type="button" id="theme-toggle" aria-pressed="false">🌙 Mørkt tema</button>
+</header>
+<nav>
+  <button class="navbtn" data-target="side-a">Status-farger</button>
+  <button class="navbtn" data-target="side-b">Om denne demoen</button>
+</nav>
+<main>
+  <section id="side-a" class="page" style="display:block">
+    <h2>Positivt/negativt — farge og ikon sammen, ikke farge alene</h2>
+    <p>Per WCAG 2.2 (1.4.1, «Use of Color») skal en fargekodet verdi også ha et
+       ikke-fargebasert signal. Under: samme piktogram/ord uansett tema.</p>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label">Volum denne måneden</div>
+        <div class="value">12 480</div>
+        <div class="delta up">▲ opp 6,2 %</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Avviste transaksjoner</div>
+        <div class="value">312</div>
+        <div class="delta down">▼ ned 1,4 %</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Snittstørrelse</div>
+        <div class="value">1 402 kr</div>
+        <div class="delta up">▲ opp 0,8 %</div>
+      </div>
+    </div>
+    <p style="font-size:.875rem;color:var(--muted)">
+      Fargene er kjernens egne statusfarger (Ember / Moss), ikke merkevarepaletten:
+      en merkevarefarge er valgt for å se bra ut, ikke for å leses som tekst.
+      Se docs/09-usability-and-navigation-principles.md §3.
+    </p>
+  </section>
+  <section id="side-b" class="page" style="display:none">
+    <h2>Om denne demoen</h2>
+    <p>Denne filen beviser to ting, ikke mer: at 2026-tokenene i <code>tools/tokens/</code>
+       fungerer når de bakes inn ved byggetidspunkt, og at en lys/mørk-bryter er teknisk
+       enkel å koble opp. Den avgjør ikke om bryteren skal inn i en ekte dashboard-mal —
+       det er en åpen beslutning i docs/09, avhengig av at mørk-temaets kontrast måles på
+       nytt og at <code>localStorage</code> under <code>file://</code> faktisk testes.</p>
+    <p>Bryteren lagrer valget i <code>localStorage</code> og leser det tilbake ved neste
+       åpning av <em>denne nettleseren</em> — om det samme skjer per fil, eller per mappe,
+       eller ikke i det hele tatt når filen kopieres til OneDrive, er ikke målt.</p>
+  </section>
+  <div class="note">
+    Byggetidspunkt: 2026-10-06 19:37 · generert av <code>build_theme_toggle_demo.py</code>,
+    aldri håndskrevet · tokens hentet fra <code>tools/tokens/*.css</code> ved bygg,
+    ikke lastet av denne filen ved åpning.
+  </div>
+</main>
+<script>
+  document.querySelectorAll('.navbtn').forEach(function(btn, i) {
+    if (i === 0) btn.classList.add('active');
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.navbtn').forEach(b => b.classList.remove('active'));
+      document.getElementById(btn.dataset.target).style.display = 'block';
+      btn.classList.add('active');
+    });
+  });
+
+  (function themeToggle() {
+    const KEY = 'theme-toggle-demo:theme';
+    const btn = document.getElementById('theme-toggle');
+    const apply = (theme) => {
+      document.documentElement.setAttribute('data-theme', theme);
+      btn.textContent = theme === 'dark' ? '☀️ Lyst tema' : '🌙 Mørkt tema';
+      btn.setAttribute('aria-pressed', String(theme === 'dark'));
+    };
+    let saved = 'light';
+    try { saved = localStorage.getItem(KEY) || 'light'; } catch (e) { /* file:// may block storage */ }
+    apply(saved);
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      apply(next);
+      try { localStorage.setItem(KEY, next); } catch (e) { /* see docs/09 open item */ }
+    });
+  })();
+</script>
+</body>
+</html>

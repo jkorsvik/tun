@@ -1,0 +1,54 @@
+# Build artefacts from verify_dashboard.py
+# Generated verification output, not reviewable artefacts. preview*.png IS tracked —
+# those are the images a human is meant to look at and that the READMEs embed.
+*.verify.png
+*.verify-core.png
+*.shell-bottom.png
+*.interaction-check.png
+
+# Built dashboards: regenerate from source, don't commit. Like work/, they are the output
+# of a real task and carry someone else's data. (The example's committed dashboard is
+# force-added; see below.)
+dashboards/
+
+# Probe scratch
+probe/*.out
+probe/dl*.txt
+probe/*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local operational notes, not part of the project
+RAIWORK_NOTES.md
+
+# Never commit real business data — examples must be synthetic only
+*.xlsx
+*.xlsm
+!examples/**/*.xlsx
+
+# Generated example source data — reproduce with the example's generate_data.py.
+# 4 M rows is ~207 MB; the committed artefact is the 0.81 MB dashboard built FROM it.
+examples/03-cube-dashboard/transaksjoner.csv
+# Install markers belong in ~/.raiwork/skills, never here. If one appears in skills/, a
+# tool wrote through a symlink into the source tree — the file is the symptom, not the bug.
+.installed-by-*
+
+# Screenshots from tools/verify_viewports.py
+viewport-shots/
+
+# Per-task scratch. A session builds a report or deck under work/<task>/; that is a
+# deliverable for somewhere else, not part of this repo. Ignored so that a `git add -A`
+# cannot sweep it into a commit.
+work/
+
+# uv lockfile. This repo is stdlib-only by design (AGENTS.md rule 5) and needs no
+# resolved environment, so a lockfile here would imply one that does not exist.
+uv.lock

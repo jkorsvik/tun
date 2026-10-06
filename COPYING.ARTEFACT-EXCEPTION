@@ -1,0 +1,80 @@
+TÚN ARTEFACT EXCEPTION
+Version 1.1
+
+This is an additional permission under section 7 of the GNU Affero General
+Public License, version 3 ("AGPLv3"). It applies to any file that carries a
+notice placed by the copyright holder stating that the file is governed by the
+AGPLv3 together with this Exception. Those files are called the "Artefact
+Runtime".
+
+The Tún tools work by copying parts of the Artefact Runtime — markup, style
+rules, scripts and templates — into the documents they produce. Without this
+Exception, those copied parts could make each produced document a covered work.
+The purpose of this Exception is to let people keep, publish, sell and share the
+documents they produce under terms of their own choosing.
+
+0. Definitions.
+
+  A "Generated Artefact" is a document produced by a Tún tool that contains part
+  or all of the Artefact Runtime together with content, data or text supplied by
+  the person who ran the tool.
+
+  A "Competing Generator" is a work whose purpose is to produce documents from
+  data and templates in substantially the manner of the Tún tools.
+
+  The "Origin Notice" is the machine-readable provenance block that a Tún tool
+  writes into a Generated Artefact, in the part of the artefact that records how
+  it was produced. It names Tún and states where the project can be found. It is
+  a notice in the sense of section 7(b) of the AGPLv3.
+
+1. Grant of additional permission.
+
+  You have permission to convey a Generated Artefact under terms of your choice.
+  The requirements of the AGPLv3 do not apply to a Generated Artefact, nor to the
+  content, data or text that it carries, provided that:
+
+    a) the Generated Artefact is not itself a Competing Generator; and
+
+    b) the Origin Notice is preserved in the Generated Artefact.
+
+  This permission applies however the Generated Artefact is delivered, including
+  as a file, as an attachment, as an email, or as a page served over a network.
+
+2. About the Origin Notice.
+
+  Condition 1(b) is a requirement to preserve a notice, not a requirement to
+  advertise. Specifically:
+
+    a) The Origin Notice does not have to be visible to a reader of the
+       Generated Artefact. Keeping it where the tool wrote it is enough. A
+       Generated Artefact may be presented with no visible mention of Tún.
+
+    b) Any visible "made with Tún" text that a Tún tool adds to a Generated
+       Artefact is a default, not a condition. You may remove or replace it.
+
+    c) You may translate or reformat the Origin Notice, and you may add to it,
+       provided it still names Tún and still states where the project can be
+       found.
+
+    d) If a delivery format cannot carry the Origin Notice at all, condition
+       1(b) does not apply to that delivery.
+
+  You may not state or imply that a Generated Artefact was produced by something
+  other than Tún, or that Tún endorses it.
+
+3. What this Exception does not grant.
+
+  This Exception does not grant permission to convey the Artefact Runtime itself,
+  or a modified version of it, other than under the AGPLv3.
+
+  Producing and serving Generated Artefacts is not, by itself, a modification of
+  the covered work. Conveying a modified Artefact Runtime — for example shipping
+  an altered template or an altered control script to someone else — remains
+  subject to the AGPLv3 in full, including the obligation to offer corresponding
+  source, and including section 13 where a modified version is made available to
+  users over a network.
+
+4. No other change.
+
+  All other terms and conditions of the AGPLv3 remain in force. If any part of
+  this Exception is held unenforceable, the AGPLv3 applies without it.

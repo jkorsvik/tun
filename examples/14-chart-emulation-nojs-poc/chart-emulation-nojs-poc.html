@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chart-emulering uten JavaScript &mdash; POC</title>
+<!--
+  Chart-emulering uten JavaScript
+  PROVENANCE
+    Source data : none — same synthetic regional counts as examples/06-chart-palette-demo/
+    Built       : 2026-10-06 19:37
+    Companion to: examples/06-chart-palette-demo/, examples/13-js-free-standalone-poc/
+    Built by    : RAIWork
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Generator   : examples/14-chart-emulation-nojs-poc/build_chart_emulation_poc.py
+  STATUS: exploratory/diagnostic POC. ZERO <script> tags in this file — see
+  the generator's module docstring for why that's possible for all nine
+  chart types when data is known at build time, and what that changes
+  about examples/13's "no honest substitute" scatter finding.
+  Tier 1, STANDALONE: fully self-contained, no server, no CDN, no JS.
+-->
+<style>
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Palette: neutral (core default)
+
+   The eight semantic slots the theme files consume, with values that belong to
+   nobody. This file is what makes core shippable without a brand plugin: with
+   plugins/ empty, a build still produces a coherent artefact rather than an
+   artefact full of unresolved var() references, which would render as
+   invisible or wrong colours and pass every other gate.
+
+   A brand plugin replaces this file by providing `tokens` (see
+   docs/22-plugin-contract.md). It does not patch it.
+
+   The values are a deliberately plain slate-and-amber pair: legible, adequate
+   contrast, and obviously not any real organisation's brand. They are an
+   example, not a recommendation. Do not treat them as a design system.
+   ========================================================================== */
+:root{
+  --palette-ink:             #111418;  /* body text */
+  --palette-surface:         #FFFFFF;  /* page background */
+  --palette-primary:         #2B4C7E;  /* primary data colour, links, focus */
+  --palette-primary-dark:    #1B3559;  /* header background */
+  --palette-primary-darkest: #0E1C2E;  /* darkest surface */
+  --palette-accent:          #B8860B;  /* secondary series, decorative only */
+  --palette-accent-light:    #E8D48B;  /* highlight on dark */
+  --palette-on-dark:         #F7F5EF;  /* text on a dark surface */
+}
+
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Status / semantic colour tokens — positive, negative, neutral
+   Owned by core, not by any brand plugin: status colour is a functional
+   signal, so it must work the same whichever plugin supplies the brand.
+
+   Why not reuse the brand palette: brand accents are chosen to look good,
+   not to be read as text. A KPI delta must pass the WCAG 2.2 text minimum
+   (4.5:1 against #FFFFFF), and typical warm brand accents do not.
+
+   Contrast against #FFFFFF, computed with the WCAG relative-luminance formula:
+     Ember  #C9372C  ->  5.16:1  PASS
+     Moss   #1F7A5C  ->  5.25:1  PASS
+   For comparison, the example plugin's warm accents (Amber, Flame; see
+   plugins/eksempel/tokens/palette.css) measure 2.47:1 and 2.84:1, below even
+   the 3:1 icon minimum, so neither is usable for status.
+
+   Default status pair: Ember/Moss (WCAG AA, see contrast table above).
+   A project may use a different pair if it passes the same contrast test;
+   see docs/09-usability-and-navigation-principles.md §3.
+
+   Per WCAG 2.2 criterion 1.4.1 (Use of Color): colour alone must never be the only
+   signal. Pair these with an icon or text label (e.g. an arrow, or the words
+   "opp"/"ned"), not colour by itself.
+   ========================================================================== */
+:root{
+  --status-negative:          #C9372C; /* Ember — text, icon, delta value */
+  --status-negative-bg:       #fbeded; /* Ember 8% — row/card background tint only */
+  --status-positive:          #1F7A5C; /* Moss — text, icon, delta value */
+  --status-positive-bg-25:    #d7ece3; /* Moss 25% — background tint only */
+  --status-positive-bg-12:    #eaf5f0; /* Moss 12% — subtler background tint */
+  --status-neutral:           #737373; /* neutral grey — no change / n.a. */
+}
+
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Theme: light (default)
+   ==========================================================================
+   Maps the semantic roles the templates already use (--ink, --muted, --bg,
+   --brand, etc.) onto the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css) and status-semantic.css, instead of
+   each template hardcoding its own hex values as it does today.
+
+   NOT YET WIRED INTO templates: html files — this file documents the
+   intended mapping so it can be reviewed before any template changes. Load
+   order for a future build: the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css), then status-semantic.css,
+   then this file (so the palette- and status- prefixed variables it references
+   already exist).
+
+   Rationale for a light default: a dashboard is read repeatedly and at
+   length — Nielsen Norman Group and general dashboard-UX guidance favour a
+   neutral, low-chroma background with colour reserved for data, not the
+   bold colour-dominant background a presentation theme documents for slides.
+   See docs/09-usability-and-navigation-principles.md §4.
+   ========================================================================== */
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);      /* body text */
+  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --line:       #ebebeb;               /* neutral grey: borders, gridlines */
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
+  --brand:      var(--palette-primary);        /* primary data colour, links, focus */
+  --brand-dark: var(--palette-primary-dark);    /* header background */
+  --series-2:   var(--palette-accent);     /* secondary chart series — decorative use only, not text */
+
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-bg:var(--status-negative-bg);
+}
+
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
+    font-size:1rem;line-height:1.5}
+  header{background:var(--brand-dark);color:var(--eksempel-cream);padding:1.25rem 2rem}
+  header h1{margin:0;font-size:1.4rem;font-weight:500}
+  header .meta{opacity:.85;font-size:.85rem;line-height:1.5;margin-top:.5rem;max-width:52rem}
+  header code{background:rgba(255,255,255,.12);padding:.05rem .3rem;border-radius:.2rem}
+  main{padding:1.5rem 2rem;max-width:78rem;margin:0 auto}
+  .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;align-items:start}
+  .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:.375rem;padding:1rem}
+  .chart-card h2{margin:0 0 .6rem;font-size:.95rem;font-weight:600;color:var(--ink)}
+  .chart-svg{width:100%;height:auto;display:block;margin:0 auto}
+  .axis-line{stroke:var(--line);stroke-width:1}
+  .axis-label{fill:var(--muted);font-size:9px}
+  .grid-ring{stroke:var(--line);fill:none;stroke-width:1}
+  .legend{display:flex;flex-wrap:wrap;gap:.4rem .8rem;margin-top:.6rem;font-size:.78rem;color:var(--muted)}
+  .legend-chip{display:inline-flex;align-items:center;gap:.3rem}
+  .legend-swatch{width:.7rem;height:.7rem;border-radius:.15rem;display:inline-block;flex-shrink:0}
+  .bar-chart{display:flex;flex-direction:column;gap:.4rem}
+  .bar-row{display:flex;align-items:center;gap:.6rem;font-size:.82rem}
+  .bar-label{width:5rem;flex:0 0 auto}
+  .bar-track{flex:1;display:flex;align-items:center;gap:.5rem;min-width:0}
+  .bar-fill{height:1.1rem;border-radius:.2rem;flex:0 0 auto}
+  .bar-value{font-variant-numeric:tabular-nums;white-space:nowrap;flex:0 0 auto}
+  .vbar-chart{display:flex;align-items:flex-end;gap:.9rem;height:180px;padding:0 .25rem}
+  .vbar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;height:100%;min-width:0}
+  .vbar-fill{width:65%;border-radius:.25rem .25rem 0 0;min-height:2px}
+  .vbar-value{font-size:.72rem;margin-bottom:.25rem;font-variant-numeric:tabular-nums}
+  .vbar-label{font-size:.75rem;color:var(--muted);margin-top:.35rem;text-align:center;white-space:normal;line-height:1.2}
+  .vbar-multi{display:flex;align-items:flex-end;gap:1.1rem;height:180px;padding:0 .25rem}
+  .vbar-group{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;min-width:0}
+  .vbar-group-bars{display:flex;align-items:flex-end;gap:2px;height:100%;width:100%;justify-content:center}
+  .vbar-group-bar{width:8px;border-radius:.15rem .15rem 0 0;min-height:2px}
+  .vbar-group-label{font-size:.75rem;color:var(--muted);margin-top:.35rem}
+  .hbar-multi{display:flex;flex-direction:column;gap:1rem}
+  .hbar-group{display:flex;align-items:center;gap:.6rem}
+  .hbar-group-label{font-size:.78rem;font-weight:600;color:var(--ink);flex:0 0 1.6rem}
+  .hbar-group-bars{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+  .hbar-row{display:flex;align-items:center;gap:.4rem;height:.85rem}
+  .hbar-fill{height:100%;border-radius:.15rem;flex:0 0 auto;min-width:2px}
+  .hbar-val{font-size:.68rem;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;flex:0 0 auto}
+  .pie-wrap{display:flex;justify-content:center;padding:.5rem 0}
+  .pie-circle{width:170px;height:170px;border-radius:50%;position:relative}
+  .doughnut-hole{position:absolute;inset:32px;border-radius:50%;background:var(--panel)}
+  .verdict{display:inline-block;margin-top:.7rem;padding:.25rem .55rem;border-radius:.2rem;
+    font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+  .verdict-ok{background:#e3f5ea;color:#0a6b39;border:1px solid #0a6b39}
+  .verdict-caution{background:#fff3e0;color:#8a5300;border:1px solid #8a5300}
+  .verdict-note{font-size:.8rem;color:var(--muted);margin:.4rem 0 0}
+  .about{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--line);max-width:56rem}
+  .about code{background:var(--panel);padding:.1rem .3rem;border-radius:.2rem}
+  .note{background:var(--panel);border:1px dashed var(--line);border-radius:.25rem;padding:1rem;
+    font-size:.875rem;color:var(--muted);margin-top:1.5rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>Chart-emulering uten JavaScript &mdash; tolv diagramtyper, &eacute;n palett</h1>
+  <div class="meta">Samme datasett og samme Okabe&ndash;Ito-palett som
+    <code>examples/06-chart-palette-demo/</code>s &laquo;Kategorisk&raquo;-fane (ni av de tolv
+    typene under) &mdash; utvidet med tre stolpevarianter examples/06 ikke har (vertikal,
+    og gruppert flere-serier i begge retninger). Denne filen har <strong>null</strong>
+    <code>&lt;script&gt;</code>-tagger. Alt er CSS (<code>conic-gradient</code>, div-bredde/h&oslash;yde)
+    eller statisk, forh&aring;ndsberegnet SVG. &Eacute;n palett er nok til &aring; vurdere
+    teknikken &mdash; se README.md for full begrunnelse per diagramtype.</div>
+</header>
+<main>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h2>Bar (horisontal)</h2>
+      <div class="bar-chart"><div class="bar-row"><span class="bar-label">Nord</span><div class="bar-track"><div class="bar-fill" style="width:46.67%;background:#E69F00"></div><span class="bar-value">42</span></div></div><div class="bar-row"><span class="bar-label">Sør</span><div class="bar-track"><div class="bar-fill" style="width:86.67%;background:#56B4E9"></div><span class="bar-value">78</span></div></div><div class="bar-row"><span class="bar-label">Øst</span><div class="bar-track"><div class="bar-fill" style="width:61.11%;background:#009E73"></div><span class="bar-value">55</span></div></div><div class="bar-row"><span class="bar-label">Vest</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#F0E442"></div><span class="bar-value">90</span></div></div><div class="bar-row"><span class="bar-label">Midt</span><div class="bar-track"><div class="bar-fill" style="width:36.67%;background:#0072B2"></div><span class="bar-value">33</span></div></div><div class="bar-row"><span class="bar-label">Innlandet</span><div class="bar-track"><div class="bar-fill" style="width:67.78%;background:#D55E00"></div><span class="bar-value">61</span></div></div></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Ren CSS (div-bredde). Samme teknikk som examples/13. Billigst av de tolv.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Bar (vertikal)</h2>
+      <div class="vbar-chart"><div class="vbar-col"><span class="vbar-value">42</span><div class="vbar-fill" style="height:46.67%;background:#E69F00"></div><span class="vbar-label">Nord</span></div><div class="vbar-col"><span class="vbar-value">78</span><div class="vbar-fill" style="height:86.67%;background:#56B4E9"></div><span class="vbar-label">Sør</span></div><div class="vbar-col"><span class="vbar-value">55</span><div class="vbar-fill" style="height:61.11%;background:#009E73"></div><span class="vbar-label">Øst</span></div><div class="vbar-col"><span class="vbar-value">90</span><div class="vbar-fill" style="height:100%;background:#F0E442"></div><span class="vbar-label">Vest</span></div><div class="vbar-col"><span class="vbar-value">33</span><div class="vbar-fill" style="height:36.67%;background:#0072B2"></div><span class="vbar-label">Midt</span></div><div class="vbar-col"><span class="vbar-value">61</span><div class="vbar-fill" style="height:67.78%;background:#D55E00"></div><span class="vbar-label">Innlandet</span></div></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Ren CSS (div-høyde). Samme teknikk som horisontal Bar, bare bunn-justerte kolonner i stedet for rader.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Bar (horisontal, flere serier)</h2>
+      <div class="hbar-multi"><div class="hbar-group"><span class="hbar-group-label">Q1</span><div class="hbar-group-bars"><div class="hbar-row"><div class="hbar-fill" style="width:16.67%;background:#E69F00"></div><span class="hbar-val">10</span></div><div class="hbar-row"><div class="hbar-fill" style="width:50%;background:#56B4E9"></div><span class="hbar-val">30</span></div><div class="hbar-row"><div class="hbar-fill" style="width:25%;background:#009E73"></div><span class="hbar-val">15</span></div><div class="hbar-row"><div class="hbar-fill" style="width:83.33%;background:#F0E442"></div><span class="hbar-val">50</span></div><div class="hbar-row"><div class="hbar-fill" style="width:13.33%;background:#0072B2"></div><span class="hbar-val">8</span></div><div class="hbar-row"><div class="hbar-fill" style="width:41.67%;background:#D55E00"></div><span class="hbar-val">25</span></div></div></div><div class="hbar-group"><span class="hbar-group-label">Q2</span><div class="hbar-group-bars"><div class="hbar-row"><div class="hbar-fill" style="width:23.33%;background:#E69F00"></div><span class="hbar-val">14</span></div><div class="hbar-row"><div class="hbar-fill" style="width:46.67%;background:#56B4E9"></div><span class="hbar-val">28</span></div><div class="hbar-row"><div class="hbar-fill" style="width:33.33%;background:#009E73"></div><span class="hbar-val">20</span></div><div class="hbar-row"><div class="hbar-fill" style="width:80%;background:#F0E442"></div><span class="hbar-val">48</span></div><div class="hbar-row"><div class="hbar-fill" style="width:20%;background:#0072B2"></div><span class="hbar-val">12</span></div><div class="hbar-row"><div class="hbar-fill" style="width:36.67%;background:#D55E00"></div><span class="hbar-val">22</span></div></div></div><div class="hbar-group"><span class="hbar-group-label">Q3</span><div class="hbar-group-bars"><div class="hbar-row"><div class="hbar-fill" style="width:30%;background:#E69F00"></div><span class="hbar-val">18</span></div><div class="hbar-row"><div class="hbar-fill" style="width:58.33%;background:#56B4E9"></div><span class="hbar-val">35</span></div><div class="hbar-row"><div class="hbar-fill" style="width:28.33%;background:#009E73"></div><span class="hbar-val">17</span></div><div class="hbar-row"><div class="hbar-fill" style="width:91.67%;background:#F0E442"></div><span class="hbar-val">55</span></div><div class="hbar-row"><div class="hbar-fill" style="width:16.67%;background:#0072B2"></div><span class="hbar-val">10</span></div><div class="hbar-row"><div class="hbar-fill" style="width:46.67%;background:#D55E00"></div><span class="hbar-val">28</span></div></div></div><div class="hbar-group"><span class="hbar-group-label">Q4</span><div class="hbar-group-bars"><div class="hbar-row"><div class="hbar-fill" style="width:36.67%;background:#E69F00"></div><span class="hbar-val">22</span></div><div class="hbar-row"><div class="hbar-fill" style="width:66.67%;background:#56B4E9"></div><span class="hbar-val">40</span></div><div class="hbar-row"><div class="hbar-fill" style="width:41.67%;background:#009E73"></div><span class="hbar-val">25</span></div><div class="hbar-row"><div class="hbar-fill" style="width:100%;background:#F0E442"></div><span class="hbar-val">60</span></div><div class="hbar-row"><div class="hbar-fill" style="width:25%;background:#0072B2"></div><span class="hbar-val">15</span></div><div class="hbar-row"><div class="hbar-fill" style="width:43.33%;background:#D55E00"></div><span class="hbar-val">26</span></div></div></div><div class="hbar-group"><span class="hbar-group-label">Q5</span><div class="hbar-group-bars"><div class="hbar-row"><div class="hbar-fill" style="width:31.67%;background:#E69F00"></div><span class="hbar-val">19</span></div><div class="hbar-row"><div class="hbar-fill" style="width:73.33%;background:#56B4E9"></div><span class="hbar-val">44</span></div><div class="hbar-row"><div class="hbar-fill" style="width:50%;background:#009E73"></div><span class="hbar-val">30</span></div><div class="hbar-row"><div class="hbar-fill" style="width:96.67%;background:#F0E442"></div><span class="hbar-val">58</span></div><div class="hbar-row"><div class="hbar-fill" style="width:33.33%;background:#0072B2"></div><span class="hbar-val">20</span></div><div class="hbar-row"><div class="hbar-fill" style="width:51.67%;background:#D55E00"></div><span class="hbar-val">31</span></div></div></div></div><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Ren CSS, gruppert: én rad-gruppe per Q, seks tynne stolper (én per region) i hver gruppe. Fortsatt ingen SVG nødvendig.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Bar (vertikal, flere serier)</h2>
+      <div class="vbar-multi"><div class="vbar-group"><div class="vbar-group-bars"><div class="vbar-group-bar" style="height:16.67%;background:#E69F00"></div><div class="vbar-group-bar" style="height:50%;background:#56B4E9"></div><div class="vbar-group-bar" style="height:25%;background:#009E73"></div><div class="vbar-group-bar" style="height:83.33%;background:#F0E442"></div><div class="vbar-group-bar" style="height:13.33%;background:#0072B2"></div><div class="vbar-group-bar" style="height:41.67%;background:#D55E00"></div></div><span class="vbar-group-label">Q1</span></div><div class="vbar-group"><div class="vbar-group-bars"><div class="vbar-group-bar" style="height:23.33%;background:#E69F00"></div><div class="vbar-group-bar" style="height:46.67%;background:#56B4E9"></div><div class="vbar-group-bar" style="height:33.33%;background:#009E73"></div><div class="vbar-group-bar" style="height:80%;background:#F0E442"></div><div class="vbar-group-bar" style="height:20%;background:#0072B2"></div><div class="vbar-group-bar" style="height:36.67%;background:#D55E00"></div></div><span class="vbar-group-label">Q2</span></div><div class="vbar-group"><div class="vbar-group-bars"><div class="vbar-group-bar" style="height:30%;background:#E69F00"></div><div class="vbar-group-bar" style="height:58.33%;background:#56B4E9"></div><div class="vbar-group-bar" style="height:28.33%;background:#009E73"></div><div class="vbar-group-bar" style="height:91.67%;background:#F0E442"></div><div class="vbar-group-bar" style="height:16.67%;background:#0072B2"></div><div class="vbar-group-bar" style="height:46.67%;background:#D55E00"></div></div><span class="vbar-group-label">Q3</span></div><div class="vbar-group"><div class="vbar-group-bars"><div class="vbar-group-bar" style="height:36.67%;background:#E69F00"></div><div class="vbar-group-bar" style="height:66.67%;background:#56B4E9"></div><div class="vbar-group-bar" style="height:41.67%;background:#009E73"></div><div class="vbar-group-bar" style="height:100%;background:#F0E442"></div><div class="vbar-group-bar" style="height:25%;background:#0072B2"></div><div class="vbar-group-bar" style="height:43.33%;background:#D55E00"></div></div><span class="vbar-group-label">Q4</span></div><div class="vbar-group"><div class="vbar-group-bars"><div class="vbar-group-bar" style="height:31.67%;background:#E69F00"></div><div class="vbar-group-bar" style="height:73.33%;background:#56B4E9"></div><div class="vbar-group-bar" style="height:50%;background:#009E73"></div><div class="vbar-group-bar" style="height:96.67%;background:#F0E442"></div><div class="vbar-group-bar" style="height:33.33%;background:#0072B2"></div><div class="vbar-group-bar" style="height:51.67%;background:#D55E00"></div></div><span class="vbar-group-label">Q5</span></div></div><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Ren CSS, gruppert: én kolonne-gruppe per Q, seks smale stolper side ved side i hver gruppe.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Pie</h2>
+      <div class="pie-wrap"><div class="pie-circle" style="background:conic-gradient(#E69F00 0% 11.7%, #56B4E9 11.7% 33.43%, #009E73 33.43% 48.75%, #F0E442 48.75% 73.82%, #0072B2 73.82% 83.01%, #D55E00 83.01% 100%)"></div></div><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Ren CSS (conic-gradient). Prosentregning gjort her i Python, ikke i nettleseren.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Doughnut</h2>
+      <div class="pie-wrap"><div class="pie-circle" style="background:conic-gradient(#E69F00 0% 11.7%, #56B4E9 11.7% 33.43%, #009E73 33.43% 48.75%, #F0E442 48.75% 73.82%, #0072B2 73.82% 83.01%, #D55E00 83.01% 100%)"><div class="doughnut-hole"></div></div></div><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Ren CSS, som Pie + ett hull. Krever flat bakgrunnsfarge i midten.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Polar area</h2>
+      <svg viewBox="0 0 220 220" class="chart-svg" role="img" aria-label="Polar area"><circle cx="110" cy="110" r="29.04" class="grid-ring"/><circle cx="110" cy="110" r="58.08" class="grid-ring"/><circle cx="110" cy="110" r="88" class="grid-ring"/><path d="M110,110 L110,68.93 A41.07,41.07 0 0,1 145.56,89.47 Z" fill="#E69F00" fill-opacity="0.8" stroke="#E69F00" stroke-width="1"/><text x="161" y="21.67" class="axis-label" text-anchor="middle">Nord</text><path d="M110,110 L176.05,71.87 A76.27,76.27 0 0,1 176.05,148.13 Z" fill="#56B4E9" fill-opacity="0.8" stroke="#56B4E9" stroke-width="1"/><text x="212" y="110" class="axis-label" text-anchor="middle">Sør</text><path d="M110,110 L156.57,136.89 A53.78,53.78 0 0,1 110,163.78 Z" fill="#009E73" fill-opacity="0.8" stroke="#009E73" stroke-width="1"/><text x="161" y="198.33" class="axis-label" text-anchor="middle">Øst</text><path d="M110,110 L110,198 A88,88 0 0,1 33.79,154 Z" fill="#F0E442" fill-opacity="0.8" stroke="#F0E442" stroke-width="1"/><text x="59" y="198.33" class="axis-label" text-anchor="middle">Vest</text><path d="M110,110 L82.06,126.13 A32.27,32.27 0 0,1 82.06,93.87 Z" fill="#0072B2" fill-opacity="0.8" stroke="#0072B2" stroke-width="1"/><text x="8" y="110" class="axis-label" text-anchor="middle">Midt</text><path d="M110,110 L58.35,80.18 A59.64,59.64 0 0,1 110,50.36 Z" fill="#D55E00" fill-opacity="0.8" stroke="#D55E00" stroke-width="1"/><text x="59" y="21.67" class="axis-label" text-anchor="middle">Innlandet</text></svg>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Statisk SVG (bue-kommando). I praksis like rent resultat som Pie, bare med variabel radius i tillegg til vinkel.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Line</h2>
+      <svg viewBox="0 0 300 190" class="chart-svg" role="img" aria-label="Line"><line x1="28" y1="162" x2="272" y2="162" class="axis-line"/><text x="28" y="182" class="axis-label" text-anchor="middle">Q1</text><text x="89" y="182" class="axis-label" text-anchor="middle">Q2</text><text x="150" y="182" class="axis-label" text-anchor="middle">Q3</text><text x="211" y="182" class="axis-label" text-anchor="middle">Q4</text><text x="272" y="182" class="axis-label" text-anchor="middle">Q5</text><polyline points="28,156.85 89,146.54 150,136.23 211,125.92 272,133.65" fill="none" stroke="#E69F00" stroke-width="2"/><circle cx="28" cy="156.85" r="3" fill="#E69F00"/><circle cx="89" cy="146.54" r="3" fill="#E69F00"/><circle cx="150" cy="136.23" r="3" fill="#E69F00"/><circle cx="211" cy="125.92" r="3" fill="#E69F00"/><circle cx="272" cy="133.65" r="3" fill="#E69F00"/><polyline points="28,105.31 89,110.46 150,92.42 211,79.54 272,69.23" fill="none" stroke="#56B4E9" stroke-width="2"/><circle cx="28" cy="105.31" r="3" fill="#56B4E9"/><circle cx="89" cy="110.46" r="3" fill="#56B4E9"/><circle cx="150" cy="92.42" r="3" fill="#56B4E9"/><circle cx="211" cy="79.54" r="3" fill="#56B4E9"/><circle cx="272" cy="69.23" r="3" fill="#56B4E9"/><polyline points="28,143.96 89,131.08 150,138.81 211,118.19 272,105.31" fill="none" stroke="#009E73" stroke-width="2"/><circle cx="28" cy="143.96" r="3" fill="#009E73"/><circle cx="89" cy="131.08" r="3" fill="#009E73"/><circle cx="150" cy="138.81" r="3" fill="#009E73"/><circle cx="211" cy="118.19" r="3" fill="#009E73"/><circle cx="272" cy="105.31" r="3" fill="#009E73"/><polyline points="28,53.77 89,58.92 150,40.88 211,28 272,33.15" fill="none" stroke="#F0E442" stroke-width="2"/><circle cx="28" cy="53.77" r="3" fill="#F0E442"/><circle cx="89" cy="58.92" r="3" fill="#F0E442"/><circle cx="150" cy="40.88" r="3" fill="#F0E442"/><circle cx="211" cy="28" r="3" fill="#F0E442"/><circle cx="272" cy="33.15" r="3" fill="#F0E442"/><polyline points="28,162 89,151.69 150,156.85 211,143.96 272,131.08" fill="none" stroke="#0072B2" stroke-width="2"/><circle cx="28" cy="162" r="3" fill="#0072B2"/><circle cx="89" cy="151.69" r="3" fill="#0072B2"/><circle cx="150" cy="156.85" r="3" fill="#0072B2"/><circle cx="211" cy="143.96" r="3" fill="#0072B2"/><circle cx="272" cy="131.08" r="3" fill="#0072B2"/><polyline points="28,118.19 89,125.92 150,110.46 211,115.62 272,102.73" fill="none" stroke="#D55E00" stroke-width="2"/><circle cx="28" cy="118.19" r="3" fill="#D55E00"/><circle cx="89" cy="125.92" r="3" fill="#D55E00"/><circle cx="150" cy="110.46" r="3" fill="#D55E00"/><circle cx="211" cy="115.62" r="3" fill="#D55E00"/><circle cx="272" cy="102.73" r="3" fill="#D55E00"/></svg><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Statisk SVG (polyline). Rett frem å generere for et vilkårlig antall serier/punkter.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Area</h2>
+      <svg viewBox="0 0 300 190" class="chart-svg" role="img" aria-label="Area"><line x1="28" y1="162" x2="272" y2="162" class="axis-line"/><polygon points="28,162 28,156.85 89,146.54 150,136.23 211,125.92 272,133.65 272,162" fill="#E69F00" fill-opacity="0.28" stroke="#E69F00" stroke-width="1.5"/><polygon points="28,162 28,105.31 89,110.46 150,92.42 211,79.54 272,69.23 272,162" fill="#56B4E9" fill-opacity="0.28" stroke="#56B4E9" stroke-width="1.5"/><polygon points="28,162 28,143.96 89,131.08 150,138.81 211,118.19 272,105.31 272,162" fill="#009E73" fill-opacity="0.28" stroke="#009E73" stroke-width="1.5"/><polygon points="28,162 28,53.77 89,58.92 150,40.88 211,28 272,33.15 272,162" fill="#F0E442" fill-opacity="0.28" stroke="#F0E442" stroke-width="1.5"/><polygon points="28,162 28,162 89,151.69 150,156.85 211,143.96 272,131.08 272,162" fill="#0072B2" fill-opacity="0.28" stroke="#0072B2" stroke-width="1.5"/><polygon points="28,162 28,118.19 89,125.92 150,110.46 211,115.62 272,102.73 272,162" fill="#D55E00" fill-opacity="0.28" stroke="#D55E00" stroke-width="1.5"/></svg><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-caution">Mulig, gjør det valgfritt</span></div>
+      <p class="verdict-note">Statisk SVG (polygon). Seks overlappende flater blir visuelt rotete — samme problem som Chart.js-varianten har.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Radar</h2>
+      <svg viewBox="0 0 220 220" class="chart-svg" role="img" aria-label="Radar"><polygon points="110,79.26 134.48,97.05 125.13,125.82 94.87,125.82 85.52,97.05" class="grid-ring" fill="none"/><polygon points="110,53.52 158.96,89.09 140.26,146.65 79.74,146.65 61.04,89.09" class="grid-ring" fill="none"/><polygon points="110,27 184.18,80.9 155.85,168.1 64.15,168.1 35.82,80.9" class="grid-ring" fill="none"/><line x1="110" y1="105" x2="110" y2="27" class="axis-line"/><text x="110" y="13" class="axis-label" text-anchor="middle">Q1</text><line x1="110" y1="105" x2="184.18" y2="80.9" class="axis-line"/><text x="197.5" y="76.57" class="axis-label" text-anchor="middle">Q2</text><line x1="110" y1="105" x2="155.85" y2="168.1" class="axis-line"/><text x="164.08" y="179.43" class="axis-label" text-anchor="middle">Q3</text><line x1="110" y1="105" x2="64.15" y2="168.1" class="axis-line"/><text x="55.92" y="179.43" class="axis-label" text-anchor="middle">Q4</text><line x1="110" y1="105" x2="35.82" y2="80.9" class="axis-line"/><text x="22.5" y="76.57" class="axis-label" text-anchor="middle">Q5</text><polygon points="110,92 127.31,99.38 123.75,123.93 93.19,128.14 86.51,97.37" fill="#E69F00" fill-opacity="0.18" stroke="#E69F00" stroke-width="2"/><circle cx="110" cy="92" r="2.5" fill="#E69F00"/><circle cx="127.31" cy="99.38" r="2.5" fill="#E69F00"/><circle cx="123.75" cy="123.93" r="2.5" fill="#E69F00"/><circle cx="93.19" cy="128.14" r="2.5" fill="#E69F00"/><circle cx="86.51" cy="97.37" r="2.5" fill="#E69F00"/><polygon points="110,66 144.62,93.75 136.74,141.81 79.44,147.07 55.6,87.32" fill="#56B4E9" fill-opacity="0.18" stroke="#56B4E9" stroke-width="2"/><circle cx="110" cy="66" r="2.5" fill="#56B4E9"/><circle cx="144.62" cy="93.75" r="2.5" fill="#56B4E9"/><circle cx="136.74" cy="141.81" r="2.5" fill="#56B4E9"/><circle cx="79.44" cy="147.07" r="2.5" fill="#56B4E9"/><circle cx="55.6" cy="87.32" r="2.5" fill="#56B4E9"/><polygon points="110,85.5 134.73,96.97 122.99,122.88 90.9,131.29 72.91,92.95" fill="#009E73" fill-opacity="0.18" stroke="#009E73" stroke-width="2"/><circle cx="110" cy="85.5" r="2.5" fill="#009E73"/><circle cx="134.73" cy="96.97" r="2.5" fill="#009E73"/><circle cx="122.99" cy="122.88" r="2.5" fill="#009E73"/><circle cx="90.9" cy="131.29" r="2.5" fill="#009E73"/><circle cx="72.91" cy="92.95" r="2.5" fill="#009E73"/><polygon points="110,40 169.35,85.72 152.03,162.84 64.15,168.1 38.29,81.7" fill="#F0E442" fill-opacity="0.18" stroke="#F0E442" stroke-width="2"/><circle cx="110" cy="40" r="2.5" fill="#F0E442"/><circle cx="169.35" cy="85.72" r="2.5" fill="#F0E442"/><circle cx="152.03" cy="162.84" r="2.5" fill="#F0E442"/><circle cx="64.15" cy="168.1" r="2.5" fill="#F0E442"/><circle cx="38.29" cy="81.7" r="2.5" fill="#F0E442"/><polygon points="110,94.6 124.84,100.18 117.64,115.52 98.54,120.78 85.27,96.97" fill="#0072B2" fill-opacity="0.18" stroke="#0072B2" stroke-width="2"/><circle cx="110" cy="94.6" r="2.5" fill="#0072B2"/><circle cx="124.84" cy="100.18" r="2.5" fill="#0072B2"/><circle cx="117.64" cy="115.52" r="2.5" fill="#0072B2"/><circle cx="98.54" cy="120.78" r="2.5" fill="#0072B2"/><circle cx="85.27" cy="96.97" r="2.5" fill="#0072B2"/><polygon points="110,72.5 137.2,96.16 131.4,134.45 90.13,132.34 71.67,92.55" fill="#D55E00" fill-opacity="0.18" stroke="#D55E00" stroke-width="2"/><circle cx="110" cy="72.5" r="2.5" fill="#D55E00"/><circle cx="137.2" cy="96.16" r="2.5" fill="#D55E00"/><circle cx="131.4" cy="134.45" r="2.5" fill="#D55E00"/><circle cx="90.13" cy="132.34" r="2.5" fill="#D55E00"/><circle cx="71.67" cy="92.55" r="2.5" fill="#D55E00"/></svg><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-caution">Mulig, gjør det valgfritt</span></div>
+      <p class="verdict-note">Statisk SVG, mest kode av de tolv (akser + rutenett + polygoner). Fungerer, men dyrest å bygge generisk.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Scatter</h2>
+      <svg viewBox="0 0 300 190" class="chart-svg" role="img" aria-label="Scatter"><line x1="24" y1="166" x2="276" y2="166" class="axis-line"/><line x1="24" y1="24" x2="24" y2="166" class="axis-line"/><circle cx="31.64" cy="144.39" r="6" fill="#E69F00"/><circle cx="46.91" cy="135.13" r="6" fill="#E69F00"/><circle cx="24" cy="150.57" r="6" fill="#E69F00"/><circle cx="39.27" cy="138.22" r="6" fill="#E69F00"/><circle cx="54.55" cy="147.48" r="6" fill="#E69F00"/><polygon points="184.36,122.96 178.36,133.76 190.36,133.76" fill="#56B4E9"/><polygon points="199.64,113.7 193.64,124.5 205.64,124.5" fill="#56B4E9"/><polygon points="169.09,129.13 163.09,139.93 175.09,139.93" fill="#56B4E9"/><polygon points="192,119.87 186,130.67 198,130.67" fill="#56B4E9"/><polygon points="176.73,110.61 170.73,121.41 182.73,121.41" fill="#56B4E9"/><rect x="102.9" y="77.55" width="10.2" height="10.2" fill="#009E73"/><rect x="118.17" y="68.29" width="10.2" height="10.2" fill="#009E73"/><rect x="87.63" y="83.73" width="10.2" height="10.2" fill="#009E73"/><rect x="110.54" y="74.47" width="10.2" height="10.2" fill="#009E73"/><rect x="95.26" y="65.2" width="10.2" height="10.2" fill="#009E73"/><rect x="256.83" y="63.32" width="7.8" height="7.8" fill="#F0E442" transform="rotate(45 260.73 67.22)"/><rect x="272.1" y="54.06" width="7.8" height="7.8" fill="#F0E442" transform="rotate(45 276 57.96)"/><rect x="241.55" y="69.49" width="7.8" height="7.8" fill="#F0E442" transform="rotate(45 245.45 73.39)"/><rect x="264.46" y="60.23" width="7.8" height="7.8" fill="#F0E442" transform="rotate(45 268.36 64.13)"/><rect x="249.19" y="50.97" width="7.8" height="7.8" fill="#F0E442" transform="rotate(45 253.09 54.87)"/><polygon points="69.82,30.35 71.41,34.16 75.52,34.49 72.39,37.18 73.34,41.2 69.82,39.05 66.29,41.2 67.25,37.18 64.11,34.49 68.23,34.16" fill="#0072B2"/><polygon points="85.09,21.09 86.68,24.9 90.8,25.23 87.66,27.92 88.62,31.94 85.09,29.79 81.56,31.94 82.52,27.92 79.38,25.23 83.5,24.9" fill="#0072B2"/><polygon points="54.55,36.52 56.13,40.34 60.25,40.67 57.11,43.36 58.07,47.38 54.55,45.22 51.02,47.38 51.98,43.36 48.84,40.67 52.96,40.34" fill="#0072B2"/><polygon points="77.45,27.26 79.04,31.08 83.16,31.41 80.02,34.1 80.98,38.11 77.45,35.96 73.93,38.11 74.89,34.1 71.75,31.41 75.87,31.08" fill="#0072B2"/><polygon points="62.18,18 63.77,21.82 67.89,22.15 64.75,24.83 65.71,28.85 62.18,26.7 58.66,28.85 59.61,24.83 56.48,22.15 60.59,21.82" fill="#0072B2"/><path d="M220.63,153.83 h3.84 v4.08 h4.08 v3.84 h-4.08 v4.08 h-3.84 v-4.08 h-4.08 v-3.84 h4.08 Z" fill="#D55E00"/><path d="M235.9,144.57 h3.84 v4.08 h4.08 v3.84 h-4.08 v4.08 h-3.84 v-4.08 h-4.08 v-3.84 h4.08 Z" fill="#D55E00"/><path d="M205.35,160 h3.84 v4.08 h4.08 v3.84 h-4.08 v4.08 h-3.84 v-4.08 h-4.08 v-3.84 h4.08 Z" fill="#D55E00"/><path d="M228.26,150.74 h3.84 v4.08 h4.08 v3.84 h-4.08 v4.08 h-3.84 v-4.08 h-4.08 v-3.84 h4.08 Z" fill="#D55E00"/><path d="M212.99,141.48 h3.84 v4.08 h4.08 v3.84 h-4.08 v4.08 h-3.84 v-4.08 h-4.08 v-3.84 h4.08 Z" fill="#D55E00"/></svg><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Statisk SVG. Løser #13s 'ingen erstatning finnes'-konklusjon for NÅR dataene er kjent ved bygging — se docstring.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Bubble</h2>
+      <svg viewBox="0 0 300 190" class="chart-svg" role="img" aria-label="Bubble"><line x1="24" y1="166" x2="276" y2="166" class="axis-line"/><line x1="24" y1="24" x2="24" y2="166" class="axis-line"/><circle cx="54.55" cy="126.11" r="18.2" fill="#E69F00" fill-opacity="0.75" stroke="#E69F00"/><circle cx="92.73" cy="68.67" r="33.8" fill="#56B4E9" fill-opacity="0.75" stroke="#56B4E9"/><circle cx="130.91" cy="105.37" r="23.83" fill="#009E73" fill-opacity="0.75" stroke="#009E73"/><circle cx="169.09" cy="49.53" r="39" fill="#F0E442" fill-opacity="0.75" stroke="#F0E442"/><circle cx="207.27" cy="140.47" r="14.3" fill="#0072B2" fill-opacity="0.75" stroke="#0072B2"/><circle cx="245.45" cy="95.8" r="26.43" fill="#D55E00" fill-opacity="0.75" stroke="#D55E00"/></svg><div class="legend"><span class="legend-chip"><span class="legend-swatch" style="background:#E69F00"></span>Nord</span><span class="legend-chip"><span class="legend-swatch" style="background:#56B4E9"></span>Sør</span><span class="legend-chip"><span class="legend-swatch" style="background:#009E73"></span>Øst</span><span class="legend-chip"><span class="legend-swatch" style="background:#F0E442"></span>Vest</span><span class="legend-chip"><span class="legend-swatch" style="background:#0072B2"></span>Midt</span><span class="legend-chip"><span class="legend-swatch" style="background:#D55E00"></span>Innlandet</span></div>
+      <div><span class="verdict verdict-ok">Anbefales som standard</span></div>
+      <p class="verdict-note">Statisk SVG, samme teknikk som Scatter, radius i tillegg til posisjon.</p>
+    </div>
+
+  </div>
+
+  <div class="about">
+    <h2>Hva dette beviser &mdash; og ikke</h2>
+    <p>Beviser: alle tolv diagramtypene her &mdash; ni Chart.js-typer fra <code>examples/06</code>
+      pluss tre stolpevarianter (vertikal, og flere serier i begge retninger) &mdash; lar seg
+      gjengi uten JavaScript n&aring;r dataene er kjent p&aring; byggetidspunktet &mdash;
+      forskjellen mellom dem ligger i hvor mye kode en generisk generator trenger og hvor
+      visuelt tett resultatet blir, ikke i en hard mulig/umulig-grense.</p>
+    <p>Beviser <strong>ikke</strong>: at dette b&oslash;r v&aelig;re standardoppf&oslash;rsel for
+      alle rapporter. Interaktivitet (hover-tooltip med eksakt verdi, zoom, skjul/vis serie ved
+      klikk p&aring; forklaring) mangler helt her, p&aring; alle tolv &mdash; det er samme
+      begrensning for alle diagramtypene, ikke noe som skiller dem fra hverandre. Og dataene m&aring;
+      v&aelig;re kjent f&oslash;r filen genereres; en side som skal vise data brukeren selv
+      laster opp eller filtrerer interaktivt trenger fortsatt JavaScript, uansett diagramtype.</p>
+    <div class="note">
+      Byggetidspunkt: 2026-10-06 19:37 &middot; generert av <code>build_chart_emulation_poc.py</code>,
+      aldri h&aring;ndskrevet.
+    </div>
+  </div>
+</main>
+</body>
+</html>

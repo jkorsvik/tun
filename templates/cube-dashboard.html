@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="no"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  PROVENANCE  (do not delete — this is how numbers get traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Built by    : {{REQUESTED_BY}}
+    Generator   : tools/build_cube_dashboard.py
+    Repo        : tun
+    Made with   : Tún — tun.community
+
+  Single-file dashboard backed by a dense OLAP cube.
+
+  The script element with id="cube" below is gzipped, base64-encoded typed-array data:
+  one cell per combination of the filterable dimensions. The browser inflates it
+  with the native DecompressionStream — no library, and it works from a file://
+  page, which is what makes this portable out of SharePoint/OneDrive.
+
+  The encoding is documented in docs/07-portable-cube.md; the builder and this file
+  must agree byte for byte.
+-->
+<style>
+/* Palette, inlined at build time by tools/build_cube_dashboard.py through tools/tun_tokens.py:
+   core's neutral palette (tools/tokens/palette-neutral.css) unless a brand plugin or
+   TUN_PALETTE supplies one. Only the --palette-* slots are used here. */
+{{TOKEN_CSS}}
+/* --gr/--gr2 come from the palette. The greys are plain neutrals chosen for this
+   template, not taken from any brand. */
+:root{--gr:var(--palette-primary);--gr2:var(--palette-primary-dark);--ink:#1c1c1c;--mut:#6b7280;--bd:#e3e6e8;--bg:#f7f8f9}
+*{box-sizing:border-box}
+/* Accessibility (docs/09-usability-and-navigation-principles.md §1/§5, WCAG 2.2 2.1.1
+   and 2.4.7): visible keyboard focus + reduced motion honoured. Confirmed cheap and safe
+   — an unrelated external dashboard has both with no visible downside. */
+:focus-visible{outline:2px solid var(--gr);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:#fff;border-bottom:1px solid var(--bd);padding:1rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
+h1{font-size:1.15rem;margin:0;font-weight:650}
+.sub{color:var(--mut);font-size:.8rem}
+main{padding:1.25rem 1.5rem;max-width:1400px;margin:0 auto}
+.panel{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem}
+.panel h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 .8rem;font-weight:650}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.fg label{display:block;font-size:.72rem;font-weight:650;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.chip{border:1px solid var(--bd);background:#fff;border-radius:14px;padding:.2rem .6rem;font-size:.78rem;cursor:pointer;user-select:none;transition:.12s}
+.chip:hover{border-color:var(--gr)}
+.chip.on{background:var(--gr);border-color:var(--gr);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:.9rem 1rem}
+.kpi .v{font-size:1.5rem;font-weight:680;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:.72rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-top:.15rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--bd);font-size:.83rem}
+th{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:650}
+td.n,th.n{text-align:right}
+.bar{fill:var(--gr)}.bar:hover{fill:var(--gr2)}
+.dot{pointer-events:all}
+.axis{stroke:var(--bd);stroke-width:1}.gl{stroke:#eef1f2;stroke-width:1}
+.lbl{font-size:10px;fill:var(--mut)}
+.vlbl{font-size:10px;fill:var(--mut);font-variant-numeric:tabular-nums}
+button.rst,select.ms{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.78rem;cursor:pointer;font-family:inherit}
+button.rst:hover{border-color:var(--gr);color:var(--gr)}
+footer{padding:.5rem 1.5rem 2rem;max-width:1400px;margin:0 auto;
+  font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);display:flex;gap:1.1rem;flex-wrap:wrap}
+footer b{color:var(--gr2);font-weight:650}
+#boot{padding:3rem 1.5rem;text-align:center;color:var(--mut)}
+#boot.err{color:#b00020}
+</style></head><body>
+<div id="boot">dekoder datasett…</div>
+<div id="app" hidden>
+<header>
+  <h1 id="title"></h1><span class="sub" id="scope"></span>
+  <span style="flex:1"></span>
+  <select class="ms" id="measure" aria-label="Mål"></select>
+  <button class="rst" id="reset">Nullstill filtre</button>
+</header>
+<main>
+  <div class="panel"><h2>Filtre</h2><div class="filters" id="filters"></div></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="panel" id="trendPanel" style="margin-top:1rem" hidden><h2 id="trendTitle"></h2><div id="trend"></div></div>
+  <div class="grid2" id="charts"></div>
+  <div class="panel" id="tablePanel"><h2>Detaljer</h2><div id="tbl"></div></div>
+</main>
+<footer id="perf"></footer>
+</div>
+
+<script id="cube" type="application/gzip;base64">{{DATA}}</script>
+<script>
+"use strict";
+const META = {{META}};
+const NB = n => n.toLocaleString("nb-NO");
+const T = () => performance.now();
+
+/* ---- kompakt tallformat, med enhet ---- */
+function fmt(v, unit){
+  const a = Math.abs(v), u = unit ? " " + unit : "";
+  if (a >= 1e9) return (v/1e9).toFixed(2).replace(".", ",") + " mrd" + u;
+  if (a >= 1e6) return (v/1e6).toFixed(1).replace(".", ",") + " mill." + u;
+  if (a >= 1e4) return NB(Math.round(v/1e3)) + "k" + u;
+  return NB(Math.round(v * 100) / 100) + u;
+}
+
+/* ---- dekoding: base64 -> gunzip -> typed arrays over kubens minne ---- */
+async function loadCube(){
+  const t0 = T();
+  const b64 = document.getElementById("cube").textContent.trim();
+  const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const t1 = T();
+  const ds = new DecompressionStream("gzip");
+  const w = ds.writable.getWriter(); w.write(bin); w.close();
+  const buf = await new Response(ds.readable).arrayBuffer();
+  const t2 = T();
+
+  const N = META.n, cols = [];
+  let off = 0;
+  for (const m of META.measures){
+    if (m.dtype === "d"){
+      // Float64Array needs 8-byte alignment; slice rather than assume it
+      cols.push(off % 8 ? new Float64Array(buf.slice(off, off + N*8)) : new Float64Array(buf, off, N));
+      off += N * 8;
+    } else {
+      cols.push(new Int32Array(buf, off, N)); off += N * 4;
+    }
+  }
+  const cnt = new Uint32Array(buf, off, N);
+  return {cols, cnt, t_b64: t1-t0, t_gunzip: t2-t1, bytes_b64: b64.length, bytes_raw: buf.byteLength};
+}
+
+/* ---- kubens geometri ---- */
+const D = META.dims, S = META.shape;
+const STRIDE = (() => { const s = new Array(S.length); s[S.length-1] = 1;
+  for (let i = S.length-2; i >= 0; i--) s[i] = s[i+1] * S[i+1]; return s; })();
+const sel = {}; D.forEach(d => sel[d] = new Set());
+const active = d => { const i = D.indexOf(d);
+  return sel[d].size ? [...sel[d]].sort((a,b)=>a-b) : Array.from({length: S[i]}, (_,k) => k); };
+
+/* ---- aggregering: én pass over de valgte cellene ----
+   Gruppering skjer på plass i en tett utmatrise; ingen hashing, ingen allokering
+   per celle. Med <= 2 mill. celler er et fullt sveip raskere enn et musklikk. */
+let CUBE = null;
+function rollup(groupDim, mi){
+  const gi = D.indexOf(groupDim);
+  const lists = D.map(active);
+  const src = CUBE.cols[mi], scale = META.measures[mi].scale || 1;
+  const out = new Float64Array(S[gi]), outN = new Float64Array(S[gi]);
+  let tot = 0, totN = 0, cells = 0;
+  const rec = (k, base, gidx) => {
+    if (k === D.length){
+      const c = CUBE.cnt[base]; if (!c) return;
+      const v = src[base] / scale;
+      out[gidx] += v; outN[gidx] += c; tot += v; totN += c; cells++;
+      return;
+    }
+    const st = STRIDE[k];
+    for (const i of lists[k]) rec(k+1, base + i*st, k === gi ? i : gidx);
+  };
+  rec(0, 0, 0);
+  return {out, outN, tot, totN, cells};
+}
+
+/* ---- SVG ---- */
+const esc = s => String(s).replace(/[<>&"]/g, m => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[m]));
+function barChart(labels, values, unit){
+  const rowH = 24, W = 560, padL = 118, padR = 66, H = labels.length*rowH + 8;
+  const max = Math.max(...values, 1), bw = W - padL - padR;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">`;
+  labels.forEach((l, i) => { const y = i*rowH + 4, w = Math.max(1, values[i]/max*bw);
+    s += `<text class="lbl" x="${padL-8}" y="${y+13}" text-anchor="end">${esc(l)}</text>`
+      +  `<rect class="bar" x="${padL}" y="${y+3}" width="${w.toFixed(1)}" height="${rowH-9}" rx="2">`
+      +  `<title>${esc(l)}: ${fmt(values[i], unit)}</title></rect>`
+      +  `<text class="vlbl" x="${padL+w+6}" y="${y+13}">${fmt(values[i], "")}</text>`; });
+  return s + "</svg>";
+}
+function lineChart(labels, values, unit){
+  const W = 1120, H = 230, padL = 62, padR = 14, padT = 12, padB = 34;
+  const n = labels.length, max = Math.max(...values, 1);
+  const x = i => padL + (n < 2 ? (W-padL-padR)/2 : i*(W-padL-padR)/(n-1));
+  const y = v => H - padB - (v/max)*(H-padT-padB);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">`;
+  for (let g = 0; g <= 4; g++){ const v = max*g/4, yy = y(v);
+    s += `<line class="gl" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`
+      +  `<text class="vlbl" x="${padL-8}" y="${yy+3}" text-anchor="end">${fmt(v, "")}</text>`; }
+  s += `<line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>`;
+  const pts = values.map((v,i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  s += `<polygon fill="var(--gr)" opacity=".08" points="${padL},${H-padB} ${pts} ${x(n-1).toFixed(1)},${H-padB}"/>`
+    +  `<polyline fill="none" stroke="var(--gr)" stroke-width="2" points="${pts}"/>`;
+  if (n <= 60) values.forEach((v,i) => { s += `<circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" `
+    + `fill="#fff" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });
+  const step = Math.ceil(n/12);
+  labels.forEach((l,i) => { if (i % step) return;
+    s += `<text class="lbl" x="${x(i).toFixed(1)}" y="${H-padB+16}" text-anchor="middle">${esc(l)}</text>`; });
+  return s + "</svg>";
+}
+
+/* ---- oppbygging ---- */
+const TIME = META.time_dim, CHART_DIMS = D.filter(d => d !== TIME);
+let MI = 0;
+
+function buildChrome(){
+  document.getElementById("title").textContent = META.title;
+  document.getElementById("measure").innerHTML = META.measures
+    .map((m,i) => `<option value="${i}">${esc(m.agg === "count" ? "antall rader" : m.field)}</option>`).join("");
+  document.getElementById("measure").hidden = META.measures.length < 2;
+  document.getElementById("measure").onchange = e => { MI = +e.target.value; render(); };
+
+  document.getElementById("filters").innerHTML = D.map(d =>
+    `<div class="fg"><label>${esc(d)}</label><div class="chips" data-dim="${esc(d)}">`
+    + META.labels[d].map((l,i) => `<span class="chip" data-i="${i}">${esc(l)}</span>`).join("")
+    + `</div></div>`).join("");
+  document.getElementById("filters").addEventListener("click", e => {
+    const c = e.target.closest(".chip"); if (!c) return;
+    const dim = c.parentElement.dataset.dim, i = +c.dataset.i;
+    sel[dim].has(i) ? sel[dim].delete(i) : sel[dim].add(i);
+    c.classList.toggle("on"); render();
+  });
+  document.getElementById("reset").onclick = () => { D.forEach(d => sel[d].clear());
+    document.querySelectorAll(".chip.on").forEach(c => c.classList.remove("on")); render(); };
+  if (TIME){ document.getElementById("trendPanel").hidden = false;
+    document.getElementById("trendTitle").textContent = "Utvikling per " + TIME; }
+}
+
+function render(){
+  const t0 = T();
+  const meas = META.measures[MI], unit = meas.unit;
+  const base = rollup(TIME || D[0], MI);
+  const per = {}; for (const d of CHART_DIMS) per[d] = rollup(d, MI);
+  const ms = T() - t0;
+
+  const kpis = [[meas.agg === "count" ? "Antall rader" : meas.field, fmt(base.tot, unit)],
+                ["Rader i utvalg", NB(base.totN)]];
+  if (meas.agg === "sum") kpis.push(["Snitt per rad", fmt(base.tot / Math.max(1, base.totN), unit)]);
+  kpis.push(["Kubeceller lest", NB(base.cells)]);
+  document.getElementById("kpis").innerHTML = kpis
+    .map(([l,v]) => `<div class="kpi"><div class="v">${v}</div><div class="l">${esc(l)}</div></div>`).join("");
+
+  if (TIME){ const ti = active(TIME);
+    document.getElementById("trend").innerHTML =
+      lineChart(ti.map(i => META.labels[TIME][i]), ti.map(i => base.out[i]), unit); }
+
+  const ranked = d => { const r = per[d], idx = active(d).sort((a,b) => r.out[b] - r.out[a]);
+    return [idx, idx.map(i => META.labels[d][i]), idx.map(i => r.out[i])]; };
+  document.getElementById("charts").innerHTML = CHART_DIMS.slice(0, 2).map(d => {
+    const [, l, v] = ranked(d);
+    return `<div class="panel"><h2>Per ${esc(d)}</h2>${barChart(l, v, unit)}</div>`; }).join("");
+
+  const rest = CHART_DIMS.slice(2);
+  const tp = document.getElementById("tablePanel");
+  tp.hidden = rest.length === 0;
+  if (rest.length) document.getElementById("tbl").innerHTML = rest.map(d => {
+    const [idx, l, v] = ranked(d), r = per[d];
+    return `<table style="margin-bottom:1rem"><thead><tr><th>${esc(d)}</th>`
+      + `<th class="n">${esc(meas.agg === "count" ? "antall" : meas.field)}</th>`
+      + `<th class="n">rader</th><th class="n">snitt</th></tr></thead><tbody>`
+      + idx.map((i, k) => `<tr><td>${esc(l[k])}</td><td class="n">${fmt(v[k], "")}</td>`
+        + `<td class="n">${NB(r.outN[i])}</td>`
+        + `<td class="n">${fmt(v[k] / Math.max(1, r.outN[i]), "")}</td></tr>`).join("")
+      + `</tbody></table>`; }).join("");
+
+  document.getElementById("scope").textContent =
+    `${NB(META.source_rows)} rader aggregert til ${NB(META.n)} celler · ingen server`;
+  document.getElementById("perf").innerHTML =
+      `<span>kilderader <b>${NB(META.source_rows)}</b></span>`
+    + `<span>kubeceller <b>${NB(META.n)}</b></span>`
+    + `<span>data i fil <b>${(CUBE.bytes_b64/1e6).toFixed(2)} MB</b></span>`
+    + `<span>dekodet <b>${(CUBE.t_b64 + CUBE.t_gunzip).toFixed(0)} ms</b></span>`
+    + `<span>siste spørring <b>${ms.toFixed(1)} ms</b></span>`
+    + `<span>bygget ${esc(META.built)} av ${esc(META.built_by)} fra ${esc(META.source)}</span>`;
+  window.__LAST_MS__ = ms; window.__TOTAL__ = base.tot; window.__ROWS__ = base.totN;
+}
+
+(async () => {
+  try {
+    if (typeof DecompressionStream === "undefined")
+      throw new Error("nettleseren mangler DecompressionStream (krever Chrome/Edge 80+, Safari 16.4+)");
+    CUBE = await loadCube();
+    buildChrome();
+    document.getElementById("boot").hidden = true;
+    document.getElementById("app").hidden = false;
+    render();
+    window.__READY__ = true;
+  } catch (e) {
+    const b = document.getElementById("boot");
+    b.className = "err"; b.textContent = "Klarte ikke å laste data: " + e.message;
+    window.__READY__ = false;
+  }
+})();
+</script></body></html>

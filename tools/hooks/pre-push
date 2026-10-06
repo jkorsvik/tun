@@ -1,0 +1,63 @@
+#!/bin/sh
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# pre-push — refuse to push to the integration branch.
+#
+# Enabled by the same `python3 setup.py --hooks` that enables pre-commit: it sets
+# core.hooksPath to tools/hooks, and git finds every hook in there.
+#
+# Why this exists as well as the pre-commit guard
+# ----------------------------------------------
+# pre-commit refuses a commit made WHILE ON the integration branch. That is the common
+# mistake, but it is not the only one. All of these skip it entirely:
+#
+#     git push origin HEAD:main          (from any branch)
+#     git push origin feat/thing:main
+#     git push --force origin main
+#
+# The commit is fine in each case; the destination is not. Only a push-time hook sees
+# the destination, because only a push has one.
+#
+# This is defence in depth, not the real control. The real control is branch protection
+# on the forge, which applies to every clone and to the web UI. A local hook protects
+# exactly the machines that ran setup.py --hooks. If branch protection is enabled, this
+# hook becomes a faster, friendlier version of the same refusal, which is still worth
+# having: it fails before the network round trip and says what to do instead.
+set -eu
+
+PROTECTED=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null \
+            | sed 's|^origin/||')
+[ -n "${PROTECTED:-}" ] || PROTECTED=main
+
+# stdin: <local ref> <local sha> <remote ref> <remote sha>, one line per ref pushed.
+# A deletion has a local sha of all zeroes; it is still a write to the branch, so it is
+# refused too. Reading stdin means this sees exactly what git is about to send, rather
+# than guessing from argv.
+blocked=0
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+    [ -n "${remote_ref:-}" ] || continue
+    case "$remote_ref" in
+        "refs/heads/$PROTECTED")
+            blocked=1
+            ;;
+    esac
+done
+
+if [ "$blocked" -eq 1 ]; then
+    echo "pre-push: BLOCKED — this push writes directly to '$PROTECTED'." >&2
+    echo >&2
+    echo "  Nothing reaches '$PROTECTED' except through a pull request." >&2
+    echo >&2
+    echo "  Push the branch instead, then open a PR:" >&2
+    echo "      git push -u origin \$(git branch --show-current)" >&2
+    echo "      gh pr create --base $PROTECTED --fill" >&2
+    echo >&2
+    echo "  A merge performed BY the forge when a PR is merged does not come through" >&2
+    echo "  this hook, so this refusal never blocks a legitimate merge." >&2
+    echo >&2
+    echo "  'git push --no-verify' bypasses this." >&2
+    exit 1
+fi
+
+exit 0

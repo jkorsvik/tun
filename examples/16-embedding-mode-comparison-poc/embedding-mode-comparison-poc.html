@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<!--
+  PROVENANCE
+    Source data : none, synthetic demonstration
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Generator   : examples/16-embedding-mode-comparison-poc/build_embedding_comparison_poc.py
+-->
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16 — Embedding-modus sammenligning</title>
+<style>
+:root{
+  --ink:#182430; --ink2:#5b6b7a; --line:#d8dee5; --bg:#f4f6f9; --panel:#fff;
+  --ok:#1F7A5C; --ok-bg:#d7ece3; --bad:#C9372C; --bad-bg:#fbeded;
+  --warn:#9a3412; --warn-bg:#fff7ed;
+}
+*{box-sizing:border-box;}
+body{font-family:-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);
+  max-width:64rem;margin:0 auto;padding:1.5rem;line-height:1.55;}
+h1{font-size:1.25rem;margin-bottom:0.25rem;}
+.intro{background:var(--panel);border:1px solid var(--line);border-radius:0.5rem;padding:1rem 1.25rem;
+  font-size:0.9rem;color:var(--ink2);margin-bottom:1.5rem;}
+.intro code{background:#eef1f4;padding:0.1rem 0.3rem;border-radius:0.25rem;color:var(--ink);}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(20rem,1fr));gap:1rem;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:0.5rem;padding:1.25rem;}
+.card h2{margin-top:0;font-size:1rem;}
+.tag{display:inline-block;font-size:0.7rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.03em;padding:0.15rem 0.5rem;border-radius:1rem;margin-bottom:0.5rem;}
+.tag.recommended{background:var(--ok-bg);color:var(--ok);}
+.tag.risky{background:var(--bad-bg);color:var(--bad);}
+.tag.safe{background:var(--ok-bg);color:var(--ok);}
+.tag.paired{background:var(--warn-bg);color:var(--warn);}
+.status{font-weight:700;padding:0.5rem 0.75rem;border-radius:0.375rem;margin:0.5rem 0;font-size:0.85rem;}
+.status.pending{background:#f0f0f0;color:var(--ink2);}
+.status.ok{background:var(--ok-bg);color:var(--ok);}
+.status.fail{background:var(--bad-bg);color:var(--bad);}
+.content{font-size:0.85rem;white-space:pre-wrap;border-top:1px solid var(--line);padding-top:0.75rem;margin-top:0.5rem;}
+footer{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid var(--line);padding-top:0.75rem;}
+</style>
+</head>
+<body>
+<h1>16 — Embedding-modus sammenligning</h1>
+<div class="intro">
+  Diagnoseverktøy, ikke et designmønster å kopiere. Bygget for å feilsøke ett
+  symptom: en fil viste
+  feilaktig "ingen data funnet" åpnet via SharePoints
+  innebygde filforhåndsvisning (enkeltklikk "hurtigvisning" i dokumentbiblioteket
+  — ikke nedlasting, ikke <code>/preview</code> embed.aspx-vieweren fra rad 4).
+  <br><br>
+  <strong>Slik brukes filen:</strong> last den opp til et SharePoint-bibliotek,
+  åpne den på nøyaktig samme måte som forårsaket problemet (ett enkelt klikk,
+  ikke "Åpne", ikke nedlasting) — og les av hvilke ruter under som ble grønne.
+  Alle fire ruter viser IDENTISK tekstinnhold; kun embedding-metoden og
+  linjeformateringen i JavaScript-en varierer.
+  <br><br>
+  <strong>Oppdatering:</strong> ruteforsøket under viste at BÅDE rute A
+  og B kjører helt fint — flerlinjes strengsammensetting var aldri årsaken (den
+  første, forhastede konklusjonen er tilbakevist, se rad 23 i
+  <code>docs/01-tenant-constraints.md</code>). Bisecting av selve sideskallet
+  (ikke dataene) fant tre andre, uavhengige, faktisk bekreftede årsaker — se rad
+  24–26 i samme dokument: (1) bokstavelig "&lt;script"-tekst hvor som helst i
+  filen, selv i en kommentar, slår av all skriptkjøring for hele siden, (2)
+  fragment-navigasjon (<code>&lt;a href="#..."&gt;</code>) er blokkert i samme
+  forhåndsvisning — bruk et JavaScript-klikklytter i stedet, (3)
+  <code>position:sticky</code> og <code>position:fixed</code> er begge upålitelige
+  der — bruk et ikke-rullende app-skall med én dedikert rullende beholder i
+  stedet.
+</div>
+<div class="grid">
+
+  <div class="card">
+    <span class="tag recommended">Anbefalt mønster</span>
+    <h2>A — Embedded, ettlinjes data</h2>
+    <div id="statusA" class="status pending">Laster …</div>
+    <div id="panelA" class="content"></div>
+  </div>
+
+  <div class="card">
+    <span class="tag safe">Mistanke tilbakevist</span>
+    <h2>B — Embedded, flerlinjes strengsammensetting</h2>
+    <div id="statusB" class="status pending">Laster …</div>
+    <div id="panelB" class="content"></div>
+  </div>
+
+  <div class="card">
+    <span class="tag safe">Alltid trygt</span>
+    <h2>C — Embedded, ingen JavaScript nødvendig</h2>
+    <div class="status ok">&#10003; Statisk HTML — krever ingen script</div>
+    <div class="content">Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning; den mistanken er senere tilbakevist (se rad 23 i tenant-constraints.md).
+
+Andre avsnitt følger her. Hvis dette avsnittet vises i alle fire rutene, virker ingenting av det denne siden tester å skille mellom — se README.md.</div>
+  </div>
+
+  <div class="card">
+    <span class="tag paired">Paired</span>
+    <h2>D — Paired (<code>script src</code>)</h2>
+    <div id="statusD" class="status pending">Laster …</div>
+    <div id="panelD" class="content"></div>
+  </div>
+
+</div>
+<footer>
+  Data identisk i alle fire ruter (se <code>build_embedding_comparison_poc.py</code>,
+  <code>TEXT</code>-konstanten). Rute D krever <code>paired-data.js</code> i samme mappe
+  — kopier begge filer sammen, aldri bare HTML-filen alene.
+</footer>
+
+<!-- ====== Rute A: embedded, ettlinjes ====== -->
+<script>window.PANEL_A_DATA = "Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning; den mistanken er senere tilbakevist (se rad 23 i tenant-constraints.md).\n\nAndre avsnitt følger her. Hvis dette avsnittet vises i alle fire rutene, virker ingenting av det denne siden tester å skille mellom — se README.md.";</script>
+
+<!-- ====== Rute B: embedded, flerlinjes strengsammensetting (den bekreftede risikoen) ====== -->
+<script>
+window.PANEL_B_DATA =
+    "Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning; den mistanken er senere tilbakevist (se rad 23 i tenant-constraints.md).\n\nAndre avsnitt følger her. " +
+    "Hvis dette avsnittet vises i alle fire rutene, virker ingenting av det denne siden tester å skille mellom — se README.md.";
+</script>
+
+<!-- ====== Rute D: paired, egen fil ====== -->
+<script src="./paired-data.js"></script>
+
+<!-- ====== Felles rendering-logikk for alle tre JS-avhengige ruter ====== -->
+<script>
+function paint(id, statusId, value) {
+  var el = document.getElementById(id);
+  var st = document.getElementById(statusId);
+  if (value) {
+    el.textContent = value;
+    st.textContent = "\u2713 JavaScript kj\u00f8rte, data lastet korrekt";
+    st.className = "status ok";
+  } else {
+    st.textContent = "\u2717 Data IKKE lastet \u2014 samme symptom som i den opprinnelige feilen";
+    st.className = "status fail";
+  }
+}
+paint("panelA", "statusA", window.PANEL_A_DATA);
+paint("panelB", "statusB", window.PANEL_B_DATA);
+paint("panelD", "statusD", window.PANEL_D_DATA);
+</script>
+</body>
+</html>

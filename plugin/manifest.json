@@ -1,0 +1,88 @@
+{
+  "schema": "raicode.marketplace/v1",
+  "name": "tun-standalone-artefacts",
+  "version": "0.1.0",
+  "title": "Tún: standalone artefacts",
+  "description": "Turn any data file into an interactive artefact that is just a file: filters, charts, sortable tables, shareable through any substrate with no licence, no workspace and no admin approval. Works offline, opens for anyone who can open the folder, and can be sent outside the organisation. Paired mode keeps a small artefact next to a data file that syncs, so replacing the data updates it for everyone with no rebuild. Includes skills to build, refresh, verify, publish, and move reports off the incumbent tools.",
+  "license": "AGPL-3.0-or-later with the Tún Artefact Exception v1.1 (see COPYING.ARTEFACT-EXCEPTION)",
+  "tags": [
+    "dashboards",
+    "reporting",
+    "visualisation",
+    "portable",
+    "standalone",
+    "portable-html"
+  ],
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "icon": "cover.png",
+  "contents": {
+    "skills": [
+      {
+        "name": "dashboard-help",
+        "path": "skills/dashboard-help"
+      },
+      {
+        "name": "dashboard-new",
+        "path": "skills/dashboard-new"
+      },
+      {
+        "name": "dashboard-data",
+        "path": "skills/dashboard-data"
+      },
+      {
+        "name": "dashboard-verify",
+        "path": "skills/dashboard-verify"
+      },
+      {
+        "name": "dashboard-publish",
+        "path": "skills/dashboard-publish"
+      },
+      {
+        "name": "powerbi-escape",
+        "path": "skills/powerbi-escape"
+      },
+      {
+        "name": "writing-for-agents",
+        "path": "skills/dev/writing-for-agents"
+      },
+      {
+        "name": "hotshot",
+        "path": "skills/dev/hotshot"
+      },
+      {
+        "name": "magnus-review",
+        "path": "skills/dev/magnus-review"
+      }
+    ],
+    "mcp_servers": [],
+    "scripts": [
+      {
+        "name": "build_dashboard",
+        "path": "tools/build_dashboard.py"
+      },
+      {
+        "name": "verify_dashboard",
+        "path": "tools/verify_dashboard.py"
+      }
+    ]
+  },
+  "requires": {
+    "python": ">=3.9",
+    "mcp_servers": [
+      "ms365"
+    ],
+    "optional_python_packages": [
+      "playwright"
+    ]
+  },
+  "tiers": {
+    "note": "This manifest describes CORE only. Organisation-specific material lives in separate private plugins under plugins/<id>/ and must not be packaged with core; see docs/21-plugin-architecture.md for the core / community / third-party split and docs/22-plugin-contract.md for the manifest shape. A packaging step must refuse any plugin whose manifest sets private: true. Core names no plugin by id, which is invariant 1 of the contract.",
+    "excludes": [
+      "plugins/"
+    ]
+  }
+}

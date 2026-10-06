@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tún: et sted der informasjon finner hjem</title>
+<!--
+  PROVENANCE  (ikke slett — dette er hvordan filen spores tilbake)
+    Artifact    : Tún, systemskisse og svar på delingsspørsmålet
+    Source data : Ingen datakilde. Ingen tall her er målinger av drift. Delingsradene
+                  er manuelle enhetstester, se docs/01-tenant-constraints.md rad 21, 22 og 27.
+    Built       : 2026-09-24, endret 2026-10-06 (SharePoint HTML-sider, ikke målt)
+    Built by    : hånd, fra en tavleskisse
+    Repo        : tun, examples/19-tun-pitch
+    Laget med   : Tún — tun.community
+
+  Denne filen har ingen eksterne avhengigheter: ingen CDN, ingen skrift utenfra,
+  ingen sporing, ingen kode som kjører. Den er ren HTML, CSS og SVG. Den virker
+  offline, fra en synkronisert mappe, og i overflater som nekter å kjøre kode.
+
+  SIKKERHET: alt innholdet under er lesbart for alle som kan åpne filen. En fil
+  kan ikke holde på en hemmelighet. Skal ulike lesere se ulikt innhold, må dette
+  ikke finnes som én delt kopi; del etter mappe og publikum før den lages.
+-->
+<style>
+  :root{
+    --ink:#11221c; --muted:#4a5f57; --line:#c9d6d0; --bg:#fbfcfb; --card:#fff;
+    --sun:#e8a33d; --sun-soft:#fbe6c4; --core:#1c6b52; --warn:#8c3b2e;
+    --substrate:#e8eeeb; --kill:#f3e3e0;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:32px 20px 64px}
+  header{border-bottom:2px solid var(--core);padding-bottom:18px;margin-bottom:28px}
+  .eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  h1{font-size:30px;line-height:1.22;margin:0 0 10px;letter-spacing:-.01em}
+  .lede{font-size:18px;color:var(--muted);margin:0;max-width:62ch}
+  h2{font-size:21px;margin:38px 0 12px;letter-spacing:-.01em}
+  h3{font-size:16px;margin:22px 0 6px}
+  p{max-width:70ch}
+  figure{margin:24px 0 8px}
+  svg{width:100%;height:auto;display:block;background:var(--card);
+      border:1px solid var(--line);border-radius:10px}
+  figcaption{font-size:13.5px;color:var(--muted);margin-top:10px;max-width:70ch}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+  th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  td.v{white-space:nowrap;font-weight:600}
+  .ok{color:var(--core)} .no{color:var(--warn)} .hm{color:#8a6b1f}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0}
+  .card.hard{border-color:var(--warn);background:#fdf6f4}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:16px 0}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .step b{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--core);margin-bottom:6px}
+  .step p{margin:0;font-size:14.5px;color:var(--muted);max-width:none}
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;
+       background:var(--substrate);padding:1px 5px;border-radius:4px}
+  @media print{body{background:#fff}.wrap{max-width:none}}
+  /* On a phone a four-column table cannot fit, and this page's whole argument is that it
+     works on a phone. Stack each row into a card instead. CSS only, so the fix survives a
+     surface that refuses to run anything. */
+  @media (max-width:640px){
+    thead{display:none}
+    table,tbody,tr,td{display:block;width:auto}
+    tr{border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:0 0 10px;background:var(--card)}
+    td{border:0;padding:3px 0}
+    td:first-child{font-weight:600;margin-bottom:5px}
+    td:nth-child(2)::before{content:"PC: ";color:var(--muted);font-weight:600}
+    td:nth-child(3)::before{content:"Mobil: ";color:var(--muted);font-weight:600}
+    td:nth-child(4){color:var(--muted);font-size:14px;margin-top:5px}
+    td.v{white-space:normal;display:inline-block;margin-right:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Systemskisse · åpen kjerne</p>
+  <h1>Tún: et sted der informasjon finner hjem</h1>
+  <p class="lede">Ett felles verktøysett for informasjon som skal deles: dashbord,
+  rapporter, lysbilder, diagrammer og kalkulatorer. Ut kommer én fil som virker alene.</p>
+</header>
+
+<h2>Hele idéen på ett bilde</h2>
+
+<figure>
+<svg viewBox="0 0 1000 660" role="img"
+     aria-label="Systemskisse: fellesskapet og tilbakemelding går inn i Tún-kjernen av skills og Markdown. Ut kommer én HTML- og CSS-fil. Filen erstatter Power BI, PowerPoint, Excel og Word til dette formålet, og legges på hvilken som helst vert.">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a5f57"/>
+    </marker>
+    <marker id="ac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1c6b52"/>
+    </marker>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#fbe6c4" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#fbe6c4" stop-opacity=".85"/>
+    </radialGradient>
+    <g id="person">
+      <circle cx="0" cy="-11" r="5.2" fill="none" stroke="#4a5f57" stroke-width="2"/>
+      <path d="M0,-6 V6 M-7,0 H7 M0,6 L-6,16 M0,6 L6,16" fill="none" stroke="#4a5f57"
+            stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <!-- substrate: the ground everything is put on -->
+  <path d="M0,532 C120,518 210,546 330,534 C450,522 540,550 660,538 C780,526 880,550 1000,538 L1000,660 L0,660 Z"
+        fill="#e8eeeb"/>
+  <path d="M0,532 C120,518 210,546 330,534 C450,522 540,550 660,538 C780,526 880,550 1000,538"
+        fill="none" stroke="#9db3aa" stroke-width="2"/>
+  <text x="26" y="576" font-size="13" font-weight="700" fill="#3c5148" letter-spacing=".08em">VERTEN ER VALGFRI</text>
+  <text x="26" y="600" font-size="14" fill="#4a5f57">SharePoint · OneDrive · Teams · GCP · Azure · AWS</text>
+  <text x="26" y="622" font-size="14" fill="#4a5f57">Cloudflare · Vercel · Firebase · en minnepinne · en e-post</text>
+
+  <!-- the sun: the core -->
+  <circle cx="366" cy="322" r="150" fill="url(#glow)"/>
+  <g stroke="var(--sun)" stroke-width="3" stroke-linecap="round" opacity=".75">
+    <path d="M366,168 V138"/><path d="M366,476 V506"/>
+    <path d="M212,322 H182"/><path d="M520,322 H550"/>
+    <path d="M257,213 L236,192"/><path d="M475,431 L496,452"/>
+    <path d="M257,431 L236,452"/><path d="M475,213 L496,192"/>
+    <path d="M311,181 L299,153"/><path d="M421,463 L433,491"/>
+    <path d="M225,377 L197,389"/><path d="M507,267 L535,255"/>
+  </g>
+  <circle cx="366" cy="322" r="96" fill="#fff" stroke="var(--sun)" stroke-width="3"/>
+  <text x="366" y="308" text-anchor="middle" font-size="34" font-weight="700" fill="#1c6b52">TÚN</text>
+  <text x="366" y="335" text-anchor="middle" font-size="14" fill="#4a5f57">skills</text>
+  <text x="366" y="356" text-anchor="middle" font-size="14" fill="#4a5f57">+ Markdown</text>
+  <text x="366" y="446" text-anchor="middle" font-size="12.5" font-weight="700"
+        fill="#3c5148" letter-spacing=".06em">ÅPEN KJERNE</text>
+
+  <!-- community, top left -->
+  <path d="M96,116 h192 a30,30 0 0 1 0,60 h-192 a30,30 0 0 1 0,-60 z"
+        fill="#fff" stroke="#9db3aa" stroke-width="2"/>
+  <text x="192" y="142" text-anchor="middle" font-size="15" font-weight="700" fill="#1c6b52">tun.community</text>
+  <text x="192" y="162" text-anchor="middle" font-size="12.5" fill="#4a5f57">skills · maler · kontroller</text>
+  <use href="#person" x="120" y="212"/>
+  <text x="120" y="248" text-anchor="middle" font-size="11.5" fill="#4a5f57">bidrar</text>
+
+  <!-- feedback, top middle -->
+  <rect x="330" y="112" width="132" height="52" rx="8" fill="#fff" stroke="#9db3aa" stroke-width="2"/>
+  <text x="396" y="134" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1c6b52">tilbakemelding</text>
+  <text x="396" y="152" text-anchor="middle" font-size="11.5" fill="#4a5f57">fra den som leste</text>
+
+  <!-- two-way: community and core feed each other -->
+  <path d="M240,182 C268,214 296,232 300,256" fill="none" stroke="#1c6b52" stroke-width="2.4"
+        marker-start="url(#ac)" marker-end="url(#ac)"/>
+  <path d="M396,164 V222" fill="none" stroke="#4a5f57" stroke-width="2.2" marker-end="url(#a)"/>
+
+  <!-- artefact out, to the right -->
+  <path d="M462,300 H556" fill="none" stroke="#1c6b52" stroke-width="2.8" marker-end="url(#ac)"/>
+  <rect x="560" y="246" width="212" height="112" rx="10" fill="#fff" stroke="#1c6b52" stroke-width="2.4"/>
+  <text x="666" y="276" text-anchor="middle" font-size="17" font-weight="700" fill="#1c6b52">HTML + CSS</text>
+  <text x="666" y="300" text-anchor="middle" font-size="13.5" fill="#4a5f57">én fil, ingen server</text>
+  <text x="666" y="320" text-anchor="middle" font-size="13.5" fill="#4a5f57">ingen lisens for å åpne</text>
+  <text x="666" y="342" text-anchor="middle" font-size="13.5" fill="#4a5f57">virker uten nett</text>
+
+  <!-- the killbox -->
+  <rect x="800" y="96" width="176" height="130" rx="10" fill="#f3e3e0" stroke="#8c3b2e" stroke-width="2"/>
+  <text x="888" y="122" text-anchor="middle" font-size="13" font-weight="700"
+        fill="#8c3b2e" letter-spacing=".06em">KILLBOX</text>
+  <text x="888" y="148" text-anchor="middle" font-size="13.5" fill="#6b3229">Power BI-lisensen</text>
+  <text x="888" y="168" text-anchor="middle" font-size="13.5" fill="#6b3229">PPTX på e-post</text>
+  <text x="888" y="188" text-anchor="middle" font-size="13.5" fill="#6b3229">Excel-arket</text>
+  <text x="888" y="208" text-anchor="middle" font-size="13.5" fill="#6b3229">Word-rapporten</text>
+  <path d="M742,250 C790,232 800,226 812,222" fill="none" stroke="#8c3b2e" stroke-width="2.4"
+        marker-end="url(#a)" stroke-dasharray="6 4"/>
+  <text x="792" y="248" font-size="11.5" fill="#8c3b2e">erstatter</text>
+
+  <!-- artefact goes down onto the substrate -->
+  <path d="M666,362 V520" fill="none" stroke="#1c6b52" stroke-width="2.6" marker-end="url(#ac)"/>
+  <text x="678" y="440" font-size="12.5" fill="#4a5f57">legges hvor som helst</text>
+  <text x="678" y="458" font-size="12.5" fill="#4a5f57">mappen er adgangskontrollen</text>
+
+  <!-- readers -->
+  <use href="#person" x="878" y="470"/>
+  <use href="#person" x="922" y="470"/>
+  <text x="900" y="506" text-anchor="middle" font-size="11.5" fill="#4a5f57">leser, åpner, svarer</text>
+  <path d="M902,450 C958,428 986,384 986,306 L986,70 C986,60 978,52 968,52 L456,52
+           C446,52 438,60 438,70 L438,106"
+        fill="none" stroke="#9db3aa" stroke-width="1.8" stroke-dasharray="4 5"
+        marker-end="url(#a)"/>
+  <text x="706" y="44" text-anchor="middle" font-size="12" fill="#7d958b">svaret går tilbake</text>
+
+  <!-- author -->
+  <use href="#person" x="196" y="372"/>
+  <text x="196" y="408" text-anchor="middle" font-size="11.5" fill="#4a5f57">skriver Markdown</text>
+</svg>
+<figcaption>Kjernen er åpen og felles. Fellesskapet og tilbakemeldingene gjør den bedre.
+Ut av den kommer én fil, ikke et system å drifte. Filen legges der arbeidet allerede
+ligger, og mappen du legger den i er adgangskontrollen.</figcaption>
+</figure>
+
+<h2>Prosessen, fire steg</h2>
+
+<div class="grid">
+  <div class="step"><b>1 · Du skriver</b><p>Markdown og en skill. Ikke et verktøy å lære,
+  et dokument å skrive.</p></div>
+  <div class="step"><b>2 · Tún bygger</b><p>Én HTML-fil med alt inni: tall, stil, figurer.
+  Ingen server, ingen pakkebehandler, ingen lisens.</p></div>
+  <div class="step"><b>3 · Du legger den et sted</b><p>Der arbeidet allerede ligger.
+  Rettighetene på mappen er adgangskontrollen; filen arver dem.</p></div>
+  <div class="step"><b>4 · Noen leser og svarer</b><p>Svaret gjør neste versjon bedre,
+  og skills som virket, går tilbake til fellesskapet.</p></div>
+</div>
+
+<h2>«Men hvordan deler jeg en HTML-fil med én kollega?»</h2>
+
+<p>Dette er det riktige spørsmålet, og det har et målt svar. Filen må <strong>ikke</strong>
+hostes et eget sted med egen adgangsstyring. Adgangsstyringen finnes allerede: den er
+rettighetene på mappen eller på lenken. Det som svikter, er ikke filen, men
+<strong>forhåndsvisningen</strong>: en vedleggsvisning er ikke en nettleser.</p>
+
+<p>Alle radene under er manuelle tester på ekte enheter, ikke antakelser.
+Det viktigste funnet er kontraintuitivt: <strong>delingsveien avgjør, ikke enheten</strong>.
+Samme fil, samme telefon, tre delingsveier, tre ulike utfall.</p>
+
+<table>
+  <thead><tr><th>Delingsvei</th><th>PC</th><th>Mobil</th><th>Hva det betyr</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Lenke limt i en <strong>Teams-melding</strong>, åpnet via Teams' eget forhåndsvisningskort</td>
+      <td class="v ok">virker</td><td class="v ok">virker</td>
+      <td>Den eneste ruten som er bekreftet å virke på mobil. Bruk denne.</td>
+    </tr>
+    <tr>
+      <td>Lenke fra OneDrive limt i en <strong>e-post</strong></td>
+      <td class="v ok">virker</td><td class="v no">inert</td>
+      <td>Siden viste seg, men ingenting reagerte på mobil.</td>
+    </tr>
+    <tr>
+      <td>Den <strong>rene tekstlenken</strong> Teams tegner under kortet</td>
+      <td class="v no">nei</td><td class="v no">nei</td>
+      <td>Viste kildekoden. Samme fil, samme melding, feil lenke.</td>
+    </tr>
+    <tr>
+      <td><strong>Rått vedlegg</strong> i en chat, åpnet i vedleggsvisningen</td>
+      <td class="v ok">virker</td><td class="v no">kildekode</td>
+      <td>Vedleggsvisningen er ikke en nettleser.</td>
+    </tr>
+    <tr>
+      <td>Samme vedlegg, «<strong>åpne i nettleser</strong>» på telefonen</td>
+      <td class="v ok">virker</td><td class="v ok">virker</td>
+      <td>Filen var portabel hele tiden. Ett trykk fikset det.</td>
+    </tr>
+    <tr>
+      <td>Filen lastet ned og åpnet <strong>fra disk</strong>, uten nett</td>
+      <td class="v ok">virker</td><td class="v ok">virker</td>
+      <td>Dette er grunntilfellet. Alt annet er en bonus.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>To praktiske konsekvenser. Del med <strong>lenke i en Teams-melding</strong>, ikke med
+et vedlegg og ikke med en rå lenke i en e-post. Og bygg filen slik at den virker
+<em>uten at noe kjøres i det hele tatt</em>: da er den verste utfallet at den ser
+kjedeligere ut, ikke at den er død. Denne siden er selv bygget slik. Den inneholder ingen
+kode som kjører.</p>
+
+<div class="card">
+  <h3>På vei: SharePoint-sider laget av HTML</h3>
+  <p>Microsoft ruller nå ut HTML-sider i SharePoint, som forhåndsversjon fra oktober 2026.
+  En HTML-fil i biblioteket Områdesider vises da som en side, ikke som et vedlegg. Ifølge
+  Microsofts egen dokumentasjon kjører JavaScript når koden ligger i samme fil, siden kan
+  være opptil 10 MB, og tilgangen følger rettighetene på området. Henting fra nettet og
+  lagring i nettleseren er sperret.</p>
+  <p>Det er nesten nøyaktig formen en Tún-fil allerede har: alt ligger inni, ingenting
+  hentes. En områdeeier må slå på «Tillat HTML-filer» først. <strong>Dette er ikke målt
+  ennå</strong>, og derfor står det ikke i tabellen over.</p>
+</div>
+
+<div class="card hard">
+  <h3>Den harde grensen, sagt først</h3>
+  <p>En fil kan ikke holde på en hemmelighet. Alle som kan åpne den, ser alt i den.
+  Skal to lesere se <em>ulike</em> tall, kan det ikke være én delt kopi: da deler du etter
+  mappe og publikum før filen lages, eller du bruker et verktøy med rettigheter per rad.
+  Det siste er nettopp det Power BI er godt til, og Tún prøver ikke å ta den jobben.</p>
+</div>
+
+<h2>Hva som er målt, og hva som er retning</h2>
+
+<p>Delingstabellen over er målinger, men små: én telefon, én Teams-versjon, én
+chat-klient. Det er datapunkter, ikke en plattformgaranti. Kjernen, filformatet og
+grensen over er faste. Backends, mappevelger og betalte tjenester er retning, ikke
+leveranse.</p>
+
+<footer>
+  <p>Kjernen er åpen. Filene du lager er dine, sammen med tallene i dem.</p>
+  <p>Laget med Tún · tun.community · bygget 2026-09-24, oppdatert 2026-10-06</p>
+</footer>
+
+</div>
+</body>
+</html>

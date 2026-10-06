@@ -1,0 +1,61 @@
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Theme: dark (experimental — demo only, not in any production template)
+   ==========================================================================
+   Builds on the neutral palette's dark slots (--palette-primary-dark,
+   --palette-primary-darkest) rather than inventing a separate dark
+   colour set, so a brand plugin re-skins dark mode by filling the same slots.
+
+   STATUS: not wired into templates/*.html. Exists only for
+   examples/05-theme-toggle-demo/, so the pattern can be looked at before
+   anyone decides it belongs in a real dashboard. See
+   docs/09-usability-and-navigation-principles.md §4 for the two things
+   that must be checked before this could graduate out of the demo:
+     1. The status-colour contrast numbers in status-semantic.css were
+        measured against a WHITE background only. Ember and Moss
+        must be re-measured against --palette-primary-dark/--palette-primary-darkest before
+        they can be trusted here — do not assume the light-theme numbers
+        carry over.
+     2. Whether a theme choice persists per file (not just per browser)
+        under file:// via localStorage is unmeasured. Log the result in
+        docs/01-tenant-constraints.md before relying on it.
+
+   Activated via [data-theme="dark"] on <html> or <body>, toggled by a
+   script — see the demo for the actual toggle wiring.
+   ========================================================================== */
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark); /* text on dark surface */
+  --muted:      #B4C0D0;                 /* neutral light slate: dimmed label text, 6.7:1 on --bg, 9.3:1 on --panel */
+  --line:       #33496B;                 /* neutral slate separator between --bg and --panel */
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary);
+  --brand-dark: var(--palette-primary-darkest);
+  --series-2:   var(--palette-accent-light);
+
+  /* Status TEXT colours (--ok, --bad) are still UNCHECKED for the case of
+     being read directly on --bg/--panel with no chip background of their
+     own — do not ship that combination without re-measuring against
+     --palette-primary-dark/--palette-primary-darkest first.
+     The CHIP backgrounds below (--ok-bg, --bad-bg) ARE checked: a
+     low-opacity dark overlay measured too low a contrast against the text
+     colour to pass WCAG AA (4.5:1) at the delta badges' font size, so these
+     use the same light, near-white tints as the light theme instead of a
+     darkened variant. A light chip on a dark page is a deliberate,
+     conventional pattern (seen e.g. in GitHub's own dark mode labels), not
+     an inconsistency.
+       Moss on Moss 12% (#eaf5f0):                4.71:1 — PASS
+       Ember on Ember 8% (#fbeded):                4.53:1 — PASS
+       Ember on white (#ffffff):                   5.16:1 — PASS, used instead */
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-bg:var(--palette-surface);
+}

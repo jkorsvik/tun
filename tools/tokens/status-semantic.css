@@ -1,0 +1,40 @@
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Status / semantic colour tokens — positive, negative, neutral
+   Owned by core, not by any brand plugin: status colour is a functional
+   signal, so it must work the same whichever plugin supplies the brand.
+
+   Why not reuse the brand palette: brand accents are chosen to look good,
+   not to be read as text. A KPI delta must pass the WCAG 2.2 text minimum
+   (4.5:1 against #FFFFFF), and typical warm brand accents do not.
+
+   Contrast against #FFFFFF, computed with the WCAG relative-luminance formula:
+     Ember  #C9372C  ->  5.16:1  PASS
+     Moss   #1F7A5C  ->  5.25:1  PASS
+   For comparison, the example plugin's warm accents (Amber, Flame; see
+   plugins/eksempel/tokens/palette.css) measure 2.47:1 and 2.84:1, below even
+   the 3:1 icon minimum, so neither is usable for status.
+
+   Default status pair: Ember/Moss (WCAG AA, see contrast table above).
+   A project may use a different pair if it passes the same contrast test;
+   see docs/09-usability-and-navigation-principles.md §3.
+
+   Per WCAG 2.2 criterion 1.4.1 (Use of Color): colour alone must never be the only
+   signal. Pair these with an icon or text label (e.g. an arrow, or the words
+   "opp"/"ned"), not colour by itself.
+   ========================================================================== */
+:root{
+  --status-negative:          #C9372C; /* Ember — text, icon, delta value */
+  --status-negative-bg:       #fbeded; /* Ember 8% — row/card background tint only */
+  --status-positive:          #1F7A5C; /* Moss — text, icon, delta value */
+  --status-positive-bg-25:    #d7ece3; /* Moss 25% — background tint only */
+  --status-positive-bg-12:    #eaf5f0; /* Moss 12% — subtler background tint */
+  --status-neutral:           #737373; /* neutral grey — no change / n.a. */
+}

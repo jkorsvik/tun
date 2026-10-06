@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tún: du skriver, du får én fil, du sender den</title>
+<!--
+  PROVENANCE  (ikke slett — dette er hvordan filen spores tilbake)
+    Artifact    : Tún forklart for kommunikasjonsfolk
+    Source data : Ingen datakilde. Ingen tall her er målinger av drift. Rådet om
+                  hvordan du sender filen er manuelle tester på ekte enheter, se
+                  docs/01-tenant-constraints.md rad 21, 22 og 27.
+    Built       : 2026-09-24
+    Built by    : hånd
+    Repo        : tun, examples/20-tun-for-kommunikasjon
+    Made with   : Tún — tun.community
+
+  Denne filen har ingen eksterne avhengigheter og ingen kode som kjører. Ren HTML,
+  CSS og SVG. Den virker offline og i overflater som nekter å kjøre noe.
+
+  SIKKERHET: alt innholdet er lesbart for alle som kan åpne filen. En fil kan ikke
+  holde på en hemmelighet.
+-->
+<style>
+  :root{
+    --ink:#16241f; --muted:#51655c; --line:#d3ded8; --bg:#fcfdfc; --card:#fff;
+    --green:#1c6b52; --gold:#c98a2b; --red:#8c3b2e; --soft:#eef4f1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:36px 22px 72px}
+  .eyebrow{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+  h1{font-size:34px;line-height:1.16;margin:0 0 14px;letter-spacing:-.02em}
+  .lede{font-size:19px;color:var(--muted);margin:0 0 6px}
+  h2{font-size:22px;margin:42px 0 10px;letter-spacing:-.01em}
+  p{margin:0 0 14px}
+  .kind{background:var(--soft);border-left:4px solid var(--green);border-radius:6px;
+        padding:16px 18px;margin:26px 0}
+  .kind p{margin:0}
+  .kind strong{color:var(--green)}
+  svg{width:100%;height:auto;display:block;margin:26px 0 8px}
+  .pair{border:1px solid var(--line);border-radius:10px;background:var(--card);
+        padding:0;margin:12px 0;overflow:hidden}
+  .pair .now,.pair .then{padding:13px 17px}
+  .pair .now{color:var(--muted);border-bottom:1px solid var(--line);background:#fafbfa}
+  .pair .now b,.pair .then b{display:inline-block;font-size:11.5px;letter-spacing:.1em;
+        text-transform:uppercase;margin-right:9px;font-weight:700}
+  .pair .now b{color:var(--red)}
+  .pair .then b{color:var(--green)}
+  ul{margin:0 0 14px;padding-left:22px}
+  li{margin:0 0 7px}
+  .send{border:2px solid var(--green);border-radius:10px;padding:18px 20px;margin:20px 0;background:var(--card)}
+  .send h3{margin:0 0 8px;font-size:17px;color:var(--green)}
+  .send p{margin:0 0 9px}
+  .send p:last-child{margin:0}
+  .limit{border:1px solid var(--red);background:#fdf7f5;border-radius:10px;padding:18px 20px;margin:24px 0}
+  .limit h3{margin:0 0 8px;font-size:17px;color:var(--red)}
+  .limit p{margin:0}
+  footer{margin-top:46px;padding-top:16px;border-top:1px solid var(--line);
+         font-size:13.5px;color:var(--muted)}
+  footer p{margin:0 0 5px}
+  @media print{body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">På to minutter</p>
+<h1>Du skriver. Du får én fil. Du sender den.</h1>
+<p class="lede">Ingen lisens for dem som skal lese den. Ingen app de må laste ned.
+Den virker på telefonen, og den ser ut som noe du har laget med vilje.</p>
+
+<div class="kind">
+  <p><strong>Hvis dette virket vanskelig i sted, er det vår feil.</strong> Tún er laget
+  nettopp for deg som ikke vil lære et verktøy. Du skriver i vanlig tekst. Du trenger
+  ikke vite noe om hva som skjer under, på samme måte som du ikke trenger å vite hvordan
+  en PDF er bygget for å sende en.</p>
+</div>
+
+<svg viewBox="0 0 720 150" role="img"
+     aria-label="Tre steg: du skriver i vanlig tekst, Tún bygger én fil, du sender en lenke.">
+  <defs>
+    <marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1c6b52"/>
+    </marker>
+  </defs>
+  <rect x="2" y="26" width="196" height="98" rx="10" fill="#fff" stroke="#d3ded8" stroke-width="2"/>
+  <text x="100" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#c98a2b" letter-spacing=".09em">1 · DU</text>
+  <text x="100" y="84" text-anchor="middle" font-size="16" fill="#16241f">skriver i vanlig</text>
+  <text x="100" y="105" text-anchor="middle" font-size="16" fill="#16241f">tekst</text>
+
+  <path d="M206,75 H254" fill="none" stroke="#1c6b52" stroke-width="2.4" marker-end="url(#p)"/>
+
+  <rect x="262" y="26" width="196" height="98" rx="10" fill="#fff" stroke="#1c6b52" stroke-width="2.4"/>
+  <text x="360" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#1c6b52" letter-spacing=".09em">2 · TÚN</text>
+  <text x="360" y="84" text-anchor="middle" font-size="16" fill="#16241f">lager én fil</text>
+  <text x="360" y="105" text-anchor="middle" font-size="13.5" fill="#51655c">med alt inni</text>
+
+  <path d="M466,75 H514" fill="none" stroke="#1c6b52" stroke-width="2.4" marker-end="url(#p)"/>
+
+  <rect x="522" y="26" width="196" height="98" rx="10" fill="#fff" stroke="#d3ded8" stroke-width="2"/>
+  <text x="620" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#c98a2b" letter-spacing=".09em">3 · DU</text>
+  <text x="620" y="84" text-anchor="middle" font-size="16" fill="#16241f">sender en lenke</text>
+  <text x="620" y="105" text-anchor="middle" font-size="13.5" fill="#51655c">de åpner den</text>
+</svg>
+
+<h2>Det du kjenner igjen</h2>
+
+<div class="pair">
+  <div class="now"><b>i dag</b>Du sender en PowerPoint. Den er utdatert i det du trykker send,
+  og snart finnes den i flere versjoner.</div>
+  <div class="then"><b>med tún</b>Du sender en lenke til én fil. Neste versjon ligger på
+  samme lenke. Det finnes bare én.</div>
+</div>
+
+<div class="pair">
+  <div class="now"><b>i dag</b>Tallene ligger i et rapportverktøy. Halve mottakerlisten har
+  ikke lisens, og du ender med å lime skjermbilder inn i en e-post.</div>
+  <div class="then"><b>med tún</b>Filen åpner seg for alle som kan åpne en nettside.
+  Ingen lisens, ingen ny innlogging, ingen skjermbilder.</div>
+</div>
+
+<div class="pair">
+  <div class="now"><b>i dag</b>Rapporten er en PDF. Den ser feil ut på telefonen, og
+  ingen orker å zoome.</div>
+  <div class="then"><b>med tún</b>Samme fil tilpasser seg skjermen den åpnes på. Du kan
+  fortsatt skrive den ut hvis noen vil ha papir.</div>
+</div>
+
+<div class="pair">
+  <div class="now"><b>i dag</b>Du må be noen andre publisere det, og venter tre dager.</div>
+  <div class="then"><b>med tún</b>Du legger filen i mappen der arbeidet ditt allerede
+  ligger. Da er du ferdig.</div>
+</div>
+
+<h2>Hva mottakeren trenger</h2>
+<p>Ingenting. Det er hele poenget.</p>
+<ul>
+  <li>ingen lisens</li>
+  <li>ingen ny innlogging, bare den tilgangen de allerede har til mappen</li>
+  <li>ingen app, ingen utvidelse, ingenting å installere</li>
+  <li>ikke nett, når de først har åpnet filen</li>
+</ul>
+
+<div class="send">
+  <h3>Slik sender du den, helt konkret</h3>
+  <p>Legg filen i SharePoint eller OneDrive, kopier lenken, og <strong>lim den inn i en
+  Teams-melding</strong>. Det er ruten vi har målt at virker både på PC og på mobil.</p>
+  <p>To feller, og de er ikke opplagte: ikke send filen som <em>vedlegg</em>, og ikke send
+  bare en lenke i en <em>e-post</em>. Da kan telefonen vise deg selve koden i stedet for
+  siden, og det ser ødelagt ut selv om filen er helt i orden.</p>
+  <p>Hvis noen likevel får opp noe som ser ut som kode: si «trykk åpne i nettleser».
+  Da virker den.</p>
+</div>
+
+<h2>Den er faktisk mer tilgjengelig enn en PDF</h2>
+<ul>
+  <li>teksten er <strong>ekte tekst</strong>, ikke et bilde av tekst, så en skjermleser
+  kan lese den høyt</li>
+  <li>den kan forstørres uten å bli uskarp</li>
+  <li>den virker selv om ingenting kjøres i nettleseren; da ser den enklere ut,
+  men den er aldri død</li>
+  <li>den kan skrives ut, eller lagres som PDF, hvis mottakeren vil det</li>
+</ul>
+
+<div class="limit">
+  <h3>Én ting den ikke kan, og det sier vi først</h3>
+  <p>En fil kan ikke holde på en hemmelighet. Alle som kan åpne den, ser alt i den.
+  Skal to lesere se <em>ulike</em> tall, må du lage to filer, eller bruke et
+  rapportverktøy som styrer det per person. Det er ikke en mangel vi skal fikse. Det er
+  en grense det er ærlig å si fra om, og den gjør det trygt å bruke resten.</p>
+</div>
+
+<h2>Hva det koster deg</h2>
+<p>En halvtime den første gangen, sammen med noen som har gjort det før. Etter det er
+det bare å skrive.</p>
+
+<footer>
+  <p>Kjernen er åpen. Filene du lager er dine, sammen med tallene i dem.</p>
+  <p>Laget med Tún · tun.community · bygget 2026-09-24</p>
+</footer>
+
+</div>
+</body>
+</html>

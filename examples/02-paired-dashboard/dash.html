@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Salg 2026 — dynamisk (paired)</title>
+<!--
+  ============================================================================
+  This is the dashboard specialisation of templates/_generic-provenance-block.html
+  (docs/14-generic-layer-manifest.md) — the "Rows inlined" line below is this
+  template's version of that block's generic ARTIFACT_SPECIFIC_LINE slot. Named
+  without braces deliberately: this is prose about the generic template, not a
+  live placeholder in this one, and the verifier's placeholder scan cannot tell
+  the two apart if this sentence itself uses double braces around that name —
+  that exact mismatch failed every dashboard built after the docs/14 split.
+  Salg 2026 — dynamisk (paired)
+  ----------------------------------------------------------------------------
+  PROVENANCE  (do not delete — this is how numbers get traced back)
+    Source data : salgsdata.csv
+    Extracted   : 2026-10-06 19:09 CEST
+    Built       : 2026-10-06 19:37 CEST
+    Requested by: the product owner
+    Built by    : RAIWork skill `dashboard-new`
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Rows inlined: 776
+  ----------------------------------------------------------------------------
+  This is a Tier 1 portable dashboard: fully self-contained, no server, no CDN,
+  no licence required to view. It works offline and from a OneDrive-synced folder.
+
+  ⚠ SECURITY: all data below is readable by anyone who can open this file.
+     There is NO row-level security. If different viewers must see different
+     rows, this file must not exist — use Power BI with RLS instead.
+  ============================================================================
+-->
+<style>
+  /* ==========================================================================
+     Colour tokens, inlined at build time by tools/build_dashboard.py through
+     tools/tun_tokens.py: the active palette (core's neutral palette in
+     tools/tokens/palette-neutral.css, or the one brand plugin that provides
+     tokens), then tools/tokens/status-semantic.css and theme-light.css. Those
+     define the semantic roles used below: --ink, --muted, --line, --bg,
+     --panel, --brand, --brand-dark, --series-2, --ok/--ok-bg, --bad/--bad-bg.
+
+     WHY inlined values and not a linked stylesheet: this file must stay
+     self-contained (no CDN, works offline, opens from a OneDrive-synced
+     folder). A <link> to a token stylesheet would break that.
+     ========================================================================== */
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Palette: neutral (core default)
+
+   The eight semantic slots the theme files consume, with values that belong to
+   nobody. This file is what makes core shippable without a brand plugin: with
+   plugins/ empty, a build still produces a coherent artefact rather than an
+   artefact full of unresolved var() references, which would render as
+   invisible or wrong colours and pass every other gate.
+
+   A brand plugin replaces this file by providing `tokens` (see
+   docs/22-plugin-contract.md). It does not patch it.
+
+   The values are a deliberately plain slate-and-amber pair: legible, adequate
+   contrast, and obviously not any real organisation's brand. They are an
+   example, not a recommendation. Do not treat them as a design system.
+   ========================================================================== */
+:root{
+  --palette-ink:             #111418;  /* body text */
+  --palette-surface:         #FFFFFF;  /* page background */
+  --palette-primary:         #2B4C7E;  /* primary data colour, links, focus */
+  --palette-primary-dark:    #1B3559;  /* header background */
+  --palette-primary-darkest: #0E1C2E;  /* darkest surface */
+  --palette-accent:          #B8860B;  /* secondary series, decorative only */
+  --palette-accent-light:    #E8D48B;  /* highlight on dark */
+  --palette-on-dark:         #F7F5EF;  /* text on a dark surface */
+}
+
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Status / semantic colour tokens — positive, negative, neutral
+   Owned by core, not by any brand plugin: status colour is a functional
+   signal, so it must work the same whichever plugin supplies the brand.
+
+   Why not reuse the brand palette: brand accents are chosen to look good,
+   not to be read as text. A KPI delta must pass the WCAG 2.2 text minimum
+   (4.5:1 against #FFFFFF), and typical warm brand accents do not.
+
+   Contrast against #FFFFFF, computed with the WCAG relative-luminance formula:
+     Ember  #C9372C  ->  5.16:1  PASS
+     Moss   #1F7A5C  ->  5.25:1  PASS
+   For comparison, the example plugin's warm accents (Amber, Flame; see
+   plugins/eksempel/tokens/palette.css) measure 2.47:1 and 2.84:1, below even
+   the 3:1 icon minimum, so neither is usable for status.
+
+   Default status pair: Ember/Moss (WCAG AA, see contrast table above).
+   A project may use a different pair if it passes the same contrast test;
+   see docs/09-usability-and-navigation-principles.md §3.
+
+   Per WCAG 2.2 criterion 1.4.1 (Use of Color): colour alone must never be the only
+   signal. Pair these with an icon or text label (e.g. an arrow, or the words
+   "opp"/"ned"), not colour by itself.
+   ========================================================================== */
+:root{
+  --status-negative:          #C9372C; /* Ember — text, icon, delta value */
+  --status-negative-bg:       #fbeded; /* Ember 8% — row/card background tint only */
+  --status-positive:          #1F7A5C; /* Moss — text, icon, delta value */
+  --status-positive-bg-25:    #d7ece3; /* Moss 25% — background tint only */
+  --status-positive-bg-12:    #eaf5f0; /* Moss 12% — subtler background tint */
+  --status-neutral:           #737373; /* neutral grey — no change / n.a. */
+}
+
+/*
+   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Theme: light (default)
+   ==========================================================================
+   Maps the semantic roles the templates already use (--ink, --muted, --bg,
+   --brand, etc.) onto the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css) and status-semantic.css, instead of
+   each template hardcoding its own hex values as it does today.
+
+   NOT YET WIRED INTO templates: html files — this file documents the
+   intended mapping so it can be reviewed before any template changes. Load
+   order for a future build: the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css), then status-semantic.css,
+   then this file (so the palette- and status- prefixed variables it references
+   already exist).
+
+   Rationale for a light default: a dashboard is read repeatedly and at
+   length — Nielsen Norman Group and general dashboard-UX guidance favour a
+   neutral, low-chroma background with colour reserved for data, not the
+   bold colour-dominant background a presentation theme documents for slides.
+   See docs/09-usability-and-navigation-principles.md §4.
+   ========================================================================== */
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);      /* body text */
+  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --line:       #ebebeb;               /* neutral grey: borders, gridlines */
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
+  --brand:      var(--palette-primary);        /* primary data colour, links, focus */
+  --brand-dark: var(--palette-primary-dark);    /* header background */
+  --series-2:   var(--palette-accent);     /* secondary chart series — decorative use only, not text */
+
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-bg:var(--status-negative-bg);
+}
+
+  :root{
+    /* Template-local colours for roles the palette has no slot for. Plain
+       neutral values chosen here, not taken from any brand. */
+    --border:#ccc;                        /* neutral grey: input and dashed borders */
+    --highlight:#eef2f7;                  /* pale neutral slate: row hover, drop target */
+    --tooltip-bg:var(--palette-ink);
+    --on-brand:var(--palette-on-dark);    /* text on --brand-dark */
+
+    /* Spacing on an 8px grid, in 0.5rem increments */
+    --sp-1:0.5rem; --sp-2:1rem; --sp-3:1.5rem; --sp-4:2rem;
+  }
+  *{box-sizing:border-box}
+  /* Accessibility (docs/09-usability-and-navigation-principles.md §1/§5, WCAG 2.2 2.1.1
+     and 2.4.7): a visible focus ring for keyboard users, and reduced motion honoured for
+     anyone who has asked their OS for it. Confirmed cheap and safe to add — an
+     unrelated external dashboard has both with no visible downside. */
+  :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms!important;animation-iteration-count:1!important;
+      transition-duration:.01ms!important;scroll-behavior:auto!important}
+  }
+  /* System font stack only. No web font is loaded: that would add a remote
+     dependency and break offline use. */
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-size:1rem;line-height:1.5}
+  header{background:var(--brand-dark);color:var(--on-brand);padding:var(--sp-3) var(--sp-4)}
+  header h1{margin:0;font-size:1.5rem;line-height:2rem;font-weight:500}
+  header .meta{opacity:.85;font-size:.875rem;line-height:1.5rem;margin-top:var(--sp-1)}
+  main{padding:var(--sp-3) var(--sp-4);max-width:90rem;margin:0 auto}
+  .controls{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:flex-end;
+    background:var(--panel);padding:var(--sp-2);border-radius:.25rem;margin-bottom:var(--sp-3)}
+  .controls label{display:block;font-size:.75rem;line-height:1rem;text-transform:uppercase;
+    letter-spacing:.04em;color:var(--muted);margin-bottom:.25rem}
+  .controls select,.controls input,.controls button{padding:var(--sp-1) .625rem;
+    border:1px solid var(--border);border-radius:.25rem;font-size:.875rem;
+    line-height:1.5rem;background:var(--bg);min-width:10rem;font-family:inherit;
+    color:var(--ink)}
+  .controls button{min-width:auto;cursor:pointer}
+  .controls button:hover{border-color:var(--brand);color:var(--brand)}
+  .dropbar{display:flex;gap:var(--sp-2);align-items:center;justify-content:space-between;
+    flex-wrap:wrap;border:1px dashed var(--border);border-radius:.25rem;
+    padding:.75rem var(--sp-2);margin-bottom:var(--sp-3);font-size:.875rem;
+    color:var(--muted);transition:background .15s,border-color .15s}
+  .dropbar.over{background:var(--highlight);border-color:var(--brand);
+    color:var(--brand-dark)}
+  .dropbar strong{color:var(--ink)}
+  .dropbar button{padding:.5rem .9rem;border:1px solid var(--border);
+    border-radius:.25rem;background:var(--bg);font-family:inherit;
+    font-size:.875rem;cursor:pointer;color:var(--ink)}
+  .dropbar button:enabled:hover{border-color:var(--brand);color:var(--brand)}
+  .dropbar button:disabled{opacity:.45;cursor:default}
+  .linklike{color:var(--brand);text-decoration:underline;cursor:pointer}
+  @media print{.dropbar{display:none}}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));
+    gap:var(--sp-2);margin-bottom:var(--sp-3)}
+  .kpi{background:var(--panel);border-left:.25rem solid var(--brand);
+    padding:var(--sp-2);border-radius:.25rem}
+  .kpi .label{font-size:.75rem;line-height:1rem;text-transform:uppercase;
+    letter-spacing:.04em;color:var(--muted)}
+  .kpi .value{font-size:2rem;line-height:2.5rem;font-weight:500;
+    color:var(--brand-dark);margin-top:.25rem;font-variant-numeric:tabular-nums}
+  /* NOTE (from comparing an unrelated external dashboard): renderKpis() below does not currently
+     emit a .delta element at all — these three rules are dead CSS, not a live a11y bug.
+     Kept ready in the icon+text shape already proven in examples/05-theme-toggle-demo/
+     (WCAG 2.2 1.4.1 — colour must never be the only signal) so that whoever wires an
+     actual period-over-period delta into renderKpis() inherits the right pattern instead
+     of a colour-only one. Do not render `<div class="delta up">` with only a colour — pair
+     it with the arrow + text, e.g. `<div class="delta up">&#9650; opp 6,2 %</div>`. */
+  .kpi .delta{font-size:.875rem;margin-top:.25rem;display:inline-flex;align-items:center;
+    gap:.3rem;padding:.1rem .4rem;border-radius:.2rem}
+  .kpi .delta.up{color:var(--ok);background:var(--ok-bg)}
+  .kpi .delta.down{color:var(--bad);background:var(--bad-bg)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(26rem,1fr));gap:var(--sp-3)}
+  .card{border:1px solid var(--line);border-radius:.25rem;padding:var(--sp-2);
+    background:var(--bg)}
+  .card h2{margin:0 0 var(--sp-2);font-size:1rem;line-height:1.5rem;font-weight:500}
+  svg{width:100%;height:auto;display:block;overflow:visible}
+  .axis{stroke:var(--border);stroke-width:1}
+  .axis-label{font-size:.6875rem;fill:var(--muted)}
+  .bar{fill:var(--brand);transition:fill .15s}
+  .bar:hover{fill:var(--brand-dark)}
+  .gridline{stroke:var(--line);stroke-width:1}
+  .line-path{fill:none;stroke:var(--series-2);stroke-width:2.5;
+    stroke-linejoin:round;stroke-linecap:round}
+  .dot{fill:var(--series-2)}
+  table{width:100%;border-collapse:collapse;font-size:.875rem;line-height:1.5rem}
+  th,td{text-align:left;padding:var(--sp-1) .625rem;border-bottom:1px solid var(--line);
+    max-width:15rem;word-wrap:break-word;overflow-wrap:break-word}
+  th{cursor:pointer;user-select:none;font-size:.75rem;line-height:1rem;
+    text-transform:uppercase;letter-spacing:.04em;color:var(--muted);white-space:nowrap;
+    position:sticky;top:0;background:var(--bg)}
+  th:hover{color:var(--brand)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:var(--highlight)}
+  .table-wrap{max-height:26rem;overflow:auto}
+  footer{padding:var(--sp-2) var(--sp-4);color:var(--muted);font-size:.75rem;
+    line-height:1.5rem;border-top:1px solid var(--line);margin-top:var(--sp-4)}
+  .tooltip{position:fixed;background:var(--tooltip-bg);color:var(--on-brand);
+    padding:.375rem .5rem;border-radius:.25rem;font-size:.8125rem;pointer-events:none;
+    opacity:0;transition:opacity .12s;z-index:99;white-space:nowrap}
+  .empty{color:var(--muted);font-style:italic;padding:var(--sp-4);text-align:center}
+  @media print{header{background:var(--bg);color:var(--ink)}.controls{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Salg 2026 — dynamisk (paired)</h1>
+  <div class="meta" id="meta"></div>
+</header>
+
+<main>
+  <section class="controls" id="controls"><!-- filters injected by init() --></section>
+  <section class="dropbar" id="dropbar">
+    <span><strong>Oppdatere tallene?</strong> Dra en CSV-fil hit
+      &mdash; eller <label for="pick" class="linklike">velg fil</label>.
+      <input type="file" id="pick" accept=".csv,.tsv,.txt,.json" hidden>
+    </span>
+    <button type="button" id="export" disabled>Lagre datafil (data.js)</button>
+  </section>
+  <section class="kpis" id="kpis"></section>
+  <section class="grid">
+    <div class="card"><h2 id="chart1-title">Belop per Produkt</h2><svg id="chart1" viewBox="0 0 640 300"></svg></div>
+    <div class="card"><h2 id="chart2-title">Belop over Maaned</h2><svg id="chart2" viewBox="0 0 640 300"></svg></div>
+  </section>
+  <section class="card" style="margin-top:1.5rem">
+    <h2>Detaljer <span id="rowcount" style="font-weight:400;color:var(--muted);font-size:.875rem"></span></h2>
+    <div class="table-wrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+  </section>
+</main>
+
+<footer>
+  Selvstendig dashboard bygget av RAIWork &middot; ingen Power BI-lisens kreves &middot;
+  bygget 2026-10-06 19:37 CEST fra salgsdata.csv.<br>
+  <span id="footnote"></span>
+</footer>
+<div class="tooltip" id="tip"></div>
+
+<!-- ===========================================================================
+     DATA
+     Either inlined below (bundled mode) or loaded from a sibling data.js
+     (paired mode). Both set window.DASHBOARD_DATA, so there is one code path.
+
+     Paired mode is the interesting one: data.js is a separate file in the same
+     folder. OneDrive/SharePoint syncs it, so updating the data updates every
+     copy of the dashboard — no rebuild, no republish, no server.
+     A script element with a src attribute works from a file:// page; fetch()
+     does not. That is why the data is a .js file assigning a global, not a
+     .json file. Worded without the literal tag: this comment ships inside every
+     built dashboard, and stray tag text renders visibly in the SharePoint
+     preview (docs/01-tenant-constraints.md row 25).
+     =========================================================================== -->
+<script src="./data.js"></script>
+<script>
+const DATA = window.DASHBOARD_DATA || [];
+const DATA_META = window.DASHBOARD_META || {};
+
+const META = {
+  dimension:   "Produkt",   // primary categorical column (bar chart, filter)
+  timeColumn:  "Maaned",        // ordered column for the line chart ("" to disable)
+  measure:     "Belop",     // numeric column being summed
+  filters:     ["Region", "Produkt", "Kanal"],  // e.g. ["Region","Produkt"]
+  numberFormat: new Intl.NumberFormat("nb-NO",{maximumFractionDigits:0})
+};
+
+/* ---------- tiny helpers ---------------------------------------------------- */
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => META.numberFormat.format(n);
+const sum = (rows, col) => rows.reduce((a, r) => a + (Number(r[col]) || 0), 0);
+const uniq = (rows, col) => [...new Set(rows.map(r => r[col]))]
+  .filter(v => v !== undefined && v !== null && v !== "").sort();
+
+function groupSum(rows, key, measure) {
+  const m = new Map();
+  for (const r of rows) m.set(r[key], (m.get(r[key]) || 0) + (Number(r[measure]) || 0));
+  return [...m.entries()].map(([k, v]) => ({ key: k, value: v }));
+}
+
+/* ---------- state ---------------------------------------------------------- */
+let activeFilters = {};
+let sortState = { col: META.measure, dir: -1 };
+
+function visibleRows() {
+  return LIVE.filter(r => Object.entries(activeFilters)
+    .every(([c, v]) => v === "__ALL__" || String(r[c]) === v));
+}
+
+/* ---------- tooltip ------------------------------------------------------- */
+const tip = $("tip");
+function showTip(e, text) {
+  tip.textContent = text; tip.style.opacity = 1;
+  tip.style.left = (e.clientX + 12) + "px"; tip.style.top = (e.clientY - 8) + "px";
+}
+function hideTip() { tip.style.opacity = 0; }
+
+/* ---------- SVG bar chart -------------------------------------------------- */
+function barChart(svgId, data, opts) {
+  const svg = $(svgId); const W = 640, H = 300;
+  const m = { t: 12, r: 16, b: 58, l: 64 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  svg.innerHTML = "";
+  if (!data.length) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">Ingen data</text>'; return; }
+
+  data = [...data].sort((a, b) => b.value - a.value).slice(0, opts.limit || 12);
+  const max = Math.max(...data.map(d => d.value), 1);
+  const bw = iw / data.length;
+  const ns = "http://www.w3.org/2000/svg";
+  const el = (t, a) => { const n = document.createElementNS(ns, t);
+    for (const k in a) n.setAttribute(k, a[k]); return n; };
+
+  // y gridlines + labels
+  for (let i = 0; i <= 4; i++) {
+    const y = m.t + ih - (ih * i / 4);
+    svg.appendChild(el("line", { class: "gridline", x1: m.l, x2: m.l + iw, y1: y, y2: y }));
+    const t = el("text", { class: "axis-label", x: m.l - 8, y: y + 4, "text-anchor": "end" });
+    t.textContent = fmt(max * i / 4); svg.appendChild(t);
+  }
+  svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
+
+  data.forEach((d, i) => {
+    const h = Math.max((d.value / max) * ih, 1);
+    const x = m.l + i * bw + bw * 0.15, y = m.t + ih - h;
+    const rect = el("rect", { class: "bar", x, y, width: bw * 0.7, height: h, rx: 2 });
+    rect.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
+    rect.addEventListener("mouseleave", hideTip);
+    svg.appendChild(rect);
+    const lbl = el("text", { class: "axis-label", x: m.l + i * bw + bw / 2,
+      y: m.t + ih + 16, "text-anchor": "end",
+      transform: `rotate(-35 ${m.l + i * bw + bw / 2} ${m.t + ih + 16})` });
+    lbl.textContent = String(d.key).length > 16 ? String(d.key).slice(0, 15) + "…" : d.key;
+    svg.appendChild(lbl);
+  });
+}
+
+/* ---------- SVG line chart ------------------------------------------------- */
+function lineChart(svgId, data) {
+  const svg = $(svgId); const W = 640, H = 300;
+  const m = { t: 12, r: 16, b: 48, l: 64 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  svg.innerHTML = "";
+  if (data.length < 2) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">For få punkter</text>'; return; }
+
+  const max = Math.max(...data.map(d => d.value), 1);
+  const ns = "http://www.w3.org/2000/svg";
+  const el = (t, a) => { const n = document.createElementNS(ns, t);
+    for (const k in a) n.setAttribute(k, a[k]); return n; };
+  const X = i => m.l + (iw * i / (data.length - 1));
+  const Y = v => m.t + ih - (ih * v / max);
+
+  for (let i = 0; i <= 4; i++) {
+    const y = m.t + ih - (ih * i / 4);
+    svg.appendChild(el("line", { class: "gridline", x1: m.l, x2: m.l + iw, y1: y, y2: y }));
+    const t = el("text", { class: "axis-label", x: m.l - 8, y: y + 4, "text-anchor": "end" });
+    t.textContent = fmt(max * i / 4); svg.appendChild(t);
+  }
+  svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
+  svg.appendChild(el("path", { class: "line-path",
+    d: data.map((d, i) => `${i ? "L" : "M"}${X(i)},${Y(d.value)}`).join(" ") }));
+
+  data.forEach((d, i) => {
+    const c = el("circle", { class: "dot", cx: X(i), cy: Y(d.value), r: 4 });
+    c.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
+    c.addEventListener("mouseleave", hideTip);
+    svg.appendChild(c);
+    const step = Math.ceil(data.length / 10);
+    if (i % step === 0 || i === data.length - 1) {
+      const t = el("text", { class: "axis-label", x: X(i), y: m.t + ih + 18, "text-anchor": "middle" });
+      t.textContent = d.key; svg.appendChild(t);
+    }
+  });
+}
+
+/* ---------- KPIs ---------------------------------------------------------- */
+function renderKpis(rows) {
+  const total = sum(rows, META.measure);
+  const dims = uniq(rows, META.dimension).length;
+  const avg = rows.length ? total / rows.length : 0;
+  const cards = [
+    { label: `Total ${META.measure}`, value: fmt(total) },
+    { label: "Antall rader", value: fmt(rows.length) },
+    { label: `Unike ${META.dimension}`, value: fmt(dims) },
+    { label: "Gjennomsnitt", value: fmt(avg) }
+  ];
+  $("kpis").innerHTML = cards.map(c =>
+    `<div class="kpi"><div class="label">${c.label}</div><div class="value">${c.value}</div></div>`).join("");
+}
+
+/* ---------- table --------------------------------------------------------- */
+function renderTable(rows) {
+  const cols = rows.length ? Object.keys(rows[0]) : [];
+  const isNum = c => rows.length && typeof rows[0][c] === "number";
+  $("tbl").querySelector("thead").innerHTML = "<tr>" + cols.map(c =>
+    `<th class="${isNum(c) ? "num" : ""}" data-col="${c}">${c}${
+      sortState.col === c ? (sortState.dir < 0 ? " ▾" : " ▴") : ""}</th>`).join("") + "</tr>";
+
+  const sorted = [...rows].sort((a, b) => {
+    const x = a[sortState.col], y = b[sortState.col];
+    if (typeof x === "number" && typeof y === "number") return (x - y) * sortState.dir;
+    return String(x ?? "").localeCompare(String(y ?? ""), "nb") * sortState.dir;
+  }).slice(0, 500);
+
+  $("tbl").querySelector("tbody").innerHTML = sorted.map(r => "<tr>" + cols.map(c =>
+    `<td class="${isNum(c) ? "num" : ""}">${
+      typeof r[c] === "number" ? fmt(r[c]) : (r[c] ?? "")}</td>`).join("") + "</tr>").join("");
+
+  $("rowcount").textContent = `(viser ${Math.min(sorted.length, 500)} av ${rows.length})`;
+  $("tbl").querySelectorAll("th").forEach(th => th.onclick = () => {
+    const c = th.dataset.col;
+    sortState = { col: c, dir: sortState.col === c ? -sortState.dir : -1 };
+    renderTable(visibleRows());
+  });
+}
+
+/* ---------- filters ------------------------------------------------------- */
+function renderControls() {
+  $("controls").innerHTML = META.filters.map(c => `<div>
+      <label for="f_${c}">${c}</label>
+      <select id="f_${c}" data-col="${c}">
+        <option value="__ALL__">Alle</option>
+        ${uniq(LIVE, c).map(v => `<option value="${String(v).replace(/"/g, "&quot;")}">${v}</option>`).join("")}
+      </select></div>`).join("")
+    + `<div><label>&nbsp;</label><button id="reset" type="button">Nullstill</button></div>`;
+
+  META.filters.forEach(c => {
+    activeFilters[c] = "__ALL__";
+    $(`f_${c}`).onchange = e => { activeFilters[c] = e.target.value; render(); };
+  });
+  const rb = $("reset");
+  if (rb) rb.onclick = () => { META.filters.forEach(c => {
+    activeFilters[c] = "__ALL__"; $(`f_${c}`).value = "__ALL__"; }); render(); };
+}
+
+/* ---------- CSV in, data.js out -------------------------------------------
+   Lets someone update the numbers with no tooling at all:
+     drag a CSV onto the dashboard  ->  see it render
+     click "Lagre datafil"          ->  get a data.js
+     drop that in the SharePoint folder  ->  everyone is updated
+   ------------------------------------------------------------------------- */
+function parseNum(v){
+  if (typeof v === "number") return v;
+  if (typeof v !== "string") return null;
+  let t = v.trim().replace(/\u00a0/g, "").replace(/ /g, "");
+  if (!t) return null;
+  if (t.includes(",") && t.includes(".")) t = t.replace(/\./g, "").replace(",", ".");
+  else if (t.includes(",")) t = t.replace(",", ".");
+  t = t.replace(/%$/, "");
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}
+
+function parseCSV(text){
+  const lines = text.replace(/\r\n?/g, "\n").split("\n").filter(l => l.trim() !== "");
+  if (!lines.length) return [];
+  const guess = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length
+    ? ";" : ((lines[0].match(/\t/g) || []).length ? "\t" : ",");
+  const split = (line) => {           // handles "quoted, fields"
+    const out = []; let cur = "", q = false;
+    for (let i = 0; i < line.length; i++){
+      const c = line[i];
+      if (q){
+        if (c === '"' && line[i+1] === '"'){ cur += '"'; i++; }
+        else if (c === '"'){ q = false; }
+        else cur += c;
+      } else if (c === '"'){ q = true; }
+      else if (c === guess){ out.push(cur); cur = ""; }
+      else cur += c;
+    }
+    out.push(cur); return out.map(x => x.trim());
+  };
+  const head = split(lines[0]);
+  const rows = lines.slice(1).map(l => {
+    const cells = split(l), o = {};
+    head.forEach((h, i) => o[h] = cells[i] !== undefined ? cells[i] : "");
+    return o;
+  });
+  // a column becomes numeric only if EVERY non-empty value parses (same rule as the builder,
+  // so an ID column that looks numeric survives as text)
+  for (const col of head){
+    const vals = rows.map(r => r[col]).filter(v => v !== "" && v != null);
+    if (vals.length && vals.every(v => parseNum(v) !== null))
+      rows.forEach(r => r[col] = r[col] === "" ? 0 : parseNum(r[col]));
+  }
+  return rows;
+}
+
+// data.js may carry either JSON (window.DASHBOARD_DATA) or raw CSV
+// (window.DASHBOARD_CSV) — the latter is hand-editable in Notepad.
+let LIVE = (typeof window.DASHBOARD_CSV === "string" && window.DASHBOARD_CSV.trim())
+  ? parseCSV(window.DASHBOARD_CSV)
+  : DATA.slice();
+function loadRows(rows, label){
+  if (!rows.length){ alert("Fant ingen rader i filen."); return; }
+  const missing = [META.dimension, META.measure].filter(c => !(c in rows[0]));
+  if (missing.length){
+    alert("Filen mangler kolonnen(e): " + missing.join(", ") +
+          "\nFant: " + Object.keys(rows[0]).join(", "));
+    return;
+  }
+  LIVE = rows;
+  DATA_META.generated = new Date().toISOString().slice(0, 16).replace("T", " ");
+  DATA_META.source = label;
+  document.getElementById("export").disabled = false;
+  renderControls(); render();
+  const el = document.getElementById("meta");
+  if (el) el.innerHTML = `${label} &middot; lest lokalt ${DATA_META.generated} &middot; ` +
+    `${fmt(rows.length)} rader &middot; <strong>ikke lagret ennå</strong>`;
+}
+
+function readFile(file){
+  const r = new FileReader();
+  r.onload = () => {
+    const txt = String(r.result);
+    try {
+      loadRows(file.name.toLowerCase().endsWith(".json") ? JSON.parse(txt) : parseCSV(txt),
+               file.name);
+    } catch (e) { alert("Klarte ikke lese filen: " + e.message); }
+  };
+  r.readAsText(file, "utf-8");
+}
+
+(function wireDrop(){
+  const bar = $("dropbar"); if (!bar) return;
+  const stop = e => { e.preventDefault(); e.stopPropagation(); };
+  ["dragenter","dragover"].forEach(ev => document.addEventListener(ev, e => {
+    stop(e); bar.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => document.addEventListener(ev, e => {
+    stop(e); if (ev === "dragleave" && e.relatedTarget) return; bar.classList.remove("over"); }));
+  document.addEventListener("drop", e => {
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) readFile(f);
+  });
+  $("pick").onchange = e => { if (e.target.files[0]) readFile(e.target.files[0]); };
+
+  $("export").onclick = () => {
+    // backticks / ${ would break a template literal, so ship JSON — always safe
+    const body =
+      "// Datafil for dette dashboardet. Bytt ut denne filen for å oppdatere tallene.\n" +
+      "// Generert " + new Date().toISOString() + " fra " + (DATA_META.source || "ukjent kilde") + "\n" +
+      "window.DASHBOARD_DATA=" + JSON.stringify(LIVE) + ";\n" +
+      "window.DASHBOARD_META=" + JSON.stringify({
+        generated: DATA_META.generated, source: DATA_META.source, rows: LIVE.length }) + ";\n";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([body], { type: "text/javascript" }));
+    a.download = "data.js"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+})();
+
+/* ---------- render loop --------------------------------------------------- */
+function render() {
+  const rows = visibleRows();
+  renderKpis(rows);
+  barChart("chart1", groupSum(rows, META.dimension, META.measure), { limit: 12 });
+  if (META.timeColumn) {
+    const byTime = groupSum(rows, META.timeColumn, META.measure)
+      .sort((a, b) => String(a.key).localeCompare(String(b.key), "nb"));
+    lineChart("chart2", byTime);
+  } else {
+    $("chart2").innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">Ingen tidskolonne</text>';
+  }
+  renderTable(rows);
+}
+
+(function footNote(){
+  const el = document.getElementById("footnote"); if (!el) return;
+  el.innerHTML = "paired" === "paired"
+    ? 'Dataene ligger i <code>data.js</code> ved siden av denne filen. Bytt den ut, og alle ser nye tall.'
+    : 'Tallene er bygget inn i denne filen. Be RAIWork om <code>dashboard-data</code> for \u00e5 oppdatere.';
+})();
+
+/* ---------- header meta (freshness comes from the DATA, not the shell) ----- */
+(function renderMeta(){
+  const asOf = DATA_META.generated || "2026-10-06 19:09 CEST";
+  const src  = DATA_META.source || "salgsdata.csv";
+  const mode = "paired";
+  const rows = LIVE.length ? fmt(LIVE.length) : "0";
+  const note = mode === "paired"
+    ? '<strong>oppdateres n\u00e5r datafilen synkes</strong>'
+    : '<strong>fast \u00f8yeblikksbilde</strong>';
+  const el = document.getElementById("meta");
+  if (el) el.innerHTML = `${src} &middot; data per ${asOf} &middot; ${rows} rader &middot; ${note}`;
+})();
+
+/* ---------- init ---------------------------------------------------------- */
+if (!Array.isArray(LIVE) || !LIVE.length) {
+  document.querySelector("main").innerHTML =
+    '<p class="empty">Ingen data ble bygget inn i denne filen.</p>';
+} else {
+  renderControls();
+  render();
+}
+</script>
+</body>
+</html>

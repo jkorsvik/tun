@@ -1,0 +1,21 @@
+{
+  "schema": "tun.plugin/v1",
+  "id": "eksempel",
+  "title": "Eksempel AS brand (fictional)",
+  "version": "0.1.0",
+  "requires_tun": ">=0.1",
+  "private": true,
+  "license": "Same as core",
+  "provides": [
+    "tokens",
+    "assets"
+  ],
+  "tokens": {
+    "palette": "tokens/palette.css"
+  },
+  "examples": [
+    "examples/logo-poc",
+    "examples/branded-topbar"
+  ],
+  "notes": "Eksempel AS is a fictional organisation; its colours and wordmark were invented for this plugin. private: true is kept to demonstrate the flag, which is load-bearing, not advisory: a real brand plugin carries trademark artwork and brand colours, must never be published, and a packaging step must refuse to include it. See docs/21-plugin-architecture.md and docs/22-plugin-contract.md."
+}

@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  ============================================================================
+  GENERATED FILE — do not edit by hand.
+  Built by examples/17-multi-regime-day-board/build_day_board.py
+  from oversikt.template.html. Hand edits are lost on the next build.
+  ----------------------------------------------------------------------------
+  {{TITLE}}
+  PROVENANCE  (do not delete — this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Built by    : examples/17-multi-regime-day-board/build_day_board.py
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Rows in data.js: {{ROW_COUNT}}
+  ----------------------------------------------------------------------------
+  SYNTHETIC DATA ONLY. Every ElevKode, clock time, car id and status below is
+  invented for this pattern example. No real pupil, no real initials, no real
+  kjoereplan. Do not present any number here as a fact about a real pupil.
+
+  Tier 1, PAIRED (docs/08: NOT STANDALONE -> linked). The rows live in the
+  sibling data.js, loaded as code because a file:// page cannot read a sibling
+  plain file at all (docs/01-tenant-constraints.md rows 14-16).
+
+  Identifiers and code are English, user-facing text is Norwegian — AGENTS.md
+  "Conventions". The ids #controls, #tbl, .kpi and .bar are the names
+  tools/verify_dashboard.py asserts on; renaming them does not fail the gate,
+  it makes the gate pass without checking anything.
+
+  ⚠ SECURITY: everything in data.js is readable by anyone who can open this
+     folder. There is NO row-level security and no filter here hides anything.
+     Different audiences get different folders, each with its own data.js —
+     AGENTS.md rule 1. Parents and pupils are separate artefacts, not filters.
+  ============================================================================
+-->
+<style>
+  /* ==========================================================================
+     Colour — values inlined, never fetched (no CDN, works offline).
+
+     WHOSE BRAND IS THIS? In this invented scenario the board belongs to a third
+     party, the fictional Eksempelkommune, whose brand this repository does not
+     have. So this file
+     inlines NO token file at all: not the core palette in
+     tools/tokens/palette-neutral.css, and not a plugin's. Loading either would
+     dress one organisation's artefact in another's colours, which is a licensing
+     question wearing a styling question's clothes. Everything below is plain
+     greyscale or a placeholder inside the marked slot, and the build re-measures
+     WCAG 2.2 contrast on every run. README §5 says what a real rollout needs.
+
+     Colour is NEVER the only signal. Status uses a shape-first convention —
+     shape first, colour second, text always: green circle = i rute, yellow
+     triangle = venter, red square = avvik/avlyst. WCAG 2.2 criterion 1.4.1,
+     and docs/09 counts a colour-only indicator as a defect.
+     ========================================================================== */
+  :root{
+{{PALETTE_CSS}}
+
+    /* 0.5rem increments only */
+    --sp-1:0.5rem; --sp-2:1rem; --sp-3:1.5rem; --sp-4:2rem;
+  }
+  *{box-sizing:border-box}
+  html{height:100%}
+
+  /* ==========================================================================
+     APP SHELL — docs/01-tenant-constraints.md row 26.
+     position:sticky and position:fixed were both measured to overlap the
+     content on every view switch inside SharePoint's inline preview. There is
+     no positioning property anywhere in this file. Instead: a non-scrolling
+     body as a 100vh flex column, the header as a plain flex row, and #content
+     as the SOLE overflow-y:auto container.
+     ========================================================================== */
+  body{margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden;
+    background:var(--surface);color:var(--ink);
+    /* "Eksempelkommune Sans" is a fictional organisation typeface. It shows the
+       pattern for a licensed font: named first so it is used where it is
+       installed; NEVER embedded and never declared as a web font from a URL,
+       because a licensed font inside a file that gets passed around needs the
+       font owner's permission. Everyone else gets the system stack and the
+       layout does not move. */
+    font-family:"Eksempelkommune Sans","Eksempelkommune Sans Regular",system-ui,-apple-system,
+      "Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:1rem;line-height:1.5}
+  header{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;
+    gap:var(--sp-1) var(--sp-2);background:var(--primary-dark);color:var(--surface);
+    padding:var(--sp-1) var(--sp-2)}
+  #content{flex:1 1 auto;min-height:0;overflow-y:auto;
+    padding:var(--sp-2) var(--sp-2) var(--sp-4)}
+
+  .title{display:flex;flex-direction:column;margin-right:auto}
+  .title h1{margin:0;font-size:1rem;line-height:1.5rem;font-weight:500}
+  .title .subtitle{font-size:0.75rem;line-height:1rem;opacity:0.85}
+
+  /* Navigation needs a script to work, so it is hidden until one has run.
+     Dead links are worse than no links. */
+  #nav{display:none;gap:var(--sp-1);flex-wrap:wrap}
+  .js-active #nav{display:flex}
+  #nav a{display:inline-block;padding:var(--sp-1) var(--sp-2);border-radius:0.25rem;
+    color:var(--surface);text-decoration:none;font-size:0.875rem;line-height:1.5rem;
+    border:1px solid rgba(255,255,255,0.4);min-height:2.5rem}
+  #nav a[aria-current="page"]{background:var(--surface);color:var(--primary-dark);
+    border-color:var(--surface);font-weight:500}
+  #fullscreen{padding:var(--sp-1) var(--sp-2);border-radius:0.25rem;
+    border:1px solid rgba(255,255,255,0.4);background:transparent;color:var(--surface);
+    font-family:inherit;font-size:0.875rem;line-height:1.5rem;cursor:pointer;
+    min-height:2.5rem}
+  #fullscreen:disabled{opacity:0.45;cursor:default}
+
+  /* One view at a time — but only once a script has proven it can switch them.
+     Without one, every view stays in the document flow and stays readable. */
+  .view{display:block}
+  .js-active .view{display:none}
+  .js-active .view.active{display:block}
+
+  /* The day list is the only part that needs a script. Without one, showing an
+     empty filter bar and an empty chart frame pushes the parts that ARE
+     readable below the fold and makes the page look broken instead of reduced. */
+  #day-live{display:none}
+  .js-active #day-live{display:block}
+  .js-active #day-static{display:none}
+
+  .notice{border-left:0.25rem solid var(--status-neutral);background:var(--surface-sunken);
+    padding:var(--sp-1) var(--sp-2);margin-bottom:var(--sp-2);font-size:0.875rem;
+    line-height:1.5rem;border-radius:0.25rem}
+  .notice strong{display:block}
+  .notice.error{border-left-color:var(--status-negative);
+    background:var(--status-negative-bg)}
+
+  h2{font-size:1.25rem;line-height:2rem;font-weight:500;margin:var(--sp-3) 0 var(--sp-1)}
+  .view > h2:first-child{margin-top:0}
+  h3{font-size:0.875rem;line-height:1.5rem;font-weight:500;
+    margin:var(--sp-2) 0 var(--sp-1)}
+  p{margin:0 0 var(--sp-1)}
+  .hint{color:var(--ink-muted);font-size:0.875rem;line-height:1.5rem}
+
+  #controls{display:flex;gap:var(--sp-1) var(--sp-2);flex-wrap:wrap;
+    align-items:flex-end;background:var(--surface-sunken);padding:var(--sp-1) var(--sp-2);
+    border-radius:0.25rem;margin-bottom:var(--sp-2)}
+  #controls label{display:block;font-size:0.75rem;line-height:1rem;
+    text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-muted)}
+  #controls select,#controls button{padding:var(--sp-1);border-radius:0.25rem;
+    border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+    font-family:inherit;font-size:0.875rem;line-height:1.5rem;min-height:2.5rem}
+  #controls select{min-width:9rem}
+  #controls button{cursor:pointer}
+  #controls button:hover{border-color:var(--primary);color:var(--primary)}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));
+    gap:var(--sp-1);margin-bottom:var(--sp-2)}
+  .kpi{background:var(--surface-sunken);border-left:0.25rem solid var(--primary);
+    padding:var(--sp-1) var(--sp-2);border-radius:0.25rem;
+    display:flex;flex-direction:column;justify-content:space-between}
+  /* Labels wrap to two lines on the longer scheme names; reserving the space
+     keeps every number on the same baseline across the row. */
+  /* Deliberately NOT text-transform:uppercase. These labels are data — the
+     scheme names out of data.js — and upper-casing turned "langdagSFO TT-kort"
+     into "LANGDAGSFO TT-KORT", erasing that SFO is an acronym. Never re-case a
+     term the school owns. Weight and colour carry the hierarchy instead. */
+  .kpi .label{font-size:0.8125rem;line-height:1rem;font-weight:500;
+    color:var(--ink-muted);min-height:2rem}
+  .kpi .value{font-size:1.5rem;line-height:2rem;font-weight:500;
+    color:var(--primary-dark);font-variant-numeric:tabular-nums}
+
+  .card{border:1px solid var(--line);border-radius:0.25rem;padding:var(--sp-2);
+    margin-bottom:var(--sp-2)}
+  /* The chart is authored at 640x260. Letting it fill a 1280px window scales it
+     to 494px tall, which pushes the table it belongs with off the screen. */
+  svg{width:100%;max-width:40rem;height:auto;display:block;overflow:visible}
+  .axis{stroke:var(--line-strong);stroke-width:1}
+  .gridline{stroke:var(--line);stroke-width:1}
+  .axis-label{font-size:0.6875rem;fill:var(--ink-muted)}
+  .bar{fill:var(--primary)}
+
+  table{width:100%;border-collapse:collapse;font-size:0.875rem;line-height:1.5rem}
+  th,td{text-align:left;padding:var(--sp-1);border-bottom:1px solid var(--line);
+    vertical-align:top}
+  /* No sticky header: row 26 again. #content is the only scroller, so the
+     header row scrolls away with the rest — an accepted cost, not an oversight. */
+  th{font-size:0.75rem;line-height:1rem;text-transform:uppercase;
+    letter-spacing:0.04em;color:var(--ink-muted);white-space:nowrap}
+  .badge{display:inline-block;padding:0 var(--sp-1);border-left:0.25rem solid
+    var(--status-neutral);background:var(--surface-sunken);border-radius:0.125rem;
+    white-space:nowrap}
+  .badge.ok{border-left-color:var(--status-positive);
+    background:var(--status-positive-bg);color:var(--status-positive)}
+  .badge.waiting{border-left-color:var(--status-warning);
+    background:var(--status-warning-bg);color:var(--status-warning)}
+  .badge.cancelled{border-left-color:var(--status-negative);
+    background:var(--status-negative-bg);color:var(--status-negative)}
+  .badge.unknown{border-left-color:var(--status-neutral);
+    background:var(--surface-sunken);color:var(--ink);font-style:italic}
+  .legend{display:flex;flex-wrap:wrap;gap:var(--sp-1);align-items:center;
+    margin:0 0 var(--sp-2)}
+  .owner{display:inline-block;padding:0 var(--sp-1);border:1px solid var(--line-strong);
+    border-radius:0.125rem;font-size:0.75rem;line-height:1.5rem;color:var(--ink-muted)}
+
+  footer{margin-top:var(--sp-3);padding-top:var(--sp-1);color:var(--ink-muted);
+    font-size:0.75rem;line-height:1rem;border-top:1px solid var(--line)}
+
+  /* Nine columns do not fit a phone. Below 48rem each row becomes its own card
+     with the column name as a label, so nothing needs a horizontal scroll and
+     no second overflow container appears. */
+  @media (max-width:48rem){
+    /* 44x44px is the touch-target minimum docs/11 §5 asks for and nothing in
+       this repo enforces yet. 3rem = 48px keeps the 0.5rem step and clears it. */
+    #nav a,#controls select,#controls button,#fullscreen{min-height:3rem}
+    /* Let the filters share rows evenly instead of one dropping out alone. */
+    #controls > div{flex:1 1 9rem}
+    #controls select{width:100%;min-width:0}
+    /* Give the title its own line so the controls share the next one, instead
+       of the button being pushed onto a third row of chrome. */
+    .title{flex:1 0 100%}
+    thead{display:none}
+    tbody tr{display:block;border:1px solid var(--line);border-radius:0.25rem;
+      padding:var(--sp-1);margin-bottom:var(--sp-1)}
+    tbody td{display:flex;justify-content:space-between;gap:var(--sp-1);
+      border-bottom:0;padding:0.125rem 0}
+    tbody td::before{content:attr(data-column);color:var(--ink-muted);
+      font-size:0.75rem;line-height:1.5rem;text-transform:uppercase;
+      letter-spacing:0.04em}
+  }
+  @media print{header{background:var(--surface);color:var(--ink)}
+    #nav,#fullscreen,#controls{display:none}
+    body{height:auto;overflow:visible}#content{overflow:visible}
+    .js-active .view{display:block}}
+</style>
+</head>
+<body>
+<header>
+  <div class="title">
+    <h1>{{TITLE}}</h1>
+    <span class="subtitle">{{SUBTITLE}}</span>
+  </div>
+  <nav id="nav" aria-label="Visninger">
+    <a href="#view-day" data-view="view-day" aria-current="page">Dagsoversikt</a>
+    <a href="#view-schemes" data-view="view-schemes">Ordninger</a>
+    <a href="#view-routines" data-view="view-routines">Rutiner</a>
+  </nav>
+  <button type="button" id="fullscreen" hidden disabled>Fullskjerm</button>
+</header>
+
+<div id="content">
+
+  <div class="notice" id="js-warning">
+    <strong>Begrenset visning</strong>
+    Skript kjører ikke her, så dagslisten under blir ikke bygget. Ordninger og
+    rutiner står som vanlig tekst og kan leses som de er. Åpne filen fra en
+    synkronisert OneDrive-mappe for full visning.
+  </div>
+  <script>
+  /* Earliest possible script. Its own execution is the only proof that "some
+     script ran" — see docs/11 §3b. A noscript element cannot do this job: a
+     host can block these tags while scripting is formally still on. */
+  (function(){
+    var b = document.getElementById("js-warning");
+    if (b) { b.hidden = true; }
+    document.body.classList.add("js-active");
+  })();
+  </script>
+
+  <div class="notice" id="js-partial" hidden>
+    <strong>Visningen stoppet underveis</strong>
+    Noe skript startet, men dagslisten ble ikke bygget ferdig. Det du ser kan
+    være ufullstendig. Last siden på nytt.
+  </div>
+
+  <div class="notice error" id="data-error" hidden>
+    <strong id="data-error-title"></strong>
+    <span id="data-error-detail"></span>
+  </div>
+
+  <div class="notice" id="data-warning" hidden>
+    <strong id="data-warning-title"></strong>
+    <span id="data-warning-detail"></span>
+  </div>
+
+  <section class="view active" id="view-day">
+    <h2>Dagsoversikt</h2>
+    <p id="day-static">Dagslisten bygges av et skript, og det kjører ikke her.
+      Ordningene og rutinene under står som vanlig tekst og gjelder uansett.</p>
+    <div id="day-live">
+      <p class="hint" id="datasource"></p>
+      <section id="controls" aria-label="Filtre"></section>
+      <section class="kpis" id="kpis"></section>
+      <div class="card">
+        <h3>Turer per planlagt tid</h3>
+        <svg id="chart" viewBox="0 0 640 260" role="img"
+             aria-label="Antall turer per planlagt klokkeslett, tidligste tid til venstre"></svg>
+      </div>
+      <div class="card">
+        <h3>Turer <span class="hint" id="rowcount"></span></h3>
+        <!-- Static, not built by script: a reader who cannot see the badges in
+             colour still needs the shape key, and a reader with scripts off
+             still needs to know what the three marks mean. -->
+        <p class="legend">
+          <span class="badge ok">&#9679; I rute</span>
+          <span class="badge waiting">&#9650; Venter</span>
+          <span class="badge cancelled">&#9632; Avlyst eller avvik</span>
+          <span class="hint">Formen betyr statusen; fargen bekrefter den.</span>
+        </p>
+        <table id="tbl"><thead></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-schemes">
+    <h2>Tre ordninger, tre eiere</h2>
+    <p>Skolen bestiller og koordinerer transport til og fra skole og SFO.
+      Kjøreplanen følger åpningstidene. Behov for ledsager vurderes av skolen
+      og SFO. Men <strong>hvem som søker, hvem som bestiller den enkelte turen
+      og hvem som betaler er forskjellig i de tre ordningene</strong>. En
+      oversikt som slår dem sammen til én liste er feil, uansett hvor pen den er.</p>
+    <table>
+      <thead><tr>
+        <th>Ordning</th><th>Hvem søker</th><th>Hvem bestiller turen</th>
+        <th>Egenandel</th><th>Ledsager</th><th>Endres av</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td data-column="Ordning"><strong>Grunnskole drosje</strong></td>
+          <td data-column="Hvem søker">Ingen søknad</td>
+          <td data-column="Hvem bestiller turen">Skolen bestiller og koordinerer</td>
+          <td data-column="Egenandel">Nei</td>
+          <td data-column="Ledsager">Vurderes av skole/SFO</td>
+          <td data-column="Endres av">Skoleadm.; sentralbordet samme dag</td>
+        </tr>
+        <tr>
+          <td data-column="Ordning"><strong>langdagSFO TT-kort</strong></td>
+          <td data-column="Hvem søker">Foresatte søker TT-kort hos kommunen.
+            Gjelder <strong>alle</strong> på langdagSFO</td>
+          <td data-column="Hvem bestiller turen"><strong>Foresatte bestiller
+            drosjen selv</strong></td>
+          <td data-column="Egenandel">Ja, betales av foresatte</td>
+          <td data-column="Ledsager">Vurderes av skole/SFO</td>
+          <td data-column="Endres av">Foresatte; SFO</td>
+        </tr>
+        <tr>
+          <td data-column="Ordning"><strong>VGS TT-kort</strong></td>
+          <td data-column="Hvem søker">Søkes hos kommunen</td>
+          <td data-column="Hvem bestiller turen"><em>Ikke oppgitt i kilden —
+            må avklares med skolen før bruk</em></td>
+          <td data-column="Egenandel">Ja, betales av foresatte</td>
+          <td data-column="Ledsager">Vurderes av skole/SFO</td>
+          <td data-column="Endres av">Skoleadm.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="hint">Kilde: (fiktiv kilde — skolens egen transportside).
+      Der kilden ikke sier noe, står det at den ikke sier
+      noe. Ingenting i denne tabellen er utfylt med gjetning.</p>
+  </section>
+
+  <section class="view" id="view-routines">
+    <h2>Rutiner</h2>
+    <table>
+      <thead><tr><th>Situasjon</th><th>Hva gjør du</th></tr></thead>
+      <tbody>
+        <tr>
+          <td data-column="Situasjon">Eleven er syk</td>
+          <td data-column="Hva gjør du">Send SMS <strong>før 07:00</strong>.
+            Skolen avbestiller turen.</td>
+        </tr>
+        <tr>
+          <td data-column="Situasjon">Varig endring i kjøreplanen</td>
+          <td data-column="Hva gjør du">Meld den <strong>én uke</strong> i forveien.</td>
+        </tr>
+        <tr>
+          <td data-column="Situasjon">Endring samme dag</td>
+          <td data-column="Hva gjør du">Ring <strong>sentralbordet</strong>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Hvor endres selve dataene?</h3>
+    <p>I SharePoint-listen, ikke her. Denne filen er en visning som leses, ikke
+      et redigeringsverktøy — og det er et bevisst valg, ikke en manglende
+      funksjon.</p>
+    <p>En redigering i filen måtte ha en form for lås for at to personer ikke
+      skal overskrive hverandre. Det kan ikke bygges her: en fil som åpnes
+      lokalt får ikke lese en vanlig nabofil i det hele tatt
+      (docs/01 rad 16), så en låsefil måtte selv være kode og ville bare vært
+      like fersk som forrige synk. Og den kan ikke skrive tilbake på plass:
+      den eneste veien er en rettighetsforespørsel brukeren må godkjenne, som
+      bare finnes i noen nettlesere og ikke kan regresjonstestes (rad 19).</p>
+    <p>En SharePoint-liste har svaret innebygd. En oppdatering av et listeelement
+      tar imot en <code>If-Match</code> med elementets eTag, og svarer
+      <code>412 Precondition Failed</code> med elementet urørt hvis noen andre
+      har endret det i mellomtiden. Listen eier sannheten; denne filen er
+      visningen av den.</p>
+  </section>
+  <footer>
+    Eksempelskolen &middot; mønstereksempel med syntetiske data, ingen
+    virkelige elever &middot; bygget {{BUILD_TIMESTAMP}} av
+    build_day_board.py &middot; data i data.js ({{ROW_COUNT}} rader,
+    uttrekk {{EXTRACT_TIMESTAMP}}) &middot; ingen lisens, ingen server, ingen CDN.
+    Hvilke målte rader i docs/01-tenant-constraints.md som styrer hvert valg
+    står i README.md i denne mappen.
+  </footer>
+
+</div>
+
+<script src="./data.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ------------------------------------------------------------------ *
+   * Validation on the INITIAL load — docs/13 §2's open gap.
+   * The template this pattern came from only checked columns on the
+   * drag-in path, so a data.js written by a future, buggy generator
+   * rendered an empty page instead of saying what was wrong. There is
+   * no drag-in path here at all, so this is the only path there is.
+   * ------------------------------------------------------------------ */
+  var REQUIRED = {{REQUIRED_COLS_JSON}};
+
+  function esc(v){
+    return String(v === undefined || v === null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+  function $(id){ return document.getElementById(id); }
+  /* Plain objects inherit constructor, toString, __proto__ and friends, so
+     MAP[value] can return an inherited function for a value that was never a
+     key. Every lookup on a data-supplied value goes through here. */
+  function lookup(map, key){
+    return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
+  }
+
+  function fail(title, detail){
+    $("data-error-title").textContent = title;
+    $("data-error-detail").textContent = detail;
+    $("data-error").hidden = false;
+    // Reporting a bad data file IS finishing. Only a crash must leave the
+    // completion flag unset, so the tail check can tell the two apart.
+    window.TUN_RENDER_FERDIG = true;
+  }
+  /* Unlike fail(), this does not stop the render. A day board that goes blank
+     because one row has a typo is worse than one that shows the rows and says
+     which values it did not recognise. */
+  function warn(title, detail){
+    $("data-warning-title").textContent = title;
+    $("data-warning-detail").textContent = detail;
+    $("data-warning").hidden = false;
+  }
+
+  var rows = window.DASHBOARD_DATA;
+  var meta = window.DASHBOARD_META || {};
+
+  if (!Array.isArray(rows)) {
+    fail("Fant ingen data",
+      "data.js satte ikke window.DASHBOARD_DATA til en liste. Ligger data.js i " +
+      "samme mappe som denne filen? Begge filene må følge hverandre.");
+    return;
+  }
+  if (!rows.length) {
+    fail("Datafilen er tom", "data.js inneholder ingen rader.");
+    return;
+  }
+  /* EVERY row, not just the first. A file whose 40th row lost a column is
+     exactly the generator bug this check exists for, and checking rows[0]
+     alone would wave it through. */
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    if (row === null || typeof row !== "object" || Array.isArray(row)) {
+      fail("Datafilen har feil form",
+        "Rad " + (i + 1) + " er ikke et objekt med kolonnenavn.");
+      return;
+    }
+    var found = Object.keys(row);
+    var missing = REQUIRED.filter(function(k){ return found.indexOf(k) === -1; });
+    if (missing.length) {
+      fail("Datafilen mangler kolonner",
+        "Rad " + (i + 1) + " mangler: " + missing.join(", ") +
+        ". Fant: " + found.join(", ") + ".");
+      return;
+    }
+  }
+
+  /* A stored count that is also derivable must be re-derived, or the first
+     hand edit desynchronises it in silence. There is deliberately NO check
+     against a row count baked in at build time: swapping data.js for one with
+     more or fewer rows is the paired workflow (docs/13 §3), not an error. */
+  var metaDrift = (typeof meta.rows === "number" && meta.rows !== rows.length)
+    ? " DASHBOARD_META.rows sier " + meta.rows + ", men filen har " +
+      rows.length + " rader."
+    : "";
+
+  /* ------------------------------------------------------------------ */
+  var FILTERS = ["Dato", "Retning", "Ordning", "Status"];
+  var DIRECTION_SYMBOL = {"Til skole":"\u2192", "Fra skole":"\u2190", "Fra SFO":"\u2190"};
+  /* The school's own ASK convention: shape first. A colour-blind reader gets
+     the meaning from the circle / triangle / square, and everyone gets the
+     word next to it. Never colour alone (docs/09, WCAG 2.2 1.4.1). */
+  var STATUS_SYMBOL = {"I rute":"\u25cf", "Venter":"\u25b2", "Avlyst":"\u25a0"};
+  var STATUS_CLASS = {"I rute":"ok", "Venter":"waiting", "Avlyst":"cancelled"};
+  /* Text only. A filled circle here would collide with the "i rute" circle and
+     blunt the one shape convention that must stay unambiguous. Still an
+     allow-list, so an unrecognised value is still reported. */
+  var ESCORT_VALUES = {"Ja":1, "Nei":1, "Vurderes":1};
+  /* The régimes the ownership table in the Ordninger view actually documents.
+     An Ordning in the data that is not in this list has no owner written down
+     anywhere, which is the one thing this artefact must never hide. */
+  var DOCUMENTED_SCHEMES = ["Grunnskole drosje", "langdagSFO TT-kort",
+                            "VGS TT-kort"];
+  /* The column names are the data contract; these are what a reader sees.
+     Only the two that read badly when upper-cased need an entry. */
+  var LABELS = {"ElevKode":"Elevkode", "EndretAv":"Endret av"};
+  function label(k){ return lookup(LABELS, k) || k; }
+  var chosen = {};
+
+  function noDate(iso){
+    var d = String(iso).split("-");
+    return d.length === 3 ? d[2] + "." + d[1] + "." + d[0] : String(iso);
+  }
+  function distinct(column){
+    var seen = Object.create(null), out = [];
+    rows.forEach(function(r){
+      var v = r[column];
+      if (v !== undefined && v !== null && v !== "" && !seen[v]) { seen[v] = 1; out.push(v); }
+    });
+    return out.sort(function(a,b){ return String(a).localeCompare(String(b), "nb"); });
+  }
+  function visible(){
+    return rows.filter(function(r){
+      return FILTERS.every(function(k){
+        return !chosen[k] || chosen[k] === "__ALLE__" || String(r[k]) === chosen[k];
+      });
+    });
+  }
+  function countOf(subset, column, value){
+    return subset.filter(function(r){ return r[column] === value; }).length;
+  }
+
+  /* Which régimes are actually in this data file, not which ones were in the
+     one it shipped with — otherwise swapping data.js silently drops a whole
+     régime out of the KPI row while the filter below still offers it. */
+  var SCHEMES = distinct("Ordning");
+
+  /* Values the artefact has no rendering or no owner for. The page still
+     renders; it just refuses to let them pass unremarked. */
+  (function reportUnknownValues(){
+    var complaints = [];
+    var undocumented = SCHEMES.filter(function(o){
+      return DOCUMENTED_SCHEMES.indexOf(o) === -1;
+    });
+    if (undocumented.length) {
+      complaints.push("Ordning uten eier i tabellen under Ordninger: " +
+        undocumented.join(", "));
+    }
+    [["Status", STATUS_CLASS], ["Retning", DIRECTION_SYMBOL],
+     ["Ledsager", ESCORT_VALUES]].forEach(function(pair){
+      var unknown = distinct(pair[0]).filter(function(v){
+        return lookup(pair[1], v) === undefined;
+      });
+      if (unknown.length) {
+        complaints.push("Ukjent " + pair[0] + ": " + unknown.join(", "));
+      }
+    });
+    if (complaints.length) {
+      warn("Verdier denne visningen ikke kjenner igjen",
+        complaints.join(". ") + ". Radene vises, men merkes som ukjente. " +
+        "Enten er data.js endret, eller så må visningen oppdateres.");
+    }
+  })();
+
+  function drawControls(){
+    $("controls").innerHTML = FILTERS.map(function(k){
+      var options = ['<option value="__ALLE__">Alle</option>'].concat(
+        distinct(k).map(function(v){
+          var shown = k === "Dato" ? noDate(v) : v;
+          return '<option value="' + esc(v) + '">' + esc(shown) + "</option>";
+        })).join("");
+      return '<div><label for="f_' + k + '">' + esc(label(k)) + "</label>" +
+             '<select id="f_' + k + '" data-column="' + k + '">' + options + "</select></div>";
+    }).join("") +
+      '<div><button type="button" id="reset">Nullstill</button></div>';
+
+    FILTERS.forEach(function(k){
+      chosen[k] = "__ALLE__";
+      $("f_" + k).addEventListener("change", function(e){
+        chosen[k] = e.target.value; draw();
+      });
+    });
+    $("reset").addEventListener("click", function(){
+      FILTERS.forEach(function(k){ chosen[k] = "__ALLE__"; $("f_" + k).value = "__ALLE__"; });
+      draw();
+    });
+  }
+
+  function drawKpis(subset){
+    var cards = [["Turer i utvalget", subset.length]]
+      .concat(SCHEMES.map(function(o){ return [o, countOf(subset, "Ordning", o)]; }))
+      .concat([["Venter", countOf(subset, "Status", "Venter")],
+               ["Avlyst", countOf(subset, "Status", "Avlyst")],
+               ["Ledsager vurderes", countOf(subset, "Ledsager", "Vurderes")]]);
+    $("kpis").innerHTML = cards.map(function(c){
+      return '<div class="kpi"><div class="label">' + esc(c[0]) +
+             '</div><div class="value">' + esc(c[1]) + "</div></div>";
+    }).join("");
+  }
+
+  /* Hand-rolled SVG. Earliest time on the left, latest on the right — the
+     left-to-right reading order the school's own tilrettelegging principles
+     ask for, applied to a chart instead of a wall. */
+  function drawChart(subset){
+    var svg = $("chart"), NS = "http://www.w3.org/2000/svg";
+    var W = 640, H = 260, m = {t:12, r:16, b:44, l:48};
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    while (svg.firstChild) { svg.removeChild(svg.firstChild); }
+    function el(name, attr){
+      var n = document.createElementNS(NS, name);
+      for (var k in attr) {
+        if (Object.prototype.hasOwnProperty.call(attr, k)) { n.setAttribute(k, attr[k]); }
+      }
+      return n;
+    }
+    var perTime = Object.create(null), order = [];
+    subset.forEach(function(r){
+      if (!perTime[r.Planlagt]) { perTime[r.Planlagt] = 0; order.push(r.Planlagt); }
+      perTime[r.Planlagt] += 1;
+    });
+    order.sort();
+    if (!order.length) {
+      var none = el("text", {x:W/2, y:H/2, "text-anchor":"middle", "class":"axis-label"});
+      none.textContent = "Ingen turer i utvalget";
+      svg.appendChild(none);
+      return;
+    }
+    var max = Math.max.apply(null, order.map(function(k){ return perTime[k]; }));
+    var step = Math.max(1, Math.ceil(max / 4));
+    var top = step * 4;
+    for (var i = 0; i <= 4; i++) {
+      var y = m.t + ih - (ih * i / 4);
+      svg.appendChild(el("line", {"class":"gridline", x1:m.l, x2:m.l + iw, y1:y, y2:y}));
+      var tick = el("text", {"class":"axis-label", x:m.l - 8, y:y + 4, "text-anchor":"end"});
+      tick.textContent = String(step * i);
+      svg.appendChild(tick);
+    }
+    svg.appendChild(el("line", {"class":"axis", x1:m.l, x2:m.l + iw,
+      y1:m.t + ih, y2:m.t + ih}));
+    var slot = iw / order.length;
+    order.forEach(function(time, i){
+      var v = perTime[time];
+      var h = Math.max(ih * v / top, 1);
+      var x = m.l + i * slot + slot * 0.15;
+      var bar = el("rect", {"class":"bar", x:x, y:m.t + ih - h,
+        width:slot * 0.7, height:h, rx:2});
+      var label = document.createElementNS(NS, "title");
+      label.textContent = time + ": " + v + (v === 1 ? " tur" : " turer");
+      bar.appendChild(label);
+      svg.appendChild(bar);
+      var value = el("text", {"class":"axis-label", x:x + slot * 0.35,
+        y:m.t + ih - h - 4, "text-anchor":"middle"});
+      value.textContent = String(v);
+      svg.appendChild(value);
+      var clock = el("text", {"class":"axis-label", x:x + slot * 0.35,
+        y:m.t + ih + 18, "text-anchor":"middle"});
+      clock.textContent = time;
+      svg.appendChild(clock);
+    });
+  }
+
+  function drawTable(subset){
+    var sorted = subset.slice().sort(function(a, b){
+      return (a.Dato + a.Planlagt + a.ElevKode)
+        .localeCompare(b.Dato + b.Planlagt + b.ElevKode, "nb");
+    });
+    $("tbl").querySelector("thead").innerHTML = "<tr>" +
+      REQUIRED.map(function(k){ return "<th>" + esc(label(k)) + "</th>"; }).join("") + "</tr>";
+    $("tbl").querySelector("tbody").innerHTML = sorted.map(function(r){
+      return "<tr>" + REQUIRED.map(function(k){
+        var v = r[k], cell;
+        if (k === "Dato") { cell = esc(noDate(v)); }
+        else if (k === "Retning") {
+          cell = esc((lookup(DIRECTION_SYMBOL, v) || "?") + " " + v);
+        }
+        else if (k === "Status") {
+          /* An unrecognised status is marked as unrecognised, never dressed
+             up as one of the three the artefact does understand. */
+          var known = lookup(STATUS_CLASS, v) !== undefined;
+          cell = '<span class="badge ' + (known ? lookup(STATUS_CLASS, v) : "unknown") +
+                 '">' + esc((known ? lookup(STATUS_SYMBOL, v) : "?") + " " + v) +
+                 "</span>";
+        }
+        else if (k === "Ledsager") {
+          cell = esc(lookup(ESCORT_VALUES, v) ? v : "? " + v);
+        }
+        else if (k === "EndretAv") { cell = '<span class="owner">' + esc(v) + "</span>"; }
+        else { cell = esc(v); }
+        return '<td data-column="' + esc(label(k)) + '">' + cell + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+    $("rowcount").textContent = "(" + sorted.length + " av " + rows.length + ")";
+  }
+
+  function draw(){
+    var subset = visible();
+    drawKpis(subset);
+    drawChart(subset);
+    drawTable(subset);
+  }
+
+  function showView(id){
+    var views = document.querySelectorAll("#content .view");
+    for (var i = 0; i < views.length; i++) {
+      if (views[i].id === id) { views[i].classList.add("active"); }
+      else { views[i].classList.remove("active"); }
+    }
+    var links = document.querySelectorAll("#nav a[data-view]");
+    for (var j = 0; j < links.length; j++) {
+      if (links[j].getAttribute("data-view") === id) {
+        links[j].setAttribute("aria-current", "page");
+      } else { links[j].removeAttribute("aria-current"); }
+    }
+    $("content").scrollTop = 0;
+  }
+
+  /* View switching is a click handler with preventDefault, never CSS :target.
+     docs/01 row 24: fragment navigation does not happen at all in SharePoint's
+     inline preview, so :target never matches and the page looks frozen —
+     while script itself runs perfectly well. */
+  (function(){
+    var links = document.querySelectorAll("#nav a[data-view]");
+    for (var i = 0; i < links.length; i++) {
+      links[i].addEventListener("click", function(e){
+        e.preventDefault();
+        showView(this.getAttribute("data-view"));
+      });
+    }
+  })();
+
+  /* Fullscreen is feature-detected before it is ever called. docs/01 row 21:
+     an unguarded requestFullscreen() threw inside the Teams WebView on a real
+     iPhone, and the host showed the user a "Script error" banner. A disabled
+     button is a better answer than a visible error. */
+  (function(){
+    var button = $("fullscreen");
+    var root = document.documentElement;
+    var unavailable = "Fullskjerm er ikke tilgjengelig i denne visningen";
+    button.hidden = false;
+    if (typeof root.requestFullscreen !== "function" || document.fullscreenEnabled !== true) {
+      button.disabled = true;
+      button.title = unavailable;
+      return;
+    }
+    button.disabled = false;
+    button.addEventListener("click", function(){
+      function giveUp(){ button.disabled = true; button.title = unavailable; }
+      try {
+        var p = document.fullscreenElement ? document.exitFullscreen() : root.requestFullscreen();
+        if (p && typeof p.catch === "function") { p.catch(giveUp); }
+      } catch (e) { giveUp(); }
+    });
+  })();
+
+  $("datasource").textContent =
+    (meta.source || "{{SOURCE_DESCRIPTION}}") + " \u00b7 uttrekk " +
+    (meta.generated || "{{EXTRACT_TIMESTAMP}}") + " \u00b7 " + rows.length +
+    " rader \u00b7 syntetiske data" + metaDrift;
+
+  drawControls();
+  draw();
+
+  window.TUN_RENDER_FERDIG = true;
+})();
+</script>
+<script>
+/* Did the main script finish, or only start? A script that crashes midway
+   leaves stale or empty content with no explanation, which is the failure
+   docs/11 §3b point 3 asks for a distinct message about. If it did not
+   finish, drop back to the static layout so every view is readable again. */
+(function(){
+  if (window.TUN_RENDER_FERDIG === true) { return; }
+  document.body.classList.remove("js-active");
+  var b = document.getElementById("js-partial");
+  if (b) { b.hidden = false; }
+})();
+</script>
+</body>
+</html>
