@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -63,6 +63,16 @@ html.js #js-warning{display:none}
 .eyebrow{margin-bottom:2vh;color:var(--accent2);font-size:clamp(10px,.85vw,13px);
   font-weight:700;letter-spacing:.2em;text-transform:uppercase}
 .slide.dark .eyebrow{color:var(--accent)}
+/* overflow-wrap/word-break: a real, long Norwegian compound word in h1/h2/p can exceed
+   its box at any of the clamp() sizes below. .slide has overflow:hidden (by design, to
+   clip the slide-change transform), so an unwrapped long word is not just visually
+   ugly — it is silently and invisibly clipped, with no scrollbar and no sign anything
+   is missing. Reproduced on the shipped template: a 34-character real word ("Trygde-
+   avgiftsberegningsforskriften") in <h1> overflowed its box by 229px on a 390px-wide
+   mobile viewport (scrollWidth 564 vs clientWidth 335) and vanished with zero visual
+   trace. hyphens:auto is a second, cosmetic layer on top — lang="nb" is already set on
+   <html>, so supporting browsers get a real hyphen at the break instead of a bare cut. */
+h1,h2,p,.card strong,.card span{overflow-wrap:break-word;word-break:break-word;hyphens:auto}
 h1,h2{max-width:24ch;font-family:var(--display);font-weight:600;letter-spacing:-.02em}
 h1{font-size:clamp(34px,5vw,72px);line-height:1.04}
 h2{margin-bottom:2.5vh;font-size:clamp(26px,3.2vw,46px);line-height:1.09}

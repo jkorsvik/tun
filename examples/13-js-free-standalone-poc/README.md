@@ -103,7 +103,7 @@ ved sidebytte, og `#page-home` trenger ikke lenger ligge sist i DOM-en.
 
 Fire reelle feil ble funnet av et ekte blikk på skjermbildet, ikke av de
 automatiske sjekkene (som bare tester tilstand/synlighet, ikke visuell
-plassering) — nøyaktig grunnen til at `dashboard-verify`-familien alltid
+plassering) — nøyaktig grunnen til at `tun-verify`-familien alltid
 krever et menneske som ser på resultatet:
 
 1. **Eksempel AS-logoen lå oppå hamburgerikonet.** Toppfeltet hadde ikke

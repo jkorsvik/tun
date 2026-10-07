@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -105,6 +105,44 @@ def strip_copyright_lines(text: str) -> str:
     return COPYRIGHT_LINE.sub("", text)
 
 
+#: A declared attribution region. Everything between these markers is deliberate
+#: identification: who made this, who named it, who holds copyright. Such a region is the
+#: opposite of the leak this gate hunts, so the identity categories skip it.
+#:
+#: Region-based rather than file-based on purpose. Exempting a whole README would let a
+#: colleague's name drift into an unrelated paragraph and count as attribution; a region
+#: says exactly which lines were reviewed as intentional, in the source, where the next
+#: reader sees it.
+ATTRIBUTION_START = "<!-- attribution:start -->"
+ATTRIBUTION_END = "<!-- attribution:end -->"
+
+#: Here only the person label is exempt inside the region: crediting the authors by name
+#: is the point of the region, but an organisation named there is still caught.
+ATTRIBUTION_EXEMPT = ("person",)
+
+
+def strip_attribution(text: str) -> str:
+    """Remove declared attribution regions, preserving line count so reported line numbers
+    stay usable. An unterminated region is NOT stripped: a stray opening marker would
+    otherwise silently exempt the rest of a file, which is a hole with a comment on it."""
+    out, pos = [], 0
+    while True:
+        start = text.find(ATTRIBUTION_START, pos)
+        if start == -1:
+            out.append(text[pos:])
+            return "".join(out)
+        end = text.find(ATTRIBUTION_END, start)
+        if end == -1:
+            # Unterminated: keep the remainder so it is still scanned, and let the
+            # dedicated test complain about the malformed marker.
+            out.append(text[pos:])
+            return "".join(out)
+        end += len(ATTRIBUTION_END)
+        out.append(text[pos:start])
+        out.append("\n" * text.count("\n", start, end))
+        pos = end
+
+
 def redact(s: str) -> str:
     s = s.strip()
     return s[:1] + "…" * min(len(s) - 1, 3) + f"({len(s)})" if s else "(empty)"
@@ -126,8 +164,13 @@ def scan(root: pathlib.Path, rules) -> tuple[int, list[tuple[str, str, int, str]
             continue
         text = p.read_bytes().decode("utf-8", errors="ignore")
         noticed = strip_copyright_lines(text)
+        credited = strip_attribution(noticed)
         for label, rx in rules:
-            subject = noticed if label in NOTICE_EXEMPT else text
+            subject = text
+            if label in NOTICE_EXEMPT:
+                subject = noticed
+            if label in ATTRIBUTION_EXEMPT:
+                subject = credited
             for m in rx.finditer(subject):
                 line = subject.count("\n", 0, m.start()) + 1
                 hits.append((label, rel, line, redact(m.group(0))))

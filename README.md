@@ -45,7 +45,7 @@ versioning, audit, sync and offline. Reuse that machinery instead of fighting it
 | **[Portable slide deck](examples/18-portable-slide-deck/README.md)** (synthetic sample deck, one file, offline) | ✅ **working** — responsive portrait/landscape controls; Chromium/WebKit matrix; guarded fullscreen |
 | In-page embedding (SPFx) | 🔶 designed, **blocked** on an SPFx package getting through tenant admin review |
 | Tier 3 (Parquet + DuckDB-WASM) | 🔶 designed; HTTP Range **measured and confirmed**, but it **cannot run from a portable file** — needs Tier 2 to host it |
-| Skills | ✅ 6 written (`dashboard-help`, `-new`, `-data`, `-verify`, `-publish`, `powerbi-escape`) |
+| Skills | ✅ 6 written (`tun-help`, `-new`, `-data`, `-verify`, `-publish`, `tun-powerbi-escape`) |
 | Onboarding | ✅ [written for a new contributor](docs/04-onboarding.md) |
 
 ## Try it in two commands
@@ -149,7 +149,7 @@ consumed is more valuable here than engineering.
 
 Two standing rules:
 
-1. **`dashboard-verify` must pass before anything is published.** A clean build is not
+1. **`tun-verify` must pass before anything is published.** A clean build is not
    evidence; inspect the artefact.
 2. **If a tenant constraint changes, update `docs/01-tenant-constraints.md` in the same
    commit** as whatever you change in response. Re-check with
@@ -162,7 +162,7 @@ See [`ROADMAP.md`](ROADMAP.md) for what's next.
 
 ## Licence
 
-Copyright (C) 2026 Jon-Mikkel Ryen Korsvik.
+Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 
 Tún is free software under the **GNU Affero General Public License v3 or later**
 ([`LICENSE`](LICENSE)). Every source file says so in its header;

@@ -107,6 +107,15 @@ that.** The architecture routes around it instead.
 
 ---
 
+**Notes on the table.** Row 25 is enforced by `check_no_stray_script_text()` in
+`tools/verify_standalone_core.py`. The check existed from 2026-09-15, but the publish gate
+(`tools/verify_dashboard.py`) only started to call it on 2026-09-24. Until then every
+dashboard could ship a violation and still pass. Row 12: an SVG with an inline script *does* run its script
+when the file is opened directly from disk. SharePoint still forces it to download, so
+SVG is no way around the attachment rule. Row 27: Safari on iPhone exposes the
+Fullscreen API for `<video>` only, not for an HTML element. A deck therefore needs its
+own fallback there. It cannot ask for real fullscreen.
+
 ## Why row 6 (Range requests) matters — and where it stops
 
 `206 Partial Content` on SharePoint file content means a browser can read **arbitrary
@@ -300,6 +309,30 @@ Be honest about these; do not design around them:
   [Baseline Security Mode](https://learn.microsoft.com/en-us/microsoft-365/baseline-security-mode/baseline-security-mode-settings)
   now permanently blocks) or an admin-approved SPFx package.
 
+## More than one editor: what a file cannot do
+
+A paired file has exactly one safe writer. This follows from rows already measured. It
+is not a separate test.
+
+- **A lock file cannot work.** The page cannot read a sibling plain file (row 16), so it
+  cannot see a lock while it is open. It cannot write in place (row 19, only a user
+  download in row 18), so it cannot take or release a lock. Sync is not instant, so two
+  people can both read "free" and both start. A lock that cannot be taken atomically is
+  worse than no lock: it shows a guarantee it does not have. A lock left by a crashed
+  browser could also never expire.
+- **Conflicts are not merged.** See the first item under *Assumptions still to test*.
+- **The real lock is a list, not a file.** A SharePoint list item updated through
+  Microsoft Graph with an `If-Match` ETag returns `412 Precondition Failed` and is not
+  changed when someone else changed it first (from the Graph documentation, not measured
+  here). That gives optimistic concurrency, version history and per-item permissions.
+- **The Tún page can never be that editor.** From `file://`, `fetch` to SharePoint gets
+  `401`, and MSAL cannot use a `file://` redirect URI (row 8). The split is: people edit
+  in SharePoint (or one person edits a file), and the page reads the result.
+
+So: one editor, use paired mode. Several editors at once, use a SharePoint list as the
+source and let the page read a snapshot of it. `examples/17` describes this split for a
+synthetic case, in the text of its page (`oversikt.template.html`).
+
 ## Sharing outside the organisation
 
 Row 11 matters most here: **anonymous SharePoint links are blocked at tenant level.** You
@@ -341,7 +374,9 @@ heavier than just sending the file.
   (row 20). **Tier 1.**
 - SPFx web part for true in-page embedding, if an admin will approve it. **Tier 2.**
 - Parquet + DuckDB-WASM over Range requests, for large data with row-level detail.
-  **Requires Tier 2 to host it** — measured, not assumed. **Tier 3.**
+  **Requires Tier 2 to host it** — measured, not assumed. **Tier 3.** For most cases the
+  dense cube is enough. Parquet, SQLite and DuckDB are more useful on the build side, in
+  the job that writes the file (see `00-vision.md`, *Live-ish data*).
 
 See [`02-architecture.md`](02-architecture.md) for how the three tiers fit together.
 
@@ -405,6 +440,14 @@ Status: no row yet. A self-reporting probe page is being prepared; results becom
 ## Assumptions still to test
 
 These were not verified and should not be relied on until they are:
+
+- [ ] **Two devices editing one synced file offline.** Expected vendor behaviour: the
+      OneDrive client does not merge and does not pick a winner. It keeps both files,
+      the second with the device name in it (for example `data (Device).js`). The page
+      still loads the original, so the second person's edits silently disappear from
+      view. This comes from a research report that cited it as measured and then
+      admitted it was never tested (2026-09-19). Design as if it is true. Do not quote
+      it as measured.
 
 - [ ] Whether an **SPFx web part is approvable** in the organisation's tenant, and what the
       lead time is. This gates Tier 2 entirely.

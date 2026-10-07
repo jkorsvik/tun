@@ -28,8 +28,8 @@ need different data, the answer is **split the data and give each audience its o
 — same dashboard shell, one `data.js` each. Do not refuse the request, and do not put a
 filter in a shared file: a browser filter hides nothing, the rows are still in the file.
 
-The split must happen *before* the data is written. `dashboard-new`, `dashboard-help` and
-`powerbi-escape` all handle this. Keep that behaviour.
+The split must happen *before* the data is written. `tun-new`, `tun-help` and
+`tun-powerbi-escape` all handle this. Keep that behaviour.
 
 ### 2. Never defeat `Content-Disposition: attachment`
 
@@ -37,7 +37,7 @@ SharePoint forces it on every file. It is an XSS control in a corporate document
 architecture routes around it (the download *is* the delivery mechanism). Any "clever"
 workaround is defeating a security control — don't, and push back if asked.
 
-### 3. `dashboard-verify` must pass before anything is published
+### 3. `tun-verify` must pass before anything is published
 
 A clean build is not evidence. The artefact must be opened in a real browser from a
 `file://` URL — the same way a recipient will — and the screenshot must be looked at by a
@@ -193,6 +193,7 @@ directory:
 python3 tests/test_skill_links.py            # 29 assertions, throwaway HOME
 python3 tests/test_row_24_26_checks.py       # 97 assertions + a mutation pass
 python3 tests/test_verify_gate_browser.py    # 16 assertions + a mutation control
+python3 tests/test_findings_index.py         # every findings-index row resolves, 3 mutation controls
 ```
 
 `test_skill_links.py` covers `setup.py`, which decides whether to replace or preserve a
@@ -240,6 +241,10 @@ is safe — the template is the whole product.
   - The actual fix for distribution is still a shared link (OneDrive/SharePoint), not a
     raw attachment — zero recipient guiding needed vs. a multi-step "save then open in
     a browser" instruction per recipient.
+- **Mutation harnesses run in the background.** A harness that edits a file in place and
+  restores it afterwards must never run under a foreground tool timeout. One was killed
+  between the two steps and left a mutated tree that looked like a real build. See
+  `docs/12-maintainability-conventions.md` §4.
 - **Pillow on macOS**: `Image.open()` is lazy — the file isn't decoded yet. Calling
   `.convert(...)` or `.save(...)` on that handle without an explicit `.load()` first can
   silently write a truncated ~32-byte file with no exception. Always `img.load()`

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1C2E">
+<title>Eksempel 21 — utvid-for-kildetekst</title>
+<!--
+  Eksempel 21 — worked example for issue #37 (vmin-typografi, kildetekst-overlay,
+  utvidet tastaturkart)
+  PROVENANCE
+    Source data : syntetisk eksempelinnhold, ingen reelle saksdata
+    Built       : 2026-09-29
+    Requested by: the product owner
+    Built by    : Tún — tun.community
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Artefact    : portable slide deck — variant of templates/portable-slide-deck.html
+  Self-contained HTML: no server, CDN, account or licence is required to view it.
+  This file starts from templates/portable-slide-deck.html's own shell (#controls,
+  #rail, #progress, #toast, .eyebrow/.grid/.card) unchanged, and adds three patterns
+  discussed in issue #37: vmin-based typography, a detail overlay for full source
+  text, and an extended keyboard map. Whether any of these graduate into the core
+  template is a maintainer decision, per the issue thread — this file is the
+  requested worked example, not a claim that the decision is already made. The
+  location.hash / history.replaceState deep-link behaviour below is unchanged from
+  the core template and carries the same open question raised on issue #47.
+-->
+<style>
+:root{
+  --ink:#0E1C2E;
+  --paper:#F7F5EF;
+  --accent:#B8860B;
+  --accent2:#2B4C7E;
+  --muted:#5f6b6d;
+  --line:rgba(14,28,46,.14);
+  --display:Georgia,"Times New Roman",serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;height:100dvh;overflow:hidden;background:var(--ink)}
+body{font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+main{position:relative;width:100vw;height:100vh;height:100dvh}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:7vh 7vw 12vh 15vw;overflow:hidden;background:var(--paper);
+  opacity:0;transform:translateX(3%);pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease}
+.slide.active{z-index:2;opacity:1;transform:none;pointer-events:auto}
+.slide.prev{transform:translateX(-3%)}
+.slide.dark{background:var(--ink);color:var(--paper)}
+html:not(.js) .slide:first-of-type{opacity:1;transform:none;pointer-events:auto;z-index:2}
+html:not(.js) #rail,html:not(.js) #controls,html:not(.js) #progress{display:none}
+#js-warning{position:fixed;z-index:40;left:50%;bottom:max(14px,env(safe-area-inset-bottom));
+  width:min(90vw,680px);padding:12px 16px;transform:translateX(-50%);border-radius:8px;
+  background:#fdeeee;color:#3d0d0d;font:600 13px/1.4 var(--body);text-align:center}
+html.js #js-warning{display:none}
+.eyebrow{margin-bottom:2vh;color:var(--accent2);font-size:clamp(10px,1.1vmin,13px);
+  font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+.slide.dark .eyebrow{color:var(--accent)}
+h1,h2,p,.card strong,.card span{overflow-wrap:break-word;word-break:break-word;hyphens:auto}
+h1,h2{max-width:24ch;font-family:var(--display);font-weight:600;letter-spacing:-.02em}
+
+/* --- Pattern 1: vmin instead of vw as the clamp() scaling basis -----------
+   Unchanged from templates/portable-slide-deck.html except for this one axis.
+   vmin is the shorter of viewport width/height, so it responds to a short
+   window the same way it responds to a narrow one. Measured before this
+   change, on the unmodified core template's own "Forklaring" slide (heading
+   + three stat cards): at 1920x950 (an un-maximised browser on an external
+   monitor — a common real case, not a constructed edge case) the content
+   block used roughly 36% of viewport height because every vw-driven value
+   had already hit its clamp() ceiling. The ceilings here are raised to give
+   vmin room to keep scaling on such windows instead of also saturating
+   early; see the PR description for the before/after screenshots and the
+   coefficients chosen to match the original vw output at the repo's two
+   reference viewports (1600x900, 1366x768), so normal-ratio screens look
+   effectively unchanged. --- */
+h1{font-size:clamp(34px,8.9vmin,72px);line-height:1.04}
+h2{margin-bottom:2.5vh;font-size:clamp(26px,7.4vmin,58px);line-height:1.09}
+p{max-width:62ch;color:var(--muted);font-size:clamp(14px,2.6vmin,20px);line-height:1.55}
+.slide.dark p{color:rgba(247,245,240,.76)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5vw;margin-top:4vh}
+.card{padding:1.6vw;border:1px solid var(--line);border-radius:4px;background:rgba(255,255,255,.32)}
+.card strong{display:block;margin-bottom:1vh;color:var(--accent2);font:600 clamp(24px,7.7vmin,58px)/1 var(--display)}
+.card span{font-size:clamp(12px,2vmin,16px);line-height:1.4}
+
+#rail{position:fixed;z-index:10;left:2.2vw;top:50%;width:145px;transform:translateY(-50%)}
+.rail-sec{display:flex;align-items:center;gap:9px;padding:5px 0;opacity:.35;cursor:pointer}
+.rail-sec.on{opacity:1}
+.rail-sec .tick{width:13px;height:2px;flex:none;background:currentColor}
+.rail-sec.on .tick{width:28px;background:var(--accent)}
+.rail-sec .label{max-width:105px;font-size:9px;font-weight:700;letter-spacing:.12em;line-height:1.25;text-transform:uppercase}
+body.on-dark #rail{color:var(--paper)}
+#progress{position:fixed;z-index:11;left:0;right:0;bottom:0;height:2px;background:rgba(128,128,128,.2)}
+#progress i{display:block;width:0;height:100%;background:var(--accent);transition:width .35s ease}
+#controls{position:fixed;z-index:20;left:50%;bottom:max(14px,env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:4px;padding:5px;transform:translateX(-50%);
+  border:1px solid var(--line);border-radius:999px;background:rgba(247,245,240,.92);
+  box-shadow:0 8px 28px rgba(0,52,62,.16);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+body.on-dark #controls{border-color:rgba(247,245,240,.2);background:rgba(0,34,41,.88);box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.control-btn{min-width:42px;height:42px;padding:0 13px;border:0;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;gap:7px;background:transparent;color:var(--ink);
+  font:600 12px/1 var(--body);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body.on-dark .control-btn{color:var(--paper)}
+.control-btn:hover,.control-btn:focus-visible{outline:none;background:rgba(0,114,114,.13)}
+.control-btn:active{transform:scale(.96)}
+.control-btn[disabled]{opacity:.28;cursor:default;transform:none}
+.control-icon{font-size:20px;line-height:1}
+#counter{min-width:52px;padding:0 8px;color:var(--muted);font-size:11px;letter-spacing:.12em;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+body.on-dark #counter{color:rgba(247,245,240,.64)}
+#toast{position:fixed;z-index:30;left:50%;bottom:88px;width:min(88vw,560px);
+  padding:12px 16px;transform:translate(-50%,12px);border-radius:10px;
+  background:#101820;color:#fff;font:500 13px/1.4 var(--body);text-align:center;
+  opacity:0;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.28);transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* --- Pattern 2: detail overlay for full source text -----------------------
+   A pill sits directly under a slide's own bulleted content, in-flow, not a
+   floating icon. It opens a panel with the full paragraph the bullets were
+   compressed from — for decks whose source is a written memo/notat, keeping
+   each slide to "one claim" while the complete text stays one keypress away.
+   Positioning note found building this: #detail-backdrop/#detail-panel are
+   siblings of <main>, appended directly to <body> — not nested inside .slide
+   or <main>. .slide has overflow:hidden (needed here for the slide-change
+   transform); an early version nested the panel inside .slide and its bottom
+   edge was silently clipped on shorter screens even though top/max-height
+   were computed correctly in isolation. Same family of problem as
+   docs/01-tenant-constraints.md row 26 (an ancestor's scroll/overflow
+   handling breaking something that must stay correctly visible) — a
+   different concrete cause (overflow:hidden clipping a fixed-positioned
+   descendant, not position:sticky/fixed misbehaving specifically in
+   SharePoint's inline preview) — this one reproduces in any browser, so it
+   is a general layout lesson, not a proposed new tenant-constraints row. --- */
+.detail-btn{
+  display:inline-flex;align-items:center;gap:.5rem;margin-top:1.5rem;
+  padding:.4rem .9rem .4rem .5rem;
+  background:rgba(0,52,62,.07);border:1px solid rgba(0,52,62,.18);
+  border-radius:999px;font-size:.85rem;font-weight:600;color:var(--ink);
+  cursor:pointer;white-space:nowrap;transition:background .15s}
+.detail-btn:hover{background:rgba(0,52,62,.14)}
+.slide.dark .detail-btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);color:#fff}
+.slide.dark .detail-btn:hover{background:rgba(255,255,255,.22)}
+.detail-btn .ico{width:1.5rem;height:1.5rem;border-radius:50%;background:var(--accent2);
+  color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;flex:0 0 auto}
+.slide.dark .detail-btn .ico{background:var(--accent);color:var(--ink)}
+#detail-backdrop{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,52,62,.5)}
+#detail-backdrop.open{display:block}
+#detail-panel{
+  display:none;position:fixed;z-index:51;left:50%;transform:translateX(-50%) translateY(-6px);
+  top:max(3vh,env(safe-area-inset-top));
+  max-height:calc(100vh - 6vh);max-height:calc(100dvh - 6vh);
+  width:min(760px,90vw);background:var(--paper);border-radius:1rem;
+  box-shadow:0 16px 48px rgba(0,0,0,.3);flex-direction:column;opacity:0;
+  transition:opacity .15s ease,transform .15s ease}
+#detail-panel.open{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
+#detail-panel .dp-header{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  padding:.85rem 1.25rem;border-bottom:1px solid var(--line)}
+#detail-panel .dp-title{font-weight:700;font-size:.9rem;color:var(--ink)}
+#detail-panel .dp-close{background:rgba(0,52,62,.07);border:none;width:2rem;height:2rem;
+  border-radius:.5rem;font-size:1rem;cursor:pointer;color:var(--muted);
+  display:flex;align-items:center;justify-content:center}
+#detail-panel .dp-close:hover{background:rgba(0,52,62,.14)}
+#detail-panel .dp-body{overflow-y:auto;padding:1rem 1.25rem 1.5rem;font-size:.9rem;
+  line-height:1.65;color:var(--ink);-webkit-overflow-scrolling:touch}
+#detail-panel .dp-body p{margin-bottom:.7rem}
+
+/* --- Pattern 3 has no CSS of its own: it is the keyboard map in the script
+   element near the end of this file. (Spelled out to avoid the literal
+   four-plus-character tag opener as prose — docs/01-tenant-constraints.md
+   row 25: that exact text anywhere in this file, comment or not, has been
+   measured to silently disable every script on the page in SharePoint's
+   inline preview.) --- */
+#jump-indicator{display:none;position:fixed;left:50%;bottom:96px;transform:translateX(-50%);
+  z-index:31;background:#101820;color:#fff;padding:.5rem 1rem;border-radius:999px;
+  font-size:.85rem;font-weight:600}
+#jump-indicator.show{display:block}
+#blank-screen{display:none;position:fixed;inset:0;z-index:60;background:#000}
+#blank-screen.show{display:block}
+
+@media(hover:hover) and (pointer:fine){
+  #controls{opacity:.42;transition:opacity .2s}
+  #controls:hover,#controls:focus-within{opacity:1}
+}
+@media(hover:none),(pointer:coarse){
+  .control-btn{min-width:48px;height:48px;font-size:13px}
+  #controls{padding:6px;gap:3px}
+}
+@media(orientation:portrait) and (max-width:700px){
+  #rail{display:none}
+  .slide{padding:max(7vh,env(safe-area-inset-top)) 7vw max(14vh,104px);justify-content:center}
+  h1{font-size:clamp(36px,15vmin,54px)}
+  h2{font-size:clamp(28px,11vmin,40px)}
+  p{font-size:clamp(15px,5vmin,19px)}
+  .grid{grid-template-columns:1fr;gap:1.5vh;margin-top:2.5vh}
+  .card{padding:1.8vh 4vw}
+  #controls{bottom:max(12px,env(safe-area-inset-bottom))}
+}
+@media(orientation:landscape) and (hover:none),
+       (orientation:landscape) and (pointer:coarse){
+  .slide{padding-bottom:max(13vh,78px)}
+  #controls{bottom:max(8px,env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  html,body{height:auto;overflow:visible}
+  #rail,#progress,#controls,#toast{display:none}
+  main{height:auto}
+  .slide{position:relative;height:100vh;opacity:1;transform:none;page-break-after:always}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.className+=" js"</script>
+<div id="js-warning">Begrenset forhåndsvisning: Lagre filen og åpne den fra Filer eller Nedlastinger i en nettleser for navigasjon og fullskjerm.</div>
+<div id="rail"><div id="railnav"></div></div>
+<main>
+  <section class="slide dark" data-sec="Start">
+    <div class="eyebrow">Eksempel 21 · worked example for issue #37</div>
+    <h1>Notatet er kilden. Lysbildet er sammendraget.</h1>
+    <p style="margin-top:3vh">Syntetisk eksempelinnhold — ingen reelle saksdata. Viser tre
+    mønstre issue #37 etterlyste, lagt oppå templates/portable-slide-deck.html sin egen skall.</p>
+  </section>
+
+  <section class="slide" data-sec="Mønster 1">
+    <div class="eyebrow">Mønster 1 · vmin-typografi</div>
+    <h2>Skaler mot den korteste siden av vinduet, ikke bare bredden</h2>
+    <div class="grid">
+      <div class="card"><strong>vmin</strong><span>Svarer på høyde og bredde</span></div>
+      <div class="card"><strong>vw</strong><span>Svarer kun på bredde</span></div>
+      <div class="card"><strong>36 %</strong><span>Høyde brukt i det umodifiserte eksempelet ved 1920×950</span></div>
+    </div>
+    <button class="detail-btn" onclick="openDetail(1)"><span class="ico">+</span>Vis kildetekst</button>
+  </section>
+
+  <section class="slide" data-sec="Mønster 2">
+    <div class="eyebrow">Mønster 2 · utvid for kildetekst</div>
+    <h2>Hold lysbildet tynt. Ha hele teksten ett tastetrykk unna.</h2>
+    <p>Pillen står i flyten under innholdet, ikke som et flytende ikon. Pil ned åpner,
+    pil opp eller Escape lukker. Panelet ligger som søsken av &lt;main&gt;.</p>
+    <button class="detail-btn" onclick="openDetail(2)"><span class="ico">+</span>Vis kildetekst</button>
+  </section>
+
+  <section class="slide dark" data-sec="Mønster 3">
+    <div class="eyebrow">Mønster 3 · utvidet tastaturkart</div>
+    <h2>N/P, Enter, tall+Enter, B — lagt oppå det eksisterende kartet</h2>
+    <p>Piltaster/Space/PageUp/PageDown/Home/End/F er uendret fra
+    templates/portable-slide-deck.html. Nytt: N/P bokstav-alias, Enter for neste,
+    tall+Enter for å hoppe til et lysbildenummer, B for sort skjerm.</p>
+  </section>
+</main>
+
+<div id="controls" role="group" aria-label="Presentasjonskontroller">
+  <button class="control-btn" id="nprev" type="button" aria-label="Forrige lysbilde" title="Forrige lysbilde">
+    <span class="control-icon" aria-hidden="true">←</span>
+  </button>
+  <div id="counter" aria-live="polite">1 / 1</div>
+  <button class="control-btn" id="nnext" type="button" aria-label="Neste lysbilde" title="Neste lysbilde">
+    <span class="control-icon" aria-hidden="true">→</span>
+  </button>
+  <button class="control-btn" id="fullscreen" type="button" aria-label="Vis i fullskjerm" title="Vis i fullskjerm" aria-pressed="false">
+    <span class="control-icon" id="fullscreen-icon" aria-hidden="true">⛶</span>
+    <span id="fullscreen-label">Fullskjerm</span>
+  </button>
+</div>
+<div id="progress"><i></i></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<div id="detail-backdrop" onclick="closeDetail()"></div>
+<div id="detail-panel">
+  <div class="dp-header">
+    <span class="dp-title" id="detail-title">Kildetekst</span>
+    <button class="dp-close" onclick="closeDetail()" aria-label="Lukk">✕</button>
+  </div>
+  <div class="dp-body" id="detail-body"></div>
+</div>
+<div id="jump-indicator"></div>
+<div id="blank-screen"></div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var cur = 0;
+  var numBuffer = '';
+  var jumpTimer = null;
+  var prevButton = document.getElementById('nprev');
+  var nextButton = document.getElementById('nnext');
+  var fullscreenButton = document.getElementById('fullscreen');
+  var fullscreenLabel = document.getElementById('fullscreen-label');
+  var fullscreenIcon = document.getElementById('fullscreen-icon');
+  var toast = document.getElementById('toast');
+  var jumpIndicator = document.getElementById('jump-indicator');
+  var toastTimer = null;
+
+  function notify(message){
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 4200);
+  }
+  function fullscreenElement(){
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+  function fullscreenRequest(){
+    var root = document.documentElement;
+    return root.requestFullscreen || root.webkitRequestFullscreen || null;
+  }
+  function updateFullscreenControl(){
+    var active = !!fullscreenElement();
+    fullscreenButton.setAttribute('aria-pressed', active ? 'true' : 'false');
+    fullscreenButton.setAttribute('aria-label', active ? 'Avslutt fullskjerm' : 'Vis i fullskjerm');
+    fullscreenButton.title = active ? 'Avslutt fullskjerm' : 'Vis i fullskjerm';
+    fullscreenLabel.textContent = active ? 'Avslutt' : 'Fullskjerm';
+    fullscreenIcon.textContent = active ? '×' : '⛶';
+  }
+  function toggleFullscreen(){
+    if(fullscreenElement()){
+      var exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if(exit) exit.call(document);
+      return;
+    }
+    var request = fullscreenRequest();
+    if(!request){
+      notify('Nettleseren støtter ikke fullskjerm for HTML. Presentasjonen virker fortsatt i nettleservinduet.');
+      return;
+    }
+    try{
+      var result = request.call(document.documentElement);
+      if(result && result.catch){
+        result.catch(function(){ notify('Nettleseren avslo fullskjerm. Presentasjonen virker fortsatt i nettleservinduet.'); });
+      }
+    }catch(err){
+      notify('Nettleseren avslo fullskjerm. Presentasjonen virker fortsatt i nettleservinduet.');
+    }
+  }
+
+  /* --- Pattern 2: detail overlay --- */
+  var detailData = {
+    "1": {title:"Mønster 1 — kildetekst", html:"<p>Eksempeltekst som ville stått i et notat før det ble kokt ned til tre kort på lysbildet: begrunnelsen for hvorfor vmin er riktig skaleringsbasis for et presentasjonsvindu, hvilke skjermstørrelser dette ble testet på (1920×950, 1600×900, 1366×768, mobil portrett/landskap), og de faktiske målingene før og etter.</p>"},
+    "2": {title:"Mønster 2 — kildetekst", html:"<p>Eksempeltekst som viser hvordan et helt avsnitt fra kildenotatet kan ligge bak pillen, uten at selve lysbildet blir tettere enn punktene det viser. Panelet er skrollbart uavhengig av selve lysbildet, og lukkes med samme tastetrykk som åpnet det (pil opp) i tillegg til Escape og klikk utenfor.</p>"},
+    "3": {title:"Mønster 3 — kildetekst", html:"<p>Eksempeltekst som lister opp alle tastene i det utvidede kartet, med begrunnelsen for hver: N/P er bokstav-alias for de som ikke vil strekke seg til piltastene, tall+Enter er et presentatør-hopp med synlig indikator (ikke en skjult power-user-funksjon), B er en vanlig PowerPoint/Keynote-konvensjon for sort skjerm, og et vilkårlig påfølgende tastetrykk fjerner den sorte skjermen uten samtidig å navigere videre.</p>"}
+  };
+  function openDetail(index){
+    var d = detailData[String(index)];
+    if(!d) return;
+    document.getElementById('detail-title').textContent = d.title || '';
+    document.getElementById('detail-body').innerHTML = d.html || '';
+    document.getElementById('detail-body').scrollTop = 0;
+    document.getElementById('detail-backdrop').classList.add('open');
+    document.getElementById('detail-panel').classList.add('open');
+  }
+  function closeDetail(){
+    document.getElementById('detail-backdrop').classList.remove('open');
+    document.getElementById('detail-panel').classList.remove('open');
+  }
+  function detailOpen(){ return document.getElementById('detail-panel').classList.contains('open'); }
+  window.openDetail = openDetail;
+  window.closeDetail = closeDetail;
+
+  /* --- Pattern 3: blank screen + jump-to-slide indicator --- */
+  var blankEl = document.getElementById('blank-screen');
+  var blanked = false;
+  function blank(){ blanked = !blanked; blankEl.classList.toggle('show', blanked); }
+  function showJump(text){
+    jumpIndicator.textContent = text;
+    jumpIndicator.classList.add('show');
+    clearTimeout(jumpTimer);
+    jumpTimer = setTimeout(function(){ jumpIndicator.classList.remove('show'); }, 1200);
+  }
+
+  var railnav = document.getElementById('railnav');
+  var sections = [], seen = {};
+  slides.forEach(function(slide,index){
+    var name = slide.dataset.sec || 'Lysbilde';
+    if(!(name in seen)){
+      seen[name] = sections.length;
+      sections.push({name:name,first:index,slides:[]});
+    }
+    sections[seen[name]].slides.push(index);
+  });
+  sections.forEach(function(section){
+    var item = document.createElement('div');
+    item.className = 'rail-sec';
+    item.innerHTML = '<div class="tick"></div><div class="label"></div>';
+    item.querySelector('.label').textContent = section.name;
+    item.onclick = function(){ show(section.first); };
+    railnav.appendChild(item);
+  });
+  var railItems = Array.prototype.slice.call(railnav.children);
+
+  function show(index){
+    index = Math.max(0,Math.min(slides.length-1,index));
+    cur = index;
+    slides.forEach(function(slide,i){
+      slide.classList.toggle('active',i===index);
+      slide.classList.toggle('prev',i<index);
+    });
+    document.body.classList.toggle('on-dark',slides[index].classList.contains('dark'));
+    var activeSection = -1;
+    sections.forEach(function(section,i){
+      if(section.slides.indexOf(index)!==-1) activeSection=i;
+    });
+    railItems.forEach(function(item,i){ item.classList.toggle('on',i===activeSection); });
+    document.getElementById('counter').textContent = (index+1)+' / '+slides.length;
+    prevButton.disabled = index===0;
+    nextButton.disabled = index===slides.length-1;
+    document.querySelector('#progress i').style.width =
+      (slides.length<2 ? 100 : index/(slides.length-1)*100)+'%';
+    /* Unchanged from templates/portable-slide-deck.html — see issue #47 for the
+       open question on whether this is safe in SharePoint's inline preview. */
+    if(location.hash!=='#s'+(index+1)) history.replaceState(null,'','#s'+(index+1));
+    closeDetail();
+  }
+  function step(delta){ show(cur+delta); }
+
+  prevButton.onclick = function(){ step(-1); };
+  nextButton.onclick = function(){ step(1); };
+  fullscreenButton.onclick = toggleFullscreen;
+  document.addEventListener('fullscreenchange',updateFullscreenControl);
+  document.addEventListener('webkitfullscreenchange',updateFullscreenControl);
+
+  /* --- Pattern 3: extended keyboard map ---
+     Unchanged from templates/portable-slide-deck.html: ArrowRight/Space/PageDown
+     -> next, ArrowLeft/PageUp -> prev, Home/End, F -> fullscreen. Added here:
+     N/P letter aliases, Enter -> next (unless mid a digit-jump), digit(s)+Enter
+     -> jump to slide number (with a visible indicator, not a hidden power-user
+     trick), ArrowDown/ArrowUp -> open/close the detail overlay, B -> blank
+     screen (any following key dismisses it without also navigating). */
+  document.addEventListener('keydown',function(event){
+    var k = event.key;
+    if(blanked){ blank(); event.preventDefault(); return; }
+    if(k==='Escape'){ if(detailOpen()) closeDetail(); return; }
+    if(k>='0' && k<='9'){
+      numBuffer += k;
+      showJump('Gå til lysbilde '+numBuffer+' \u21b5');
+      return;
+    }
+    if(k==='Enter' && numBuffer){
+      var target = parseInt(numBuffer,10);
+      numBuffer = '';
+      jumpIndicator.classList.remove('show');
+      if(target>=1 && target<=total) show(target-1);
+      event.preventDefault();
+      return;
+    }
+    numBuffer = '';
+    if(k==='ArrowDown' && !detailOpen()){ event.preventDefault(); openDetail(cur); return; }
+    if(k==='ArrowUp' && detailOpen()){ event.preventDefault(); closeDetail(); return; }
+    if(detailOpen()) return;
+    switch(k){
+      case 'ArrowRight': case 'PageDown': case ' ': case 'n': case 'N': step(1); event.preventDefault(); break;
+      case 'ArrowLeft': case 'PageUp': case 'p': case 'P': step(-1); event.preventDefault(); break;
+      case 'Enter': step(1); event.preventDefault(); break;
+      case 'Home': show(0); break;
+      case 'End': show(slides.length-1); break;
+      case 'f': case 'F': toggleFullscreen(); break;
+      case 'b': case 'B': blank(); break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener('touchstart',function(event){ touchX = event.touches[0].clientX; },{passive:true});
+  document.addEventListener('touchend',function(event){
+    if(touchX===null) return;
+    var delta = event.changedTouches[0].clientX-touchX;
+    if(Math.abs(delta)>60) step(delta<0 ? 1 : -1);
+    touchX=null;
+  },{passive:true});
+
+  var start = parseInt((location.hash.match(/^#s(\d+)$/)||[])[1],10);
+  updateFullscreenControl();
+  show(isNaN(start) ? 0 : start-1);
+})();
+</script>
+</body>
+</html>

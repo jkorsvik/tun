@@ -37,6 +37,12 @@ RAIWORK_NOTES.md
 # Generated example source data — reproduce with the example's generate_data.py.
 # 4 M rows is ~207 MB; the committed artefact is the 0.81 MB dashboard built FROM it.
 examples/03-cube-dashboard/transaksjoner.csv
+
+# Generated example source data — reproduce with the example's build_workbook.py
+# (stdlib zipfile, no openpyxl). Committing the .xlsx itself would need an
+# ALLOWED_DATA exception in tools/check_no_real_data.py for zero benefit: it is
+# three sheets of invented data, deterministic from the generator every run.
+examples/22-xlsx-from-file/demo-workbook.xlsx
 # Install markers belong in ~/.raiwork/skills, never here. If one appears in skills/, a
 # tool wrote through a symlink into the source tree — the file is the symptom, not the bug.
 .installed-by-*

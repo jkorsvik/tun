@@ -1,5 +1,5 @@
 ---
-name: dashboard-help
+name: tun-help
 description: Figure out which dashboard skill fits a situation, and what it will cost in approvals and effort. Use when someone wants to share data interactively but does not know where to start, asks whether this can replace a Power BI report, or asks what is possible with dashboards in SharePoint or OneDrive.
 license: AGPL-3.0-or-later
 ---
@@ -26,14 +26,14 @@ make someone read the architecture doc to get started.
 
 | They say something like… | Route to | Cost |
 |---|---|---|
-| "I have an Excel file and want charts people can filter" | **`dashboard-new`** | nothing — ship today |
-| "make me a dashboard from this data" | **`dashboard-new`** | nothing |
-| "where do I put it so the team can open it" | **`dashboard-publish`** | nothing |
-| "is this one broken / can I send it" | **`dashboard-verify`** | nothing |
-| "the numbers are old, update it" | **`dashboard-data`** | nothing |
-| "we have a Power BI report, can you move it" | **`powerbi-escape`** | nothing (unless it uses RLS) |
+| "I have an Excel file and want charts people can filter" | **`tun-new`** | nothing — ship today |
+| "make me a dashboard from this data" | **`tun-new`** | nothing |
+| "where do I put it so the team can open it" | **`tun-publish`** | nothing |
+| "is this one broken / can I send it" | **`tun-verify`** | nothing |
+| "the numbers are old, update it" | **`tun-data`** | nothing |
+| "we have a Power BI report, can you move it" | **`tun-powerbi-escape`** | nothing (unless it uses RLS) |
 | "it has to show on our team site page, not as a file" | **`dashboard-embed`** | ⚠️ needs a SharePoint admin — and is **not yet proven at the organisation** |
-| "the dataset is millions of rows, I just need the totals" | **`dashboard-new`** (cube mode) | nothing — 4 M rows fit in 0.81 MB |
+| "the dataset is millions of rows, I just need the totals" | **`tun-new`** (cube mode) | nothing — 4 M rows fit in 0.81 MB |
 | "millions of rows **and** I must see individual records" | **`dashboard-bigdata`** | ⚠️ needs `dashboard-embed` first |
 
 ## What to say about the default path

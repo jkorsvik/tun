@@ -124,3 +124,35 @@ record that its page-switching mechanism is known to fail in one shipped surface
 
 Not edited here on purpose: this document is the finding. Changing the other two
 files is a separate, reviewable change.
+
+## 8. Let the reader see the fallback on purpose
+
+Two techniques from an internal presentation on these findings, built with the rules in
+this repository. Neither is measured in the tenant. Both are cheap and worth copying.
+
+**A visible "simulate no scripts" switch.** The presentation is one long, scrollable
+document with no script, and a full-screen deck with arrow-key navigation when scripts run.
+It carries a button that removes the enhancement from the whole page, so the viewer sees
+exactly what a recipient without running scripts would see. A clearly labelled way back
+stays fixed on screen while the simulation is on. This does two jobs at once:
+
+- it proves the degradation claim to a sceptical audience, live, instead of asserting it;
+- it gives a human reviewer a one-click check of the no-script state, which the headless
+  gates cannot judge for layout (`AGENTS.md` rule 3: look at the artefact).
+
+The "way back" must itself work without depending on the state it undoes. A restore
+control that only the enhanced page renders is the same logical dead end §3b point 4 of
+`docs/11` describes for diagnostics.
+
+**When scripts are dead, the notice is the page.** In a surface that will never run the
+file's scripts (row 22's e-mail link on mobile, `docs/11` §3c's Quick Look), the reader
+cannot fix anything from inside the page. So the notice should be the first and largest
+thing on screen, not a strip above empty boxes, and it must name the route out in the
+reader's terms: open the link through the Teams preview card, or choose "open in browser".
+An explanation without a next step is still a dead end.
+
+What still needs a script whatever the construction, so the notice has to cover it:
+
+- reading a sister file (paired), because there is no script-free way to read one;
+- any update without a new file;
+- full-screen presentation mode with keyboard navigation.

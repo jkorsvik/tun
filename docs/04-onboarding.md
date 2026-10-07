@@ -188,7 +188,7 @@ You don't need to memorise skill names. Say what you want; RAIWork picks the ski
 | move a Power BI report | *"can we move the monthly volume report out of Power BI?"* |
 
 If you're not sure, just ask: *"what can you do with dashboards?"* — that hits the
-`dashboard-help` skill, which routes you and tells you what each option costs.
+`tun-help` skill, which routes you and tells you what each option costs.
 
 ---
 

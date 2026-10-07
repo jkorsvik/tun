@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -100,6 +100,7 @@ print("\nthe shipped palette(s) satisfy the contract")
 _palettes = ["tools/tokens/palette-neutral.css"]
 if HAVE_PLUGINS:
     _palettes.append("plugins/eksempel/tokens/palette.css")
+    _palettes.append("plugins/tun/tokens/palette.css")
 for rel_path in _palettes:
     path = REPO / rel_path
     if not path.is_file():
@@ -117,10 +118,48 @@ with without_env():
     chk("default resolves to core's neutral palette", path, tok.NEUTRAL_PALETTE)
     chk("and says so", source, "core:neutral")
     if HAVE_PLUGINS:
-        plugin_path, plugin_source = tok.palette_path(prefer_plugin=True)
-        chk("prefer_plugin resolves to the plugin that provides tokens",
-            plugin_path.is_file() and "plugins/" in str(plugin_path), True)
-        chk("and names the plugin", plugin_source.startswith("plugin:"), True)
+        token_providers = [p for p in tok.discover_plugins()
+                           if "tokens" in (p.get("provides") or [])]
+        if len(token_providers) > 1:
+            # The real tree now has more than one plugin that can supply tokens
+            # (eksempel and tun). The contract's own claim is that the automatic pick is
+            # refused rather than resolved last-wins -- so that is exactly what this
+            # asserts, instead of assuming there is only ever one plugin.
+            provider_ids = sorted(str(p.get("id")) for p in token_providers)
+            try:
+                tok.palette_path(prefer_plugin=True)
+                chk(f"prefer_plugin raises with {len(token_providers)} token "
+                    f"providers ({', '.join(provider_ids)})", False, True)
+            except SystemExit as exc:
+                chk(f"prefer_plugin raises with {len(token_providers)} token "
+                    f"providers ({', '.join(provider_ids)})", True, True)
+                chk("the error names every provider",
+                    all(pid in str(exc) for pid in provider_ids), True)
+            # TUN_PALETTE is the side-by-side mechanism: explicit selection must
+            # resolve correctly for EACH real token-providing plugin, not just
+            # whichever one happens to sort first.
+            for p in token_providers:
+                pid = str(p.get("id"))
+                palette_rel = (p.get("tokens") or {}).get("palette")
+                plugin_palette = (p["_dir"] / palette_rel).resolve()
+                os.environ["TUN_PALETTE"] = str(plugin_palette.relative_to(REPO))
+                try:
+                    sel_path, sel_source = tok.palette_path()
+                    chk(f"TUN_PALETTE selects plugin {pid!r} explicitly",
+                        sel_path.resolve(), plugin_palette)
+                    chk(f"...and reports its source as TUN_PALETTE",
+                        sel_source.startswith("TUN_PALETTE="), True)
+                finally:
+                    os.environ.pop("TUN_PALETTE", None)
+        elif len(token_providers) == 1:
+            plugin_path, plugin_source = tok.palette_path(prefer_plugin=True)
+            chk("prefer_plugin resolves to the plugin that provides tokens",
+                plugin_path.is_file() and "plugins/" in str(plugin_path), True)
+            chk("and names the plugin", plugin_source.startswith("plugin:"), True)
+        else:
+            # Plugins exist but none declare tokens (e.g. an assets-only plugin).
+            chk("prefer_plugin falls back to neutral when no plugin provides tokens",
+                tok.palette_path(prefer_plugin=True)[1], "core:neutral")
     else:
         # With no plugin installed, prefer_plugin must still yield a working palette
         # rather than raising: core has to build either way.
@@ -180,7 +219,8 @@ found = tok.discover_plugins()
 chk("discovery is sorted by id", [p.get("id") for p in found],
     sorted(str(p.get("id")) for p in found))
 if HAVE_PLUGINS:
-    chk("the eksempel plugin is discovered", [p.get("id") for p in found], ["eksempel"])
+    discovered_ids = {p.get("id") for p in found}
+    chk("eksempel and tun are both discovered", {"eksempel", "tun"}.issubset(discovered_ids), True)
     chk("the manifest is actually parsed, not just located",
         found[0].get("provides"), ["tokens", "assets"])
     chk("private is carried through", found[0].get("private"), True)

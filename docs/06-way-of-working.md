@@ -29,6 +29,18 @@ trustworthy — plus the two power tools worth knowing.
 7. **Be concise.** State the answer, then the reasoning. Don't repeat a reminder that's
    already landed.
 
+   The one exception is jargon, when the person on the other side is not a developer. Then:
+
+   - explain a git or GitHub term with a short analogy **the first time** it comes up in a
+     conversation (branch, commit, pull request, merge, fork, clone), and let them say
+     "skip the explanation" once they know it;
+   - flag a term that assumes experience (rebase, "CI fails", squash) and give its meaning
+     **before** asking for a yes or a no, so the person knows what they are agreeing to;
+   - keep the explanations in one glossary in the repository, so they are written once
+     (not written yet; see the roadmap).
+
+   Concise means no filler. It does not mean assuming a vocabulary the reader never had.
+
 8. **Nothing reaches `main` except through a pull request.** No direct commits on `main`,
    no `git push origin HEAD:main`, no "it's just a typo fix". A pull request is how a
    change becomes reviewable; a direct push skips the only review this repo has.

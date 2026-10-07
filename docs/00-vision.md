@@ -92,9 +92,24 @@ expression evaluated at query time.
 
 ### Live-ish data
 
-Paired mode already gives "as fresh as the last sync". For genuinely large data,
-Parquet + DuckDB-WASM over HTTP Range requests works — `206 Partial Content` is
-confirmed against the tenant. Real SQL, in the browser, over a file too big to inline.
+Paired mode already gives "as fresh as the last sync". For large data, the dense cube
+(`docs/07-portable-cube.md`) puts 4 M source rows into a 0.81 MB file, exact, with no
+engine in the page. That covers most cases.
+
+Parquet, SQLite and DuckDB still have a place, but for most backends and use cases they
+are more than the job needs. Their place is:
+
+- **On the build side.** The job that writes `data.js` or the cube can read Parquet or
+  query SQLite or DuckDB. The page never sees the engine. This is already how the cube is
+  checked: against DuckDB on the raw Parquet.
+- **Behind a hosted origin, for heavy cases.** Real SQL in the browser over a file too big
+  to inline needs DuckDB-WASM. SharePoint does answer HTTP Range requests (`206 Partial
+  Content`, measured), but the engine cannot start from a `file://` page: `fetch`, `Worker`
+  and dynamic `import()` are all blocked there. So this needs a hosted page (Tier 2), and
+  that needs an approval.
+
+Reach for them when the cube cannot answer the question (row-level detail over a huge
+table, ad hoc queries), not by default.
 
 ### Alerts, subscriptions, "certified datasets", paginated print
 
@@ -118,6 +133,15 @@ knowing what a `Content-Disposition` header is.
 
 That is the target. The [skill tree](03-skill-tree.md) is how we get there: each
 skill is one step of that sentence, made repeatable and hard to get wrong.
+
+## Choosing the format
+
+**Text commits to a moment. Interaction commits to a stream.** A dashboard makes no claims
+in prose, so new data does not make it false. A report states things about specific
+numbers: when the data changes, the text becomes false and still looks just as sure.
+Slides are worse, because they travel without their context, so the drift is noticed
+later. So: data that keeps changing gets a dashboard. A report or a deck is for a fixed
+moment, and should say which moment.
 
 ## Design principles
 

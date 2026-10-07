@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -138,6 +138,17 @@ code, out, _ = run(tree({**clean, "a.py": f"# Copyright (C) 2026 {ORG.upper()} A
 chk("an organisation as holder is still caught", (code, findings(out)), (1, ["org"]))
 code, out, _ = run(tree({**clean, "a.py": f"# Copyright (C) Ola {TERM}\n"}), deny2)
 chk("a notice without a year is not a notice", (code, findings(out)), (1, ["person"]))
+
+print("\na declared attribution region may credit people by name; nothing else is exempt")
+S, E = "<!-- attribution:start -->", "<!-- attribution:end -->"
+code, out, _ = run(tree({**clean, "A.md": f"{S}\nOla {TERM.title()} wrote it\n{E}\n"}), deny2)
+chk("a person inside the region passes", (code, findings(out)), (0, []))
+code, out, _ = run(tree({**clean, "A.md": f"{S}\nOla {TERM.title()}\n{E}\nthanks {TERM}\n"}), deny2)
+chk("the same name after the region fires alone, on its line", (code, findings(out), "A.md:4" in out), (1, ["person"], True))
+code, out, _ = run(tree({**clean, "A.md": f"{S}\nat {ORG.upper()} AS\n{E}\n"}), deny2)
+chk("an organisation inside the region is still caught", (code, findings(out)), (1, ["org"]))
+code, out, _ = run(tree({**clean, "A.md": f"{S}\nOla {TERM.title()}\n"}), deny2)
+chk("an unterminated region exempts nothing", (code, findings(out)), (1, ["person"]))
 
 print("\n" + "─" * 66)
 print(f"{passed} passed, {failed} failed")

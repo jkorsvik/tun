@@ -1,5 +1,5 @@
 ---
-name: dashboard-publish
+name: tun-publish
 description: Publish a built standalone dashboard to SharePoint or OneDrive, confirm who can see it, produce a shareable link, and draft the announcement. Use when someone wants to share, publish, distribute, or send out a dashboard, or asks where to put it so colleagues can open it.
 license: AGPL-3.0-or-later
 ---
@@ -8,7 +8,7 @@ license: AGPL-3.0-or-later
 
 ## Before you publish
 
-**The dashboard must have passed `dashboard-verify`.** If you have not seen a PASS
+**The dashboard must have passed `tun-verify`.** If you have not seen a PASS
 and looked at the screenshot in this session, run it now. Publishing an unverified
 dashboard means someone opens a broken file — and the whole value proposition here is
 that the artefact works on someone else's machine.
@@ -105,7 +105,7 @@ klikk lenken, filen åpnes i nettleseren.
 ## Step 6 — Close the loop
 
 Remind them once:
-- the numbers are a **snapshot** — ask for `dashboard-data` to refresh
+- the numbers are a **snapshot** — ask for `tun-data` to refresh
 - if they republish, the **link stays the same** (same path = new version, and
   SharePoint keeps the version history)
 

@@ -95,6 +95,11 @@ winget install astral-sh.uv     # Windows
 brew install uv                 # macOS
 ```
 
+**`uv` may be missing from a non-login shell.** The installer puts it in `~/.local/bin`, and
+only a login shell's profile adds that to `PATH`. Agents and scripts often run a non-login
+shell, so `uv` "is not installed" there. Use `zsh -lc '...'` (or `bash -lc`), or call
+`~/.local/bin/uv` by full path. Do not install it a second time.
+
 ### `bun` — only if JS ever appears
 
 There is no JavaScript dependency in this repo and that is deliberate. If one ever
@@ -159,12 +164,12 @@ Installed by `python3 setup.py`, which symlinks them into `~/.raiwork/skills/`:
 
 | Skill | Job |
 |---|---|
-| `dashboard-help` | router — "what can you do with dashboards?" |
-| `dashboard-new` | build one from a data file |
-| `dashboard-data` | refresh or repoint the data |
-| `dashboard-verify` | prove it renders (the gate) |
-| `dashboard-publish` | put it in SharePoint, confirm access, draft the message |
-| `powerbi-escape` | port a Power BI report, or refuse with reasons |
+| `tun-help` | router — "what can you do with dashboards?" |
+| `tun-new` | build one from a data file |
+| `tun-data` | refresh or repoint the data |
+| `tun-verify` | prove it renders (the gate) |
+| `tun-publish` | put it in SharePoint, confirm access, draft the message |
+| `tun-powerbi-escape` | port a Power BI report, or refuse with reasons |
 
 Because they're symlinks, editing `skills/*/SKILL.md` in this repo takes effect
 immediately — no reinstall.
@@ -175,7 +180,7 @@ immediately — no reinstall.
 |---|---|---|---|
 | **`xlsx`** | Real data arrives as Excel. Reads, cleans and converts spreadsheets properly — including merged cells and the formula-vs-value trap that breaks naive conversion. | **strongly recommended** | marketplace |
 | your brand skill | your organisation's brand skill, if any. Otherwise the active plugin's `tokens/palette.css`. Reach for one of these before inventing a colour. | recommended | marketplace |
-| `outlook-cli` | Sends the announcement `dashboard-publish` drafts, from your real mailbox. | optional | marketplace |
+| `outlook-cli` | Sends the announcement `tun-publish` drafts, from your real mailbox. | optional | marketplace |
 | `pptx` | For when someone insists on a screenshot in a deck. Sometimes the honest answer. | optional | marketplace |
 | `research` | Investigating a tenant or tooling question against primary sources. | optional | marketplace |
 

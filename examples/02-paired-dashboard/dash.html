@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -26,9 +26,9 @@
   PROVENANCE  (do not delete — this is how numbers get traced back)
     Source data : salgsdata.csv
     Extracted   : 2026-10-06 19:09 CEST
-    Built       : 2026-10-06 19:37 CEST
+    Built       : 2026-10-07 17:15 CEST
     Requested by: the product owner
-    Built by    : RAIWork skill `dashboard-new`
+    Built by    : RAIWork skill `tun-new`
     Repo        : tun
     Made with   : Tún — tun.community
     Rows inlined: 776
@@ -55,7 +55,7 @@
      folder). A <link> to a token stylesheet would break that.
      ========================================================================== */
 /*
-   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
    This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
    or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
    COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -90,7 +90,7 @@
 }
 
 /*
-   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
    This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
    or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
    COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -131,7 +131,7 @@
 }
 
 /*
-   Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
    This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
    or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
    COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -307,7 +307,7 @@
 
 <footer>
   Selvstendig dashboard bygget av RAIWork &middot; ingen Power BI-lisens kreves &middot;
-  bygget 2026-10-06 19:37 CEST fra salgsdata.csv.<br>
+  bygget 2026-10-07 17:15 CEST fra salgsdata.csv.<br>
   <span id="footnote"></span>
 </footer>
 <div class="tooltip" id="tip"></div>
@@ -641,7 +641,7 @@ function render() {
   const el = document.getElementById("footnote"); if (!el) return;
   el.innerHTML = "paired" === "paired"
     ? 'Dataene ligger i <code>data.js</code> ved siden av denne filen. Bytt den ut, og alle ser nye tall.'
-    : 'Tallene er bygget inn i denne filen. Be RAIWork om <code>dashboard-data</code> for \u00e5 oppdatere.';
+    : 'Tallene er bygget inn i denne filen. Be RAIWork om <code>tun-data</code> for \u00e5 oppdatere.';
 })();
 
 /* ---------- header meta (freshness comes from the DATA, not the shell) ----- */

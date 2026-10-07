@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -15,7 +15,7 @@ pyproject.toml, so a default install produced that verdict every single time.
 A gate that reports success having never opened the file is worse than one that
 reports nothing: it manufactures assurance. AGENTS.md rule 3 says the artefact must be
 opened in a real browser before anything is published, and
-skills/dashboard-verify/SKILL.md already said a skipped render is not a pass. The code
+skills/tun-verify/SKILL.md already said a skipped render is not a pass. The code
 said the opposite of both.
 
 This pins the branch shut. It does not need Playwright to be absent on this machine:

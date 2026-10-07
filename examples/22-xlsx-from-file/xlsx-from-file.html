@@ -1,0 +1,392 @@
+<!doctype html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les en ekte .xlsx-fil uten bibliotek — fra file://</title>
+<style>
+:root{
+  /* Neutral base — plain greyscale, not an organisation's palette (docs/21). */
+  --ink:#2b2b2b; --muted:#5f5f5f; --line:#e6e6e6; --bg:#ffffff; --panel:#f7f7f7;
+  --accent:#3f4b54; --accent-dark:#2b343a; --ok:#1d6f42; --bad:#a3331f;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);
+  background:var(--bg);line-height:1.5;padding:1.5rem 1.75rem 3rem;max-width:68rem}
+h1{font-size:1.5rem;margin:0 0 .25rem}
+h2{font-size:1.1rem;margin:2rem 0 .5rem;color:var(--accent-dark)}
+p{color:var(--muted);max-width:52rem}
+code{background:var(--panel);padding:.1rem .35rem;border-radius:3px;font-size:.92em}
+.intro{border-left:4px solid var(--accent);background:var(--panel);padding:.8rem 1rem;
+  border-radius:0 4px 4px 0;margin:1rem 0}
+.picker{display:flex;align-items:center;gap:.9rem;margin:1.25rem 0;flex-wrap:wrap}
+.picker input[type="file"]{font:inherit}
+#status{font-size:.95rem;color:var(--muted)}
+#status.ok{color:var(--ok)}
+#status.err{color:var(--bad);font-weight:600}
+#timing{margin:1rem 0;font-size:.95rem}
+#timing b{color:var(--accent-dark)}
+table{border-collapse:collapse;width:100%;margin:.5rem 0 1.75rem;font-size:.92rem}
+caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem;color:var(--ink)}
+th,td{border:1px solid var(--line);padding:.35rem .6rem;text-align:left}
+th{background:var(--panel);font-weight:600}
+td.empty-cell{color:var(--muted);font-style:italic}
+td.date-cell{font-variant-numeric:tabular-nums}
+.sheet-meta{font-size:.85rem;color:var(--muted);margin:0 0 .25rem}
+.limitation{border-left:4px solid var(--bad);background:#fdeeee;color:#3d0d0d;
+  padding:.7rem .9rem;border-radius:0 4px 4px 0;margin:1.5rem 0;font-size:.92rem}
+</style>
+</head>
+<body>
+
+<h1>Les en ekte .xlsx-fil uten bibliotek — fra file://</h1>
+<p>
+  Denne siden pakker opp en vanlig <code>.xlsx</code>-fil (et ZIP-arkiv med
+  SpreadsheetML-XML inni) med bare det nettleseren allerede kan:
+  <code>DecompressionStream('deflate-raw')</code> for å pakke ut hvert ZIP-innslag, og
+  <code>DOMParser</code> for å lese XML-delene. Ingen xlsx-bibliotek, ingen bundler.
+</p>
+<div class="intro">
+  Målt én gang på en ekte arbeidsbok (9 ark): 160–250 ms i Chromium, Firefox og WebKit.
+  Denne siden beviser det samme mønsteret på syntetisk data — bygg den med
+  <code>build_workbook.py</code> og velg filen den skriver, <code>demo-workbook.xlsx</code>.
+</div>
+
+<div class="picker">
+  <label for="file-input"><strong>Velg Excel-fil (.xlsx):</strong></label>
+  <input id="file-input" type="file" accept=".xlsx">
+  <span id="status">Ingen fil valgt ennå.</span>
+</div>
+
+<p class="limitation">
+  <strong>Begrensning:</strong> filen må velges manuelt via knappen over — en
+  brukerhandling (user gesture). <code>fetch('./demo-workbook.xlsx')</code> fra en
+  <code>file://</code>-side er blokkert i alle testede nettlesere, så siden kan ikke
+  laste arbeidsboken automatisk selv om den ligger rett ved siden av.
+</p>
+
+<div id="timing" hidden></div>
+<div id="output"></div>
+
+<!-- The code block below only ever runs client-side against a file the person using
+     this page chose themselves; it never fetches anything and never sends the parsed
+     content anywhere. -->
+<script>
+(function () {
+  'use strict';
+
+  var fileInput = document.getElementById('file-input');
+  var statusEl = document.getElementById('status');
+  var timingEl = document.getElementById('timing');
+  var outputEl = document.getElementById('output');
+
+  // ---- ZIP container: central directory + local file headers -------------------------
+  // A .xlsx is a ZIP archive. The authoritative list of entries lives in the central
+  // directory near the end of the file, found via the End Of Central Directory (EOCD)
+  // record — which is why this scans backward from the end rather than forward from
+  // byte zero. Each central directory record then points at a local file header, which
+  // is where the actual (possibly compressed) bytes start; the two headers can disagree
+  // slightly on extra-field length, so the local header has to be read too, not assumed.
+  var EOCD_SIGNATURE = 0x06054b50;
+  var CENTRAL_DIR_SIGNATURE = 0x02014b50;
+  var LOCAL_FILE_SIGNATURE = 0x04034b50;
+
+  function findEndOfCentralDirectory(view, totalLength) {
+    var maxCommentLength = 65536;
+    var minOffset = Math.max(0, totalLength - 22 - maxCommentLength);
+    for (var i = totalLength - 22; i >= minOffset; i--) {
+      if (view.getUint32(i, true) === EOCD_SIGNATURE) return i;
+    }
+    throw new Error('Not a valid zip file (End Of Central Directory record not found)');
+  }
+
+  function indexCentralDirectory(view, bytes) {
+    var eocd = findEndOfCentralDirectory(view, bytes.length);
+    var entryCount = view.getUint16(eocd + 10, true);
+    var centralDirOffset = view.getUint32(eocd + 16, true);
+
+    var entries = [];
+    var p = centralDirOffset;
+    var decoder = new TextDecoder('utf-8');
+    for (var i = 0; i < entryCount; i++) {
+      if (view.getUint32(p, true) !== CENTRAL_DIR_SIGNATURE) {
+        throw new Error('Corrupt zip central directory record at byte ' + p);
+      }
+      var compressionMethod = view.getUint16(p + 10, true);
+      var compressedSize = view.getUint32(p + 20, true);
+      var nameLength = view.getUint16(p + 28, true);
+      var extraLength = view.getUint16(p + 30, true);
+      var commentLength = view.getUint16(p + 32, true);
+      var localHeaderOffset = view.getUint32(p + 42, true);
+      var nameBytes = bytes.subarray(p + 46, p + 46 + nameLength);
+      entries.push({
+        name: decoder.decode(nameBytes),
+        compressionMethod: compressionMethod,
+        compressedSize: compressedSize,
+        localHeaderOffset: localHeaderOffset
+      });
+      p += 46 + nameLength + extraLength + commentLength;
+    }
+    return entries;
+  }
+
+  async function readEntryBytes(view, bytes, entry) {
+    var off = entry.localHeaderOffset;
+    if (view.getUint32(off, true) !== LOCAL_FILE_SIGNATURE) {
+      throw new Error('Corrupt local file header for ' + entry.name);
+    }
+    var nameLength = view.getUint16(off + 26, true);
+    var extraLength = view.getUint16(off + 28, true);
+    var dataStart = off + 30 + nameLength + extraLength;
+    var compressed = bytes.subarray(dataStart, dataStart + entry.compressedSize);
+
+    if (entry.compressionMethod === 0) return compressed; // stored, no compression
+    if (entry.compressionMethod !== 8) {
+      throw new Error('Unsupported zip compression method ' + entry.compressionMethod +
+        ' for ' + entry.name + ' (only stored=0 and deflate=8 are handled)');
+    }
+    // The native decompressor. No polyfill exists for this; a browser without it simply
+    // cannot run this page past this line, which is exactly the capability being tested.
+    var stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    var buffer = await new Response(stream).arrayBuffer();
+    return new Uint8Array(buffer);
+  }
+
+  // ---- SpreadsheetML: shared strings, styles (for date detection), sheets ------------
+  var textDecoder = new TextDecoder('utf-8');
+  var xmlParser = new DOMParser();
+
+  function parseXml(text) {
+    var doc = xmlParser.parseFromString(text, 'application/xml');
+    var errorNode = doc.querySelector('parsererror');
+    if (errorNode) throw new Error('XML did not parse: ' + errorNode.textContent.slice(0, 200));
+    return doc;
+  }
+
+  function parseSharedStrings(doc) {
+    var items = Array.prototype.slice.call(doc.querySelectorAll('sst > si'));
+    return items.map(function (si) {
+      var runs = si.querySelectorAll('t');
+      var text = '';
+      for (var i = 0; i < runs.length; i++) text += runs[i].textContent;
+      return text;
+    });
+  }
+
+  // Built-in SpreadsheetML number-format IDs that render as a date or time. 164+ is the
+  // custom range this workbook's own style sheet uses for its one date format.
+  var BUILTIN_DATE_FORMAT_IDS = [14, 15, 16, 17, 18, 19, 20, 21, 22, 45, 46, 47];
+
+  function looksLikeDateFormatCode(code) {
+    // A date/time format is built from y/m/d/h/s tokens and literal separators; a number
+    // format uses digit placeholders (0 or #). Good enough for the one custom format this
+    // workbook defines, and stated as a heuristic rather than a full format-code grammar.
+    return /[ymdhs]/i.test(code) && !/[0#]/.test(code);
+  }
+
+  function parseDateStyleFlags(doc) {
+    var customFormatCodes = {};
+    Array.prototype.forEach.call(doc.querySelectorAll('numFmts > numFmt'), function (el) {
+      customFormatCodes[el.getAttribute('numFmtId')] = el.getAttribute('formatCode') || '';
+    });
+    var xfs = Array.prototype.slice.call(doc.querySelectorAll('cellXfs > xf'));
+    return xfs.map(function (xf) {
+      var id = xf.getAttribute('numFmtId') || '0';
+      if (BUILTIN_DATE_FORMAT_IDS.indexOf(Number(id)) !== -1) return true;
+      if (Object.prototype.hasOwnProperty.call(customFormatCodes, id)) {
+        return looksLikeDateFormatCode(customFormatCodes[id]);
+      }
+      return false;
+    });
+  }
+
+  // Excel's "1900 date system": day 0 is 1899-12-30 (a deliberate quirk that reproduces
+  // the spreadsheet-wide bug of treating 1900 as a leap year). 25569 is the number of
+  // days between that epoch and the Unix epoch (1970-01-01), so subtracting it converts
+  // an Excel serial straight into Unix-epoch days.
+  function excelSerialToIsoDate(serial) {
+    var ms = Math.round((serial - 25569) * 86400 * 1000);
+    return new Date(ms).toISOString().slice(0, 10);
+  }
+
+  function columnLettersToIndex(letters) {
+    var n = 0;
+    for (var i = 0; i < letters.length; i++) n = n * 26 + (letters.charCodeAt(i) - 64);
+    return n - 1;
+  }
+
+  function parseSheetRows(doc, sharedStrings, dateStyleFlags) {
+    var rowEls = Array.prototype.slice.call(doc.querySelectorAll('sheetData > row'));
+    return rowEls.map(function (rowEl) {
+      var row = [];
+      Array.prototype.forEach.call(rowEl.querySelectorAll('c'), function (c) {
+        var ref = c.getAttribute('r') || '';
+        var colIndex = columnLettersToIndex(ref.replace(/[0-9]/g, ''));
+        var type = c.getAttribute('t');
+        var styleAttr = c.getAttribute('s');
+        var vEl = c.querySelector('v');
+        var value;
+        if (!vEl) {
+          value = null; // explicit empty cell: present, no <v>
+        } else if (type === 's') {
+          value = sharedStrings[Number(vEl.textContent)];
+          if (value === undefined) value = '';
+        } else if (type === 'str' || type === 'inlineStr') {
+          value = vEl.textContent;
+        } else if (type === 'b') {
+          value = vEl.textContent === '1';
+        } else {
+          var num = Number(vEl.textContent);
+          var styleIndex = styleAttr ? Number(styleAttr) : 0;
+          value = dateStyleFlags[styleIndex]
+            ? { kind: 'date', iso: excelSerialToIsoDate(num) }
+            : num;
+        }
+        row[colIndex] = value;
+      });
+      return row;
+    });
+  }
+
+  async function parseWorkbook(file) {
+    var startTime = performance.now();
+    var buffer = await file.arrayBuffer();
+    var bytes = new Uint8Array(buffer);
+    var view = new DataView(buffer);
+
+    var entries = indexCentralDirectory(view, bytes);
+    var byName = {};
+    entries.forEach(function (e) { byName[e.name] = e; });
+
+    async function readPartText(name) {
+      var entry = byName[name];
+      if (!entry) throw new Error('Missing zip entry: ' + name);
+      var decompressed = await readEntryBytes(view, bytes, entry);
+      return textDecoder.decode(decompressed);
+    }
+
+    var workbookDoc = parseXml(await readPartText('xl/workbook.xml'));
+    var relsDoc = parseXml(await readPartText('xl/_rels/workbook.xml.rels'));
+    var stylesDoc = parseXml(await readPartText('xl/styles.xml'));
+    var sharedStrings = byName['xl/sharedStrings.xml']
+      ? parseSharedStrings(parseXml(await readPartText('xl/sharedStrings.xml')))
+      : [];
+    var dateStyleFlags = parseDateStyleFlags(stylesDoc);
+
+    var relTargets = {};
+    Array.prototype.forEach.call(relsDoc.querySelectorAll('Relationship'), function (rel) {
+      relTargets[rel.getAttribute('Id')] = rel.getAttribute('Target');
+    });
+
+    var sheetEls = Array.prototype.slice.call(workbookDoc.querySelectorAll('sheets > sheet'));
+    var sheets = [];
+    for (var i = 0; i < sheetEls.length; i++) {
+      var sheetEl = sheetEls[i];
+      var name = sheetEl.getAttribute('name');
+      var relId = sheetEl.getAttribute('r:id');
+      var target = relTargets[relId];
+      var partPath = 'xl/' + target;
+      var sheetDoc = parseXml(await readPartText(partPath));
+      var rows = parseSheetRows(sheetDoc, sharedStrings, dateStyleFlags);
+      sheets.push({ name: name, rows: rows, rowCount: rows.length });
+    }
+
+    return { sheets: sheets, parseMs: performance.now() - startTime };
+  }
+
+  // ---- Rendering -----------------------------------------------------------------
+  function cellText(value) {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object' && value.kind === 'date') return value.iso;
+    return String(value);
+  }
+
+  function cellClass(value) {
+    if (value === null || value === undefined) return 'empty-cell';
+    if (typeof value === 'object' && value.kind === 'date') return 'date-cell';
+    return '';
+  }
+
+  function renderSheet(sheet) {
+    var section = document.createElement('section');
+    var heading = document.createElement('h2');
+    heading.textContent = sheet.name;
+    section.appendChild(heading);
+
+    var meta = document.createElement('p');
+    meta.className = 'sheet-meta';
+    meta.textContent = sheet.rowCount + ' rad(er) totalt, inkl. header';
+    section.appendChild(meta);
+
+    var table = document.createElement('table');
+    var header = sheet.rows[0] || [];
+    var thead = document.createElement('thead');
+    var headRow = document.createElement('tr');
+    for (var c = 0; c < header.length; c++) {
+      var th = document.createElement('th');
+      th.textContent = cellText(header[c]);
+      headRow.appendChild(th);
+    }
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    for (var r = 1; r < sheet.rows.length; r++) {
+      var dataRow = sheet.rows[r];
+      var tr = document.createElement('tr');
+      for (var c2 = 0; c2 < header.length; c2++) {
+        var td = document.createElement('td');
+        var v = dataRow[c2];
+        td.textContent = cellText(v);
+        var cls = cellClass(v);
+        if (cls) td.className = cls;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    section.appendChild(table);
+    return section;
+  }
+
+  function render(result) {
+    outputEl.innerHTML = '';
+    result.sheets.forEach(function (sheet) {
+      outputEl.appendChild(renderSheet(sheet));
+    });
+    timingEl.hidden = false;
+    timingEl.innerHTML = 'Tolket ' + result.sheets.length + ' ark på <b>' +
+      result.parseMs.toFixed(1) + ' ms</b> (engine: ' + navigator.userAgent.split(') ')[0] + ')';
+  }
+
+  fileInput.addEventListener('change', async function () {
+    var file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    statusEl.className = '';
+    statusEl.textContent = 'Leser ' + file.name + ' …';
+    outputEl.innerHTML = '';
+    timingEl.hidden = true;
+    try {
+      var result = await parseWorkbook(file);
+      statusEl.className = 'ok';
+      statusEl.textContent = '✓ ' + file.name + ' lest og tolket.';
+      render(result);
+    } catch (err) {
+      statusEl.className = 'err';
+      statusEl.textContent = '✗ Kunne ikke lese filen: ' + err.message;
+      console.error(err);
+    }
+  });
+})();
+</script>
+<p style="margin:2rem 0 1rem;color:var(--muted);font-size:.85rem">Laget med Tún · tun.community</p>
+</body>
+</html>
