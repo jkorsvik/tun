@@ -139,9 +139,37 @@ pattern adds no access control of its own.
 | `paired` | NOT STANDALONE → linked |
 | local change-queue | NOT STANDALONE → connected |
 
-Dashboards remain the reference specialisation. Nothing here asks `dashboard-new`,
-`dashboard-data` or their vocabulary to change — the mapping above is meant as evidence
+Dashboards remain the reference specialisation. Nothing here asks `tun-new`,
+`tun-data` or their vocabulary to change — the mapping above is meant as evidence
 the split is sound, not as a migration to schedule.
+
+### The names people use
+
+The tree above uses `linked` for the read-only sidecar. The people explaining this outside
+the repository settled on **paired** instead, in English and Norwegian alike, and it is the
+word the skills and examples already use. Treat `linked` as this document's internal label
+and **paired** as the name to put in front of a reader.
+
+The one-line versions below were written for colleagues with no engineering background.
+They have held up in presentations, so reuse them rather than paraphrase:
+
+| Pattern | Norwegian | In one line | The cost, said plainly |
+|---|---|---|---|
+| **standalone** | selvstendig | One file. No dependency, ever. | To change anything, rebuild the whole file. |
+| **paired** | parret | A shell, plus a sister file beside it. | The sister file must travel with the shell when it moves. |
+| **connected** | koblet | The page gets read and write access to the folder while it is open. | A consent prompt every time, narrow browser support, hard to test. Never the default. |
+
+The default rule follows from the costs: **standalone unless the data must change without a
+rebuild, paired unless the page must write back, connected only when it must.**
+
+### Outside the tree: the hosted route
+
+One route does not fit the tree because it is not a file: a small web app on a real
+`https://` origin that reads the reader's files through Microsoft Graph. It removes the
+`file://` ceilings, and it costs an app registration, a host and an owner.
+[The hosted route](23-hosted-route-it-brief.md) writes up what it needs and the questions
+only IT can answer. Do not call it "connected": that word is taken, and the two differ on
+every axis that matters.
 
 ## Proposal: split the verify gate the same way
 
@@ -165,7 +193,7 @@ artefact safe to send?" without also asking "and is it a dashboard?"
 
 `tools/verify_standalone_core.py` in this repo is the 4-check extraction, proving the
 split is mechanically possible without touching `verify_dashboard.py`. If this proposal
-is adopted, the natural shape is `dashboard-verify` calling the generic core plus its
+is adopted, the natural shape is `tun-verify` calling the generic core plus its
 own 3 checks, rather than the two living as separate, drifting copies.
 
 ## Proof of concept: a standalone artefact with zero dashboard vocabulary
@@ -196,7 +224,7 @@ above: one generic layer, specialisations add their own on top rather than dupli
 Several standalone-HTML tools exist, or will exist, outside this repo — the
 process-diagram visualiser is the first concrete one.
 Most of them will **never become a full member of the OneDrive dashboard family**: they
-are not built by `dashboard-new`, are not distributed via `dashboard-publish`, and their
+are not built by `tun-new`, are not distributed via `tun-publish`, and their
 audience/access model may not route through a SharePoint folder at all. That is fine and
 expected — it does not mean they get a free pass on the principles.
 

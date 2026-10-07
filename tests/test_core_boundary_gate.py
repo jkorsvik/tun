@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -70,6 +70,8 @@ print("scope")
 current = gate.scan()
 chk("scope is non-empty", current["_scope"]["files"] > 0, True)
 chk("plugins/ is outside core", gate.in_core("plugins/eksempel/tokens/palette.css"), False)
+chk("internal/ is outside core", gate.in_core("internal/ops.md"), False)
+chk("the internal/ exclusion is narrow", gate.in_core("docs/internal-notes.md"), True)
 chk("core files are inside core", gate.in_core("tools/tokens/theme-light.css"), True)
 chk("binaries are skipped", gate.in_core("docs/assets/probe-local-render.png"), False)
 # The baseline file lists every pattern it tracks, so scanning it would count its own contents.
@@ -252,8 +254,27 @@ print("\nattribution is protected, not eroded")
 _authors = REPO / "AUTHORS.md"
 chk("AUTHORS.md exists", _authors.is_file(), True)
 _auth_text = _authors.read_text(encoding="utf-8") if _authors.is_file() else ""
-for _role in ("product owner", "maintainer"):
-    chk(f"AUTHORS.md credits the {_role}", _role in _auth_text, True)
+# Names are not written here (this file is not an attribution region); the contributions
+# are, and each must sit on a credit row that names someone, inside the region.
+_region = _auth_text.split("<!-- attribution:start -->", 1)[-1].split("<!-- attribution:end -->", 1)[0]
+_rows = [l for l in _region.splitlines() if l.startswith("| **") and "** |" in l]
+def _credited(row_name, region):
+    # A full name, or a one-word pseudonym that the region itself explains (an author may
+    # ask not to be named). An unexplained single word, "TBD" or a blank still fails.
+    words = row_name.split()
+    if len(words) >= 2:
+        return True
+    return len(words) == 1 and f"*{words[0].lower()}*" in region.lower()
+
+for _role in ("the idea, the name, and the direction", "the plumbing"):
+    _row = [l for l in _rows if _role in l]
+    chk(f"AUTHORS.md credits {_role!r} to a named person",
+        bool(_row) and _credited(_row[0].split("**")[1], _region), True)
+for _name, _want in (("Ada Lovelace", True), ("Tunkallen", False), ("TBD", False), ("", False)):
+    chk(f"credit rule: {_name!r} without an explanation", _credited(_name, "no gloss here"), _want)
+chk("credit rule: a pseudonym explained in the region passes",
+    _credited("Tunkallen", "*tunkallen* is the guardian"), True)
+chk("AUTHORS.md says who 'The Tún authors' are", '"The Tún authors"' in _region, True)
 
 print("\nthe attribution region is narrow, and not a hole")
 _name_rx = re.compile(gate.CATEGORIES["local:person"][0])

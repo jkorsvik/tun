@@ -22,28 +22,28 @@
   "contents": {
     "skills": [
       {
-        "name": "dashboard-help",
-        "path": "skills/dashboard-help"
+        "name": "tun-help",
+        "path": "skills/tun-help"
       },
       {
-        "name": "dashboard-new",
-        "path": "skills/dashboard-new"
+        "name": "tun-new",
+        "path": "skills/tun-new"
       },
       {
-        "name": "dashboard-data",
-        "path": "skills/dashboard-data"
+        "name": "tun-data",
+        "path": "skills/tun-data"
       },
       {
-        "name": "dashboard-verify",
-        "path": "skills/dashboard-verify"
+        "name": "tun-verify",
+        "path": "skills/tun-verify"
       },
       {
-        "name": "dashboard-publish",
-        "path": "skills/dashboard-publish"
+        "name": "tun-publish",
+        "path": "skills/tun-publish"
       },
       {
-        "name": "powerbi-escape",
-        "path": "skills/powerbi-escape"
+        "name": "tun-powerbi-escape",
+        "path": "skills/tun-powerbi-escape"
       },
       {
         "name": "writing-for-agents",

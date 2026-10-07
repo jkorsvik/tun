@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
 # or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
 # COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -27,7 +27,7 @@ base64-inlined, and the browser inflates it with the native `DecompressionStream
         --out dashboards/transaksjoner.html
 
 Stdlib only, on purpose — same contract as the rest of tools/. Input: .csv, .tsv,
-.json (array of objects). For .xlsx or Parquet, convert first; the `dashboard-data`
+.json (array of objects). For .xlsx or Parquet, convert first; the `tun-data`
 skill does that.
 
 Read docs/07-portable-cube.md before changing the encoding — the browser side in
@@ -88,7 +88,7 @@ def load_rows(path: pathlib.Path) -> list[dict]:
                     delim = ","
             return list(csv.DictReader(fh, delimiter=delim))
     die(f"{path.name}: unsupported input. Use .csv, .tsv or .json "
-        f"(convert .xlsx/.parquet first — see the dashboard-data skill)")
+        f"(convert .xlsx/.parquet first — see the tun-data skill)")
 
 
 def to_number(raw) -> float:

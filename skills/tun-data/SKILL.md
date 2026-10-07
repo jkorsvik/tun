@@ -1,5 +1,5 @@
 ---
-name: dashboard-data
+name: tun-data
 description: Refresh the data in an existing standalone dashboard, or add a new data source to it. Converts Excel to a usable format, re-extracts from the source, and rebuilds the file in place so existing share links keep working. Use when dashboard numbers are stale, someone asks to update or refresh a dashboard, or wants to point it at different data.
 license: AGPL-3.0-or-later
 ---
@@ -122,7 +122,7 @@ main defence against a broken extract sailing through every automated check.
 
 ## Step 5 — Republish
 
-Copy over the published copy (`dashboard-publish`), same path. Then tell the user what
+Copy over the published copy (`tun-publish`), same path. Then tell the user what
 the new "as of" date is, because that is the only thing that visibly changed.
 
 ## Adding a new data source

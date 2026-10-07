@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
 # or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
 # COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -8,7 +8,7 @@
 """
 build_dashboard.py — fill the single-file dashboard template with real data.
 
-Used by the RAIWork skill `dashboard-new`. Stdlib only: no pip install, no
+Used by the RAIWork skill `tun-new`. Stdlib only: no pip install, no
 node_modules, nothing for a non-developer to set up.
 
     python3 tools/build_dashboard.py \
@@ -19,7 +19,7 @@ node_modules, nothing for a non-developer to set up.
         --out dashboards/salg.html
 
 Input formats: .csv, .tsv, .json (array of objects). For .xlsx, convert first
-(`dashboard-data` handles that) — we deliberately avoid an Excel dependency here
+(`tun-data` handles that) — we deliberately avoid an Excel dependency here
 so the Tier 1 path stays prerequisite-free.
 """
 from __future__ import annotations

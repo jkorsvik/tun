@@ -1,22 +1,27 @@
 <!-- attribution:start -->
 # Authors
 
-**Tún is a passion project, credited to the product owner and the maintainer.** <3
+**Tún is a passion project by two people.** <3
 
 | | |
 |---|---|
-| **The product owner** | the idea, the name, and the direction |
-| **The maintainer** | the plumbing: measured constraints, template, gates, skills |
+| **Tunkallen** | the idea, the name, and the direction |
+| **Jon-Mikkel Ryen Korsvik** | the plumbing: measured constraints, template, gates, skills |
 
-The product owner named it. The documentation in this repository explains things through
-subscript arithmetic and runbooks rather than through framework vocabulary; that is the
-register the project is written in on purpose.
+In Norwegian folk belief, *tunkallen* is the guardian of the tún, the farmyard this
+project is named after. He keeps watch, asks for little, and is seldom seen. That is all
+there is to know about him, and it is enough.
 
 Nobody commissioned this and nothing depends on it. It exists because sharing a number
 with a colleague should not cost a licence, a workspace and three weeks, and because
 finding out exactly *why* it does turned out to be interesting enough to keep going.
 
-Copyright is held as stated in the README and in every source file header.
+## Copyright
+
+"The Tún authors" in the README and the file headers means the two people above. Some of
+the work was done on the job, so who holds the rights has to be settled in writing first.
+Nothing gets published or transferred before then. The open item is in
+`docs/17-licensing.md`.
 
 Credit sits inside a declared `<!-- attribution:start -->` region, which the identity
 checks skip. A region, not a whole-file exemption, so a name cannot drift into an

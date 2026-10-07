@@ -149,6 +149,23 @@ Sources used for the gaps identified in §1:
   `aria-expanded` for its collapse behaviour on narrow screens, not just "hidden until
   clicked."
 
+## 5b. Keyboard shortcuts: evaluated, not adopted
+
+Evaluated on 2026-09-19. The approach that holds across platforms: do not look for one
+physical key combination that is the same everywhere. Define one *semantic* shortcut per
+action and map it to each platform's own convention. The primary modifier is `Ctrl` on
+Windows, Linux and Android, and `⌘ Command` on macOS and iPadOS. This matches what VS Code,
+Microsoft 365, Google Docs, GNOME and Android already do, so developers, data users and
+Office users all meet keys they know. A draft table covered 25 common actions (copy, cut,
+paste, undo, redo, save, find, replace, navigation and so on).
+
+**Status: not adopted.** Rows 24 and 26 in `docs/01` came first: navigation that breaks in
+the SharePoint preview matters more than shortcuts. Before a shortcut standard can be wired
+in, someone must measure which key events the SharePoint preview and the mobile previews
+pass through to the page and which they keep for themselves. Until then, the templates use
+navigation keys in the slide deck (arrows, Page Up/Down, space, Home, End, and `f` for
+fullscreen) and the browser's own Tab order.
+
 ## 6. Where this leaves the build pipeline
 
 None of the above should end up hand-copied into each new dashboard the way the current

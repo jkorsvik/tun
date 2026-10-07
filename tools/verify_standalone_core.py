@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -35,7 +35,7 @@ Or import the check functions from another verifier (see tools/verify_dashboard.
 the pattern) to add specialisation-specific checks on top without duplicating these.
 
 Exit 0 = the generic core passed. This does NOT mean "safe to publish" for any given
-specialisation — a dashboard also needs dashboard-verify's own checks; a process diagram
+specialisation — a dashboard also needs tun-verify's own checks; a process diagram
 or other artefact needs whatever its own specialisation defines, if anything.
 """
 from __future__ import annotations
@@ -416,7 +416,7 @@ def _report(failures, warnings, shot=None) -> int:
         for f in failures:
             print(f"    • {f}")
         return 1
-    print("\n✓ PASS — generic core only. A dashboard also needs dashboard-verify's"
+    print("\n✓ PASS — generic core only. A dashboard also needs tun-verify's"
           " KPI/chart/table/interactivity checks; a non-dashboard artefact needs"
           " whatever its own specialisation defines, if anything.")
     if shot:

@@ -1,5 +1,5 @@
 ---
-name: dashboard-verify
+name: tun-verify
 description: Prove a built dashboard actually renders and works before it is shared — opens it in a real browser from a file:// URL, checks it is self-contained, confirms charts and interactivity work, checks the size budget, and produces a screenshot for review. Use before publishing any dashboard, or when checking whether a dashboard file is broken or safe to share.
 license: AGPL-3.0-or-later
 ---
@@ -34,6 +34,7 @@ Exit `0` = safe to publish. Anything else = do not publish.
 | **self-contained** | a `<script src="https://…">` means the dashboard breaks offline, breaks in a locked-down browser, and silently changes when the CDN does |
 | **size budget** | >50 MB and it becomes painful to open and to sync; the Tier 1 promise breaks |
 | **provenance intact** | numbers nobody can trace to a source become a liability the first time someone challenges them |
+| **no stray `<script` text** | a literal `<script` outside a real script tag, even in a comment, makes SharePoint's preview disable *every* script in the file (docs/01 row 25). The page looks fine locally and is dead in the preview |
 | **no unsubstituted placeholders** | `{{MEASURE_COL}}` shipped to a stakeholder is embarrassing and means the build half-failed |
 | **console clean** | a JS error usually means charts are empty while the page still looks structurally fine |
 | **JS executed** | asserts KPI cards exist *in the DOM* — proves the script ran, not just that markup was written |
@@ -41,6 +42,8 @@ Exit `0` = safe to publish. Anything else = do not publish.
 | **table has rows** | catches a data/column mismatch that leaves the detail table empty |
 | **interactivity** | changes a filter and asserts the row count moved — proves the render loop is wired, not just the first paint |
 | **screenshot** | the only check for "is this actually readable" |
+
+Rows 24 (`:target` navigation) and 26 (sticky or fixed headers) are not checked by this tool. They are checked for every tracked file by `tools/check_tree.py`, which the pre-commit hook runs.
 
 ## Check every viewport, not just the desktop one
 

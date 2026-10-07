@@ -73,11 +73,16 @@ plugin.
 
 ## Discovery and load order
 
-Discovery is `plugins/*/manifest.json`, sorted by `id` for determinism. Exactly one plugin may
-provide `tokens`; more than one is an error rather than a silent last-wins, because a
-last-wins palette is impossible to debug from a built artefact. A manifest that is not
-readable JSON is also an error, not a skip: a silently skipped plugin is installed as far
-as the user is concerned and absent as far as the build is concerned.
+Discovery is `plugins/*/manifest.json`, sorted by `id` for determinism. Any number of
+installed plugins may declare `"provides": ["tokens"]` at once — coexistence is fine,
+and `tests/test_token_contract.py` runs with two (`eksempel`, `tun`) in this tree. The rule
+is about the *automatic* pick: exactly one plugin may be resolved by `prefer_plugin=True`
+with no explicit palette named, and more than one candidate there is an error rather than
+a silent last-wins, because a last-wins palette is impossible to debug from a built
+artefact. `TUN_PALETTE` sidesteps the question entirely by naming one file, so it works
+unambiguously no matter how many plugins provide tokens. A manifest that is not readable
+JSON is also an error, not a skip: a silently skipped plugin is installed as far as the
+user is concerned and absent as far as the build is concerned.
 
 **An installed plugin does not win by default**, which reads backwards for a plugin system
 and is deliberate. This repository *contains* the brand plugin, so installed-wins would

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -83,7 +83,7 @@ def main() -> int:
         chk("says already installed", "already installed" in out, True)
 
         print("--- 3. user's own real directory: MUST survive ---")
-        own = skills / "dashboard-new"
+        own = skills / "tun-new"
         shutil.rmtree(own)
         own.mkdir()
         (own / "SKILL.md").write_text("mine")
@@ -110,7 +110,7 @@ def main() -> int:
             any("magnus-review" in l for l in out.splitlines() if l.strip().startswith("-")), False)
 
         print("--- 5. our own earlier copy (marker present): refreshed, not preserved ---")
-        copied = skills / "dashboard-verify"
+        copied = skills / "tun-verify"
         (copied / "STALE.md").write_text("should not survive a refresh")
         run_setup(tmp)
         chk("still a copy", (copied.is_dir() and not copied.is_symlink()), True)
@@ -120,17 +120,17 @@ def main() -> int:
         print("--- 6. an older symlinked install of ours: migrated to a copy ---")
         # Installs made before this change point straight into the repo. They must be
         # converted, not left alone, or editing the skill keeps editing the working tree.
-        linked = skills / "dashboard-help"
+        linked = skills / "tun-help"
         shutil.rmtree(linked)
-        linked.symlink_to(REPO / "skills" / "dashboard-help", target_is_directory=True)
+        linked.symlink_to(REPO / "skills" / "tun-help", target_is_directory=True)
         out = run_setup(tmp)
         chk("no longer a symlink", linked.is_symlink(), False)
         chk("is a copy with our marker", (linked / MARKER).is_file(), True)
         chk("says it migrated", "migrated from symlink to copy" in out, True)
 
         print("--- 7. a stale copy is reported by --check, not silently accepted ---")
-        (skills / "dashboard-new").exists()  # occupied by the user's own dir from step 3
-        edited = skills / "dashboard-verify" / "SKILL.md"
+        (skills / "tun-new").exists()  # occupied by the user's own dir from step 3
+        edited = skills / "tun-verify" / "SKILL.md"
         edited.write_text(edited.read_text() + "\n<!-- edited in place -->\n")
         out = run_setup(tmp, "--check")
         chk("reports the drift", "stale" in out, True)
@@ -142,12 +142,40 @@ def main() -> int:
         print("--- 8. --link is opt-in and does what it says ---")
         out = run_setup(tmp, "--link")
         chk("now a symlink into the repo",
-            os.readlink(skills / "dashboard-verify"), str(REPO / "skills" / "dashboard-verify"))
+            os.readlink(skills / "tun-verify"), str(REPO / "skills" / "tun-verify"))
         chk("warns that edits hit the repo", "edits here change the repo" in out, True)
         chk("the user's own skill still survives --link",
-            (skills / "dashboard-new" / "NOTES.md").is_file(), True)
+            (skills / "tun-new" / "NOTES.md").is_file(), True)
         chk("the foreign link still survives --link",
             os.readlink(skills / "magnus-review"), str(foreign_src))
+
+        print("--- 9. a skill renamed or removed in this repo: our old copy is stale ---")
+        # Simulates a skill that used to be called "dashboard-new" and is now "tun-new"
+        # (or any other rename/removal): the directory is still ours (MARKER present) but
+        # its name no longer matches anything under skills/. --check must flag it without
+        # touching it; a real run must remove it, and only it.
+        renamed_away = skills / "dashboard-new"
+        renamed_away.mkdir()
+        (renamed_away / "SKILL.md").write_text("old name, old content")
+        (renamed_away / MARKER).write_text(f"source: {REPO / 'skills' / 'dashboard-new'}\n")
+        out = run_setup(tmp, "--check")
+        chk("--check flags it as stale", "no longer in this repo" in out, True)
+        chk("--check does not remove it", renamed_away.is_dir(), True)
+        out = run_setup(tmp)
+        chk("a real run removes it", renamed_away.exists(), False)
+        chk("says it was removed", "removed" in out and "dashboard-new" in out, True)
+        chk("the live skill is untouched", (skills / "tun-new").is_dir(), True)
+
+        print("--- 10. a same-named dir with no marker: never ours to remove ---")
+        # A user could have their own skill sitting under an old name by coincidence. No
+        # MARKER means it is not ours, renamed or not, so the cleanup must leave it alone.
+        coincidence = skills / "dashboard-verify"
+        shutil.rmtree(coincidence, ignore_errors=True)
+        coincidence.mkdir()
+        (coincidence / "SKILL.md").write_text("not ours, never was")
+        run_setup(tmp)
+        chk("survives even though its name matches no current skill",
+            (coincidence / "SKILL.md").read_text(), "not ours, never was")
 
         print()
         print(f"PASS: {passed}  FAIL: {failed}")

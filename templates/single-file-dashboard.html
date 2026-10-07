@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -28,7 +28,7 @@
     Extracted   : {{EXTRACT_TIMESTAMP}}
     Built       : {{BUILD_TIMESTAMP}}
     Requested by: {{REQUESTED_BY}}
-    Built by    : RAIWork skill `dashboard-new`
+    Built by    : RAIWork skill `tun-new`
     Repo        : tun
     Made with   : Tún — tun.community
     Rows inlined: {{ROW_COUNT}}
@@ -522,7 +522,7 @@ function render() {
   const el = document.getElementById("footnote"); if (!el) return;
   el.innerHTML = "{{DATA_MODE}}" === "paired"
     ? 'Dataene ligger i <code>data.js</code> ved siden av denne filen. Bytt den ut, og alle ser nye tall.'
-    : 'Tallene er bygget inn i denne filen. Be RAIWork om <code>dashboard-data</code> for \u00e5 oppdatere.';
+    : 'Tallene er bygget inn i denne filen. Be RAIWork om <code>tun-data</code> for \u00e5 oppdatere.';
 })();
 
 /* ---------- header meta (freshness comes from the DATA, not the shell) ----- */

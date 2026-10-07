@@ -192,7 +192,7 @@ python3 tools/verify_dashboard.py dashboards/transaksjoner.html
 ```
 
 Stdlib only, like the rest of `tools/`. Input is `.csv`, `.tsv` or `.json`; convert
-`.xlsx` or Parquet first with the `dashboard-data` skill.
+`.xlsx` or Parquet first with the `tun-data` skill.
 
 The builder refuses to produce something misleading: it errors on a non-additive
 measure, on an unknown column, and on a cube above `--max-cells` (default 2 000 000,

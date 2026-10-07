@@ -1,0 +1,73 @@
+/*
+   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+/* ==========================================================================
+   Tún brand tokens
+   ==========================================================================
+   Source : the public site's own :root block, tun.community
+            (see AGENTS.md §8 for why the site is never copied into
+            this repo). Four colours are
+            taken verbatim from there:
+
+              --ink      #0d2b21   Tún mørkegrønn, fra logoen (body text; the
+                                   site also uses it as a DARK BACKGROUND with
+                                   white/paper text, e.g. .cta, .composition-strip,
+                                   .snapshot figcaption)
+              --ink-soft #28473c   secondary text: .lede, .card p, hover states
+              --accent   #3f8f3f  "haken i Tún" (the checkmark in the logo);
+                                   on the site it is used only as a decorative
+                                   fill/stroke (progress bar, tick glyph), never
+                                   as body text
+              --paper    #f7f7f5   page background
+
+   These four are the only hues this file is allowed to draw from. Everything
+   below is either one of them directly, or a tint/shade of one of them,
+   documented inline. No new hue is invented.
+
+   Status : NOT installed by default. Core pins the neutral palette
+   (tools/tokens/palette-neutral.css) for every build; this file is only
+   read when a build explicitly asks for it via TUN_PALETTE, e.g.
+
+     TUN_PALETTE=plugins/tun/tokens/palette.css python3 tools/build_dashboard.py ...
+
+   See plugins/tun/README.md for the derivation of every slot, the WCAG
+   contrast table, and why "tokens" is the only capability this plugin
+   provides (unlike a company brand plugin, which may also provide "assets").
+   ========================================================================== */
+:root{
+  --tun-ink:              #0d2b21;  /* direct: site --ink */
+  --tun-secondary:        #28473c;  /* direct: site --ink-soft */
+  --tun-accent:           #3f8f3f;  /* direct: site --accent */
+  --tun-paper:            #f7f7f5;  /* direct: site --paper */
+  --tun-ink-darkest:      #071812;  /* derived: --tun-ink with HSL lightness
+                                        scaled to 55% of its original value
+                                        (same hue 160°, same saturation ~54%,
+                                        L 11.0% -> 6.0%). A shade of ink, not a
+                                        new hue. See README for the exact
+                                        formula and script. */
+  --tun-accent-tint:      #a4c8a3;  /* derived: --tun-accent linearly mixed
+                                        55% toward --tun-paper in sRGB
+                                        (channel-wise lerp, t=0.55). A tint of
+                                        the accent made with the palette's own
+                                        paper colour, not with white. */
+}
+
+/* ==========================================================================
+   Plugin seam: the eight semantic palette slots core asks for.
+   See docs/22-plugin-contract.md and tools/tun_tokens.py::REQUIRED_SLOTS.
+   ========================================================================== */
+:root{
+  --palette-ink:             var(--tun-ink);
+  --palette-surface:         var(--tun-paper);
+  --palette-primary:         var(--tun-secondary);
+  --palette-primary-dark:    var(--tun-ink);
+  --palette-primary-darkest: var(--tun-ink-darkest);
+  --palette-accent:          var(--tun-accent);
+  --palette-accent-light:    var(--tun-accent-tint);
+  --palette-on-dark:         var(--tun-paper);
+}

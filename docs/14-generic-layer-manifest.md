@@ -14,7 +14,7 @@ here, no matter how reusable it looks at first glance.
 
 | File | What it is | Generic because |
 |---|---|---|
-| `tools/verify_standalone_core.py` | Verification: self-contained, size budget, unsubstituted `{{PLACEHOLDER}}` tokens, provenance block present, console-clean render, screenshot | None of these checks reference dashboard DOM (`.kpi`, `.bar`, `#tbl`, `.chip`) — they check the *file*, not a template |
+| `tools/verify_standalone_core.py` | Verification: self-contained, size budget, unsubstituted `{{PLACEHOLDER}}` tokens, provenance block present, no literal `<script` text outside real script tags (docs/01 row 25), no `:target`-driven visibility (row 24), no scroll-persistent `sticky`/`fixed` positioning (row 26), console-clean render, screenshot | None of these checks reference dashboard DOM (`.kpi`, `.bar`, `#tbl`, `.chip`) — they check the *file*, not a template |
 | `plugins/eksempel/tokens/palette.css` | Eksempel AS brand colour tokens (Blue, Navy, etc.), invented for the fictional example brand | Colour values, not layout or component markup — usable by any Eksempel-AS-branded artefact |
 | `tools/tokens/status-semantic.css` | Positive/negative/neutral status colours, WCAG-checked against white | Same reasoning — a status colour is not dashboard-specific, any artefact showing a delta or health state needs one |
 | `tools/tokens/theme-light.css` | Maps generic chrome roles (`--bg`, `--panel`, `--ink`, `--muted`, `--line`, `--brand`) onto the tokens above | The role names are generic UI chrome, not dashboard vocabulary |

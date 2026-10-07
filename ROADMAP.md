@@ -14,8 +14,8 @@ If their priorities differ from this list, **this list is wrong.** Rewrite it.
 - [x] Single-file dashboard template, no framework, no CDN, brand palette
 - [x] `build_dashboard.py` — stdlib only, Norwegian number parsing, size budget enforcement
 - [x] `verify_dashboard.py` — real browser render, interactivity check, screenshot
-- [x] Skills: `dashboard-help`, `dashboard-new`, `dashboard-data`, `dashboard-verify`,
-      `dashboard-publish`, `powerbi-escape`
+- [x] Skills: `tun-help`, `tun-new`, `tun-data`, `tun-verify`,
+      `tun-publish`, `tun-powerbi-escape`
 - [x] `tenant-probe.py` — reproducible constraint check
 - [x] Onboarding for a first user
 - [x] Working example, verified
@@ -26,19 +26,19 @@ The point of this phase is to find out what the docs got wrong.
 
 - [ ] **A first real user installs RAIWork and ships one real dashboard** end to end, from their own
       data, into a real SharePoint folder, shared with real colleagues
-- [ ] Fix whatever that reveals — expect the onboarding and `dashboard-new`'s questions
+- [ ] Fix whatever that reveals — expect the onboarding and `tun-new`'s questions
       to need adjusting after contact with a real user
 - [ ] A use-case list: the real reports in your area that could move, **and the ones
       that can't, with the reason.** The refusal list is the more valuable half
 - [ ] Capture the first honest reaction from a viewer who is not us. Specifically: does
-      the download step confuse them, and does the wording in `dashboard-publish` fix it?
+      the download step confuse them, and does the wording in `tun-publish` fix it?
 
 **Success criterion:** a colleague who has never heard of this opens a dashboard, uses a
 filter, and gets an answer — without asking how.
 
 ## Phase 3 — Prove the Power BI claim
 
-- [ ] Port one real Power BI report with `powerbi-escape`, including number-for-number
+- [ ] Port one real Power BI report with `tun-powerbi-escape`, including number-for-number
       reconciliation against the original
 - [ ] Run both in parallel; let the owner decide whether to retire the original
 - [ ] Write up what the port cost in effort and what it lost — honestly
@@ -74,6 +74,17 @@ Depends on Phase 4 for a real HTTP origin to run from.
 - [ ] Establish the practical data ceiling by measurement, not by citing blog posts
 - [ ] `dashboard-bigdata` skill
 
+Most large-data needs are already met by the dense cube in Tier 1. Parquet, SQLite and
+DuckDB earn their place first on the build side, in the job that writes the file. Phase 5
+is for the cases the cube cannot answer: row-level detail over a huge table, ad hoc queries.
+
+## Later, deliberately not now
+
+- General builders for decks and reports beyond the current templates
+- A plugin registry, and backend adapters for publishing targets
+- Shipping all of Tún's skills as one plugin that replaces `setup.py` (decided in
+  `docs/21-plugin-architecture.md`, not built)
+
 ## Continuous
 
 - [ ] Re-run `probe/tenant-probe.py` quarterly, and whenever something breaks.
@@ -81,6 +92,33 @@ Depends on Phase 4 for a real HTTP origin to run from.
       doc decays
 - [ ] Keep the skills' governance statements honest — if Tier 2 stays unproven, they must
       keep saying so
+- **Enforce what is measured before measuring more.** A new tenant probe adds rows to
+  `docs/01`. If earlier rows are still not enforced by a gate, the new rows repeat the same
+  drift. Rows 24 and 26 were gated before row 27 was probed for this reason.
+- **Distribution stays narrow until ownership is settled.** No marketplace release. The
+  public face is tun.community. The docs stay internal.
+
+## Harvested, not yet scheduled
+
+Ideas from the working notes and presentations around this project, recorded so they are
+not lost. None is committed to. Each needs an issue before work starts.
+
+- [ ] **A default "make HTML" skill for RAIWork and Copilot**, built on the three patterns
+      (standalone, paired, connected; `docs/08`). The stated goal is for it to be as
+      ordinary to have installed as the Microsoft 365 skill.
+- [ ] **Feedback from inside the artefact.** Let a reader report a fault or a wish from the
+      file itself, with a snapshot of machine, surface and console attached, so an issue
+      arrives with its evidence instead of a description of it.
+- [ ] **A glossary for non-developers**, one place for the explanations `docs/06` rule 7 asks
+      for.
+- [ ] **An analyser for HTML pages built outside this toolkit**, measuring them against the
+      same gates. First run on one page only; too early to conclude anything.
+- [ ] **Substrates beyond OneDrive and SharePoint**: a plain filesystem with hyperlinks, and
+      Google Drive, next to the backends `docs/index.md` already lists as direction.
+- [ ] **A process-diagram skill that draws its own workflow.** One exists outside this
+      repository, applied to itself: request, modelling, approval, rendering, with nodes
+      flagged where the step should improve. Its purpose is teaching: help a beginner turn a
+      script into a skill, and move from a local skill to a marketplace one.
 
 ---
 
@@ -97,6 +135,9 @@ than new features.
 | Do Range requests survive a *sharing link*, not just a Graph `downloadUrl`? | Tier 3 architecture | measurable — extend `tenant-probe.py` |
 | Practical file-size ceiling before Outlook/SharePoint/browsers complain? | the Tier 1 size budget, currently a reasoned estimate | measurable |
 | Which reports should move first? | Phase 2 and 3 scope | the users |
+| The five questions in [the hosted route](docs/23-hosted-route-it-brief.md): who approves a single-page app registration with delegated `Files.Read`, and which host is approved for small internal tools? | the hosted route, which is Tier 2 option A and a real origin for Tier 3 | IT architecture and security |
+| Is the multi-block model (`docs/13` §10) worth its formality, or should people match data sources to HTML themselves? | the multi-block design | the people who will build with it |
+| Does a self-refreshing paired page, one that re-reads its sidecars without a reload, survive each surface? One informal session (2026-09-09) found: works through a Windows filesystem shortcut, fails in the OneDrive web app, macOS untested, and sharing the folder directly was not enough without a OneDrive shortcut. | self-refreshing paired pages | measurable; becomes a `docs/01` row only once reproduced with a written method |
 
 ## Explicit non-goals
 
