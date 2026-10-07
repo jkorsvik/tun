@@ -1,5 +1,5 @@
 ---
-name: dashboard-new
+name: tun-new
 description: Build a new standalone interactive dashboard from a data file (Excel, CSV, JSON, or a query result). Produces a single self-contained HTML file that can be shared through SharePoint or OneDrive with no Power BI licence, no workspace, and no admin approval. Use when someone wants a dashboard, a report, charts from a spreadsheet, or to share data interactively.
 license: AGPL-3.0-or-later
 ---
@@ -44,7 +44,7 @@ laptops. Confirm the audience before continuing.
 
 Read the source file. Do not guess at its shape.
 
-- `.xlsx` / `.xlsm` → convert to CSV first (see `dashboard-data`), then read
+- `.xlsx` / `.xlsm` → convert to CSV first (see `tun-data`), then read
 - `.csv` / `.tsv` / `.json` → read directly
 - a database/Snowflake query → run it, save the result as CSV
 
@@ -203,10 +203,10 @@ If it fails, fix and re-run. Never hand over an unverified file.
 Tell them three things:
 
 1. **Where the file is** and that it is one file, nothing else needed.
-2. **How to share it** — "ask me to publish it" (`dashboard-publish`), or just drop it
+2. **How to share it** — "ask me to publish it" (`tun-publish`), or just drop it
    in a SharePoint folder themselves.
 3. **That it is a snapshot** — the numbers are frozen at build time. To refresh, ask
-   for `dashboard-data`.
+   for `tun-data`.
 
 Offer, don't assume: *"Want me to put it in a SharePoint folder for you?"*
 

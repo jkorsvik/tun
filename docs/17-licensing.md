@@ -115,7 +115,7 @@ Decide this before the API shape decides it for us:
 3. Header in every toolkit source file (`.py`, git hooks). **Done.** A short form, not the
    full FSF boilerplate, because the LICENSE file carries the full text:
 
-       Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+       Copyright (C) 2026 The Tún authors (see AUTHORS.md)
        This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
        SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -153,6 +153,11 @@ The code licence does not control the name. No trademark is registered for `Tún
 forks of the code while keeping the name tied to the project.
 
 ## Open item
+
+**Ownership.** The headers say "The Tún authors", which means the two people in
+`AUTHORS.md`. Some of the work was written on the job, and the employer may hold rights
+in it. Until that is settled in writing, the repository stays private. No publication,
+and no transfer to another body, under this licence or any other.
 
 **Review.** The Exception text is drafted from the structure of existing FSF
 exceptions, but it is original wording and needs a lawyer to read it.

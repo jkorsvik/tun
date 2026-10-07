@@ -58,6 +58,28 @@ from the next commit onwards. A boundary is enforced continuously: core must not
 organisation, and a gate can assert that on every commit, the same way the row gates and the
 real-data gate already work.
 
+## Evidence from practice: four tools, one shape
+
+Before this document existed, several self-contained HTML tools were built for unrelated
+jobs, each on its own, without a shared plan:
+
+| Tool | Job |
+|---|---|
+| a follow-up engine | activities and contacts in a relationship; one concrete setup was the first proof, the engine takes more |
+| a process-diagram engine | visualises any flow or process; replaced two variants that had drifted apart over time |
+| a case room | one gathering point per case for a fixed core group: front page, documents, event log, nothing sent around |
+| a method and model overview | one shared data set drives two views built for different purposes |
+
+Each one landed, independently, on the same form: **one generic engine, one configurable
+first case.** Without that, the same basic tricks (theme, navigation, how to prove a file is
+safe to send) get reinvented per tool, a little differently each time, and the tools become
+harder to maintain together. The two process-diagram variants that drifted apart are that
+failure, observed rather than predicted.
+
+The lesson is not "build everything alike". It is: research the tenant physics and the
+painful tricks **once**, in core, and let every new tool inherit the answer instead of
+rediscovering it. That is the core tier above, arrived at from the bottom up.
+
 ## What a plugin has to be able to do
 
 Derived from the Eksempel AS example plugin. Each item is a requirement the
@@ -76,6 +98,21 @@ Open: whether a plugin may add skills, how versioning and compatibility are expr
 whether substrate adapters are plugins or core. The existing `plugin/manifest.json` is a
 raicode packaging manifest for this repository as a single unit; it conflates core with
 the Eksempel plugin and will have to split.
+
+## Decided: Tún's own skills ship as a plugin
+
+Today the product skills are installed by symlinking them into the user's global skill
+folder (`setup.py`). That is backwards:
+
+- **They are visible where they cannot work.** The skills point at repo-local paths
+  (`tools/`, `templates/`), but a global install shows them in every session, in every
+  project.
+- **They are missing where they can work.** A new colleague who clones the repo gets no
+  skills until they run the installer.
+
+Decision: all of Tún's skills ship as one standalone, cross-platform plugin, not through a
+personal dotfiles repository. The plugin replaces the symlink installer. Until it exists,
+`setup.py` stays, and the dev skills (`skills/dev/`) stay project-agnostic.
 
 ## Consequence for publication
 

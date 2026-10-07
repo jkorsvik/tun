@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -127,16 +127,13 @@ CHECKS: dict[str, tuple[str, object, str]] = {
 # becomes a permanent exemption, and then the gate is off for those paths forever.
 #
 # Row 25 (check_no_stray_script_text) is the live example of the very pattern this gate is
-# about: the check has existed for a while and nothing ran it over the tree, so these
-# accumulated unseen. Each needs its own prose rewritten to stop writing the literal
-# characters. Tracked, not fixed on the branch that added the gate.
+# about: the check existed for a while and nothing ran it over the tree, so five files
+# accumulated debt unseen. Paid off: the templates and generators stopped writing the
+# literal tag in prose, and the five artefacts were rebuilt. Keep it empty.
 KNOWN_DEBT: dict[str, set[str]] = {
     "self-contained": set(),
     "placeholders": set(),
-    "stray-script": {
-        "examples/13-js-free-standalone-poc/js-free-standalone-poc.html",
-        "examples/14-chart-emulation-nojs-poc/chart-emulation-nojs-poc.html",
-    },
+    "stray-script": set(),
     "target-nav": set(),
     "pinned-header": set(),
 }

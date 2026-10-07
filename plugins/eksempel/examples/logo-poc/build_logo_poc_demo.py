@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
 # or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
 # COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -97,7 +97,7 @@ card_html = "\n\n".join(
 
 HTML = f"""<!DOCTYPE html>
 <!--
-  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed

@@ -134,6 +134,12 @@ The brand and the domain are settled and need nothing from anyone else. Adoption
 into packages and the CLI waits on the package-name decision above.
 
 <!-- attribution:start -->
+## The old name
+
+Until 2026-09-28 the repository had an earlier working name. Old notes, session logs and
+clones may still use it. The forge redirects the old URL, so a push to it
+succeeds without a warning. Always resolve the repository by its current name.
+
 ## Credit
 
 The name *Tún* was found by the product owner.

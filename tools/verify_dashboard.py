@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
 verify_dashboard.py — prove a built dashboard actually works before anyone ships it.
 
-This is the hard gate used by the RAIWork skill `dashboard-verify`. A dashboard that
+This is the hard gate used by the RAIWork skill `tun-verify`. A dashboard that
 "should work" is worth nothing: the entire premise of a portable artefact is that it
 opens on *someone else's* machine. So we open it in a real browser, from a real
 `file://` URL — exactly how a recipient will — and assert on what rendered.

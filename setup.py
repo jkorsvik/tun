@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -118,6 +118,34 @@ def _install_copy(src: Path, dst: Path) -> None:
     )
 
 
+def _cleanup_renamed(sources: list[tuple[str, Path]], check_only: bool) -> None:
+    """Remove an install left behind by a skill that has since been renamed or deleted in
+    this repo (e.g. dashboard-new -> tun-new).
+
+    Only ever touches a directory that carries MARKER — the mark _install_copy() itself
+    writes. That is what tells "our old copy, safe to remove" apart from a skill the user
+    wrote under a name that happens to collide, or a foreign symlink another tool owns;
+    neither of those carries our marker, so neither is touched here.
+    """
+    if not SKILLS_DIR.is_dir():
+        return
+    current_names = {src.name for _, src in sources}
+    for dst in sorted(SKILLS_DIR.iterdir()):
+        if not dst.is_dir() or dst.is_symlink():
+            continue
+        if dst.name in current_names:
+            continue
+        if not (dst / MARKER).is_file():
+            continue
+        label = f"{dst.name}  (stale)"
+        if check_only:
+            warn(label, "installed by a skill no longer in this repo — renamed or removed")
+            fix(f"python3 setup.py   # removes the stale ~/.raiwork/skills/{dst.name}")
+        else:
+            shutil.rmtree(dst)
+            ok(label, "removed — no longer a skill in this repo")
+
+
 def install_skills(check_only: bool, use_symlinks: bool = False) -> None:
     section("Skills")
     global blocking
@@ -140,6 +168,8 @@ def install_skills(check_only: bool, use_symlinks: bool = False) -> None:
         for p in sorted(dev_dir.iterdir()):
             if p.is_dir():
                 sources.append(("dev", p))
+
+    _cleanup_renamed(sources, check_only)
 
     for group, src in sources:
         label = src.name if group == "project" else f"{src.name}  (dev)"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -51,6 +51,8 @@ def head(rel: str) -> str:
 env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
 files = subprocess.run(["git", "-C", str(REPO), "ls-files"], capture_output=True, text=True,
                        check=True, env=env).stdout.split()
+# internal/ never leaves the forge (export.sh removes it), so it carries no licence header.
+files = [f for f in files if not f.startswith("internal/")]
 sources = [f for f in files if is_source(f)]
 runtime = [f for f in sources if is_runtime(f)]
 print(f"scope: {len(sources)} source file(s), {len(runtime)} of them Artefact Runtime")

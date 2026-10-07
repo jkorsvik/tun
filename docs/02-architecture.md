@@ -171,7 +171,7 @@ Tier 2's approval requirements. If all you need is aggregates, the
 |---|---|---|
 | **drag in → click → drag out** | anyone | drag a CSV onto the dashboard, click "Lagre datafil", drop the `data.js` in the folder |
 | **edit `data.js`** | anyone with Notepad | the file can hold raw CSV between backticks (`window.DASHBOARD_CSV`); paste and save |
-| **regenerate** | RAIWork / a job | `dashboard-data` — for queries, joins, aggregation, Excel conversion |
+| **regenerate** | RAIWork / a job | `tun-data` — for queries, joins, aggregation, Excel conversion |
 
 All three end the same way: a `data.js` sitting next to the dashboard. SharePoint/OneDrive
 distributes it. No server, no rebuild of the dashboard, no republish.

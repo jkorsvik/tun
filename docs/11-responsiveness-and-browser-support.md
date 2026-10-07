@@ -259,7 +259,7 @@ detail nested inside "opening context":
 | Local disk (`file://`) | ✅ Proven — `docs/01-tenant-constraints.md` row 7 |
 | OneDrive/SharePoint-synced folder | ✅ Proven — same tenant probe |
 | Direct link opened in-browser (https) | Not separately measured from the row above |
-| E-mail attachment opened from Outlook | ❌ Not tested at all, still open |
+| E-mail attachment opened from Outlook | iOS app, native preview, measured 2026-09-28 on a real iPhone: scripts do not run. The no-JS banner and the static layer show and are readable (§3b works in the wild). Desktop Outlook and Android are still not tested |
 | "Copy link" pasted into an e-mail | ⚠️ Works on PC. Confirmed **not** to run at all on mobile — row 22a |
 | Link shared in a Teams message, opened via Teams' own preview card | ✅ Confirmed working on both PC and mobile — row 22b |
 | Same Teams message, plain-text link under the card | ❌ Confirmed broken on both PC and mobile (renders source code) — row 22c |
@@ -288,6 +288,14 @@ Unchanged from the original requirements, plus one concrete rule added by a real
 - **New, from the sharing-path tests:** images and logos need an explicit CSS *width*, not only height. A
   logo with only `height` set was invisible on mobile and happened to work on PC by
   accident — the kind of bug that only shows up on the platform nobody tested on.
+- **Do not draw text into an SVG diagram that must work on a phone.** An SVG scales as one
+  picture. A flow diagram in a pitch page was scaled to 0.48× at 390 px wide, and its labels
+  ended up 6.25 px high. Rebuilt as flex columns, the same text stays at body size and
+  wraps into cards below 640 px. Use SVG for shapes. Put the words in HTML.
+- **`overflow: hidden` on `body` alone does not stop a page from scrolling.** Hidden panels
+  with `position: absolute` still made `body` taller than the viewport. The fix was to clamp
+  both: `html, body { height: 100%; overflow: hidden; }`, with the scroll on the content
+  pane only.
 
 ## 6. Accessibility
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
@@ -73,25 +73,22 @@ SKIP_SUFFIXES = {
 }
 
 # Paths outside core. plugins/ is the point of the exercise; the baseline file itself would
-# otherwise match every pattern it lists.
+# otherwise match every pattern it lists. internal/ holds internal-only notes and archives:
+# the export removes it (and fails if it is still there), so it never ships as core. The
+# real-data gate still scans it.
 def in_core(rel: str) -> bool:
-    if rel.startswith("plugins/"):
+    if rel.startswith(("plugins/", "internal/")):
         return False
     if rel in ("tools/core_generic_baseline.json", "tools/check_core_is_generic.py"):
         return False
     return pathlib.Path(rel).suffix.lower() not in SKIP_SUFFIXES
 
 
-#: A declared attribution region. Everything between these markers is deliberate
-#: identification: who made this, who named it, who holds copyright. Such a region is the
-#: opposite of the leak this gate hunts, so the identity categories skip it.
-#:
-#: Region-based rather than file-based on purpose. Exempting a whole README would let a
-#: colleague's name drift into an unrelated paragraph and count as attribution; a region
-#: says exactly which lines were reviewed as intentional, in the source, where the next
-#: reader sees it.
-ATTRIBUTION_START = "<!-- attribution:start -->"
-ATTRIBUTION_END = "<!-- attribution:end -->"
+#: A declared attribution region; defined in tools/check_export_clean.py, one definition
+#: for both gates. Region-based rather than file-based, so a name cannot drift into an
+#: unrelated paragraph and count as attribution.
+ATTRIBUTION_START = export_gate.ATTRIBUTION_START
+ATTRIBUTION_END = export_gate.ATTRIBUTION_END
 
 #: Categories the attribution region is exempt from. Deliberately just the two local-denylist
 #: labels that name humans and the organisation they did it at. A brand hex or an internal hostname inside
@@ -105,26 +102,7 @@ NOTICE_EXEMPT = tuple(f"local:{label}" for label in export_gate.NOTICE_EXEMPT)
 strip_copyright_lines = export_gate.strip_copyright_lines
 
 
-def strip_attribution(text: str) -> str:
-    """Remove declared attribution regions, preserving line count so reported line numbers
-    stay usable. An unterminated region is NOT stripped: a stray opening marker would
-    otherwise silently exempt the rest of a file, which is a hole with a comment on it."""
-    out, pos = [], 0
-    while True:
-        start = text.find(ATTRIBUTION_START, pos)
-        if start == -1:
-            out.append(text[pos:])
-            return "".join(out)
-        end = text.find(ATTRIBUTION_END, start)
-        if end == -1:
-            # Unterminated: keep the remainder so it is still scanned, and let the
-            # dedicated test complain about the malformed marker.
-            out.append(text[pos:])
-            return "".join(out)
-        end += len(ATTRIBUTION_END)
-        out.append(text[pos:start])
-        out.append("\n" * text.count("\n", start, end))
-        pos = end
+strip_attribution = export_gate.strip_attribution
 
 
 # --- Where the patterns come from -------------------------------------------------------

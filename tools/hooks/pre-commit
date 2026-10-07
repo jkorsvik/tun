@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # pre-commit — run the tenant-constraint gates before a commit is allowed.
@@ -102,6 +102,8 @@ run "token contract (slots, discovery, load order)" \
     "$PY" tests/test_token_contract.py
 run "licence headers (the Exception covers only files that state it)" \
     "$PY" tests/test_licence_headers.py
+run "findings index (every row still points at its text)" \
+    "$PY" tests/test_findings_index.py
 
 # --- only when their inputs are staged, to keep the hook worth running ----------------
 if printf '%s\n' "$STAGED" | grep -q '^tools/'; then

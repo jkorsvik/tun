@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
 # or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
 # COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -510,7 +510,7 @@ BADGE_LABEL = {"ok": "Anbefales som standard", "caution": "Mulig, gjør det valg
 # ---------------------------------------------------------------------------
 TEMPLATE = """<!DOCTYPE html>
 <!--
-  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -532,7 +532,7 @@ TEMPLATE = """<!DOCTYPE html>
     Repo        : tun
     Made with   : Tún — tun.community
     Generator   : examples/14-chart-emulation-nojs-poc/build_chart_emulation_poc.py
-  STATUS: exploratory/diagnostic POC. ZERO <script> tags in this file — see
+  STATUS: exploratory/diagnostic POC. ZERO script elements in this file — see
   the generator's module docstring for why that's possible for all nine
   chart types when data is known at build time, and what that changes
   about examples/13's "no honest substitute" scatter finding.

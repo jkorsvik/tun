@@ -45,6 +45,8 @@ constraints measured so that nobody has to rediscover them.
 | [Toolchain](05-toolchain.md) | Skills, MCP servers and CLI tools, and what each is for |
 | [Way of working](06-way-of-working.md) | How a round of work runs here |
 | [Paired-mode data contract](13-paired-data-contract.md) | What `dash.html` and `data.js` exchange when the data is kept beside the file |
+| [Working with real sources](25-working-with-real-sources.md) | Ask the owner, copy structure not rows, verify every quote, prove the numbers on the page |
+| [Git hygiene](24-git-hygiene.md) | What to do when a repo has touched real data, learned the hard way |
 
 ## Design and craft
 
@@ -53,7 +55,7 @@ constraints measured so that nobody has to rediscover them.
 | [Usability and navigation](09-usability-and-navigation-principles.md) | Where the brand and the browser agree, and where they do not |
 | [Chart colour palettes](10-chart-colour-palettes.md) | Categorical, sequential, diverging, light and dark |
 | [Responsiveness and browser support](11-responsiveness-and-browser-support.md) | What is real today, and what is still a proposal |
-| [Maintainability conventions](12-maintainability-conventions.md) | Source language, and filters that do not depend on each other |
+| [Maintainability conventions](12-maintainability-conventions.md) | Source language, independent filters, and builds and gates that stay honest |
 
 ## Going further
 
@@ -62,6 +64,7 @@ constraints measured so that nobody has to rediscover them.
 | [A generic artifact model](08-generic-artifact-model.md) | The Layer 0 / Layer 1 split: what is dashboard-specific and what is simply "a portable artefact" |
 | [The portable cube](07-portable-cube.md) | How Tier 1 stopped caring about row count: 4 M rows in 0.81 MB, exact to the øre |
 | [The no-JavaScript question](15-no-javascript-findings.md) | What a file can still do when scripts never run, and one earlier finding falsified |
+| [The hosted route](23-hosted-route-it-brief.md) | The one route that is not a file: what it needs, and the five questions only IT can answer |
 | [Generic-layer manifest](14-generic-layer-manifest.md) | What another repo may vendor from this one |
 
 ## Licence, name and release
@@ -72,6 +75,8 @@ constraints measured so that nobody has to rediscover them.
 | [The name](18-naming.md) | What `Tún` and `tun` mean, what each is used for, and the coinage |
 
 ## What is measured, and what is direction
+
+[Findings index](findings-index.md): where each finding from the September 2026 harvest now lives, checked by a test.
 
 The distinction matters more here than in most projects, because the whole approach rests
 on how one tenant behaves.

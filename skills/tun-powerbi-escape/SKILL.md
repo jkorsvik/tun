@@ -1,5 +1,5 @@
 ---
-name: powerbi-escape
+name: tun-powerbi-escape
 description: Get a report out of Power BI and turn it into a standalone interactive dashboard that anyone can open — no licence, no workspace, no capacity. Use when someone wants to move, replace, retire or escape a Power BI report, is frustrated with licence or sharing friction, or asks whether a report could just be a file.
 license: AGPL-3.0-or-later
 ---
@@ -68,8 +68,8 @@ faithful, and it's the first thing anyone will test.
 
 ## Step 4 — Build, verify, publish
 
-Hand off to `dashboard-new` (default to `--mode paired`), then `dashboard-verify`, then
-`dashboard-publish`.
+Hand off to `tun-new` (default to `--mode paired`), then `tun-verify`, then
+`tun-publish`.
 
 ## Step 5 — Show the difference
 

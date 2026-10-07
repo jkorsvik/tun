@@ -4,12 +4,12 @@ Two groups, and the split is the point.
 
 ```
 skills/                 what this project produces
-  dashboard-help/         you use these to make and ship dashboards
-  dashboard-new/
-  dashboard-data/
-  dashboard-verify/
-  dashboard-publish/
-  powerbi-escape/
+  tun-help/         you use these to make and ship dashboards
+  tun-new/
+  tun-data/
+  tun-verify/
+  tun-publish/
+  tun-powerbi-escape/
 
 skills/dev/             how any project gets built
   hotshot/                these have nothing to do with dashboards
@@ -43,12 +43,12 @@ Specific to this project. This repo is their home and they will change as it doe
 
 | Skill | What it does |
 |---|---|
-| `dashboard-help` | Router. Describe what you want; it picks the path and says what the choice costs. |
-| `dashboard-new` | Builds a dashboard from a file. Row mode, or cube mode for millions of rows. |
-| `dashboard-data` | New extract, new numbers, existing dashboard. |
-| `dashboard-verify` | Opens it in a real browser, screenshots it, proves it renders. |
-| `dashboard-publish` | Uploads it, confirms who can see it, drafts the announcement. |
-| `powerbi-escape` | Moves a report off Power BI, and answers the objections honestly. |
+| `tun-help` | Router. Describe what you want; it picks the path and says what the choice costs. |
+| `tun-new` | Builds a dashboard from a file. Row mode, or cube mode for millions of rows. |
+| `tun-data` | New extract, new numbers, existing dashboard. |
+| `tun-verify` | Opens it in a real browser, screenshots it, proves it renders. |
+| `tun-publish` | Uploads it, confirms who can see it, drafts the announcement. |
+| `tun-powerbi-escape` | Moves a report off Power BI, and answers the objections honestly. |
 
 ---
 
@@ -133,6 +133,6 @@ There are general skills for routing across a personal library, for stress-testi
 by argument, for naming things consistently, for root-causing a bug and for building a
 throwaway to answer a design question. They are good, and they are **not** copied in.
 
-`dashboard-help` already routes this project, and a second router pointing at skills that are
+`tun-help` already routes this project, and a second router pointing at skills that are
 absent is worse than none. If you build up your own library later, those belong there, at user
 level, shared across everything you work on. That is the right home for them.

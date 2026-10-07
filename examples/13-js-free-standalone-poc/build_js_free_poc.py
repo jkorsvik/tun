@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
 # or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
 # COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
@@ -393,7 +393,7 @@ BODY = r"""
 <div id="below-header">
 
 <!-- Global "limited preview" notice: visible by default in plain HTML,
-     needs no JavaScript to show — the earliest possible inline <script>,
+     needs no JavaScript to show — the earliest possible inline script element,
      placed immediately after it, is what hides it, and only its OWN
      successful execution proves "some JavaScript ran" (same Layer-B
      reasoning documented in docs/11-responsiveness-and-browser-support.md
@@ -686,7 +686,7 @@ PLACEHOLDER_SCRIPT = "//__SCRIPT__"
 
 DOC = """<!doctype html>
 <!--
-  Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed

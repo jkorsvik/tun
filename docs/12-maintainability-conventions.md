@@ -67,6 +67,36 @@ enough for this to matter, so there is no real case to generalise from. Document
 next contributor who *does* hit that case does not have to rediscover the pattern from
 scratch.
 
+## 4. Builds and gates that stay honest
+
+**A rebuild gives the same bytes.** Builders write archives with a fixed `mtime` and keep
+input order stable, so the same data gives the same file (`tools/build_cube_dashboard.py`).
+When the examples were rebuilt from their sources, the only drift was the build timestamp.
+Any other difference after a rebuild is a real change and must be explained.
+
+**A number that can be derived is derived, then locked.** If a document quotes a number that
+code can compute (a count, a size, a total), compute it in code, write it to a fact file, and
+lock the document to it with a hash of that file. The build fails when the number drifts.
+A number typed by hand goes stale on the first edit and nothing complains.
+
+**A gate must prove it ran.** A verify script called with a wrong relative path checked
+nothing, wrote zero screenshots and still looked green. A gate prints what it checked ("N
+files", "N screenshots") and fails when N is zero. Look at the count, not at the colour.
+
+**A static scan has a blind spot.** A markup scan sees only what is in the file. A sidecar
+that a script loads after render (built by `document.createElement`) does not show up. Such
+a page needs a render-time check as well.
+
+**Shell globs can stop a build.** In zsh, a glob with no matches is an error by default, and
+the whole command chain stops (one build never wrote its README this way). Check that files
+exist before you glob over them, or use `(N)`, the null-glob qualifier.
+
+**Never run an in-place mutation harness under a foreground timeout.** A harness that
+mutates a file, runs the suite and restores the file was killed by a 30-second tool timeout
+between "mutate" and "restore". It left a broken file and an empty screenshot folder that
+looked like a real build. Run such a harness in the background, or work on a copy. After any
+kill, rebuild from source before you trust the tree.
+
 ## What this does not do
 
 - Does not add a translation-table mechanism to either builder script — that is future

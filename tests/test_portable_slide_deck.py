@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Structural regression tests for the portable presentation and its template.
@@ -24,6 +24,7 @@ import verify_standalone_core as core  # noqa: E402
 DECKS = {
     "presentation": REPO / "examples" / "18-portable-slide-deck" / "sample-deck.html",
     "template": REPO / "templates" / "portable-slide-deck.html",
+    "detail-overlay-variant": REPO / "examples" / "21-slide-deck-detail-overlay" / "detail-overlay-pattern.html",
 }
 SLIDES_START = '  <!-- Replace these sample slides. Keep class="slide" and data-sec. -->\n'
 PLACEHOLDER = re.compile(r"\{\{[A-Z0-9_]+\}\}")
@@ -72,7 +73,7 @@ class PortableDeckTest(unittest.TestCase):
                     )
 
     def test_every_slide_has_a_section_name(self) -> None:
-        expected_counts = {"presentation": 3, "template": 3}
+        expected_counts = {"presentation": 3, "template": 3, "detail-overlay-variant": 4}
         for name, path in DECKS.items():
             with self.subTest(name=name):
                 _, parser = self.load(path)
