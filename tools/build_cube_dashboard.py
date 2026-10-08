@@ -24,6 +24,7 @@ base64-inlined, and the browser inflates it with the native `DecompressionStream
         --time dato --time-grain month \
         --measures belop:sum,antall:sum \
         --title "Transaksjonsoversikt" \
+        --requested-by "Analyseteamet" \
         --out dashboards/transaksjoner.html
 
 Stdlib only, on purpose — same contract as the rest of tools/. Input: .csv, .tsv,
@@ -40,11 +41,11 @@ import array
 import base64
 import csv
 import datetime as dt
-import getpass
-import gzip
 import json
 import pathlib
+import struct
 import sys
+import zlib
 
 TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "cube-dashboard.html"
 
@@ -53,6 +54,7 @@ TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "cube-das
 # inlined (core_files=()).
 TOOLS_DIR = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS_DIR))
+import feedback_link  # noqa: E402
 import tun_tokens  # noqa: E402
 
 # Bounds the browser's decoded footprint: cells x measures x 4 bytes.
@@ -61,6 +63,11 @@ SIZE_WARN_MB = 20  # keep in step with docs/02-architecture.md
 
 TIME_GRAINS = ("month", "quarter", "year", "day", "week")
 INT32_MAX = 2_147_483_647
+
+# What the provenance block says when nobody named a requester. Never fall back to the
+# OS user name: it put the builder's login into every committed artefact (#45).
+# A role is what the block wants; pass one with --requested-by.
+NOT_STATED = "not stated"
 
 
 def die(msg: str) -> "None":
@@ -255,6 +262,23 @@ def build_cube(rows, dim_fields, time_field, grain, measures, max_cells):
     }, bytes(payload)
 
 
+# A gzip member header with nothing in it that depends on the machine: no file name,
+# mtime 0, XFL 2 (maximum compression), OS 255 (unknown). gzip.compress() does not give
+# that across Python builds: before 3.14 it stamps the current time unless told otherwise,
+# and with mtime=0 it hands the header to zlib, which writes its own OS code (0x13 on
+# macOS) where 3.14 writes 0xff. Same data, different bytes, so a rebuild showed up as a
+# diff. The deflate body still comes from the local zlib; equal zlib versions give equal
+# bodies, a different zlib may not. templates/cube-dashboard.html only reads the body.
+GZIP_HEADER = bytes((0x1F, 0x8B, 8, 0, 0, 0, 0, 0, 2, 0xFF))
+
+
+def deterministic_gzip(data: bytes) -> bytes:
+    """One gzip member: the fixed header above, raw deflate at level 9, CRC32 and size."""
+    deflate = zlib.compressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
+    body = deflate.compress(data) + deflate.flush()
+    return GZIP_HEADER + body + struct.pack("<II", zlib.crc32(data), len(data) & 0xFFFFFFFF)
+
+
 # ---------------------------------------------------------------------------- main
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -267,7 +291,9 @@ def main() -> int:
     ap.add_argument("--measures", default="", help="field:agg[:unit], comma-separated. agg = sum|count")
     ap.add_argument("--max-cells", type=int, default=MAX_CELLS_DEFAULT)
     ap.add_argument("--requested-by", default="",
-                    help="attribution for the PROVENANCE block; defaults to the local OS user")
+                    help="a role, e.g. \"Salgsavdelingen\". Not a person's name.")
+    ap.add_argument("--feedback-to", default="", metavar="ADDRESS_OR_ISSUE_URL",
+                    help=feedback_link.FLAG_HELP)
     args = ap.parse_args()
 
     if not args.data.exists():
@@ -292,13 +318,23 @@ def main() -> int:
 
     meta, payload = build_cube(rows, dim_fields, args.time or None,
                               args.time_grain, measures, args.max_cells)
-    # mtime=0: the same data gives the same bytes, so a rebuild is reproducible and a
-    # diff of the built file shows only real changes.
-    gz = gzip.compress(payload, 9, mtime=0)
+    gz = deterministic_gzip(payload)
     b64 = base64.b64encode(gz).decode("ascii")
 
     meta.update(title=args.title, built=dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
-                built_by=args.requested_by or getpass.getuser(), source=args.data.name)
+                # The raw value: "" when nobody was named, so the footer can leave it out.
+                # Only the provenance comment spells that out as NOT_STATED.
+                requested_by=args.requested_by, source=args.data.name)
+
+    source = (f"{args.data.name} — {meta['source_rows']:,} rows aggregated to "
+              f"{meta['n']:,} cube cells over {', '.join(meta['dims'])}")
+    feedback = ""
+    if args.feedback_to:
+        try:
+            feedback = feedback_link.block(args.feedback_to, title=args.title,
+                                           built=meta["built"], source=source)
+        except ValueError as exc:
+            die(f"--feedback-to: {exc}")
 
     token_css, token_source = tun_tokens.load_token_css(core_files=())
 
@@ -307,11 +343,11 @@ def main() -> int:
             .replace("{{META}}", json.dumps(meta, ensure_ascii=False))
             .replace("{{DATA}}", b64)
             .replace("{{TITLE}}", args.title)
-            .replace("{{SOURCE_DESCRIPTION}}",
-                     f"{args.data.name} — {meta['source_rows']:,} rows aggregated to "
-                     f"{meta['n']:,} cube cells over {', '.join(meta['dims'])}")
+            .replace("{{SOURCE_DESCRIPTION}}", source)
             .replace("{{BUILD_TIMESTAMP}}", meta["built"])
-            .replace("{{REQUESTED_BY}}", meta["built_by"]))
+            .replace("{{REQUESTED_BY}}", args.requested_by or NOT_STATED)
+            # last, so no later replacement rewrites text inside the block
+            .replace("{{FEEDBACK_BLOCK}}", feedback))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(html, encoding="utf-8")
 

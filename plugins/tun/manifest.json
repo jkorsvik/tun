@@ -7,10 +7,16 @@
   "private": false,
   "license": "AGPL-3.0-or-later",
   "provides": [
-    "tokens"
+    "tokens",
+    "assets"
   ],
   "tokens": {
     "palette": "tokens/palette.css"
   },
-  "notes": "This is the project's own identity, already public on tun.community and in the pitch artefacts -- not confidential like a company brand plugin, so private is false. It provides only 'tokens' (no 'assets' -- no logo artwork is vendored here yet). Never installed by default: core pins the neutral palette for every build (docs/22-plugin-contract.md), so this plugin is selected explicitly via TUN_PALETTE=plugins/tun/tokens/palette.css. See plugins/tun/README.md for the derivation of all eight slots from the four colours used on the public site, and the WCAG contrast table."
+  "assets": {
+    "logo": "assets/logo.svg",
+    "mark": "assets/mark.svg",
+    "logo-mono": "assets/logo-mono.svg"
+  },
+  "notes": "This is the project's own identity, already public on tun.community and in the pitch artefacts -- not confidential like a company brand plugin, so private is false. It provides 'tokens' and 'assets'. The assets are the logo, copied verbatim from the public site, plus a square mark and a one-colour logo derived from it by assets/derive_marks.py. T\u00fan and the mark are unregistered trademarks: the code licence gives no right to them, see TRADEMARK.md. Never installed by default: core pins the neutral palette for every build (docs/22-plugin-contract.md), so this plugin is selected explicitly via TUN_PALETTE=plugins/tun/tokens/palette.css. See plugins/tun/README.md for the derivation of all eight slots from the four colours used on the public site, the WCAG contrast table, and how the marks were derived."
 }

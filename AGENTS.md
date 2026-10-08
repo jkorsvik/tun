@@ -166,7 +166,7 @@ python3 tools/build_dashboard.py \
   --dimension Produkt --measure Belop --time Maaned \
   --filters Region,Produkt,Kanal \
   --source "Eksempeldata (syntetisk) — salgsdata.csv" \
-  --requested-by "the product owner" \
+  --requested-by "Prosjekteier" \
   --out examples/01-hello-dashboard/salg-dashboard.html
 
 python3 tools/verify_dashboard.py examples/01-hello-dashboard/salg-dashboard.html
@@ -174,7 +174,7 @@ python3 tools/verify_dashboard.py examples/01-hello-dashboard/salg-dashboard.htm
 
 `--source` and `--requested-by` are part of the command, not optional garnish. Without
 them the rebuild silently rewrites the committed example's provenance to `salgsdata.csv`
-and your own username, and nothing warns you. One line of the block still moves on
+and `not stated`, and nothing warns you. Pass a role, not a person's name. One line of the block still moves on
 every rebuild: `Extracted` comes from the data file's mtime, and git does not preserve
 mtimes, so in a fresh clone or worktree it reads as the moment you checked out. That is
 the artefact telling the truth about what it was built from, not a defect to chase.
@@ -190,10 +190,12 @@ Then run the three suites. All are stdlib-only and none touch anything outside a
 directory:
 
 ```bash
-python3 tests/test_skill_links.py            # 29 assertions, throwaway HOME
+python3 tests/test_skill_links.py            # 44 assertions, throwaway HOME
 python3 tests/test_row_24_26_checks.py       # 97 assertions + a mutation pass
 python3 tests/test_verify_gate_browser.py    # 16 assertions + a mutation control
 python3 tests/test_findings_index.py         # every findings-index row resolves, 3 mutation controls
+python3 tests/test_process_diagram.py        # spec rules, layout faults injected, example up to date
+python3 tests/test_tun_feedback.py           # feedback log helper + --feedback-to on both builders
 ```
 
 `test_skill_links.py` covers `setup.py`, which decides whether to replace or preserve a

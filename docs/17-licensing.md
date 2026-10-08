@@ -149,8 +149,10 @@ matters, that must be decided before the first outside contribution, not after.
 ## Trademark
 
 The code licence does not control the name. No trademark is registered for `Tún`; see
-`docs/18-naming.md` for the checks still open. A short trademark policy later can allow
-forks of the code while keeping the name tied to the project.
+`docs/18-naming.md` for the checks still open. The trademark policy is
+[`TRADEMARK.md`](../TRADEMARK.md). It keeps the name tied to the project while the code can be
+forked. A fork that changes the code takes another name. Who holds the mark follows item 1 under
+"Blocking" below, and is open.
 
 ## Open item
 

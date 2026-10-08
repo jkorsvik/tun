@@ -22,6 +22,7 @@ python3 tools/build_cube_dashboard.py \
     --time dato --time-grain month \
     --measures "belop:sum:kr,antall:sum" \
     --title "Transaksjonsoversikt 2024–2026" \
+    --requested-by "Prosjekteier" \
     --out examples/03-cube-dashboard/transaksjoner.html
 
 # 3. prove it renders and the filters actually work

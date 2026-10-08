@@ -4,7 +4,8 @@
     "examples/06-chart-palette-demo/build_chart_palette_demo.py": 5,
     "examples/06-chart-palette-demo/chart-palette-demo.html": 5,
     "examples/13-js-free-standalone-poc/build_js_free_poc.py": 12,
-    "examples/13-js-free-standalone-poc/js-free-standalone-poc.html": 12
+    "examples/13-js-free-standalone-poc/js-free-standalone-poc.html": 12,
+    "examples/23-process-diagram/tun-workflow.html": 6
   },
   "brand-token": {
     "docs/10-chart-colour-palettes.md": 2,
@@ -13,6 +14,7 @@
     "examples/14-chart-emulation-nojs-poc/build_chart_emulation_poc.py": 1,
     "examples/14-chart-emulation-nojs-poc/chart-emulation-nojs-poc.html": 1,
     "examples/15-chart-library-comparison-poc/build_comparison_poc.py": 1,
-    "examples/15-chart-library-comparison-poc/chart-library-comparison-poc.html": 1
+    "examples/15-chart-library-comparison-poc/chart-library-comparison-poc.html": 1,
+    "examples/23-process-diagram/tun-workflow.html": 14
   }
 }
