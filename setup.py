@@ -3,7 +3,7 @@
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
-setup.py — install the dashboard skills and check this machine. Cross-platform.
+setup.py — install the Tún skills and check this machine. Cross-platform.
 
 Replaces the old setup-skills.sh + doctor.sh, which were bash-only and full of
 macOS assumptions. Works on Windows, macOS and Linux. Stdlib only.
@@ -74,14 +74,23 @@ def fix(c): fixes.append(c)
 # ask for the old behaviour with --link, and are told what they are getting.
 
 MARKER = ".installed-by-tun"
-# Do NOT rename MARKER, ever. It is written inside every skill directory this script
-# installs, and its presence is the only thing that separates "our copy, safe to replace"
-# from "a skill the user wrote, leave alone". Renaming it makes every existing install
-# unrecognised, so this script starts reporting "you already have a skill with this name"
-# and silently stops refreshing them. The string is invisible to users; it is not
-# branding.
+# Markers written by earlier versions of this script. The marker is written inside every
+# skill directory this script installs, and its presence is the only thing that separates
+# "our copy, safe to replace" from "a skill the user wrote, leave alone". So a renamed
+# marker must keep recognising every old one: drop a name from this tuple and each install
+# carrying it turns into "you already have a skill with this name", silently never
+# refreshed and never cleaned up. A run replaces an old marker with MARKER.
+# This distribution has never shipped another marker, so the tuple is empty.
+LEGACY_MARKERS: tuple[str, ...] = ()
+ALL_MARKERS = (MARKER, *LEGACY_MARKERS)
 
-SKIP_NAMES = {MARKER, "__pycache__", ".DS_Store"}
+SKIP_NAMES = {*ALL_MARKERS, "__pycache__", ".DS_Store"}
+
+
+def _is_ours(dst: Path) -> bool:
+    """A real directory carrying any marker this script has ever written."""
+    return (dst.is_dir() and not dst.is_symlink()
+            and any((dst / m).is_file() for m in ALL_MARKERS))
 
 
 def _files(root: Path) -> dict[str, bytes]:
@@ -122,20 +131,17 @@ def _cleanup_renamed(sources: list[tuple[str, Path]], check_only: bool) -> None:
     """Remove an install left behind by a skill that has since been renamed or deleted in
     this repo (e.g. dashboard-new -> tun-new).
 
-    Only ever touches a directory that carries MARKER — the mark _install_copy() itself
-    writes. That is what tells "our old copy, safe to remove" apart from a skill the user
-    wrote under a name that happens to collide, or a foreign symlink another tool owns;
+    Only ever touches a directory that carries a marker (MARKER or a legacy one) — the
+    mark _install_copy() itself writes. That is what tells "our old copy, safe to remove"
+    apart from a skill the user wrote under a name that happens to collide, or a foreign
+    symlink another tool owns;
     neither of those carries our marker, so neither is touched here.
     """
     if not SKILLS_DIR.is_dir():
         return
     current_names = {src.name for _, src in sources}
     for dst in sorted(SKILLS_DIR.iterdir()):
-        if not dst.is_dir() or dst.is_symlink():
-            continue
-        if dst.name in current_names:
-            continue
-        if not (dst / MARKER).is_file():
+        if dst.name in current_names or not _is_ours(dst):
             continue
         label = f"{dst.name}  (stale)"
         if check_only:
@@ -178,8 +184,9 @@ def install_skills(check_only: bool, use_symlinks: bool = False) -> None:
         # Whose is it? Answer this before touching anything.
         ours_link = dst.is_symlink() and Path(os.readlink(dst)).resolve() == src.resolve()
         foreign_link = dst.is_symlink() and not ours_link
-        ours_copy = dst.is_dir() and not dst.is_symlink() and (dst / MARKER).exists()
-        user_own = dst.is_dir() and not dst.is_symlink() and not (dst / MARKER).exists()
+        ours_copy = _is_ours(dst)
+        user_own = dst.is_dir() and not dst.is_symlink() and not ours_copy
+        old_marker = ours_copy and not (dst / MARKER).is_file()
 
         if check_only:
             if foreign_link:
@@ -193,6 +200,9 @@ def install_skills(check_only: bool, use_symlinks: bool = False) -> None:
                 if n:
                     warn(label, f"stale — {n} file(s) differ from this repo")
                     fix("python3 setup.py")
+                elif old_marker:
+                    warn(label, "up to date, but carries the old install marker")
+                    fix("python3 setup.py   # replaces the old marker")
                 else:
                     ok(label, "installed, up to date")
             elif user_own:
@@ -230,11 +240,12 @@ def install_skills(check_only: bool, use_symlinks: bool = False) -> None:
             continue
 
         try:
-            if ours_copy and _drift(src, dst) == 0:
+            if ours_copy and not old_marker and _drift(src, dst) == 0:
                 ok(label, "already installed"); continue
             was_link = ours_link
             _install_copy(src, dst)
-            ok(label, "migrated from symlink to copy" if was_link else "installed")
+            ok(label, "migrated from symlink to copy" if was_link else
+                      "upgraded from the old install marker" if old_marker else "installed")
         except OSError as e:
             bad(label, f"could not install: {e}")
             blocking += 1
@@ -258,6 +269,41 @@ def which(name: str) -> str | None:
     return shutil.which(name)
 
 
+# Playwright is an optional extra (pyproject.toml, `verify`), so it usually lives in the
+# repo's uv environment, not in whatever python3 runs this script. Asking only this
+# interpreter reported "FAIL playwright" on machines where `uv run` verifies fine.
+VERIFY_FIX = "uv sync --extra verify && uv run playwright install chromium"
+_BROWSER_PROBE = ("from playwright.sync_api import sync_playwright\n"
+                  "with sync_playwright() as p:\n"
+                  "    p.chromium.launch().close()\n")
+VERIFY_PY: list[str] | None = None  # set by check_tools(): a Python that can render
+
+
+def _probe(cmd: list[str]) -> bool:
+    try:
+        return subprocess.run(cmd + ["-c", _BROWSER_PROBE], capture_output=True,
+                              timeout=120).returncode == 0
+    except Exception:
+        return False
+
+
+def browser_python() -> tuple[list[str] | None, str]:
+    """A Python command that can launch Chromium through Playwright, and where it is.
+
+    This interpreter first, then the repo's uv environment. `uv run --no-sync` never
+    installs anything, but it does create an empty .venv when none exists, so uv is only
+    asked when an environment is already there: --check must change nothing.
+    """
+    if _probe([sys.executable]):
+        return [sys.executable], "this Python"
+    uv = which("uv")
+    if uv and ((REPO / ".venv").is_dir() or os.environ.get("UV_PROJECT_ENVIRONMENT")):
+        cmd = [uv, "run", "--no-sync", "--project", str(REPO), "--extra", "verify", "python"]
+        if _probe(cmd):
+            return cmd, "the uv environment"
+    return None, ""
+
+
 def check_tools() -> None:
     section("Required tools")
     global blocking
@@ -277,20 +323,15 @@ def check_tools() -> None:
         fix("winget install astral-sh.uv" if IS_WIN else
             ("brew install uv" if IS_MAC else "curl -LsSf https://astral.sh/uv/install.sh | sh"))
 
-    try:
-        import playwright  # noqa: F401
-        try:
-            from playwright.sync_api import sync_playwright
-            with sync_playwright() as p:
-                p.chromium.launch().close()
-            ok("playwright + chromium", "render verification available")
-        except Exception:
-            warn("playwright", "installed, chromium missing")
-            fix("uv run playwright install chromium")
-    except ImportError:
-        bad("playwright", "NOT FOUND - dashboards cannot be render-verified")
-        fix("uv sync --extra verify && uv run playwright install chromium")
-        blocking += 1
+    global VERIFY_PY
+    VERIFY_PY, where = browser_python()
+    if VERIFY_PY:
+        ok("playwright + chromium", f"render verification available ({where})")
+    else:
+        # An optional extra, so a WARN with the command, not a FAIL. The verify tools
+        # themselves still refuse to pass a file they could not open in a browser.
+        warn("playwright + chromium", "not here or in the uv env - no render verification")
+        fix(VERIFY_FIX)
 
 
 def check_repo() -> None:
@@ -448,8 +489,12 @@ def smoke() -> None:
             bad("build", (build.stderr or build.stdout).strip().splitlines()[-1:] or "failed")
             return
         ok("build", "produced a dashboard")
+        if not VERIFY_PY:
+            warn("verify", "skipped - no Playwright to render with")
+            fix(VERIFY_FIX)
+            return
         ver = subprocess.run(
-            [sys.executable, str(REPO / "tools/verify_dashboard.py"), str(out)],
+            [*VERIFY_PY, str(REPO / "tools/verify_dashboard.py"), str(out)],
             capture_output=True, text=True)
         if ver.returncode == 0:
             ok("verify", "it renders and is interactive")
@@ -471,7 +516,7 @@ def main() -> int:
                          "skills themselves. Edits then change this repo's working tree.")
     args = ap.parse_args()
 
-    print(f"{B}Dashboard setup + check{Z}  {D}({platform.system()}, {REPO}){Z}")
+    print(f"{B}Tún setup + check{Z}  {D}({platform.system()}, {REPO}){Z}")
     if args.hooks:
         install_hooks(check_only=False)
         print()
@@ -489,7 +534,7 @@ def main() -> int:
 
     print("\n" + "-" * 60)
     if not fixes:
-        print(f"{G}Everything the dashboard skills need is in place.{Z}\n")
+        print(f"{G}Everything the Tún skills need is in place.{Z}\n")
         print("  Open RAIWork, set the working folder to this repo, and try:\n")
         print('    "Build me a dashboard from examples/01-hello-dashboard/salgsdata.csv')
         print('     showing amounts by product and the trend over months,')

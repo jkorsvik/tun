@@ -113,11 +113,34 @@ permanently, not a choice that can be revisited cheaply later.
 That is an argument for getting the artefact footer right once, before any volume
 of artefacts ships.
 
+## Trademark
+
+The policy is [`TRADEMARK.md`](../TRADEMARK.md). Tún and the mark are unregistered marks
+(™, never ®), and the code licence gives no right to them. A fork that changes the code takes
+another name. Nominative use such as "works with Tún" is allowed. Who holds the mark is open
+until the ownership question in `17-licensing.md` is answered. The mark itself is in
+`plugins/tun/assets/`.
+
+None of these trademark checks has been done. The registry table above is about package
+names, not trademarks:
+
+- **Norway:** search the Patentstyret register for `Tún`, `Tun` and `tunfeste`, in the
+  classes that fit. Likely 9 for software and 42 for software services. Confirm with whoever
+  runs the search.
+- **EU:** search EUIPO for EU trade marks, and the national registers of the member states
+  (TMview covers both).
+- **International:** search WIPO for registrations under the Madrid system that designate
+  Norway or the EU.
+- **Domains:** who holds the obvious neighbours of `tun.community`, for example `tun.no`,
+  `tun.com` and the IDN `tún.no`.
+- **Handles:** the GitHub organisation name (item 3 below), the npm and PyPI names for the
+  chosen package, and any social handle the project would use.
+
 ## Still to check, now that the name is chosen
 
-1. **Trademark:** Patentstyret for Norway, EUIPO for the EU, in the relevant
-   classes. A domain, a repository name and a free package name prove nothing
-   about trademark.
+1. **Trademark:** the registry, domain and handle checks listed under
+   "Trademark" above. A domain, a repository name and a free package name prove
+   nothing about trademark.
 2. **crates.io** and any other registry that matters, checked properly rather
    than through a request that returns 403.
 3. **GitHub organisation name** availability, if the project moves off a personal account.

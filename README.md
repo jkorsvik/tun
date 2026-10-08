@@ -57,6 +57,7 @@ python3 tools/build_dashboard.py \
   --title "Salg per region og produkt 2026" \
   --dimension Produkt --measure Belop --time Maaned \
   --filters Region,Produkt,Kanal \
+  --requested-by "Prosjekteier" \
   --out /tmp/demo.html && python3 tools/verify_dashboard.py /tmp/demo.html
 ```
 
@@ -196,3 +197,4 @@ the example builders, is AGPL as its header states. Built example files are Gene
 Artefacts and carry the runtime header and the Origin Notice; tests gate both. Third-party
 components keep their own licences; see [`THIRD-PARTY.md`](THIRD-PARTY.md). The name and
 logo are not covered by the code licence; see [`docs/18-naming.md`](docs/18-naming.md).
+The trademark policy is [`TRADEMARK.md`](TRADEMARK.md).

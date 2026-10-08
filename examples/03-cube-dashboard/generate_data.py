@@ -73,6 +73,7 @@ def main() -> int:
           "      --time dato --time-grain month \\\n"
           '      --measures "belop:sum:kr,antall:sum" \\\n'
           '      --title "Transaksjonsoversikt 2024–2026" \\\n'
+          '      --requested-by "Prosjekteier" \\\n'
           "      --out examples/03-cube-dashboard/transaksjoner.html")
     return 0
 

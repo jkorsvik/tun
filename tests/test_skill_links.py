@@ -31,6 +31,12 @@ import tempfile
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 MARKER = ".installed-by-tun"
+# Markers earlier versions of setup.py wrote, read from setup.py itself. Steps 11 and 12
+# exercise the upgrade path only when there is one to upgrade from.
+import ast as _ast
+LEGACY = next(_ast.literal_eval(n.value) for n in _ast.walk(_ast.parse((REPO / "setup.py").read_text(encoding="utf-8")))
+              if isinstance(n, (_ast.Assign, _ast.AnnAssign)) and getattr(n.targets[0] if isinstance(n, _ast.Assign) else n.target, "id", "") == "LEGACY_MARKERS")
+OLD_MARKER = LEGACY[0] if LEGACY else ""
 
 passed = failed = 0
 
@@ -176,6 +182,42 @@ def main() -> int:
         run_setup(tmp)
         chk("survives even though its name matches no current skill",
             (coincidence / "SKILL.md").read_text(), "not ours, never was")
+
+        if not OLD_MARKER:
+            print("--- 11-12. SKIP: setup.py has no legacy marker in this distribution ---")
+        else:
+            print("--- 11. an install under the old marker name: still ours, upgraded ---")
+            # The marker was renamed with the repo. Every existing install carries the old
+            # name, so setup.py must recognise it, or each of them turns into "your own skill"
+            # and is never refreshed again.
+            old = skills / "tun-help"
+            shutil.rmtree(old)
+            shutil.copytree(REPO / "skills" / "tun-help", old)
+            (old / OLD_MARKER).write_text("Installed by python3 setup.py. Safe to delete.\n")
+            out = run_setup(tmp, "--check")
+            chk("--check does not mistake it for the user's own skill",
+                any("tun-help" in l and "your own skill" in l for l in out.splitlines()), False)
+            chk("--check says the marker is old", "old install marker" in out, True)
+            chk("--check leaves it alone", (old / OLD_MARKER).is_file(), True)
+            out = run_setup(tmp)
+            chk("a real run does not leave it alone as a collision",
+                any("tun-help" in l and "already have a skill" in l for l in out.splitlines()), False)
+            chk("old marker replaced", ((old / OLD_MARKER).exists(), (old / MARKER).is_file()),
+                (False, True))
+            chk("says it upgraded", "upgraded from the old install marker" in out, True)
+
+            print("--- 12. a renamed-away copy under the old marker: still cleaned up ---")
+            gone = skills / "dashboard-publish"
+            gone.mkdir()
+            (gone / "SKILL.md").write_text("old name, old marker")
+            (gone / OLD_MARKER).write_text("source: somewhere\n")
+            run_setup(tmp)
+            chk("removed", gone.exists(), False)
+
+        print("--- 13. the help text names the product ---")
+        out = run_setup(tmp, "--help")
+        chk("says Tún", "Tún" in out, True)
+        chk("no longer says 'the dashboard skills'", "the dashboard skills" in out, False)
 
         print()
         print(f"PASS: {passed}  FAIL: {failed}")

@@ -52,7 +52,9 @@ check it, put it somewhere people can see it."*
 | **`tun-data`** | Add a data source to an existing dashboard, or refresh its snapshot from source. | anyone | ✅ built |
 | **`tun-verify`** | Open the file in a real headless browser, confirm it renders and JS runs, screenshot it, check the size budget. **Gate before publish.** | anyone (auto) | ✅ built |
 | **`tun-publish`** | Upload to a SharePoint library or OneDrive folder, set/confirm permissions, produce a shareable link, draft the announcement. | anyone | ✅ built |
+| **`tun-feedback`** | Record feedback on a skill or a built file to a local log, and file it as an issue after a yes. Builders take `--feedback-to` for a link inside the file. | anyone | ✅ built |
 | **`tun-powerbi-escape`** | Get a report out of Power BI. Answers the "but it needs RLS/refresh/alerts" objections instead of sending it back. | anyone | ✅ built |
+| **`tun-process`** | Draw a process as a swimlane diagram from a short interview, with improvement points flagged. One static HTML file. | anyone | ✅ built |
 | **`dashboard-embed`** | Tier 2. Build an SPFx web part to render in-page. Explains the admin approval chain up front. | with a developer | 🔶 planned — blocked on SPFx approvability |
 | **`dashboard-bigdata`** | Tier 3. Convert a large dataset to Parquet, wire DuckDB-WASM over Range requests. | with a developer | 🔶 planned — needs `dashboard-embed` |
 | **`tenant-probe`** | Re-run the tenant constraint probe and diff against the documented findings. | quarterly / on breakage | ✅ script built (`probe/tenant-probe.py`) |

@@ -104,13 +104,22 @@ run "licence headers (the Exception covers only files that state it)" \
     "$PY" tests/test_licence_headers.py
 run "findings index (every row still points at its text)" \
     "$PY" tests/test_findings_index.py
+run "builder provenance (no OS user name, documented commands pass a role)" \
+    "$PY" tests/test_builder_provenance.py
+run "cube reproducibility (same data, same bytes, any Python build)" \
+    "$PY" tests/test_cube_reproducible.py
 
 # --- only when their inputs are staged, to keep the hook worth running ----------------
 if printf '%s\n' "$STAGED" | grep -q '^tools/'; then
     run "verify-tool guards (tools/ changed)" "$PY" tests/test_verify_gate_browser.py
 fi
+if printf '%s\n' "$STAGED" | grep -qE '^(tools/|templates/)'; then
+    run "feedback log + link (tools/ or templates/ changed)" "$PY" tests/test_tun_feedback.py
+fi
 if printf '%s\n' "$STAGED" | grep -qE '^(setup\.py|skills/)'; then
     run "skill installer (setup.py or skills/ changed)" "$PY" tests/test_skill_links.py
+    run "setup.py browser probe (setup.py or skills/ changed)" \
+        "$PY" tests/test_setup_browser_probe.py
 fi
 
 # --- state the gap rather than paper over it ------------------------------------------

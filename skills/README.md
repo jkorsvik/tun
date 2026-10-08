@@ -10,6 +10,7 @@ skills/                 what this project produces
   tun-verify/
   tun-publish/
   tun-powerbi-escape/
+  tun-process/
 
 skills/dev/             how any project gets built
   hotshot/                these have nothing to do with dashboards
@@ -49,6 +50,8 @@ Specific to this project. This repo is their home and they will change as it doe
 | `tun-verify` | Opens it in a real browser, screenshots it, proves it renders. |
 | `tun-publish` | Uploads it, confirms who can see it, drafts the announcement. |
 | `tun-powerbi-escape` | Moves a report off Power BI, and answers the objections honestly. |
+| `tun-process` | Draws a process as swimlanes, with the steps that should improve flagged. |
+| `tun-feedback` | Logs what went wrong or right, and files it as an issue if you want. |
 
 ---
 

@@ -227,6 +227,125 @@ if HAVE_PLUGINS:
 else:
     chk("no plugins discovered on a core-only tree", found, [])
 
+print("\nassets: every file a manifest maps is a self-contained SVG")
+# docs/22 says assets are inlined at build time and nothing is ever fetched. An SVG can
+# fetch (an external href, a url() or @import to a host) and can run code (<script>, an
+# on* handler, <foreignObject> HTML), so each of those is a reason to refuse the file.
+import xml.etree.ElementTree as ET  # noqa: E402
+
+SVG_NS = "{http://www.w3.org/2000/svg}"
+
+
+def svg_problems(text: str) -> list[str]:
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError as exc:
+        return [f"not well-formed XML ({exc})"]
+    problems = []
+    if root.tag != SVG_NS + "svg":
+        problems.append("root is not <svg> in the SVG namespace")
+    if not root.get("viewBox"):
+        problems.append("no viewBox")
+    if root.get("role") != "img" or not root.get("aria-label"):
+        problems.append("no role=img with an aria-label")
+    if re.search(r"""url\((?!\s*['"]?#)|@import""", text):
+        problems.append("fetches through url() or @import")
+    for el in root.iter():
+        local = el.tag.split("}")[-1]
+        if local in ("script", "foreignObject"):
+            problems.append(f"has <{local}>")
+        # SMIL can rewrite an href after load, so the static href check alone misses it.
+        if local in ("set", "animate") and el.get("attributeName", "").endswith("href"):
+            problems.append(f"<{local}> rewrites href")
+        for key, value in el.attrib.items():
+            attr = key.split("}")[-1]
+            if attr.lower().startswith("on"):
+                problems.append(f"has event handler {attr}")
+            if attr == "href" and not value.startswith("#"):
+                problems.append(f"references {value}")
+    return problems
+
+
+GOOD_SVG = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" role="img" '
+            'aria-label="x"><rect width="1" height="1"/></svg>')
+chk("a clean SVG has no problems", svg_problems(GOOD_SVG), [])
+# Each bad case must trip exactly its own rule, alone. A fixture that trips a neighbouring
+# rule would keep the suite green with the rule under test deleted.
+for label, bad, want in (
+    ("no SVG namespace", GOOD_SVG.replace(' xmlns="http://www.w3.org/2000/svg"', ""),
+     "root is not <svg> in the SVG namespace"),
+    ("no viewBox", GOOD_SVG.replace(' viewBox="0 0 1 1"', ""), "no viewBox"),
+    ("no aria-label", GOOD_SVG.replace(' aria-label="x"', ""),
+     "no role=img with an aria-label"),
+    ("a remote url()", GOOD_SVG.replace("<rect", '<rect fill="url(https://e.x/a)"'),
+     "fetches through url() or @import"),
+    ("a script", GOOD_SVG.replace("<rect", "<script>1</script><rect"), "has <script>"),
+    ("foreignObject", GOOD_SVG.replace("<rect", "<foreignObject/><rect"),
+     "has <foreignObject>"),
+    ("an onload handler", GOOD_SVG.replace("<rect", '<rect onload="x()"'),
+     "has event handler onload"),
+    ("an external href", GOOD_SVG.replace("<rect", '<image href="https://e.x/a.png"/><rect'),
+     "references https://e.x/a.png"),
+    ("a SMIL href rewrite",
+     GOOD_SVG.replace("<rect", '<set attributeName="href" to="https://e.x/a"/><rect'),
+     "<set> rewrites href"),
+):
+    chk(f"rejects {label}, and only for that", svg_problems(bad), [want])
+chk("an internal #ref is allowed",
+    svg_problems(GOOD_SVG.replace("<rect", '<use href="#a"/><rect')), [])
+chk("a quoted internal url('#a') is allowed",
+    svg_problems(GOOD_SVG.replace("<rect", "<rect fill=\"url('#a')\"")), [])
+
+assets_checked = 0
+for p in tok.discover_plugins():
+    amap = p.get("assets")
+    if amap is None:
+        continue
+    pid = p.get("id")
+    chk(f"{pid}: an assets map means 'assets' is in provides",
+        "assets" in (p.get("provides") or []), True)
+    chk(f"{pid}: the assets map is name -> path",
+        isinstance(amap, dict) and all(isinstance(v, str) for v in amap.values()), True)
+    for name, rel_path in (amap.items() if isinstance(amap, dict) else ()):
+        path = (p["_dir"] / rel_path).resolve()
+        inside = p["_dir"].resolve() in path.parents
+        chk(f"{pid}:{name} stays inside the plugin", inside, True)
+        exists = path.is_file()
+        chk(f"{pid}:{name} exists", exists, True)
+        if inside and exists:
+            chk(f"{pid}:{name} is a self-contained SVG",
+                svg_problems(path.read_text(encoding="utf-8")), [])
+            assets_checked += 1
+print(f"  ({assets_checked} asset file(s) checked)")
+if HAVE_PLUGINS:
+    # Refuse a vacuous pass: the tun plugin ships three assets, so zero checked means the
+    # loop above never ran, not that everything is fine.
+    tun = next((p for p in found if p.get("id") == "tun"), {})
+    chk("tun maps its logo, square mark and mono logo",
+        sorted((tun.get("assets") or {}).keys()), ["logo", "logo-mono", "mark"])
+    chk("at least those three asset files were checked", assets_checked >= 3, True)
+
+    # mark.svg and logo-mono.svg are derived from logo.svg and stored. A stored derived
+    # file must be re-derived by a check, or a hand edit desynchronises it in silence.
+    import subprocess  # noqa: E402
+    derive = REPO / "plugins" / "tun" / "assets" / "derive_marks.py"
+    run = subprocess.run([sys.executable, str(derive), "--check"],
+                         capture_output=True, text=True)
+    chk("tun's derived marks match logo.svg (derive_marks.py --check)",
+        run.returncode, 0)
+    with tempfile.TemporaryDirectory() as td:
+        copy = pathlib.Path(td)
+        for f in derive.parent.glob("*.svg"):
+            shutil.copy(f, copy / f.name)
+        shutil.copy(derive, copy / derive.name)
+        mark = copy / "mark.svg"
+        mark.write_text(mark.read_text(encoding="utf-8").replace('x="80"', 'x="81"'),
+                        encoding="utf-8")
+        run = subprocess.run([sys.executable, str(copy / derive.name), "--check"],
+                             capture_output=True, text=True)
+        chk("...and --check notices a hand-edited mark", (run.returncode, "stale: mark.svg"
+            in run.stdout), (1, True))
+
 real_plugins = tok.PLUGINS_DIR
 with tempfile.TemporaryDirectory() as td:
     fake = pathlib.Path(td) / "plugins"

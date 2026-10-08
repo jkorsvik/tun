@@ -1,0 +1,10 @@
+<!-- The Tún logo in one colour (currentColor).
+     Generated from logo.svg by derive_marks.py. Do not edit by hand.
+     Tún and this mark are unregistered trademarks: see TRADEMARK.md. -->
+<svg xmlns="http://www.w3.org/2000/svg" class="logo" viewBox="0 0 300 160" role="img" aria-label="Tún">
+    <rect x="6" y="6" width="288" height="148" rx="26" fill="none" stroke="currentColor" stroke-width="7"/>
+    <text x="150" y="112" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif"
+          font-size="86" font-weight="500" fill="currentColor" letter-spacing="1">Tun</text>
+    <path d="M139 48 l11 12 22 -25" fill="none" stroke="currentColor" stroke-width="9"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>

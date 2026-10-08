@@ -108,7 +108,8 @@ def rel(path: pathlib.Path) -> str:
         return str(path)
 
 
-def palette_path(prefer_plugin: bool = False) -> tuple[pathlib.Path, str]:
+def palette_path(prefer_plugin: bool = False,
+                 palette: str | None = None) -> tuple[pathlib.Path, str]:
     """Resolve the active palette. Returns (path, why) so a build can state its source.
 
     Precedence, and the reason for it:
@@ -125,18 +126,24 @@ def palette_path(prefer_plugin: bool = False) -> tuple[pathlib.Path, str]:
     regress on the next rebuild — the build would undo the extraction. Core artefacts
     therefore pin neutral on purpose, and anything that wants the brand asks for it. The
     plugin's own examples pass prefer_plugin=True or set TUN_PALETTE.
+
+    `palette` is the same selection made by the artefact itself (a builder reading it from
+    its own spec), so a rebuild cannot lose it. It ranks just below TUN_PALETTE: the person
+    running the build can still override what the file asks for.
     """
-    override = os.environ.get("TUN_PALETTE")
+    env = os.environ.get("TUN_PALETTE")
+    override = env or palette
     if override:
+        label = f"TUN_PALETTE={override}" if env else f"spec:{override}"
         path = pathlib.Path(override)
         if not path.is_absolute():
             path = REPO / override
         if not path.is_file():
             raise TokenError(
-                f"TUN_PALETTE={override!r} does not exist (looked at {rel(path)}).\n"
+                f"{label!r} does not exist (looked at {rel(path)}).\n"
                 f"  Unset it to use core's neutral palette, or give a path relative to "
                 f"the repository root.")
-        return path, f"TUN_PALETTE={override}"
+        return path, label
 
     providers = ([p for p in discover_plugins() if "tokens" in (p.get("provides") or [])]
                  if prefer_plugin else [])
@@ -190,14 +197,15 @@ def validate_palette(css: str, source: str) -> None:
 
 
 def load_token_css(core_files: tuple[str, ...] = CORE_TOKEN_ORDER,
-                   prefer_plugin: bool = False) -> tuple[str, str]:
+                   prefer_plugin: bool = False,
+                   palette: str | None = None) -> tuple[str, str]:
     """Return (css, source) with the palette first, validated, ready to inline.
 
     `core_files` exists because not every artefact wants the dark theme (examples/14 and
     15 ship light only). It is an explicit argument rather than a flag so the call site
     says which files it inlines.
     """
-    path, source = palette_path(prefer_plugin=prefer_plugin)
+    path, source = palette_path(prefer_plugin=prefer_plugin, palette=palette)
     palette_css = path.read_text(encoding="utf-8")
     validate_palette(palette_css, source)
     parts = [palette_css]
