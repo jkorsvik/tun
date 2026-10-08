@@ -142,3 +142,5 @@ uv sync --extra verify && uv run playwright install chromium
   recipient uses, and it is the origin where a CDN reference or an absolute path fails.
 - It writes `<name>.verify.png` next to the dashboard. These are build artefacts; keep
   them out of git unless one is being used as documentation.
+
+Something wrong or surprising in the result? `tun-feedback` records it and can file it as an issue.

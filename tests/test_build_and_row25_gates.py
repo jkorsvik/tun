@@ -15,10 +15,17 @@ for a gate that has quietly stopped working.
   2. the publish gate rejects a literal "<script" written as prose
      (tools/verify_dashboard.py, docs/01-tenant-constraints.md row 25)
 
-Stdlib only, no network, no browser: every case mutates a copy of the real
-template in a temp dir and runs the real scripts as subprocesses.
+Stdlib only, no network: every case mutates a copy of the real template in a
+temp dir and runs the real scripts as subprocesses.
+
+The publish gates also open the file in a browser. Without Playwright they say
+"BLOCKED — playwright not installed" and fail, as they must. This test then
+reports the browser half as SKIP with the command to run, and still asserts every
+static check: a missing optional dependency is not a failure here, but it never
+hides one either.
 
     python3 tests/test_build_and_row25_gates.py
+    uv run --extra verify python tests/test_build_and_row25_gates.py   # with the browser half
 """
 from __future__ import annotations
 
@@ -33,7 +40,11 @@ TOOLS = ROOT / "tools"
 TEMPLATE = ROOT / "templates" / "single-file-dashboard.html"
 CSV = ROOT / "examples" / "01-hello-dashboard" / "salgsdata.csv"
 
-PASS = FAIL = 0
+PASS = FAIL = SKIP = 0
+
+# The line both verify tools print when they cannot open a browser.
+BLOCKED = "BLOCKED — playwright not installed"
+WITH_BROWSER = "uv run --extra verify python tests/test_build_and_row25_gates.py"
 
 
 def check(label: str, ok: bool, detail: str = "") -> None:
@@ -44,6 +55,12 @@ def check(label: str, ok: bool, detail: str = "") -> None:
     else:
         FAIL += 1
         print(f"  FAIL {label}{(' — ' + detail) if detail else ''}")
+
+
+def skip(label: str) -> None:
+    global SKIP
+    SKIP += 1
+    print(f"  SKIP {label} — playwright not installed. Run: {WITH_BROWSER}")
 
 
 def run(args: list[str]) -> subprocess.CompletedProcess:
@@ -83,6 +100,22 @@ def failure_lines(stdout: str) -> list[str]:
             if "✗" in ln and "blocking issue" not in ln]
 
 
+def verdict(returncode: int, stdout: str) -> tuple[str, list[str]]:
+    """("pass" | "blocked" | "fail", the ✗ bullets other than the missing browser).
+
+    "blocked" means the ONLY failure was the missing browser, so every static check
+    passed. Anything else that fired, or a non-zero exit with no bullet at all (a
+    crash), is "fail".
+    """
+    bullets = failure_lines(stdout)
+    real = [b for b in bullets if BLOCKED not in b]
+    if returncode == 0:
+        return "pass", real
+    if not real and len(bullets) > len(real):
+        return "blocked", real
+    return "fail", real
+
+
 def main() -> int:
     print("mutation tests: build placeholder scan + row-25 stray-script gate")
     print("─" * 62)
@@ -105,8 +138,13 @@ def main() -> int:
         check("baseline: unmutated template builds", r.returncode == 0, r.stderr.strip()[:120])
 
         r = run([str(TOOLS / "verify_standalone_core.py"), str(clean)])
-        check("baseline: unmutated artefact passes the generic checks",
-              r.returncode == 0, r.stdout.strip()[-160:])
+        v, real = verdict(r.returncode, r.stdout)
+        if v == "blocked":
+            check("baseline: unmutated artefact passes the static generic checks", True)
+            skip("baseline: browser half of the generic checks")
+        else:
+            check("baseline: unmutated artefact passes the generic checks",
+                  v == "pass", r.stdout.strip()[-160:])
 
         # ── M1: a token the builder does not know about ────────────────────
         # The old check iterated its own substitution keys, so this was invisible
@@ -134,19 +172,36 @@ def main() -> int:
                   r.returncode == 0, f"exit={r.returncode}")
 
             r = run([str(TOOLS / "verify_dashboard.py"), str(m2_out)])
-            bullets = failure_lines(r.stdout)
-            check("M2: publish gate rejects it", r.returncode != 0, f"exit={r.returncode}")
+            v, bullets = verdict(r.returncode, r.stdout)
+            # Without a browser the gate fails anyway, so "it failed" proves nothing;
+            # it must fail on something other than the missing browser.
+            check("M2: publish gate rejects it", v == "fail", f"exit={r.returncode}, {v}")
             check("M2: it is the stray-script check that fired",
                   any("no-stray-script" in b for b in bullets), str(bullets)[:160])
             # Fires alone: otherwise a future regression in this check would stay
             # hidden behind whichever neighbouring check happens to fail too.
             check("M2: and it fired alone", len(bullets) == 1, f"{len(bullets)} failures: {bullets}")
+            if BLOCKED in r.stdout:
+                skip("M2: alone among the browser checks too")
 
         # ── M3: the gate must not fire on a clean file ─────────────────────
         r = run([str(TOOLS / "verify_dashboard.py"), str(clean)])
         check("M3: no false positive on the unmutated artefact",
               r.returncode == 0 or not any("no-stray-script" in b for b in failure_lines(r.stdout)),
               r.stdout.strip()[-200:])
+
+        # ── M3b: the SKIP path cannot swallow a real failure ───────────────
+        # verdict() is what turns a missing browser into SKIP. Pin it on gate output
+        # shaped like the real thing, so a looser version cannot hide a failure.
+        blocked = f"  ✗ render             {BLOCKED}, browser checks could not run"
+        stray = '  ✗ no-stray-script    found "<script" 3 time(s)'
+        check("M3b: only the missing browser -> blocked (SKIP)",
+              verdict(1, blocked)[0] == "blocked")
+        check("M3b: missing browser plus a real failure -> fail",
+              verdict(1, blocked + "\n" + stray) == ("fail", [stray.strip()]))
+        check("M3b: non-zero exit with no bullet at all (a crash) -> fail",
+              verdict(1, "Traceback (most recent call last):")[0] == "fail")
+        check("M3b: exit 0 -> pass", verdict(0, "")[0] == "pass")
 
         # ── M4: the check is wired into the gate at all ────────────────────
         # Cheap structural guard: the import can be dropped in a refactor and
@@ -179,7 +234,8 @@ def main() -> int:
               '.replace("__' not in cube_build)
 
     print("─" * 62)
-    print(f"PASS: {PASS}  FAIL: {FAIL}")
+    tail = f"  SKIP: {SKIP} (browser half; run: {WITH_BROWSER})" if SKIP else ""
+    print(f"PASS: {PASS}  FAIL: {FAIL}{tail}")
     return 1 if FAIL else 0
 
 

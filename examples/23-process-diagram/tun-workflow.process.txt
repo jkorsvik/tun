@@ -1,0 +1,80 @@
+# Tún drawing its own workflow, from a request to feedback on the shared file.
+# Build:  python3 tools/build_process_diagram.py examples/23-process-diagram/tun-workflow.process.txt --out examples/23-process-diagram/tun-workflow.html
+# The format is documented at the top of tools/build_process_diagram.py and in skills/tun-process/SKILL.md.
+# Durations are given only where they were measured (tools on examples/01, 776 rows); the skills state none.
+
+title: Slik blir et Tún-dashboard til
+description: Fra et spørsmål til en fil folk åpner, og tilbake igjen når noe må endres. Tegnet av Tún selv, fra skillene tun-new, tun-verify og tun-publish.
+source: Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data)
+requested-by: Teamet bak Tún
+palette: plugins/tun/tokens/palette.css
+
+lane Bestiller
+  start ask: Trenger tall å dele
+    beskrivelse: Noen har tall de vil dele med kolleger, uten Power BI-lisens, arbeidsområde eller godkjenning fra en administrator.
+    input: Et spørsmål, og ofte et regneark
+  step describe: Beskriver spørsmålet og hvem som skal se svaret
+    beskrivelse: Hvem som ser hva avgjøres først, før noe annet (tun-new, steg 1). Skal ulike personer se ulike tall, blir det én fil per målgruppe, hver i sin mappe.
+    input: Spørsmålet og målgruppen
+    output: En avklart målgruppe, og beskjed om dataene inneholder personopplysninger
+    verktøy: Samtale med RAIWork
+  step use: Åpner filen og bruker tallene
+    beskrivelse: Lenken laster ned filen, og den åpnes i nettleseren. Etterpå virker den uten nett. Tallene er et øyeblikksbilde fra da filen ble bygget.
+    input: Lenken fra kunngjøringen
+    verktøy: Nettleser
+  step feedback: Gir tilbakemelding
+    beskrivelse: Bestilleren sier hva som var feil, uklart eller mangler. RAIWork skriver det i en lokal logg og tilbyr å melde det som en sak.
+    output: En linje i tilbakemeldingsloggen, eventuelt en sak
+    verktøy: tun-feedback
+  decision change: Må noe endres?
+    beskrivelse: Nye spørsmål, nye kolonner eller en ny målgruppe sender saken tilbake til modelleringen.
+  end done: Ferdig, til neste gang
+    beskrivelse: En ny versjon publiseres på samme sti. Lenken er den samme, og mappen tar vare på historikken.
+
+lane RAIWork med Tún
+  step model: Modellerer dataene
+    beskrivelse: RAIWork leser kildefilen og sier konkret hva den inneholder, med antall rader og hvilke kolonner som er tall. Så foreslår den dimensjon, mål, tid og filtre i stedet for å spørre felt for felt.
+    input: Kildefil: Excel, CSV, JSON eller et spørreresultat
+    output: Et forslag til oppsett, og data delt per målgruppe der det trengs
+    verktøy: tun-new, tun-data
+    improve: Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.
+      problem: Uten et eksempel må RAIWork gjette hvilke kolonner som er dimensjon og hvilke som er mål, og forslaget kommer i retur.
+      forslag: Be om én setning eller en skisse av svaret sammen med bestillingen.
+  step build: Bygger én HTML-fil
+    beskrivelse: Byggeverktøyet skriver én selvstendig fil. Kilde og bestiller går inn i sporingsblokken i filen, slik at tallene kan spores om noen spør om tre måneder.
+    input: Data, tittel, dimensjon, mål, filtre, kilde og bestiller
+    output: Én HTML-fil, eller fil pluss data.js i paret modus
+    verktøy: tools/build_dashboard.py
+    varighet: Målt: 0,12 sekunder for 776 rader
+  decision verified: Består tun-verify?
+    beskrivelse: Filen åpnes fra file:// i en ekte nettleser. Sjekken ser at den er selvstendig, at sporingen er intakt, at grafene har innhold og at konsollen er ren, og tar et skjermbilde. Så ser noen på bildet.
+    input: HTML-filen
+    output: PASS og et skjermbilde, eller en liste over hva som feilet
+    verktøy: tools/verify_dashboard.py
+    varighet: Målt: 3,7 sekunder for selve sjekken, pluss tiden det tar å se på skjermbildet
+  step publish: Publiserer i delt mappe
+    beskrivelse: Bestilleren velger mappen. Mappens tilganger er filens tilganger, så RAIWork sjekker hvem som faktisk kan åpne den før lenken deles.
+    input: En verifisert fil og en valgt mappe
+    output: En lenke for visning, og et utkast til kunngjøring som bestilleren godkjenner før noe sendes
+    verktøy: tun-publish, SharePoint eller OneDrive
+
+lane Dataeier
+  decision approve: Godkjent for denne målgruppen?
+    beskrivelse: Ingen formell godkjenning kreves for en slik fil. Men alt i filen kan leses av alle som kan åpne mappen, så den som eier dataene må kunne si ja til akkurat den målgruppen.
+    input: Målgruppen og hvilke data som skal inn
+    output: Ja, eller beskjed om å dele opp per målgruppe
+    verktøy: E-post eller Teams
+    improve: Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.
+      problem: Når noen spør hvem som sa ja til målgruppen, ligger svaret i en e-posttråd som ingen finner igjen.
+      forslag: Skriv hvem som godkjente, og når, inn i kilde-feltet når filen bygges, så står det i sporingsblokken.
+
+flow
+  ask -> describe -> model -> approve
+  approve -> build [ja]
+  approve -> describe [nei, del opp]
+  build -> verified
+  verified -> publish [ja]
+  verified -> build [nei]
+  publish -> use -> feedback -> change
+  change -> model [ja]
+  change -> done [nei]

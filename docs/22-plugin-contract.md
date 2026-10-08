@@ -4,8 +4,8 @@ Status: contract proposal, derived from the one real case.
 
 | capability | state |
 |---|---|
-| `tokens` | **implemented** in `tools/tun_tokens.py`: discovery, single-provider rule, slot validation, load order. Asserted by `tests/test_token_contract.py` (38 assertions). |
-| `assets` | partial: the plugin holds its own artwork, but no code resolves an asset by name |
+| `tokens` | **implemented** in `tools/tun_tokens.py`: discovery, single-provider rule, slot validation, load order. Asserted by `tests/test_token_contract.py` (70 assertions, with the asset checks below). |
+| `assets` | partial: a plugin maps its artwork by name in `manifest.json`, and `tests/test_token_contract.py` checks every mapped file is a self-contained SVG. No build code resolves an asset by name yet |
 | `templates` | **specified, not built** |
 | `verifiers` | **specified, not built** |
 | `tenant_facts` | **specified, not built** |
@@ -133,6 +133,19 @@ asserts that this list, the two shipped palettes, and the `var(--palette-*)` ref
 Files inlined at build time and referenced by name. Core holds no copy. This is what lets logo
 artwork live entirely inside a private plugin, which is the specific thing that currently makes
 two examples unpublishable.
+
+A plugin names its assets in an `assets` map, beside `tokens`:
+
+```json
+"assets": {"logo": "assets/logo.svg", "mark": "assets/mark.svg"}
+```
+
+`tests/test_token_contract.py` checks each mapped file. It stays inside the plugin, it is an
+`<svg>` in the SVG namespace with a `viewBox` and `role="img"` plus an `aria-label`, and it
+fetches nothing and runs nothing (no external `href`, no remote `url()` or `@import`, no
+`<script>`, no `on*` handler, no `<foreignObject>`, no `<set>` or `<animate>` that rewrites an
+`href`). `plugins/tun` is the first plugin with a map. A plugin may list `assets` in `provides`
+without a map when its artwork lives inline in its own examples.
 
 ### 3. `templates`
 

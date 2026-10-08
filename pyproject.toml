@@ -9,7 +9,7 @@ requires-python = ">=3.9"
 dependencies = []
 
 [project.optional-dependencies]
-# Only needed for `tun-verify` / doctor.sh, which open the finished dashboard in a
+# Only needed for `tun-verify` / setup.py, which open the finished dashboard in a
 # real browser to prove it renders. Install with:  uv sync --extra verify
 verify = ["playwright>=1.40"]
 

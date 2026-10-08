@@ -32,7 +32,7 @@ here, no matter how reusable it looks at first glance.
 - `tools/tokens/theme-dark.css` — marked experimental in its own header, not wired into
   any production template here yet; wait for it to graduate before another repo builds on
   a moving target.
-- Anything under `skills/dashboard-*` — those are this project's own RAIWork skills.
+- Anything under `skills/tun-*` — those are this project's own RAIWork skills.
 
 ## Vendoring convention
 

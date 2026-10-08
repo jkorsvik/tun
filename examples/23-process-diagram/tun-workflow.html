@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slik blir et Tún-dashboard til</title>
+<!--
+  Slik blir et Tún-dashboard til
+  PROVENANCE  (do not delete — this is how output gets traced back)
+    Source data : Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data)
+    Built       : 2026-10-08 14:36 CEST
+    Requested by: Teamet bak Tún
+    Built by    : tools/build_process_diagram.py
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Artefact    : process diagram (11 steps, 13 connections, 3 lanes, 2 flagged)
+    Spec        : tun-workflow.process.txt
+    Palette     : spec:plugins/tun/tokens/palette.css
+  This is a self-contained artefact: no server, no CDN dependency, no licence required
+  to view. It works offline and from a OneDrive/SharePoint-synced folder.
+
+  Two layers. The floor is plain HTML and a static SVG: with JavaScript off, every panel
+  (the drawing, the step cards, the roles, the improvement points, the text version)
+  shows one after the other, and print shows them all. The script at the end only adds
+  tabs, a detail panel, highlighting, a role filter and zoom on top of that floor.
+
+  ⚠ SECURITY: all content below is readable by anyone who can open this file. If
+     different viewers must see different content, this file must not exist as a single
+     shared copy — split by audience/folder before generating it (see tun AGENTS.md
+     rule 1: the security boundary is the folder, not anything inside the file).
+-->
+<style>
+:root{
+  --tun-ink:              #0d2b21;
+  --tun-secondary:        #28473c;
+  --tun-accent:           #3f8f3f;
+  --tun-paper:            #f7f7f5;
+  --tun-ink-darkest:      #071812;
+  --tun-accent-tint:      #a4c8a3;
+}
+:root{
+  --palette-ink:             var(--tun-ink);
+  --palette-surface:         var(--tun-paper);
+  --palette-primary:         var(--tun-secondary);
+  --palette-primary-dark:    var(--tun-ink);
+  --palette-primary-darkest: var(--tun-ink-darkest);
+  --palette-accent:          var(--tun-accent);
+  --palette-accent-light:    var(--tun-accent-tint);
+  --palette-on-dark:         var(--tun-paper);
+}
+:root{
+  --status-negative:          #C9372C;
+  --status-negative-bg:       #fbeded;
+  --status-positive:          #1F7A5C;
+  --status-positive-bg-25:    #d7ece3;
+  --status-positive-bg-12:    #eaf5f0;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #737373;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --brand-dark: var(--palette-primary-dark);
+  --series-2:   var(--palette-accent);
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-bg:var(--status-negative-bg);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--panel);color:var(--ink);line-height:1.5;font-size:1rem;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:96rem;margin:0 auto;padding:1.5rem 2rem 3rem}
+h1{margin:0 0 .5rem;font-size:1.875rem;line-height:1.25;color:var(--brand-dark);
+  overflow-wrap:break-word}
+h2{margin:2.5rem 0 1rem;font-size:1.375rem;line-height:1.3;color:var(--brand-dark)}
+h3{margin:0;font-size:1.0625rem;line-height:1.35}
+h4{margin:1rem 0 .25rem;font-size:.875rem;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted)}
+.lede{margin:0 0 .5rem;max-width:70ch;font-size:1.0625rem}
+.meta{margin:0;color:var(--muted);font-size:.875rem}
+
+/* Role colours. Every one is a token, so the palette decides how a role looks. */
+/* Ordered so neighbouring lanes differ most under both the neutral and the Tún palette. */
+.c0{--role:var(--palette-primary-dark)}
+.c1{--role:var(--palette-accent)}
+.c2{--role:var(--status-neutral)}
+.c3{--role:var(--palette-primary)}
+.c4{--role:var(--status-positive)}
+.c5{--role:var(--palette-primary-darkest)}
+
+/* Tabs: hidden without the script, so the floor is the stacked page. */
+.tabs{display:none}
+html.js .tabs{display:flex;flex-wrap:wrap;gap:.25rem;margin:1.5rem 0 0;padding:.25rem;
+  border-radius:.75rem;background:var(--bg);border:1px solid var(--line);width:max-content;max-width:100%}
+.tabs button{font:inherit;font-size:.9375rem;font-weight:600;padding:.5rem 1rem;border:0;
+  border-radius:.5rem;background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--brand-dark);color:var(--palette-on-dark)}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]:hover{color:var(--palette-on-dark)}
+.tabs button:focus-visible,.toolbar button:focus-visible,.chip:focus-visible,
+.show-in-flow:focus-visible,.detail-close:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.panel{margin:0}
+.panel:focus-visible{outline:3px solid var(--brand);outline-offset:4px;border-radius:.5rem}
+html.js .panel-h{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+  white-space:nowrap;margin:0}
+html.js .panel{padding-top:1.25rem}
+
+/* Flyt: toolbar, drawing and the detail panel beside it. */
+.toolbar{display:none}
+html.js .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:0 0 .75rem}
+.toolbar .group{display:flex;gap:.25rem;align-items:center}
+.toolbar button{font:inherit;font-size:.875rem;padding:.375rem .75rem;border-radius:.5rem;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;min-width:2.25rem}
+.toolbar button:hover{border-color:var(--brand)}
+.toolbar button[aria-pressed="true"]{background:var(--brand-dark);color:var(--palette-on-dark);
+  border-color:var(--brand-dark)}
+.zoom-level{font-size:.875rem;color:var(--muted);min-width:4.5rem;text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:.375rem}
+.chip{font:inherit;font-size:.875rem;display:inline-flex;align-items:center;gap:.375rem;
+  padding:.25rem .75rem;border-radius:999px;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.dot{display:inline-block;width:.75rem;height:.75rem;border-radius:50%;background:var(--role,var(--muted));
+  flex:none}
+.flow{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap}
+.figure{margin:0;flex:1 1 40rem;min-width:0;overflow:auto;border:1px solid var(--line);
+  border-radius:.75rem;background:var(--bg)}
+.pd{display:block;max-width:none}
+html.fit .pd{width:100%;height:auto}
+.detail{flex:0 1 24rem;min-width:18rem;border:1px solid var(--line);border-radius:.75rem;
+  background:var(--bg);padding:1rem 1.25rem}
+.detail[hidden]{display:none}
+.detail-top{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin:0 0 .5rem}
+.detail-top p{margin:0;font-size:.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.detail-close{font:inherit;font-size:.875rem;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink);border-radius:.5rem;padding:.25rem .625rem;cursor:pointer}
+.detail .card{border:0;padding:0;box-shadow:none;background:none}
+.legend{margin:.75rem 0 0;color:var(--muted);font-size:.875rem;max-width:90ch}
+
+/* Cards: steps, roles, improvement points. */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(21rem,1fr));gap:1rem;
+  margin:0;padding:0;list-style:none}
+.card{background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--role,var(--line));
+  border-radius:.75rem;padding:1rem 1.25rem}
+.card-head{display:flex;align-items:center;gap:.625rem}
+.card-kind{margin:.25rem 0 .5rem;font-size:.875rem;color:var(--muted)}
+.num,.badge{flex:none;display:inline-grid;place-items:center;min-width:1.75rem;height:1.75rem;
+  padding:0 .375rem;border-radius:999px;font-size:.875rem;font-weight:700}
+.num{background:var(--panel);color:var(--ink);border:1px solid var(--role,var(--line))}
+.badge{background:var(--bad-bg);color:var(--ink);border:2px solid var(--bad)}
+.facts{margin:0;display:grid;gap:.625rem}
+.facts dt{color:var(--muted);font-size:.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.facts dd{margin:0;overflow-wrap:anywhere}
+.card{overflow-wrap:anywhere}
+.card-flag{margin:.75rem 0 0;padding:.625rem .75rem;border-radius:.5rem;background:var(--bad-bg)}
+.card-flag p{margin:.125rem 0}
+.card-actions{margin:.75rem 0 0}
+.show-in-flow{display:none}
+html.js .show-in-flow{display:inline-flex;font:inherit;font-size:.875rem;padding:.375rem .75rem;
+  border-radius:.5rem;border:1px solid var(--brand);background:var(--bg);color:var(--brand);cursor:pointer}
+html.js .show-in-flow:hover{background:var(--panel)}
+.role-card ul{margin:0;padding-left:1.25rem}
+.role-card .role-steps{list-style:none;padding-left:0}
+.role-card li{margin:.125rem 0}
+.none{margin:0;color:var(--muted)}
+.flag-card{border-left-color:var(--bad)}
+.textalt{max-width:90ch}
+.textalt h3{margin:1.25rem 0 .25rem}
+.textalt ol{padding-left:1.5rem;margin:0}
+.textalt li{margin:0 0 .5rem}
+.textalt .branches{margin:.25rem 0 0;padding-left:1.5rem}
+.flag-note{margin:.25rem 0 0;color:var(--bad)}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--muted);font-size:.875rem}
+
+/* The drawing. Every colour comes from the token contract (tools/tun_tokens.py). */
+.pd feDropShadow{flood-color:var(--palette-ink)}
+.pd .lane-band{fill:var(--role);fill-opacity:.045}
+.pd .lane-head{fill:var(--role);fill-opacity:.13}
+.pd .lane-stripe{fill:var(--role)}
+.pd .lane-name{fill:var(--ink)}
+.pd .node-shape{fill:var(--bg);stroke:var(--role);stroke-width:1.5}
+.pd .node-decision .node-shape{fill:var(--panel)}
+.pd .node-start .node-shape,.pd .node-end .node-shape{fill:var(--brand-dark);stroke:var(--brand-dark)}
+.pd .node-label{fill:var(--ink)}
+.pd .node-start .node-label,.pd .node-end .node-label{fill:var(--palette-on-dark);font-weight:600}
+.pd .step-no circle{fill:var(--role);fill-opacity:.16;stroke:var(--role);stroke-width:1}
+.pd .step-no text{fill:var(--ink)}
+.pd .node-start .step-no circle,.pd .node-end .step-no circle{fill:var(--bg);fill-opacity:1}
+.pd .flagged .node-shape{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2}
+.pd .flag-badge circle{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2}
+.pd .flag-badge text{fill:var(--ink)}
+.pd .edge-line{fill:none;stroke:var(--muted);stroke-width:1.75;stroke-linejoin:round}
+.pd .edge[data-loop] .edge-line{stroke-dasharray:6 4}
+.pd .edge-arrow{fill:var(--muted)}
+.pd .pill{fill:var(--bg);stroke:var(--muted);stroke-opacity:.5;stroke-width:1}
+.pd .edge-label text{fill:var(--ink)}
+html.js .pd .node{cursor:pointer}
+.pd .node:focus{outline:none}
+.pd .node:focus-visible .node-shape,.pd .node.selected .node-shape{stroke:var(--brand);stroke-width:3}
+.pd .edge.hl .edge-line{stroke:var(--brand);stroke-width:2.5}
+.pd .edge.hl .edge-arrow{fill:var(--brand)}
+.pd.focusing .node:not(.hl),.pd.focusing .edge:not(.hl){opacity:.22}
+.pd.lane-filter .node:not(.in-lane),.pd.lane-filter .edge:not(.in-lane){opacity:.18}
+.pd.lane-filter .lane:not(.in-lane) .lane-band{fill-opacity:0}
+.pd .node,.pd .edge{transition:opacity .15s}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  /* Paper is read close up: a smaller scale fits three cards across a page. */
+  html{font-size:12px}
+  body{background:var(--bg)}
+  main{padding:0;max-width:none}
+  /* Print shows every panel, whatever tab was open. */
+  html.js .tabs,.toolbar,html.js .toolbar,.detail,html.js .show-in-flow,.show-in-flow{display:none}
+  .panel[hidden]{display:block}
+  html.js .panel-h{position:static;width:auto;height:auto;overflow:visible;clip-path:none;
+    white-space:normal;margin:1.5rem 0 .75rem}
+  html.js .panel{padding-top:0}
+  .panel + .panel{break-before:page}
+  .figure{overflow:visible;border:0;break-inside:avoid}
+  /* The drawing fits under the title on the first page: never wider than the page,
+     never taller than what is left of it. */
+  html .pd{width:auto;height:auto;max-width:100%;max-height:215mm;margin:0 auto}
+  .pd,.pd *,.card,.badge,.card-flag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cards{grid-template-columns:1fr 1fr 1fr;gap:.5rem}
+  .card{padding:.625rem .75rem}
+  .card{break-inside:avoid}
+  .pd.focusing .node,.pd.focusing .edge,.pd.lane-filter .node,.pd.lane-filter .edge{opacity:1}
+}
+@media (max-width:40rem){
+  main{padding:1rem}
+  h1{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.className+=" js"</script>
+<main>
+<header>
+<h1>Slik blir et Tún-dashboard til</h1>
+<p class="lede">Fra et spørsmål til en fil folk åpner, og tilbake igjen når noe må endres. Tegnet av Tún selv, fra skillene tun-new, tun-verify og tun-publish.</p>
+<p class="meta">11 steg · 3 roller · 2 forbedringspunkter</p>
+</header>
+
+<div class="tabs" role="tablist" aria-label="Visninger">
+<button type="button" role="tab" id="tab-flyt" aria-controls="panel-flyt" aria-selected="true">Flyt</button>
+<button type="button" role="tab" id="tab-steg" aria-controls="panel-steg" aria-selected="false" tabindex="-1">Steg</button>
+<button type="button" role="tab" id="tab-roller" aria-controls="panel-roller" aria-selected="false" tabindex="-1">Roller</button>
+<button type="button" role="tab" id="tab-forbedring" aria-controls="panel-forbedring" aria-selected="false" tabindex="-1">Forbedringspunkter</button>
+<button type="button" role="tab" id="tab-tekst" aria-controls="panel-tekst" aria-selected="false" tabindex="-1">Tekstversjon</button>
+</div>
+
+<section class="panel" id="panel-flyt" aria-labelledby="flyt-h">
+<h2 class="panel-h" id="flyt-h">Flyt</h2>
+<div class="toolbar">
+<div class="group" role="group" aria-label="Størrelse">
+<button type="button" id="zoom-out" aria-label="Zoom ut">−</button>
+<span class="zoom-level" id="zoom-level" aria-live="polite">100 %</span>
+<button type="button" id="zoom-in" aria-label="Zoom inn">+</button>
+<button type="button" id="zoom-reset">100 %</button>
+<button type="button" id="fit" aria-pressed="false">Tilpass til bredden</button>
+</div>
+<div class="chips" role="group" aria-label="Fremhev en rolle"><button type="button" class="chip" data-lane="" aria-pressed="true">Alle roller</button><button type="button" class="chip c0" data-lane="0" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Bestiller</button><button type="button" class="chip c1" data-lane="1" aria-pressed="false"><span class="dot" aria-hidden="true"></span>RAIWork med Tún</button><button type="button" class="chip c2" data-lane="2" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Dataeier</button></div>
+</div>
+<div class="flow">
+<figure class="figure">
+<svg xmlns="http://www.w3.org/2000/svg" class="pd" width="1087" height="1610" viewBox="0 0 1087 1610" role="img" aria-labelledby="pd-title pd-desc" font-size="14">
+<title id="pd-title">Slik blir et Tún-dashboard til</title>
+<desc id="pd-desc">Prosessdiagram med 11 steg i 3 roller. Den samme flyten står som tekst i fanen Tekstversjon.</desc>
+<defs><filter id="pd-shadow" x="-10%" y="-20%" width="120%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-opacity="0.22"/></filter></defs>
+<g class="lanes">
+<g class="lane c0" data-lane="0"><rect class="lane-band" x="16" y="56" width="322" height="1538"/><rect class="lane-head" x="18" y="16" width="318" height="32" rx="8"/><rect class="lane-stripe" x="18" y="16" width="318" height="4" rx="2"/><text class="lane-name" x="177" y="38.5" text-anchor="middle" font-weight="700"><tspan x="177" dy="0">Bestiller</tspan></text></g>
+<g class="lane c1" data-lane="1"><rect class="lane-band" x="338" y="56" width="329" height="1538"/><rect class="lane-head" x="340" y="16" width="325" height="32" rx="8"/><rect class="lane-stripe" x="340" y="16" width="325" height="4" rx="2"/><text class="lane-name" x="502.5" y="38.5" text-anchor="middle" font-weight="700"><tspan x="502.5" dy="0">RAIWork med Tún</tspan></text></g>
+<g class="lane c2" data-lane="2"><rect class="lane-band" x="667" y="56" width="404" height="1538"/><rect class="lane-head" x="669" y="16" width="400" height="32" rx="8"/><rect class="lane-stripe" x="669" y="16" width="400" height="4" rx="2"/><text class="lane-name" x="869" y="38.5" text-anchor="middle" font-weight="700"><tspan x="869" dy="0">Dataeier</tspan></text></g>
+</g>
+<g class="edges">
+<g class="edge" data-from="ask" data-to="describe"><path class="edge-line" d="M164 188 L164 244"/><path class="edge-arrow" d="M164 244 L160 234 L168 234 Z"/></g>
+<g class="edge" data-from="describe" data-to="model"><path class="edge-line" d="M164 320 L164 342 Q164 348 170 348 L480 348 Q486 348 486 354 L486 376"/><path class="edge-arrow" d="M486 376 L482 366 L490 366 Z"/></g>
+<g class="edge" data-from="model" data-to="approve"><path class="edge-line" d="M486 452 L486 474 Q486 480 492 480 L809 480 Q815 480 815 486 L815 508"/><path class="edge-arrow" d="M815 508 L811 498 L819 498 Z"/></g>
+<g class="edge" data-from="approve" data-to="build"><path class="edge-line" d="M815 584 L815 616 Q815 622 809 622 L500 622 Q494 622 494 628 L494 650"/><path class="edge-arrow" d="M494 650 L490 640 L498 640 Z"/><g class="edge-label"><rect class="pill" x="819" y="587" width="26" height="18" rx="9"/><text x="832" y="600" text-anchor="middle" font-size="12">ja</text></g></g>
+<g class="edge" data-from="approve" data-to="describe" data-loop="1"><path class="edge-line" d="M927 546 L1041 546 Q1047 546 1047 540 L1047 222 Q1047 216 1041 216 L332 216 Q326 216 326 222 L326 276 Q326 282 320 282 L276 282"/><path class="edge-arrow" d="M276 282 L286 278 L286 286 Z"/><g class="edge-label"><rect class="pill" x="931" y="549" width="96" height="18" rx="9"/><text x="979" y="562" text-anchor="middle" font-size="12">nei, del opp</text></g></g>
+<g class="edge" data-from="build" data-to="verified"><path class="edge-line" d="M486 726 L486 782"/><path class="edge-arrow" d="M486 782 L482 772 L490 772 Z"/></g>
+<g class="edge" data-from="verified" data-to="publish"><path class="edge-line" d="M486 858 L486 924"/><path class="edge-arrow" d="M486 924 L482 914 L490 914 Z"/><g class="edge-label"><rect class="pill" x="490" y="861" width="26" height="18" rx="9"/><text x="503" y="874" text-anchor="middle" font-size="12">ja</text></g></g>
+<g class="edge" data-from="verified" data-to="build" data-loop="1"><path class="edge-line" d="M598 820 L649 820 Q655 820 655 814 L655 694 Q655 688 649 688 L598 688"/><path class="edge-arrow" d="M598 688 L608 684 L608 692 Z"/><g class="edge-label"><rect class="pill" x="602" y="823" width="33" height="18" rx="9"/><text x="618.5" y="836" text-anchor="middle" font-size="12">nei</text></g></g>
+<g class="edge" data-from="publish" data-to="use"><path class="edge-line" d="M486 1000 L486 1022 Q486 1028 480 1028 L178 1028 Q172 1028 172 1034 L172 1056"/><path class="edge-arrow" d="M172 1056 L168 1046 L176 1046 Z"/></g>
+<g class="edge" data-from="use" data-to="feedback"><path class="edge-line" d="M164 1132 L164 1188"/><path class="edge-arrow" d="M164 1188 L160 1178 L168 1178 Z"/></g>
+<g class="edge" data-from="feedback" data-to="change"><path class="edge-line" d="M164 1264 L164 1320"/><path class="edge-arrow" d="M164 1320 L160 1310 L168 1310 Z"/></g>
+<g class="edge" data-from="change" data-to="model" data-loop="1"><path class="edge-line" d="M276 1358 L320 1358 Q326 1358 326 1352 L326 420 Q326 414 332 414 L374 414"/><path class="edge-arrow" d="M374 414 L364 418 L364 410 Z"/><g class="edge-label"><rect class="pill" x="280" y="1361" width="26" height="18" rx="9"/><text x="293" y="1374" text-anchor="middle" font-size="12">ja</text></g></g>
+<g class="edge" data-from="change" data-to="done"><path class="edge-line" d="M164 1396 L164 1462"/><path class="edge-arrow" d="M164 1462 L160 1452 L168 1452 Z"/><g class="edge-label"><rect class="pill" x="168" y="1399" width="33" height="18" rx="9"/><text x="184.5" y="1412" text-anchor="middle" font-size="12">nei</text></g></g>
+</g>
+<g class="nodes">
+<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(52 112)"><title>1. Trenger tall å dele</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Trenger tall å dele</tspan></text></g>
+<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(52 244)"><title>2. Beskriver spørsmålet og hvem som skal se svaret</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Beskriver spørsmålet</tspan><tspan x="123" dy="18">og hvem som skal se</tspan><tspan x="123" dy="18">svaret</tspan></text></g>
+<g class="node node-step c1 flagged" data-node="model" data-lane="1" transform="translate(374 376)"><title>3. Modellerer dataene (Forbedringspunkt 1: Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.)</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">3</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Modellerer dataene</tspan></text><g class="flag-badge"><circle cx="224" cy="0" r="10"/><text x="224" y="4.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g></g>
+<g class="node node-decision c2 flagged" data-node="approve" data-lane="2" transform="translate(703 508)"><title>4. Godkjent for denne målgruppen? (Forbedringspunkt 2: Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.)</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">4</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Godkjent for denne</tspan><tspan x="123" dy="18">målgruppen?</tspan></text><g class="flag-badge"><circle cx="206" cy="0" r="10"/><text x="206" y="4.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g></g>
+<g class="node node-step c1" data-node="build" data-lane="1" transform="translate(374 650)"><title>5. Bygger én HTML-fil</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">5</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Bygger én HTML-fil</tspan></text></g>
+<g class="node node-decision c1" data-node="verified" data-lane="1" transform="translate(374 782)"><title>6. Består tun-verify?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">6</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Består tun-verify?</tspan></text></g>
+<g class="node node-step c1" data-node="publish" data-lane="1" transform="translate(374 924)"><title>7. Publiserer i delt mappe</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">7</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Publiserer i delt</tspan><tspan x="123" dy="18">mappe</tspan></text></g>
+<g class="node node-step c0" data-node="use" data-lane="0" transform="translate(52 1056)"><title>8. Åpner filen og bruker tallene</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">8</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Åpner filen og bruker</tspan><tspan x="123" dy="18">tallene</tspan></text></g>
+<g class="node node-step c0" data-node="feedback" data-lane="0" transform="translate(52 1188)"><title>9. Gir tilbakemelding</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">9</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Gir tilbakemelding</tspan></text></g>
+<g class="node node-decision c0" data-node="change" data-lane="0" transform="translate(52 1320)"><title>10. Må noe endres?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">10</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Må noe endres?</tspan></text></g>
+<g class="node node-end c0" data-node="done" data-lane="0" transform="translate(52 1462)"><title>11. Ferdig, til neste gang</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">11</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Ferdig, til neste</tspan><tspan x="123" dy="18">gang</tspan></text></g>
+</g>
+</svg>
+</figure>
+<aside class="detail" id="detail" aria-labelledby="detail-h" hidden>
+<div class="detail-top"><p id="detail-h">Valgt steg</p>
+<button type="button" class="detail-close" id="detail-close">Lukk</button></div>
+<div id="detail-body"></div>
+</aside>
+</div>
+<p class="legend">Hvert bånd er én rolle. Avrundet boks: start eller slutt. Rektangel: et steg.
+Sekskant: en beslutning, med svaret i en boble ved hver pil. Stiplet linje: tilbake til et
+tidligere steg. Rød kant og rødt merke med tall: et forbedringspunkt. Tallet inne i hver boks er
+stegets nummer, det samme som i fanen Steg.</p>
+</section>
+
+<section class="panel" id="panel-steg" aria-labelledby="steg-h">
+<h2 class="panel-h" id="steg-h">Steg</h2>
+<div class="cards">
+<article class="card step-card c0" id="step-ask" data-node="ask"><header class="card-head"><span class="num">1</span><h3>Trenger tall å dele</h3></header><p class="card-kind">Start</p><dl class="facts"><div><dt>Rolle</dt><dd>Bestiller</dd></div><div><dt>Hva skjer</dt><dd>Noen har tall de vil dele med kolleger, uten Power BI-lisens, arbeidsområde eller godkjenning fra en administrator.</dd></div><div><dt>Input</dt><dd>Et spørsmål, og ofte et regneark</dd></div><div><dt>Videre til</dt><dd>2. «Beskriver spørsmålet og hvem som skal se svaret» (Bestiller)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="ask">Vis i flyten</button></p></article>
+<article class="card step-card c0" id="step-describe" data-node="describe"><header class="card-head"><span class="num">2</span><h3>Beskriver spørsmålet og hvem som skal se svaret</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Bestiller</dd></div><div><dt>Hva skjer</dt><dd>Hvem som ser hva avgjøres først, før noe annet (tun-new, steg 1). Skal ulike personer se ulike tall, blir det én fil per målgruppe, hver i sin mappe.</dd></div><div><dt>Input</dt><dd>Spørsmålet og målgruppen</dd></div><div><dt>Output</dt><dd>En avklart målgruppe, og beskjed om dataene inneholder personopplysninger</dd></div><div><dt>Verktøy</dt><dd>Samtale med RAIWork</dd></div><div><dt>Kommer fra</dt><dd>1. «Trenger tall å dele» (Bestiller)<br>4. «Godkjent for denne målgruppen?» (Dataeier) [nei, del opp]</dd></div><div><dt>Videre til</dt><dd>3. «Modellerer dataene» (RAIWork med Tún)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="describe">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-model" data-node="model"><header class="card-head"><span class="num">3</span><h3>Modellerer dataene</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>RAIWork med Tún</dd></div><div><dt>Hva skjer</dt><dd>RAIWork leser kildefilen og sier konkret hva den inneholder, med antall rader og hvilke kolonner som er tall. Så foreslår den dimensjon, mål, tid og filtre i stedet for å spørre felt for felt.</dd></div><div><dt>Input</dt><dd>Kildefil: Excel, CSV, JSON eller et spørreresultat</dd></div><div><dt>Output</dt><dd>Et forslag til oppsett, og data delt per målgruppe der det trengs</dd></div><div><dt>Verktøy</dt><dd>tun-new, tun-data</dd></div><div><dt>Kommer fra</dt><dd>2. «Beskriver spørsmålet og hvem som skal se svaret» (Bestiller)<br>10. «Må noe endres?» (Bestiller) [ja]</dd></div><div><dt>Videre til</dt><dd>4. «Godkjent for denne målgruppen?» (Dataeier)</dd></div></dl><div class="card-flag"><p><span class="badge">1</span> <strong>Forbedringspunkt 1:</strong> Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.</p><p><strong>Problem:</strong> Uten et eksempel må RAIWork gjette hvilke kolonner som er dimensjon og hvilke som er mål, og forslaget kommer i retur.</p><p><strong>Forslag:</strong> Be om én setning eller en skisse av svaret sammen med bestillingen.</p></div><p class="card-actions"><button type="button" class="show-in-flow" data-node="model">Vis i flyten</button></p></article>
+<article class="card step-card c2" id="step-approve" data-node="approve"><header class="card-head"><span class="num">4</span><h3>Godkjent for denne målgruppen?</h3></header><p class="card-kind">Beslutning</p><dl class="facts"><div><dt>Rolle</dt><dd>Dataeier</dd></div><div><dt>Hva skjer</dt><dd>Ingen formell godkjenning kreves for en slik fil. Men alt i filen kan leses av alle som kan åpne mappen, så den som eier dataene må kunne si ja til akkurat den målgruppen.</dd></div><div><dt>Input</dt><dd>Målgruppen og hvilke data som skal inn</dd></div><div><dt>Output</dt><dd>Ja, eller beskjed om å dele opp per målgruppe</dd></div><div><dt>Verktøy</dt><dd>E-post eller Teams</dd></div><div><dt>Kommer fra</dt><dd>3. «Modellerer dataene» (RAIWork med Tún)</dd></div><div><dt>Videre til</dt><dd>5. «Bygger én HTML-fil» (RAIWork med Tún) [ja]<br>2. «Beskriver spørsmålet og hvem som skal se svaret» (Bestiller) [nei, del opp]</dd></div></dl><div class="card-flag"><p><span class="badge">2</span> <strong>Forbedringspunkt 2:</strong> Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.</p><p><strong>Problem:</strong> Når noen spør hvem som sa ja til målgruppen, ligger svaret i en e-posttråd som ingen finner igjen.</p><p><strong>Forslag:</strong> Skriv hvem som godkjente, og når, inn i kilde-feltet når filen bygges, så står det i sporingsblokken.</p></div><p class="card-actions"><button type="button" class="show-in-flow" data-node="approve">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-build" data-node="build"><header class="card-head"><span class="num">5</span><h3>Bygger én HTML-fil</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>RAIWork med Tún</dd></div><div><dt>Hva skjer</dt><dd>Byggeverktøyet skriver én selvstendig fil. Kilde og bestiller går inn i sporingsblokken i filen, slik at tallene kan spores om noen spør om tre måneder.</dd></div><div><dt>Input</dt><dd>Data, tittel, dimensjon, mål, filtre, kilde og bestiller</dd></div><div><dt>Output</dt><dd>Én HTML-fil, eller fil pluss data.js i paret modus</dd></div><div><dt>Verktøy</dt><dd>tools/build_dashboard.py</dd></div><div><dt>Typisk varighet</dt><dd>Målt: 0,12 sekunder for 776 rader</dd></div><div><dt>Kommer fra</dt><dd>4. «Godkjent for denne målgruppen?» (Dataeier) [ja]<br>6. «Består tun-verify?» (RAIWork med Tún) [nei]</dd></div><div><dt>Videre til</dt><dd>6. «Består tun-verify?» (RAIWork med Tún)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="build">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-verified" data-node="verified"><header class="card-head"><span class="num">6</span><h3>Består tun-verify?</h3></header><p class="card-kind">Beslutning</p><dl class="facts"><div><dt>Rolle</dt><dd>RAIWork med Tún</dd></div><div><dt>Hva skjer</dt><dd>Filen åpnes fra file:// i en ekte nettleser. Sjekken ser at den er selvstendig, at sporingen er intakt, at grafene har innhold og at konsollen er ren, og tar et skjermbilde. Så ser noen på bildet.</dd></div><div><dt>Input</dt><dd>HTML-filen</dd></div><div><dt>Output</dt><dd>PASS og et skjermbilde, eller en liste over hva som feilet</dd></div><div><dt>Verktøy</dt><dd>tools/verify_dashboard.py</dd></div><div><dt>Typisk varighet</dt><dd>Målt: 3,7 sekunder for selve sjekken, pluss tiden det tar å se på skjermbildet</dd></div><div><dt>Kommer fra</dt><dd>5. «Bygger én HTML-fil» (RAIWork med Tún)</dd></div><div><dt>Videre til</dt><dd>7. «Publiserer i delt mappe» (RAIWork med Tún) [ja]<br>5. «Bygger én HTML-fil» (RAIWork med Tún) [nei]</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="verified">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-publish" data-node="publish"><header class="card-head"><span class="num">7</span><h3>Publiserer i delt mappe</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>RAIWork med Tún</dd></div><div><dt>Hva skjer</dt><dd>Bestilleren velger mappen. Mappens tilganger er filens tilganger, så RAIWork sjekker hvem som faktisk kan åpne den før lenken deles.</dd></div><div><dt>Input</dt><dd>En verifisert fil og en valgt mappe</dd></div><div><dt>Output</dt><dd>En lenke for visning, og et utkast til kunngjøring som bestilleren godkjenner før noe sendes</dd></div><div><dt>Verktøy</dt><dd>tun-publish, SharePoint eller OneDrive</dd></div><div><dt>Kommer fra</dt><dd>6. «Består tun-verify?» (RAIWork med Tún) [ja]</dd></div><div><dt>Videre til</dt><dd>8. «Åpner filen og bruker tallene» (Bestiller)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="publish">Vis i flyten</button></p></article>
+<article class="card step-card c0" id="step-use" data-node="use"><header class="card-head"><span class="num">8</span><h3>Åpner filen og bruker tallene</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Bestiller</dd></div><div><dt>Hva skjer</dt><dd>Lenken laster ned filen, og den åpnes i nettleseren. Etterpå virker den uten nett. Tallene er et øyeblikksbilde fra da filen ble bygget.</dd></div><div><dt>Input</dt><dd>Lenken fra kunngjøringen</dd></div><div><dt>Verktøy</dt><dd>Nettleser</dd></div><div><dt>Kommer fra</dt><dd>7. «Publiserer i delt mappe» (RAIWork med Tún)</dd></div><div><dt>Videre til</dt><dd>9. «Gir tilbakemelding» (Bestiller)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="use">Vis i flyten</button></p></article>
+<article class="card step-card c0" id="step-feedback" data-node="feedback"><header class="card-head"><span class="num">9</span><h3>Gir tilbakemelding</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Bestiller</dd></div><div><dt>Hva skjer</dt><dd>Bestilleren sier hva som var feil, uklart eller mangler. RAIWork skriver det i en lokal logg og tilbyr å melde det som en sak.</dd></div><div><dt>Output</dt><dd>En linje i tilbakemeldingsloggen, eventuelt en sak</dd></div><div><dt>Verktøy</dt><dd>tun-feedback</dd></div><div><dt>Kommer fra</dt><dd>8. «Åpner filen og bruker tallene» (Bestiller)</dd></div><div><dt>Videre til</dt><dd>10. «Må noe endres?» (Bestiller)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="feedback">Vis i flyten</button></p></article>
+<article class="card step-card c0" id="step-change" data-node="change"><header class="card-head"><span class="num">10</span><h3>Må noe endres?</h3></header><p class="card-kind">Beslutning</p><dl class="facts"><div><dt>Rolle</dt><dd>Bestiller</dd></div><div><dt>Hva skjer</dt><dd>Nye spørsmål, nye kolonner eller en ny målgruppe sender saken tilbake til modelleringen.</dd></div><div><dt>Kommer fra</dt><dd>9. «Gir tilbakemelding» (Bestiller)</dd></div><div><dt>Videre til</dt><dd>3. «Modellerer dataene» (RAIWork med Tún) [ja]<br>11. «Ferdig, til neste gang» (Bestiller) [nei]</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="change">Vis i flyten</button></p></article>
+<article class="card step-card c0" id="step-done" data-node="done"><header class="card-head"><span class="num">11</span><h3>Ferdig, til neste gang</h3></header><p class="card-kind">Slutt</p><dl class="facts"><div><dt>Rolle</dt><dd>Bestiller</dd></div><div><dt>Hva skjer</dt><dd>En ny versjon publiseres på samme sti. Lenken er den samme, og mappen tar vare på historikken.</dd></div><div><dt>Kommer fra</dt><dd>10. «Må noe endres?» (Bestiller) [nei]</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="done">Vis i flyten</button></p></article>
+</div>
+</section>
+
+<section class="panel" id="panel-roller" aria-labelledby="roller-h">
+<h2 class="panel-h" id="roller-h">Roller</h2>
+<div class="cards">
+<section class="card role-card c0" data-lane="0"><header class="card-head"><span class="dot" aria-hidden="true"></span><h3>Bestiller</h3></header><p class="card-kind">6 steg · 2 inn · 2 ut</p><h4>Steg</h4><ul class="role-steps"><li data-step="ask">1. «Trenger tall å dele»</li><li data-step="describe">2. «Beskriver spørsmålet og hvem som skal se svaret»</li><li data-step="use">8. «Åpner filen og bruker tallene»</li><li data-step="feedback">9. «Gir tilbakemelding»</li><li data-step="change">10. «Må noe endres?»</li><li data-step="done">11. «Ferdig, til neste gang»</li></ul><h4>Overleveringer inn</h4><ul><li data-from="approve" data-to="describe">4. «Godkjent for denne målgruppen?» (Dataeier) → 2. «Beskriver spørsmålet og hvem som skal se svaret» (Bestiller) [nei, del opp]</li><li data-from="publish" data-to="use">7. «Publiserer i delt mappe» (RAIWork med Tún) → 8. «Åpner filen og bruker tallene» (Bestiller)</li></ul><h4>Overleveringer ut</h4><ul><li data-from="describe" data-to="model">2. «Beskriver spørsmålet og hvem som skal se svaret» (Bestiller) → 3. «Modellerer dataene» (RAIWork med Tún)</li><li data-from="change" data-to="model">10. «Må noe endres?» (Bestiller) → 3. «Modellerer dataene» (RAIWork med Tún) [ja]</li></ul></section>
+<section class="card role-card c1" data-lane="1"><header class="card-head"><span class="dot" aria-hidden="true"></span><h3>RAIWork med Tún</h3></header><p class="card-kind">4 steg · 3 inn · 2 ut</p><h4>Steg</h4><ul class="role-steps"><li data-step="model">3. «Modellerer dataene»</li><li data-step="build">5. «Bygger én HTML-fil»</li><li data-step="verified">6. «Består tun-verify?»</li><li data-step="publish">7. «Publiserer i delt mappe»</li></ul><h4>Overleveringer inn</h4><ul><li data-from="describe" data-to="model">2. «Beskriver spørsmålet og hvem som skal se svaret» (Bestiller) → 3. «Modellerer dataene» (RAIWork med Tún)</li><li data-from="approve" data-to="build">4. «Godkjent for denne målgruppen?» (Dataeier) → 5. «Bygger én HTML-fil» (RAIWork med Tún) [ja]</li><li data-from="change" data-to="model">10. «Må noe endres?» (Bestiller) → 3. «Modellerer dataene» (RAIWork med Tún) [ja]</li></ul><h4>Overleveringer ut</h4><ul><li data-from="model" data-to="approve">3. «Modellerer dataene» (RAIWork med Tún) → 4. «Godkjent for denne målgruppen?» (Dataeier)</li><li data-from="publish" data-to="use">7. «Publiserer i delt mappe» (RAIWork med Tún) → 8. «Åpner filen og bruker tallene» (Bestiller)</li></ul></section>
+<section class="card role-card c2" data-lane="2"><header class="card-head"><span class="dot" aria-hidden="true"></span><h3>Dataeier</h3></header><p class="card-kind">1 steg · 1 inn · 2 ut</p><h4>Steg</h4><ul class="role-steps"><li data-step="approve">4. «Godkjent for denne målgruppen?»</li></ul><h4>Overleveringer inn</h4><ul><li data-from="model" data-to="approve">3. «Modellerer dataene» (RAIWork med Tún) → 4. «Godkjent for denne målgruppen?» (Dataeier)</li></ul><h4>Overleveringer ut</h4><ul><li data-from="approve" data-to="build">4. «Godkjent for denne målgruppen?» (Dataeier) → 5. «Bygger én HTML-fil» (RAIWork med Tún) [ja]</li><li data-from="approve" data-to="describe">4. «Godkjent for denne målgruppen?» (Dataeier) → 2. «Beskriver spørsmålet og hvem som skal se svaret» (Bestiller) [nei, del opp]</li></ul></section>
+</div>
+</section>
+
+<section class="panel" id="panel-forbedring" aria-labelledby="forbedring-h">
+<h2 class="panel-h" id="forbedring-h">Forbedringspunkter</h2>
+<ol class="cards flag-list">
+<li class="card flag-card" data-flag="1" data-node="model"><header class="card-head"><span class="badge">1</span><h3>Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.</h3></header><dl class="facts"><div><dt>Steg</dt><dd>3. «Modellerer dataene» (RAIWork med Tún)</dd></div><div><dt>Problem</dt><dd>Uten et eksempel må RAIWork gjette hvilke kolonner som er dimensjon og hvilke som er mål, og forslaget kommer i retur.</dd></div><div><dt>Forslag</dt><dd>Be om én setning eller en skisse av svaret sammen med bestillingen.</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="model">Vis i flyten</button></p></li>
+<li class="card flag-card" data-flag="2" data-node="approve"><header class="card-head"><span class="badge">2</span><h3>Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.</h3></header><dl class="facts"><div><dt>Steg</dt><dd>4. «Godkjent for denne målgruppen?» (Dataeier)</dd></div><div><dt>Problem</dt><dd>Når noen spør hvem som sa ja til målgruppen, ligger svaret i en e-posttråd som ingen finner igjen.</dd></div><div><dt>Forslag</dt><dd>Skriv hvem som godkjente, og når, inn i kilde-feltet når filen bygges, så står det i sporingsblokken.</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="approve">Vis i flyten</button></p></li>
+</ol>
+</section>
+
+<section class="panel textalt" id="panel-tekst" aria-labelledby="tekst-h">
+<h2 class="panel-h" id="tekst-h">Tekstversjon</h2>
+<p>Den samme flyten som i diagrammet, rolle for rolle, i den rekkefølgen stegene skjer.</p>
+<h3>Bestiller</h3>
+<ol class="lane-steps">
+<li data-node="ask"><strong>Start 1:</strong> Trenger tall å dele. Videre til <span data-from="ask" data-to="describe">«Beskriver spørsmålet og hvem som skal se svaret» (Bestiller)</span>.</li>
+<li data-node="describe"><strong>Steg 2:</strong> Beskriver spørsmålet og hvem som skal se svaret. Videre til <span data-from="describe" data-to="model">«Modellerer dataene» (RAIWork med Tún)</span>.</li>
+<li data-node="use"><strong>Steg 8:</strong> Åpner filen og bruker tallene. Videre til <span data-from="use" data-to="feedback">«Gir tilbakemelding» (Bestiller)</span>.</li>
+<li data-node="feedback"><strong>Steg 9:</strong> Gir tilbakemelding. Videre til <span data-from="feedback" data-to="change">«Må noe endres?» (Bestiller)</span>.</li>
+<li data-node="change"><strong>Beslutning 10:</strong> Må noe endres?
+  <ul class="branches"><li data-from="change" data-to="model">Hvis «ja»: videre til «Modellerer dataene» (RAIWork med Tún).</li><li data-from="change" data-to="done">Hvis «nei»: videre til «Ferdig, til neste gang» (Bestiller).</li></ul></li>
+<li data-node="done"><strong>Slutt 11:</strong> Ferdig, til neste gang.</li>
+</ol>
+<h3>RAIWork med Tún</h3>
+<ol class="lane-steps">
+<li data-node="model"><strong>Steg 3:</strong> Modellerer dataene. Videre til <span data-from="model" data-to="approve">«Godkjent for denne målgruppen?» (Dataeier)</span>.
+  <p class="flag-note">Forbedringspunkt 1: Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.</p></li>
+<li data-node="build"><strong>Steg 5:</strong> Bygger én HTML-fil. Videre til <span data-from="build" data-to="verified">«Består tun-verify?» (RAIWork med Tún)</span>.</li>
+<li data-node="verified"><strong>Beslutning 6:</strong> Består tun-verify?
+  <ul class="branches"><li data-from="verified" data-to="publish">Hvis «ja»: videre til «Publiserer i delt mappe» (RAIWork med Tún).</li><li data-from="verified" data-to="build">Hvis «nei»: videre til «Bygger én HTML-fil» (RAIWork med Tún).</li></ul></li>
+<li data-node="publish"><strong>Steg 7:</strong> Publiserer i delt mappe. Videre til <span data-from="publish" data-to="use">«Åpner filen og bruker tallene» (Bestiller)</span>.</li>
+</ol>
+<h3>Dataeier</h3>
+<ol class="lane-steps">
+<li data-node="approve"><strong>Beslutning 4:</strong> Godkjent for denne målgruppen?
+  <ul class="branches"><li data-from="approve" data-to="build">Hvis «ja»: videre til «Bygger én HTML-fil» (RAIWork med Tún).</li><li data-from="approve" data-to="describe">Hvis «nei, del opp»: videre til «Beskriver spørsmålet og hvem som skal se svaret» (Bestiller).</li></ul>
+  <p class="flag-note">Forbedringspunkt 2: Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.</p></li>
+</ol>
+</section>
+
+<footer>
+<p>Kilde: Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data). Bestilt av: Teamet bak Tún. Laget 2026-10-08 14:36 CEST.
+Én selvstendig fil: ingen server, ingen nettverk, ingen lisens.</p>
+</footer>
+</main>
+<script>
+/* The interaction layer. Everything above renders without it.
+   tools/verify_process_diagram.py --mutation-check edits copies of this file by exact
+   lines of this script and of the print CSS; if you change one, run it, and it names
+   the anchor that moved. */
+(function () {
+  "use strict";
+  var doc = document;
+  var root = doc.documentElement;
+  var each = function (list, fn) { Array.prototype.forEach.call(list, fn); };
+
+  /* Tabs: a WAI-ARIA tablist. Arrow keys move and select, Home and End jump. Panels get
+     their tabpanel role here, so without the script they are plain stacked sections. */
+  var tabs = Array.prototype.slice.call(doc.querySelectorAll(".tabs [role=tab]"));
+  var panels = tabs.map(function (t) { return doc.getElementById(t.getAttribute("aria-controls")); });
+  panels.forEach(function (p, i) {
+    p.setAttribute("role", "tabpanel");
+    p.setAttribute("aria-labelledby", tabs[i].id);
+    p.setAttribute("tabindex", "0");
+  });
+  function selectTab(i, focus) {
+    tabs.forEach(function (t, k) {
+      var on = k === i;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+      panels[k].hidden = !on;
+    });
+    if (focus) tabs[i].focus();
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener("click", function () { selectTab(i, false); });
+    t.addEventListener("keydown", function (ev) {
+      var n = tabs.length, j = null;
+      if (ev.key === "ArrowRight") j = (i + 1) % n;
+      else if (ev.key === "ArrowLeft") j = (i - 1 + n) % n;
+      else if (ev.key === "Home") j = 0;
+      else if (ev.key === "End") j = n - 1;
+      if (j !== null) { ev.preventDefault(); selectTab(j, true); }
+    });
+  });
+  selectTab(0, false);
+
+  var svg = doc.querySelector("svg.pd");
+  if (!svg) return;
+
+  /* Zoom and fit. The drawing is laid out at natural size, where no text is under 12 px. */
+  var natW = parseFloat(svg.getAttribute("width"));
+  var natH = parseFloat(svg.getAttribute("height"));
+  var scale = 1, fit = false;
+  var fitBtn = doc.getElementById("fit"), level = doc.getElementById("zoom-level");
+  function applyZoom() {
+    root.classList.toggle("fit", fit);
+    svg.style.width = fit ? "" : (natW * scale) + "px";
+    svg.style.height = fit ? "" : (natH * scale) + "px";
+    fitBtn.setAttribute("aria-pressed", fit ? "true" : "false");
+    level.textContent = fit ? "Tilpasset" : Math.round(scale * 100) + " %";
+  }
+  function zoomBy(step) {
+    fit = false;
+    scale = Math.min(2, Math.max(0.5, Math.round((scale + step) * 100) / 100));
+    applyZoom();
+  }
+  doc.getElementById("zoom-in").addEventListener("click", function () { zoomBy(0.25); });
+  doc.getElementById("zoom-out").addEventListener("click", function () { zoomBy(-0.25); });
+  doc.getElementById("zoom-reset").addEventListener("click", function () { fit = false; scale = 1; applyZoom(); });
+  fitBtn.addEventListener("click", function () { fit = !fit; applyZoom(); });
+
+  /* Highlight: hover or focus a step to see its connections; the rest dims. */
+  var nodes = Array.prototype.slice.call(svg.querySelectorAll("g.node"));
+  var edges = Array.prototype.slice.call(svg.querySelectorAll("g.edge"));
+  var lanes = Array.prototype.slice.call(svg.querySelectorAll("g.lane"));
+  var laneOf = {};
+  nodes.forEach(function (n) { laneOf[n.getAttribute("data-node")] = n.getAttribute("data-lane"); });
+  function nodeById(id) {
+    return nodes.filter(function (n) { return n.getAttribute("data-node") === id; })[0] || null;
+  }
+  function highlight(id) {
+    svg.classList.toggle("focusing", !!id);
+    nodes.forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });
+    edges.forEach(function (e) {
+      e.classList.toggle("hl", !!id && (e.getAttribute("data-from") === id || e.getAttribute("data-to") === id));
+    });
+  }
+
+  /* Detail panel: a copy of the step's card from the Steg panel, so there is one source. */
+  var detail = doc.getElementById("detail"), body = doc.getElementById("detail-body");
+  var selected = null;
+  function openDetail(id) {
+    var card = doc.getElementById("step-" + id);
+    if (!card) return;
+    var copy = card.cloneNode(true);
+    copy.removeAttribute("id");
+    each(copy.querySelectorAll("[id]"), function (el) { el.removeAttribute("id"); });
+    each(copy.querySelectorAll(".card-actions"), function (el) { el.parentNode.removeChild(el); });
+    while (body.firstChild) body.removeChild(body.firstChild);
+    body.appendChild(copy);
+    detail.hidden = false;
+    detail.setAttribute("data-node", id);
+    selected = id;
+    nodes.forEach(function (n) {
+      var on = n.getAttribute("data-node") === id;
+      n.classList.toggle("selected", on);
+      n.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  function closeDetail() {
+    var back = selected && nodeById(selected);
+    detail.hidden = true;
+    detail.removeAttribute("data-node");
+    selected = null;
+    nodes.forEach(function (n) { n.classList.remove("selected"); n.setAttribute("aria-pressed", "false"); });
+    if (back) back.focus();
+  }
+  doc.getElementById("detail-close").addEventListener("click", closeDetail);
+  detail.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeDetail(); });
+
+  nodes.forEach(function (n) {
+    var id = n.getAttribute("data-node");
+    var title = n.querySelector("title");
+    n.setAttribute("tabindex", "0");
+    n.setAttribute("role", "button");
+    n.setAttribute("aria-pressed", "false");
+    n.setAttribute("aria-controls", "detail");
+    if (title) n.setAttribute("aria-label", title.textContent);
+    n.addEventListener("mouseenter", function () { highlight(id); });
+    n.addEventListener("mouseleave", function () { highlight(null); });
+    n.addEventListener("focus", function () { highlight(id); });
+    n.addEventListener("blur", function () { highlight(null); });
+    n.addEventListener("click", function () { openDetail(id); });
+    n.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openDetail(id); }
+      else if (ev.key === "Escape" && selected) closeDetail();
+    });
+  });
+
+  /* Role filter: one lane stays, the rest dims. */
+  var chips = Array.prototype.slice.call(doc.querySelectorAll(".chip"));
+  chips.forEach(function (c) {
+    c.addEventListener("click", function () {
+      var lane = c.getAttribute("data-lane");
+      chips.forEach(function (o) { o.setAttribute("aria-pressed", o === c ? "true" : "false"); });
+      svg.classList.toggle("lane-filter", lane !== "");
+      nodes.forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });
+      lanes.forEach(function (l) { l.classList.toggle("in-lane", l.getAttribute("data-lane") === lane); });
+      edges.forEach(function (e) {
+        e.classList.toggle("in-lane", laneOf[e.getAttribute("data-from")] === lane ||
+                                      laneOf[e.getAttribute("data-to")] === lane);
+      });
+    });
+  });
+
+  /* "Vis i flyten": switch to Flyt, open the step, put focus on it. */
+  each(doc.querySelectorAll(".show-in-flow"), function (b) {
+    b.addEventListener("click", function () {
+      var id = b.getAttribute("data-node"), n = nodeById(id);
+      if (!n) return;
+      selectTab(0, false);
+      openDetail(id);
+      n.scrollIntoView({block: "center", inline: "center"});
+      n.focus({preventScroll: true});
+    });
+  });
+})();
+</script>
+</body>
+</html>

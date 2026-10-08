@@ -27,7 +27,6 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
-import getpass
 import json
 import pathlib
 import re
@@ -41,6 +40,7 @@ TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "single-f
 # script at the real tools/ directory.
 TOOLS_DIR = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS_DIR))
+import feedback_link  # noqa: E402
 import tun_tokens  # noqa: E402
 
 TOKEN_FILES = ("status-semantic.css", "theme-light.css")
@@ -48,6 +48,11 @@ TOKEN_FILES = ("status-semantic.css", "theme-light.css")
 # Anything above this is a Tier 1 violation — see docs/02-architecture.md
 SIZE_WARN_MB = 20
 SIZE_FAIL_MB = 50
+
+# What the provenance block says when nobody named a requester. Never fall back to the
+# OS user name: it put the builder's login into every committed artefact (#45).
+# A role is what the block wants; pass one with --requested-by.
+NOT_STATED = "not stated"
 
 
 def load_rows(path: pathlib.Path) -> list[dict]:
@@ -129,12 +134,15 @@ def main() -> None:
     ap.add_argument("--time", default="", help="ordered column for the line chart")
     ap.add_argument("--filters", default="", help="comma-separated filter columns")
     ap.add_argument("--source", default="", help="human description of where data came from")
-    ap.add_argument("--requested-by", default="")
+    ap.add_argument("--requested-by", default="",
+                    help="a role, e.g. \"Salgsavdelingen\". Not a person's name.")
     ap.add_argument("--out", required=True, type=pathlib.Path)
     ap.add_argument("--mode", choices=("bundled", "paired"), default="bundled",
                     help="bundled = one self-contained file (max portability, email it). "
                          "paired = dashboard + sibling data.js that OneDrive syncs, so the "
                          "data updates for everyone without rebuilding the dashboard.")
+    ap.add_argument("--feedback-to", default="", metavar="ADDRESS_OR_ISSUE_URL",
+                    help=feedback_link.FLAG_HELP)
     args = ap.parse_args()
 
     rows = coerce_numbers(load_rows(args.data))
@@ -181,6 +189,14 @@ def main() -> None:
 
     token_css, token_source = tun_tokens.load_token_css(TOKEN_FILES)
 
+    feedback = ""
+    if args.feedback_to:
+        try:
+            feedback = feedback_link.block(args.feedback_to, title=args.title, built=now,
+                                           source=args.source or args.data.name)
+        except ValueError as exc:
+            sys.exit(f"error: --feedback-to: {exc}")
+
     subs = {
         "TOKEN_CSS": token_css,
         "DATA_BLOCK": data_block,
@@ -189,7 +205,7 @@ def main() -> None:
         "SOURCE_DESCRIPTION": args.source or args.data.name,
         "EXTRACT_TIMESTAMP": extracted,
         "BUILD_TIMESTAMP": now,
-        "REQUESTED_BY": args.requested_by or getpass.getuser(),
+        "REQUESTED_BY": args.requested_by or NOT_STATED,
         "ROW_COUNT": f"{len(rows):,}".replace(",", " "),
         "DIMENSION_COL": args.dimension,
         "TIME_COL": args.time,
@@ -197,6 +213,9 @@ def main() -> None:
         "FILTER_COLS_JSON": json.dumps(filters or [args.dimension], ensure_ascii=False),
         "CHART1_TITLE": f"{args.measure} per {args.dimension}",
         "CHART2_TITLE": f"{args.measure} over {args.time}" if args.time else "Utvikling",
+        # Last on purpose: the block holds reader-facing text (the title), and no
+        # later replacement should get a chance to rewrite a token inside it.
+        "FEEDBACK_BLOCK": feedback,
     }
 
     html = TEMPLATE.read_text(encoding="utf-8")

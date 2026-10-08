@@ -89,6 +89,9 @@ The payload is gzipped at build time and inflated in the browser by
 **`DecompressionStream("gzip")`**, which is built into the platform. No bundler, no
 inflate library, nothing added to the file.
 
+The gzip header is fixed (mtime 0, OS byte 255), so the same data gives the same bytes on
+any Python build. `tests/test_cube_reproducible.py` holds that.
+
 This is the load-bearing detail, and it is verified to work from a `file://` page:
 
 ```
@@ -186,6 +189,7 @@ python3 tools/build_cube_dashboard.py \
     --time dato --time-grain month \
     --measures "belop:sum:kr,antall:sum" \
     --title "Transaksjonsoversikt 2024–2026" \
+    --requested-by "Analyseteamet" \
     --out dashboards/transaksjoner.html
 
 python3 tools/verify_dashboard.py dashboards/transaksjoner.html
