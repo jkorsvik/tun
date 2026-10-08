@@ -15,7 +15,7 @@ workbook so the claim can be checked by anyone, without a real spreadsheet lying
 a dashboard can't read a user's spreadsheet by asking for it — the user has to hand it
 over via `<input type="file">`, a real user gesture. Once the bytes are in hand, though,
 nothing stops a page from being its own unzip-and-parse tool. This is the building block
-`dashboard-data`-style skills would use to accept ".xlsx" input directly on a `file://`
+`tun-data` would use to accept ".xlsx" input directly on a `file://`
 page, with zero dependencies to vendor.
 
 ## What's in the workbook

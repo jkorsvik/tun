@@ -47,6 +47,7 @@ constraints measured so that nobody has to rediscover them.
 | [Paired-mode data contract](13-paired-data-contract.md) | What `dash.html` and `data.js` exchange when the data is kept beside the file |
 | [Working with real sources](25-working-with-real-sources.md) | Ask the owner, copy structure not rows, verify every quote, prove the numbers on the page |
 | [Git hygiene](24-git-hygiene.md) | What to do when a repo has touched real data, learned the hard way |
+| [Where it can live](26-hosting.md) | Each host, what runs there, and how to serve a page yourself |
 
 ## Design and craft
 
@@ -66,6 +67,7 @@ constraints measured so that nobody has to rediscover them.
 | [The no-JavaScript question](15-no-javascript-findings.md) | What a file can still do when scripts never run, and one earlier finding falsified |
 | [The hosted route](23-hosted-route-it-brief.md) | The one route that is not a file: what it needs, and the five questions only IT can answer |
 | [Generic-layer manifest](14-generic-layer-manifest.md) | What another repo may vendor from this one |
+| [What was built](27-what-was-built.md) | Applications made this way, by pattern, and the one lesson each taught |
 
 ## Licence, name and release
 

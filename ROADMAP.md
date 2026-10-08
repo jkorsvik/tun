@@ -106,7 +106,7 @@ not lost. None is committed to. Each needs an issue before work starts.
 - [ ] **A default "make HTML" skill for RAIWork and Copilot**, built on the three patterns
       (standalone, paired, connected; `docs/08`). The stated goal is for it to be as
       ordinary to have installed as the Microsoft 365 skill.
-- [ ] **Feedback from inside the artefact.** Let a reader report a fault or a wish from the
+- [x] **Feedback from inside the artefact.** Let a reader report a fault or a wish from the
       file itself, with a snapshot of machine, surface and console attached, so an issue
       arrives with its evidence instead of a description of it.
 - [ ] **A glossary for non-developers**, one place for the explanations `docs/06` rule 7 asks
@@ -115,7 +115,7 @@ not lost. None is committed to. Each needs an issue before work starts.
       same gates. First run on one page only; too early to conclude anything.
 - [ ] **Substrates beyond OneDrive and SharePoint**: a plain filesystem with hyperlinks, and
       Google Drive, next to the backends `docs/index.md` already lists as direction.
-- [ ] **A process-diagram skill that draws its own workflow.** One exists outside this
+- [x] **A process-diagram skill that draws its own workflow.** One exists outside this
       repository, applied to itself: request, modelling, approval, rendering, with nodes
       flagged where the step should improve. Its purpose is teaching: help a beginner turn a
       script into a skill, and move from a local skill to a marketplace one.

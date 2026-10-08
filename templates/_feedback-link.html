@@ -1,0 +1,52 @@
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<p style="margin:0;padding:0 1.5rem 1.5rem;font-size:.875rem"><a id="tun-feedback" href="{{FEEDBACK_HREF}}" style="color:inherit">Gi tilbakemelding</a></p><script>
+(function () {
+  "use strict";
+  // Filled in by tools/feedback_link.py. The static href above already works with
+  // JavaScript off; this script only swaps in a richer snapshot when it can run.
+  var C = {{FEEDBACK_CONFIG}};
+  var errors = 0;
+  window.addEventListener("error", function () { errors++; });
+  window.addEventListener("unhandledrejection", function () { errors++; });
+
+  function view() {
+    var h = location.hostname, where =
+      location.protocol === "file:" ? "lokal fil" :
+      /-my\.sharepoint\.com$/i.test(h) ? "OneDrive" :
+      /\.sharepoint\.com$/i.test(h) ? "SharePoint" : "ukjent";
+    var framed;
+    try { framed = window.top !== window.self; } catch (e) { framed = true; }
+    return framed ? where + ", i en ramme" : where;
+  }
+
+  function href() {
+    var live = [
+      ["Protokoll", location.protocol.replace(":", "")],
+      ["Visning", view()],
+      ["Nettleser", navigator.userAgent],
+      ["Vindu", innerWidth + "x" + innerHeight + " @" + (window.devicePixelRatio || 1) + "x"],
+      ["JavaScript", "ja"],
+      ["Skriptfeil", String(errors)]
+    ];
+    var body = C.head + live.map(function (f) { return f[0] + ": " + f[1]; }).join("\n");
+    if (C.crlf) body = body.replace(/\n/g, "\r\n");
+    return C.base + (C.base.indexOf("?") < 0 ? "?" : "&") + C.keys[0] + "=" + encodeURIComponent(C.subject)
+      + "&" + C.keys[1] + "=" + encodeURIComponent(body);
+  }
+
+  var a = document.getElementById("tun-feedback");
+  if (!a) return;
+  // Rebuilt on every approach, so the error count is the one at the moment of use.
+  ["focus", "mouseenter", "pointerdown", "click"].forEach(function (ev) {
+    a.addEventListener(ev, function () { a.href = href(); });
+  });
+  a.href = href();
+})();
+</script>

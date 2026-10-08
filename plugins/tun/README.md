@@ -1,11 +1,11 @@
-# `plugins/tun` — Tún's own brand palette
+# `plugins/tun` — Tún's own brand palette and mark
 
 This is the project's own identity: the colours used on the public site
 (`tun.community`) and in the pitch artefacts, shipped as an ordinary token
 plugin through the same contract `plugins/eksempel` uses. Unlike a company brand,
 this one is not confidential — the colours are already public — so
-`manifest.json` sets `"private": false`. It provides only `tokens`: no logo
-artwork is vendored here (yet), so `provides` does not list `assets`.
+`manifest.json` sets `"private": false`. It provides `tokens` and `assets`:
+the logo, a square mark and a one-colour logo (see "The mark" below).
 
 ## Where the four source colours came from
 
@@ -99,11 +99,60 @@ naming both plugins in the error. That is correct, unchanged behaviour, not
 a defect this plugin works around. `TUN_PALETTE` is the side-by-side
 mechanism precisely because it names one file and carries no ambiguity.
 
+## The mark
+
+Tún and the mark are unregistered trademarks (™, never ®). The code licence
+gives no right to them. See [`TRADEMARK.md`](../../TRADEMARK.md).
+
+![The three marks, rendered in Chromium](assets/preview/preview.png)
+
+| File | What | How it was made |
+|---|---|---|
+| `assets/logo.svg` | the logo, 300 × 160 | copied verbatim from the public site, tun.community, on 2026-10-08. Only `xmlns` was added, so the file renders on its own |
+| `assets/mark.svg` | square mark for favicons, 160 × 160 | derived from the logo by `assets/derive_marks.py` |
+| `assets/logo-mono.svg` | the logo in one colour | derived from the logo by `assets/derive_marks.py` |
+
+How the square mark is derived, all exact edits of `logo.svg`:
+
+- The frame keeps its height (148) and becomes a square. Width 288 becomes
+  148, and the viewBox becomes `0 0 160 160`. Margin and corner radius stay.
+- Only the middle letter, `u`, is kept, at the same size and baseline.
+- The text centre moves from x=150 to x=80. The check moves by the same
+  amount (dx = -70), so it still sits over the `u` as its accent.
+
+The mono logo replaces both colours (`#0d2b21`, `#3f8f3f`) with
+`currentColor`. Inlined in a page it takes the colour of the text around it,
+so it works on a dark background. Opened on its own it renders black.
+
+`tests/test_token_contract.py` runs `derive_marks.py --check`, so a hand
+edit of a derived file fails the suite. After a change to `logo.svg`, run
+`python3 plugins/tun/assets/derive_marks.py`.
+
+Two limits, both inherited from the logo:
+
+- **The letters are live text, not outlines.** The glyphs come from the
+  reader's system font (`-apple-system`, Segoe UI, Helvetica, Arial), so
+  they differ a little per platform, the same as on the public site.
+  Converting them to paths would embed outlines from a font whose licence
+  nobody has checked.
+- **At 16 px the `u` is barely legible.** The frame and the check carry the
+  mark at that size. Look at `assets/preview/preview.png` before you choose a
+  favicon size.
+
+To use the mark as a favicon in a self-contained file, inline it as a data
+URI, never as a link to a file: `<link rel="icon" href="data:image/svg+xml,...">`
+with the SVG percent-encoded. Nothing in core does this yet.
+
+To re-render the previews after a change (needs Playwright):
+
+```
+uv run --extra verify python plugins/tun/assets/render_preview.py
+```
+
 ## What is still wrong / not done here
 
-- No `assets` capability: the Tún wordmark/logo artwork from the site isn't
-  vendored into this plugin. If a branded topbar example wants the actual
-  mark later, that is a follow-up, not scope creep on this change.
+- No example or template uses the mark yet. A branded topbar that inlines
+  `assets/logo.svg` is a follow-up.
 - The derivation script that produced `--tun-ink-darkest` and
   `--tun-accent-tint` was run once, ad hoc, and is not checked in. If the
   source colours ever change, the formulas are documented above precisely

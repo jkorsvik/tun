@@ -14,7 +14,7 @@
   PROVENANCE  (do not delete — this is how numbers get traced back)
     Source data : {{SOURCE_DESCRIPTION}}
     Built       : {{BUILD_TIMESTAMP}}
-    Built by    : {{REQUESTED_BY}}
+    Requested by: {{REQUESTED_BY}}
     Generator   : tools/build_cube_dashboard.py
     Repo        : tun
     Made with   : Tún — tun.community
@@ -98,7 +98,7 @@ footer b{color:var(--gr2);font-weight:650}
   <div class="panel" id="tablePanel"><h2>Detaljer</h2><div id="tbl"></div></div>
 </main>
 <footer id="perf"></footer>
-</div>
+</div>{{FEEDBACK_BLOCK}}
 
 <script id="cube" type="application/gzip;base64">{{DATA}}</script>
 <script>
@@ -280,7 +280,7 @@ function render(){
     + `<span>data i fil <b>${(CUBE.bytes_b64/1e6).toFixed(2)} MB</b></span>`
     + `<span>dekodet <b>${(CUBE.t_b64 + CUBE.t_gunzip).toFixed(0)} ms</b></span>`
     + `<span>siste spørring <b>${ms.toFixed(1)} ms</b></span>`
-    + `<span>bygget ${esc(META.built)} av ${esc(META.built_by)} fra ${esc(META.source)}</span>`;
+    + `<span>bygget ${esc(META.built)}${META.requested_by ? " for " + esc(META.requested_by) : ""} fra ${esc(META.source)}</span>`;
   window.__LAST_MS__ = ms; window.__TOTAL__ = base.tot; window.__ROWS__ = base.totN;
 }
 

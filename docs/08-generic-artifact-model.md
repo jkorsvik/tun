@@ -258,6 +258,65 @@ not mean every future standalone-HTML tool must vendor everything in the manifes
 tool with no rows and no branding chrome may only need the provenance template, for
 example. Vendor what applies; the manifest documents what exists, not what is mandatory.
 
+## Process diagrams: a second specialisation
+
+A process diagram is the first specialisation built in this repo that holds no data rows.
+It shows who does what, in which order, where the flow branches, and which steps should
+improve. In the terms above it is Layer 0 and Layer 1, plus an interaction layer that is
+optional by construction: one bundled file with a provenance block and the Origin Notice.
+
+| Part | File |
+|---|---|
+| spec | a `.process.txt` written by a person: lanes, steps, decisions, `flow`, `improve:`, and optional step and improvement fields |
+| builder | `tools/build_process_diagram.py`, stdlib only; parses, lays out, routes, writes one file |
+| shell | `templates/process-diagram.html`; colours only from `tools/tun_tokens.py` |
+| verifier | `tools/verify_process_diagram.py`; the generic core plus its own checks, in three engines |
+| skill | `skills/tun-process/SKILL.md`; the interview and the commands |
+| example | `examples/23-process-diagram/`, Tún drawing its own workflow |
+
+What it inherits unchanged: the self-contained rule, rows 24, 25 and 26, provenance, and
+the folder as the security boundary. The palette comes from the token contract; a spec
+may name one with `palette:`, which `tools/tun_tokens.py` treats like `TUN_PALETTE`, one
+rank below it.
+
+Two layers, and the floor comes first:
+
+- **The floor** is plain HTML and a static SVG. With JavaScript off, five sections show
+  one after the other: the drawing, a card per step, a card per role with its hand-offs,
+  the improvement points, and a text version of the flow. Quick Look and the SharePoint
+  preview show all of it. Print shows all of it, whatever tab was open.
+- **The layer on top** turns the sections into a WAI-ARIA tablist (arrow keys, Home,
+  End), opens a detail panel when a step is clicked or gets Enter, highlights a step's
+  connections, filters by role, zooms, and sends «Vis i flyten» from a card to the step
+  in the drawing. It uses no URL fragment, no `fetch`, no `import` and no worker, so
+  nothing in it can fail from `file://`. The detail panel is a copy of the step's card,
+  so there is one source for each fact.
+
+The layout is computed, top to bottom, one step per lane per layer, so boxes cannot
+overlap. Lines run at right angles with rounded bends, each on its own track. A loop back
+leaves a box's right side and climbs its lane's own gutter, so loops stay out of the
+middle. Each line takes the route with the fewest crossings, then the shortest; then each
+is re-routed against all the others, and a gutter gets one more track when that removes a
+crossing. The builder re-checks the finished geometry before it writes a file, and the
+verifier checks it again on what the browser rendered, crossings included. Expected
+counts come from the spec, never from the HTML.
+
+Its limits:
+
+- A swimlane flowchart, not BPMN: no timers, messages, pools or parallel gateways.
+- Steps have a fixed column per lane, so ordering inside a layer (the usual barycentre
+  step) can only reorder the lines along a box. Some crossings are structural; examples/23
+  keeps one, pinned as a ceiling in `tests/test_process_diagram.py`.
+- A loop never leaves a box's left side. A loop to a lane further left takes the long way
+  over the top.
+- A long chain is a tall drawing. On paper it shrinks to fit one page, so an 11-layer
+  flow prints at about 5 pt. The cards and the text version print at a readable size.
+- Many lanes make it wide. Past about four lanes it scrolls sideways on a laptop.
+- Label wrapping uses an estimated character width. Only the browser check proves the
+  text fits.
+- The spec is the source. Editing the HTML by hand is never the fix, and the test suite
+  fails if the committed example differs from what the builder makes.
+
 ## Explicitly left out of this document
 
 - **Inline `Worker` from a `Blob` URL** (constraints doc row 20).

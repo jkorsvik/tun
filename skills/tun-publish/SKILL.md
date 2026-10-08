@@ -117,3 +117,5 @@ Remind them once:
   a genuine archive; a stable filename keeps every existing link and bookmark alive.
 - If the file carries a sensitivity label, uploading may behave differently. This is
   an untested assumption — see the open questions in `docs/01-tenant-constraints.md`.
+
+To let readers report problems from inside the file, rebuild with `--feedback-to`, and use `tun-feedback` for anything the publishing step itself got wrong.

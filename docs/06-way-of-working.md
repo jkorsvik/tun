@@ -153,6 +153,25 @@ Other general-purpose skills exist for routing, arguing a decision, naming thing
 and prototyping. They are deliberately **not** vendored here; `skills/README.md` says why, and
 where they do belong.
 
+## How feedback flows
+
+Two paths, one per audience. Neither sends anything without the sender seeing it first.
+
+**A reader of a built file.** A dashboard built with `--feedback-to <address-or-issue-url>`
+has a "Gi tilbakemelding" link. It opens a prefilled e-mail, or a prefilled new issue, with a
+snapshot attached: artefact title, build time, source, protocol, where it is shown, browser,
+window size, whether JavaScript ran, and how many script errors were caught. It works from
+`file://` with no network, and with JavaScript off it still opens, with the static fields
+only. The reader edits and sends it from their own mail client or browser. The person or
+team behind the address reads it, which is normally whoever asked for the dashboard. There
+is no default target: a file without the flag has no link.
+
+**Someone using the skills.** `tun-feedback` writes one JSON line per item to
+`~/.raiwork/tun-feedback/feedback.jsonl` on their own machine, after showing the record. That
+log is private; nobody else reads it. If they want, the skill turns an item into an issue on
+this project's forge, shows the exact title and body, and files it with `gh` only after a
+yes. The project maintainers read and triage those issues like any other.
+
 ## What "good" looks like
 
 One file. Opens for anyone who can open the folder. Numbers traceable to a source. No

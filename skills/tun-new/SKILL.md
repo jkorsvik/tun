@@ -96,7 +96,7 @@ python3 tools/build_dashboard.py \
   --dimension <col> --measure <col> --time <col> \
   --filters <col,col,col> \
   --source "<where this data came from, in words>" \
-  --requested-by "<who asked>" \
+  --requested-by "<the role or team that asked>" \
   --mode paired \
   --out dashboards/<slug>/dash.html
 ```
@@ -110,7 +110,7 @@ a source is a liability, and someone will ask in three months.
 
 Never rebuild a committed example or a shipped dashboard without those two flags. A
 rebuild that omits them silently replaces a descriptive source and a real requester with
-a filename and whoever happens to be logged in, with no warning — the provenance block
+a filename and `not stated`, with no warning — the provenance block
 degrades and the file still looks fine.
 
 If the build fails on size (>50 MB), do not fight it — **pre-aggregate**. Group the
@@ -131,6 +131,7 @@ python3 tools/build_cube_dashboard.py \
     --time dato --time-grain month \
     --measures "belop:sum:kr,antall:sum" \
     --title "<title>" \
+    --requested-by "<the role or team that asked>" \
     --out dashboards/<slug>.html
 ```
 
