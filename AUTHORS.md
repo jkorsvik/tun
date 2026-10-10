@@ -18,10 +18,9 @@ finding out exactly *why* it does turned out to be interesting enough to keep go
 
 ## Copyright
 
-"The Tún authors" in the README and the file headers means the two people above. Some of
-the work was done on the job, so who holds the rights has to be settled in writing first.
-Nothing gets published or transferred before then. The open item is in
-`docs/17-licensing.md`.
+"The Tún authors" in the README and the file headers means the two people above. They hold
+the rights in the project. No employer holds rights in it (settled 2026-10-11, see
+`docs/17-licensing.md`, "Status").
 
 Credit sits inside a declared `<!-- attribution:start -->` region, which the identity
 checks skip. A region, not a whole-file exemption, so a name cannot drift into an
