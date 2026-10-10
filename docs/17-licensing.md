@@ -43,6 +43,9 @@ One cost, accepted knowingly: §13 binds an organisation that **modifies** Tún 
 it to its own colleagues over a network. Offering source internally is trivial, but it is a
 compliance obligation somebody has to track.
 
+The ownership question is settled (see "Status"). The project belongs to the authors in
+`AUTHORS.md`, and the notices name them.
+
 ## Why more than one licence
 
 Tún has layers with different jobs. One licence across all of them either fails
@@ -152,14 +155,12 @@ The code licence does not control the name. No trademark is registered for `Tún
 `docs/18-naming.md` for the checks still open. The trademark policy is
 [`TRADEMARK.md`](../TRADEMARK.md). It keeps the name tied to the project while the code can be
 forked. A fork that changes the code takes another name. Who holds the mark follows item 1 under
-"Blocking" below, and is open.
+"Status" below.
 
-## Open item
+## Status
 
-**Ownership.** The headers say "The Tún authors", which means the two people in
-`AUTHORS.md`. Some of the work was written on the job, and the employer may hold rights
-in it. Until that is settled in writing, the repository stays private. No publication,
-and no transfer to another body, under this licence or any other.
+**Ownership. Settled (2026-10-11).** The headers say "The Tún authors", which means the two
+people in `AUTHORS.md`. The project and its code belong to them. No employer holds rights in it.
 
-**Review.** The Exception text is drafted from the structure of existing FSF
+**Review. Open.** The Exception text is drafted from the structure of existing FSF
 exceptions, but it is original wording and needs a lawyer to read it.

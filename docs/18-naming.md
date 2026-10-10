@@ -117,8 +117,8 @@ of artefacts ships.
 
 The policy is [`TRADEMARK.md`](../TRADEMARK.md). Tún and the mark are unregistered marks
 (™, never ®), and the code licence gives no right to them. A fork that changes the code takes
-another name. Nominative use such as "works with Tún" is allowed. Who holds the mark is open
-until the ownership question in `17-licensing.md` is answered. The mark itself is in
+another name. Nominative use such as "works with Tún" is allowed. The mark follows the project,
+which belongs to its authors (`17-licensing.md`, "Status"). The mark itself is in
 `plugins/tun/assets/`.
 
 None of these trademark checks has been done. The registry table above is about package

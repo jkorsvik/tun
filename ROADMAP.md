@@ -95,8 +95,9 @@ is for the cases the cube cannot answer: row-level detail over a huge table, ad 
 - **Enforce what is measured before measuring more.** A new tenant probe adds rows to
   `docs/01`. If earlier rows are still not enforced by a gate, the new rows repeat the same
   drift. Rows 24 and 26 were gated before row 27 was probed for this reason.
-- **Distribution stays narrow until ownership is settled.** No marketplace release. The
-  public face is tun.community. The docs stay internal.
+- **Ownership is settled (2026-10-11).** The code and docs are public through the
+  sanitised export, and v0.1.0 is released. No marketplace release yet. The public face is
+  tun.community.
 
 ## Harvested, not yet scheduled
 
