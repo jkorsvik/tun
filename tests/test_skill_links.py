@@ -219,6 +219,23 @@ def main() -> int:
         chk("says Tún", "Tún" in out, True)
         chk("no longer says 'the dashboard skills'", "the dashboard skills" in out, False)
 
+        print("--- 14. --tool installs the same skills for other AI tools, safely ---")
+        agents, claude = tmp / ".agents" / "skills", tmp / ".claude" / "skills"
+        (claude / "hotshot").mkdir(parents=True)                 # the user's own skill
+        (claude / "hotshot" / "SKILL.md").write_text("mine\n")
+        out = run_setup(tmp)
+        chk("without --tool, no other folder is created", agents.exists(), False)
+        out = run_setup(tmp, "--tool", "agents", "--tool", "claude")
+        chk("agents: every skill", {p.name for p in agents.iterdir()} if agents.is_dir() else set(), want)
+        chk("agents: a real copy with our marker",
+            (agents / "tun-new" / MARKER).is_file() and not (agents / "tun-new").is_symlink(), True)
+        chk("claude: every skill but the user's own", {p.name for p in claude.iterdir()} if claude.is_dir() else set(), want)
+        chk("claude: the user's own skill is left alone",
+            (claude / "hotshot" / "SKILL.md").read_text(), "mine\n")
+        chk("says where it was left alone", "~/.claude/skills/hotshot" in out, True)
+        out = run_setup(tmp, "--tool", "agents", "--check")
+        chk("--check reports the extra folder up to date", "not installed" in out, False)
+
         print()
         print(f"PASS: {passed}  FAIL: {failed}")
         return 1 if failed else 0

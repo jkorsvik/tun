@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tún: idéen, levende</title>
+<!--
+  ===========================================================================
+  PROVENANCE
+    Source      : examples/25-living-idea-picture/idea-picture.template.html
+    Source data : none. The host lines are measured facts, each from docs/01 or docs/11
+    Built       : {{BUILT}}
+    Requested by: maintainer
+    Built by    : examples/25-living-idea-picture/build_idea_picture.py
+    Repo        : tun
+    Made with   : Tún, tun.community
+    Generator   : build_idea_picture.py (stdlib only)
+    Palette     : the Tún mark (plugins/tun/README.md), hard-coded, no tokens
+  No scripts. Motion and exploration are CSS only. Nothing is loaded from
+  anywhere. The figure between the figure:start and figure:end markers is
+  the part the public site copies.
+  ===========================================================================
+-->
+<style>
+:root{--ink:#0d2b21;--ink-soft:#28473c;--accent:#3f8f3f;--paper:#f7f7f5;--panel:#fff;
+  --line:#dfe3e0;--muted:#5d6b65;--warn:#8c3b2e;--warn-soft:#fbf1ee}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:1.0625rem/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:62rem;margin:0 auto;padding:2.5rem 1.5rem 5rem}
+h1{font-size:2.1rem;line-height:1.2;letter-spacing:-.015em;margin:0 0 .5rem}
+.lede{font-size:1.2rem;color:var(--ink-soft);margin:0 0 2rem;max-width:46rem}
+h2{font-size:1.15rem;margin:2.75rem 0 .75rem}
+footer{margin-top:4rem;padding-top:1.5rem;border-top:.0625rem solid var(--line);font-size:.87rem;color:var(--muted)}
+/* figure-css:start */
+{{FIGURE_CSS}}
+/* figure-css:end */
+</style>
+</head>
+<body>
+<main class="wrap">
+<h1>Idéen, levende</h1>
+<p class="lede">Hele Tún på ett bilde. Se det gå, trykk på en rolle for å se den
+delen, eller spill det av steg for steg. Siden har ingen kode som kjører.</p>
+
+<!-- figure:start -->
+{{FIGURE}}
+<!-- figure:end -->
+
+<footer>
+  <p>Selvstendig fil. JavaScript er lov, men dette bildet trengte det ikke. Ingenting lastes utenfra. Bygget {{BUILT}}.</p>
+</footer>
+</main>
+</body>
+</html>

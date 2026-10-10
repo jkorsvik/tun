@@ -91,25 +91,28 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import i18n  # noqa: E402
 import tun_tokens  # noqa: E402
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 TEMPLATE = REPO / "templates" / "process-diagram.html"
+STRINGS = "process-diagram"   # named, not derived from TEMPLATE, which a test may point at a copy
 BUILT_BY = "tools/build_process_diagram.py"
 
 KINDS = ("start", "step", "decision", "end")
-# The Norwegian the builder writes. The template holds the page chrome; these are the
-# phrases generated per step, kept together so a translation is one place in this file.
-NB = {
-    "start": "Start", "step": "Steg", "decision": "Beslutning", "end": "Slutt",
-    "next": "Videre til", "and": "og", "if": "Hvis", "flag": "Forbedringspunkt",
-    "flags": "Forbedringspunkter", "role": "Rolle", "description": "Hva skjer",
-    "input": "Input", "output": "Output", "tool": "Verktøy", "duration": "Typisk varighet",
-    "from": "Kommer fra", "to": "Videre til", "problem": "Problem", "proposal": "Forslag",
-    "show": "Vis i flyten", "steps": "Steg", "handins": "Overleveringer inn",
-    "handouts": "Overleveringer ut", "none": "Ingen.",
-    "noflags": "Ingen forbedringspunkter er markert i denne prosessen.", "all": "Alle roller",
-}
+# The words the builder writes per step. templates/i18n/process-diagram.strings holds them
+# in both languages; the template holds the page chrome. T is the table for the language
+# being built: use_lang() fills it, and nb is loaded at import so a plain build() is as before.
+T: dict[str, str] = {}
+
+
+def use_lang(lang: str) -> None:
+    T.clear()
+    T.update(i18n.load(STRINGS, lang))
+
+
+use_lang(i18n.DEFAULT_LANG)
+
 LANE_COLOURS = 6      # role colour classes c0..c5; templates/process-diagram.html maps them
 HEADERS = ("title", "source", "requested-by", "description", "palette")
 # Optional fields under a step, in the order a step card shows them. The key is what the
@@ -1220,8 +1223,9 @@ def render_svg(spec: Spec, lay: Layout) -> str:
         f'height="{fmt(lay.height)}" viewBox="0 0 {fmt(lay.width)} {fmt(lay.height)}" '
         f'role="img" aria-labelledby="pd-title pd-desc" font-size="{FONT}">',
         f'<title id="pd-title">{esc(spec.title)}</title>',
-        f'<desc id="pd-desc">Prosessdiagram med {len(spec.nodes)} steg i {len(spec.lanes)} '
-        'roller. Den samme flyten står som tekst i fanen Tekstversjon.</desc>',
+        '<desc id="pd-desc">' + i18n.fill(
+            T["svg_desc"], steps=i18n.plural(T, "n_steps", len(spec.nodes)),
+            lanes=i18n.plural(T, "n_lanes", len(spec.lanes))) + '</desc>',
         '<defs><filter id="pd-shadow" x="-10%" y="-20%" width="120%" height="150%">'
         '<feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-opacity="0.22"/>'
         '</filter></defs>',
@@ -1283,7 +1287,7 @@ def render_svg(spec: Spec, lay: Layout) -> str:
         number = (f'<g class="step-no"><circle cx="{fmt(nx)}" cy="{fmt(h / 2)}" r="{NUM_R}"/>'
                   f'<text x="{fmt(nx)}" y="{fmt(h / 2 + 4.2)}" text-anchor="middle" '
                   f'font-size="{LABEL_FONT}" font-weight="700">{b.number}</text></g>')
-        tip = f"{b.number}. {n.label}" + (f" ({NB['flag']} {b.flag}: {n.improve.text})"
+        tip = f"{b.number}. {n.label}" + (f" ({T['flag']} {b.flag}: {n.improve.text})"
                                           if n.improve else "")
         badge = ""
         if b.flag:
@@ -1309,7 +1313,8 @@ def lane_class(i: int) -> str:
 
 def step_ref(spec: Spec, lay: Layout, node_id: str, lane: bool = True) -> str:
     n, b = spec.node(node_id), lay.boxes[node_id]
-    return f"{b.number}. «{esc(n.label)}»" + (f" ({esc(spec.lanes[n.lane])})" if lane else "")
+    return (f"{b.number}. {T['q_open']}{esc(n.label)}{T['q_close']}"
+            + (f" ({esc(spec.lanes[n.lane])})" if lane else ""))
 
 
 def render_text_alternative(spec: Spec, lay: Layout) -> str:
@@ -1320,7 +1325,7 @@ def render_text_alternative(spec: Spec, lay: Layout) -> str:
 
     def target(e: Edge) -> str:
         t = nodes[e.dst]
-        return f"«{esc(t.label)}» ({esc(lane_name[t.lane])})"
+        return f"{T['q_open']}{esc(t.label)}{T['q_close']} ({esc(lane_name[t.lane])})"
 
     parts = []
     for li, lane in enumerate(spec.lanes):
@@ -1331,19 +1336,19 @@ def render_text_alternative(spec: Spec, lay: Layout) -> str:
             outs = [e for e in spec.edges if e.src == node_id]
             b = lay.boxes[node_id]
             stop = "" if n.label.rstrip()[-1:] in ".?!:" else "."
-            body = f'<strong>{NB[n.kind]} {b.number}:</strong> {esc(n.label)}{stop}'
+            body = f'<strong>{T[n.kind]} {b.number}:</strong> {esc(n.label)}{stop}'
             if n.kind == "decision":
                 branches = "".join(
-                    f'<li data-from="{esc(e.src)}" data-to="{esc(e.dst)}">{NB["if"]} «{esc(e.label)}»: '
-                    f'{NB["next"].lower()} {target(e)}.</li>' for e in outs)
+                    f'<li data-from="{esc(e.src)}" data-to="{esc(e.dst)}">{T["if"]} {T["q_open"]}{esc(e.label)}{T["q_close"]}: '
+                    f'{T["next"].lower()} {target(e)}.</li>' for e in outs)
                 body += f'\n  <ul class="branches">{branches}</ul>'
             elif outs:
-                nexts = f' {NB["and"]} '.join(
+                nexts = f' {T["and"]} '.join(
                     f'<span data-from="{esc(e.src)}" data-to="{esc(e.dst)}">{target(e)}'
                     + (f' [{esc(e.label)}]' if e.label else "") + '</span>' for e in outs)
-                body += f' {NB["next"]} {nexts}.'
+                body += f' {T["next"]} {nexts}.'
             if n.improve:
-                body += (f'\n  <p class="flag-note">{NB["flag"]} {b.flag}: '
+                body += (f'\n  <p class="flag-note">{T["flag"]} {b.flag}: '
                          f'{esc(n.improve.text)}</p>')
             parts.append(f'<li data-node="{esc(node_id)}">{body}</li>')
         parts.append('</ol>')
@@ -1358,7 +1363,7 @@ def facts(rows: list) -> str:
 
 def show_in_flow(node_id: str) -> str:
     return (f'<p class="card-actions"><button type="button" class="show-in-flow" '
-            f'data-node="{esc(node_id)}">{NB["show"]}</button></p>')
+            f'data-node="{esc(node_id)}">{T["show"]}</button></p>')
 
 
 def render_steps(spec: Spec, lay: Layout) -> str:
@@ -1373,22 +1378,22 @@ def render_steps(spec: Spec, lay: Layout) -> str:
                             for e in outs)
         prevs = "<br>".join(step_ref(spec, lay, e.src) + (f' [{esc(e.label)}]' if e.label else "")
                             for e in ins)
-        rows = [(NB["role"], esc(spec.lanes[n.lane]))]
-        rows += [(NB[k], esc(n.fields[k])) for k in ("description", "input", "output",
+        rows = [(T["role"], esc(spec.lanes[n.lane]))]
+        rows += [(T[k], esc(n.fields[k])) for k in ("description", "input", "output",
                                                      "tool", "duration") if k in n.fields]
-        rows += [(NB["from"], prevs), (NB["to"], nexts)]
+        rows += [(T["from"], prevs), (T["to"], nexts)]
         flag = ""
         if n.improve:
-            extra = "".join(f'<p><strong>{NB[k]}:</strong> {esc(getattr(n.improve, k))}</p>'
+            extra = "".join(f'<p><strong>{T[k]}:</strong> {esc(getattr(n.improve, k))}</p>'
                             for k in ("problem", "proposal") if getattr(n.improve, k))
             flag = (f'<div class="card-flag"><p><span class="badge">{b.flag}</span> '
-                    f'<strong>{NB["flag"]} {b.flag}:</strong> {esc(n.improve.text)}</p>{extra}</div>')
+                    f'<strong>{T["flag"]} {b.flag}:</strong> {esc(n.improve.text)}</p>{extra}</div>')
         cards.append(
             f'<article class="card step-card {lane_class(n.lane)}" id="step-{esc(node_id)}" '
             f'data-node="{esc(node_id)}">'
             f'<header class="card-head"><span class="num">{b.number}</span>'
             f'<h3>{esc(n.label)}</h3></header>'
-            f'<p class="card-kind">{NB[n.kind]}</p>{facts(rows)}{flag}{show_in_flow(node_id)}'
+            f'<p class="card-kind">{T[n.kind]}</p>{facts(rows)}{flag}{show_in_flow(node_id)}'
             '</article>')
     return '<div class="cards">\n' + "\n".join(cards) + '\n</div>'
 
@@ -1406,7 +1411,7 @@ def render_roles(spec: Spec, lay: Layout) -> str:
 
         def handoffs(edges: list) -> str:
             if not edges:
-                return f'<p class="none">{NB["none"]}</p>'
+                return f'<p class="none">{T["none"]}</p>'
             return "<ul>" + "".join(
                 f'<li data-from="{esc(e.src)}" data-to="{esc(e.dst)}">{step_ref(spec, lay, e.src)} '
                 f'→ {step_ref(spec, lay, e.dst)}' + (f' [{esc(e.label)}]' if e.label else "")
@@ -1416,10 +1421,12 @@ def render_roles(spec: Spec, lay: Layout) -> str:
             f'<section class="card role-card {lane_class(li)}" data-lane="{li}">'
             f'<header class="card-head"><span class="dot" aria-hidden="true"></span>'
             f'<h3>{esc(lane)}</h3></header>'
-            f'<p class="card-kind">{len(mine)} steg · {len(handins)} inn · {len(handouts)} ut</p>'
-            f'<h4>{NB["steps"]}</h4><ul class="role-steps">{steps}</ul>'
-            f'<h4>{NB["handins"]}</h4>{handoffs(handins)}'
-            f'<h4>{NB["handouts"]}</h4>{handoffs(handouts)}</section>')
+            f'<p class="card-kind">{i18n.plural(T, "n_steps", len(mine))} · '
+            f'{i18n.fill(T["role_in"], n=len(handins))} · '
+            f'{i18n.fill(T["role_out"], n=len(handouts))}</p>'
+            f'<h4>{T["steps"]}</h4><ul class="role-steps">{steps}</ul>'
+            f'<h4>{T["handins"]}</h4>{handoffs(handins)}'
+            f'<h4>{T["handouts"]}</h4>{handoffs(handouts)}</section>')
     return '<div class="cards">\n' + "\n".join(cards) + '\n</div>'
 
 
@@ -1427,12 +1434,12 @@ def render_flags(spec: Spec, lay: Layout) -> str:
     """Each improvement point with the step it belongs to, the problem and the proposal."""
     flagged = [i for i in lay.order if lay.boxes[i].flag]
     if not flagged:
-        return f'<p class="none">{NB["noflags"]}</p>'
+        return f'<p class="none">{T["noflags"]}</p>'
     items = []
     for i in flagged:
         n, b = spec.node(i), lay.boxes[i]
-        rows = [(NB["step"], step_ref(spec, lay, i))]
-        rows += [(NB[k], esc(getattr(n.improve, k))) for k in ("problem", "proposal")
+        rows = [(T["step"], step_ref(spec, lay, i))]
+        rows += [(T[k], esc(getattr(n.improve, k))) for k in ("problem", "proposal")
                  if getattr(n.improve, k)]
         items.append(
             f'<li class="card flag-card" data-flag="{b.flag}" data-node="{esc(i)}">'
@@ -1443,7 +1450,7 @@ def render_flags(spec: Spec, lay: Layout) -> str:
 
 def render_chips(spec: Spec) -> str:
     chips = [f'<button type="button" class="chip" data-lane="" aria-pressed="true">'
-             f'{NB["all"]}</button>']
+             f'{T["all"]}</button>']
     chips += [f'<button type="button" class="chip {lane_class(i)}" data-lane="{i}" '
               f'aria-pressed="false"><span class="dot" aria-hidden="true"></span>{esc(lane)}</button>'
               for i, lane in enumerate(spec.lanes)]
@@ -1466,14 +1473,16 @@ def build_timestamp() -> str:
     return dt.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z").strip()
 
 
-def render_html(spec: Spec, lay: Layout, spec_name: str) -> str:
+def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAULT_LANG) -> str:
+    use_lang(lang)
     token_css, token_source = tun_tokens.load_token_css(("status-semantic.css", "theme-light.css"),
                                                         palette=spec.headers.get("palette"))
     n_flags = sum(1 for b in lay.boxes.values() if b.flag)
     counts = (f"{len(spec.nodes)} steps, {len(spec.edges)} connections, "
               f"{len(spec.lanes)} lanes, {n_flags} flagged")
-    meta = (f"{len(spec.nodes)} steg · {len(spec.lanes)} roller"
-            + (f" · {n_flags} forbedringspunkt{'er' if n_flags != 1 else ''}" if n_flags else ""))
+    meta = (f"{i18n.plural(T, 'n_steps', len(spec.nodes))} · "
+            f"{i18n.plural(T, 'n_lanes', len(spec.lanes))}"
+            + (f" · {i18n.plural(T, 'n_flags', n_flags)}" if n_flags else ""))
     description = spec.headers.get("description", "")
     subs = {
         "ARTIFACT_TITLE": esc(spec.title),
@@ -1495,7 +1504,7 @@ def render_html(spec: Spec, lay: Layout, spec_name: str) -> str:
         "FLAGS": render_flags(spec, lay),
         "TEXT_ALTERNATIVE": render_text_alternative(spec, lay),
     }
-    template = TEMPLATE.read_text(encoding="utf-8")
+    template = i18n.apply(TEMPLATE.read_text(encoding="utf-8"), T)
     wanted = set(re.findall(r"\{\{([A-Z0-9_]+)\}\}", template))
     if wanted != set(subs):
         raise SystemExit(f"error: template and builder disagree on placeholders: "
@@ -1505,14 +1514,14 @@ def render_html(spec: Spec, lay: Layout, spec_name: str) -> str:
     return re.sub(r"\{\{([A-Z0-9_]+)\}\}", lambda m: subs[m.group(1)], template)
 
 
-def build(spec_path: pathlib.Path) -> tuple[Spec, Layout, str]:
+def build(spec_path: pathlib.Path, lang: str = i18n.DEFAULT_LANG) -> tuple[Spec, Layout, str]:
     spec = parse_spec(spec_path.read_text(encoding="utf-8-sig"), spec_path.name)
     lay = layout(spec)
     problems = check_layout(lay)
     if problems:
         raise LayoutError(f"{spec_path.name}: the layout breaks its own rules:\n  "
                           + "\n  ".join(problems))
-    return spec, lay, render_html(spec, lay, spec_path.name)
+    return spec, lay, render_html(spec, lay, spec_path.name, lang)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1522,11 +1531,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=pathlib.Path, help="the .html file to write")
     ap.add_argument("--check", action="store_true",
                     help="parse and lay out only; write nothing")
+    i18n.add_lang_argument(ap)
     args = ap.parse_args(argv)
     if not args.check and not args.out:
         ap.error("give --out <file.html>, or --check to only validate the spec")
     try:
-        spec, lay, page = build(args.spec)
+        spec, lay, page = build(args.spec, args.lang)
     except (SpecError, LayoutError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

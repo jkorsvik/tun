@@ -2,7 +2,7 @@
 
 **Interactive dashboards that are files, not services.** Built as single self-contained
 HTML artefacts, distributed through SharePoint and OneDrive, openable by anyone who can
-open the folder — no Power BI licence, no workspace, no capacity, no admin approval.
+open the folder, with no Power BI licence, no workspace, no capacity and no admin approval.
 
 <!-- attribution:start -->
 > **Tún is a passion project, credited to the product owner and the maintainer.** <3
@@ -24,7 +24,7 @@ open the folder — no Power BI licence, no workspace, no capacity, no admin app
 
 ## The idea in one paragraph
 
-Building a dashboard is easy. *Sharing* one is where the organisation loses weeks — licences per
+Building a dashboard is easy. *Sharing* one is where the organisation loses weeks. It takes licences per
 viewer, a workspace, a capacity, a publish step, and still no way to show it to someone
 without a Pro seat. So people fall back to a screenshot in PowerPoint, which is dead on
 arrival. Instead: make the dashboard **a document**. One `.html` file with the data,
@@ -37,14 +37,14 @@ versioning, audit, sync and offline. Reuse that machinery instead of fighting it
 | | |
 |---|---|
 | **Bundled mode** (one self-contained file) | ✅ **working, verified end to end** |
-| **Paired mode** (dashboard + syncing `data.js`) | ✅ **working** — swap the data, everyone sees new numbers, no rebuild |
+| **Paired mode** (dashboard + syncing `data.js`) | ✅ **working**. Swap the data and everyone sees new numbers, no rebuild |
 | **Update with no tooling** | ✅ drag a CSV onto the dashboard, click *Lagre datafil*, drop the result in the folder |
 | Internal sharing (SharePoint link) | ✅ works (`scope: organization`) |
-| **External sharing** | ✅ **as a file** (email/attach) — ❌ *not* via SharePoint links (anonymous sharing blocked tenant-wide) |
-| **Cube mode** (millions of rows, one file) | ✅ **working, verified** — 4 M rows → 0.81 MB, 0.10 ms per filter click |
-| **[Portable slide deck](examples/18-portable-slide-deck/README.md)** (synthetic sample deck, one file, offline) | ✅ **working** — responsive portrait/landscape controls; Chromium/WebKit matrix; guarded fullscreen |
+| **External sharing** | ✅ **as a file** (email/attach), but ❌ *not* via SharePoint links (anonymous sharing blocked tenant-wide) |
+| **Cube mode** (millions of rows, one file) | ✅ **working, verified**. 4 M rows → 0.81 MB, 0.10 ms per filter click |
+| **[Portable slide deck](examples/18-portable-slide-deck/README.md)** (synthetic sample deck, one file, offline) | ✅ **working**. Responsive portrait/landscape controls, Chromium/WebKit matrix, guarded fullscreen |
 | In-page embedding (SPFx) | 🔶 designed, **blocked** on an SPFx package getting through tenant admin review |
-| Tier 3 (Parquet + DuckDB-WASM) | 🔶 designed; HTTP Range **measured and confirmed**, but it **cannot run from a portable file** — needs Tier 2 to host it |
+| Tier 3 (Parquet + DuckDB-WASM) | 🔶 designed. HTTP Range **measured and confirmed**, but it **cannot run from a portable file** and needs Tier 2 to host it |
 | Skills | ✅ 6 written (`tun-help`, `-new`, `-data`, `-verify`, `-publish`, `tun-powerbi-escape`) |
 | Onboarding | ✅ [written for a new contributor](docs/04-onboarding.md) |
 
@@ -63,6 +63,18 @@ python3 tools/build_dashboard.py \
 
 Or just open RAIWork and say *"make me a dashboard from this Excel file"*.
 
+**Use another AI tool?** The skills are in the open
+[Agent Skills](https://agentskills.io/specification) format, so other tools read them too:
+
+| Tool | Install |
+|---|---|
+| RAIWork | `python3 setup.py` |
+| Claude Code | `python3 setup.py --tool claude` |
+| Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode | `python3 setup.py --tool agents` |
+
+Tested on 2026-10-08: Gemini CLI and Claude Code load every skill. Codex is checked in its
+source code, the rest in each tool's own docs ([docs/28](docs/28-prior-art.md)).
+
 ![Example dashboard](examples/01-hello-dashboard/preview.png)
 
 That file is **0.10 MB**, has zero external dependencies, works offline, and needs no
@@ -78,7 +90,7 @@ downgraded to `application/octet-stream`. Anonymous embed links are blocked. The
 `/preview` endpoint returns SharePoint's own viewer chrome with a Download button, not
 your page.
 
-All of this was **measured against a live enterprise Microsoft 365 tenant**, not read in a doc — Microsoft's
+All of this was **measured against a live enterprise Microsoft 365 tenant**, not read in a doc. Microsoft's
 documentation was materially incomplete on the two facts that mattered most.
 See **[`docs/01-tenant-constraints.md`](docs/01-tenant-constraints.md)** for the full
 header dumps.
@@ -95,20 +107,20 @@ raw data. Row count stops being the constraint. See
 **[`docs/07-portable-cube.md`](docs/07-portable-cube.md)**.
 
 SharePoint also honours HTTP `Range` requests (`206 Partial Content`, confirmed), which
-makes Parquet + DuckDB-WASM real — but **only from a hosted origin.** DuckDB-WASM cannot
+makes Parquet + DuckDB-WASM real, but **only from a hosted origin.** DuckDB-WASM cannot
 boot from a `file://` page at all, so that path needs an SPFx web part. Measured and
 corrected; the details are in the constraints doc.
 
 ## Read in this order
 
-1. **[`docs/00-vision.md`](docs/00-vision.md)** — why, and the honest scope boundary vs Power BI
-2. **[`docs/01-tenant-constraints.md`](docs/01-tenant-constraints.md)** — what actually happens, measured
-3. **[`docs/02-architecture.md`](docs/02-architecture.md)** — the three delivery tiers and their governance cost
-4. **[`docs/03-skill-tree.md`](docs/03-skill-tree.md)** — the skills and how they compose
-5. **[`docs/04-onboarding.md`](docs/04-onboarding.md)** — zero to published, no dev experience assumed
-6. **[`docs/05-toolchain.md`](docs/05-toolchain.md)** — the skills, MCP servers and CLI tools needed, and why each
-7. **[`docs/06-way-of-working.md`](docs/06-way-of-working.md)** — the habits, `hotshot`, and which general skills help
-8. **[`docs/07-portable-cube.md`](docs/07-portable-cube.md)** — how millions of rows fit in a portable file, and what that costs you
+1. **[`docs/00-vision.md`](docs/00-vision.md)** (why, and the honest scope boundary vs Power BI)
+2. **[`docs/01-tenant-constraints.md`](docs/01-tenant-constraints.md)** (what actually happens, measured)
+3. **[`docs/02-architecture.md`](docs/02-architecture.md)** (the three delivery tiers and their governance cost)
+4. **[`docs/03-skill-tree.md`](docs/03-skill-tree.md)** (the skills and how they compose)
+5. **[`docs/04-onboarding.md`](docs/04-onboarding.md)** (zero to published, no dev experience assumed)
+6. **[`docs/05-toolchain.md`](docs/05-toolchain.md)** (the skills, MCP servers and CLI tools needed, and why each)
+7. **[`docs/06-way-of-working.md`](docs/06-way-of-working.md)** (the habits, `hotshot`, and which general skills help)
+8. **[`docs/07-portable-cube.md`](docs/07-portable-cube.md)** (how millions of rows fit in a portable file, and what that costs you)
 
 ## Check your machine
 
@@ -116,7 +128,7 @@ corrected; the details are in the constraints doc.
 python3 setup.py
 ```
 
-Reports what's present, what's missing, and the exact command to fix each gap — then runs
+Reports what's present, what's missing, and the exact command to fix each gap. Then it runs
 a real build-and-verify smoke test. Read-only and safe to re-run.
 
 
@@ -126,7 +138,7 @@ a real build-and-verify smoke test. Read-only and safe to re-run.
 
 The security boundary is the **folder**, not a filter. So when different people need
 different data: **split the data before writing it** and give each audience its own folder.
-Same dashboard shell, one `data.js` each. SharePoint enforces access — visibly and
+Same dashboard shell, one `data.js` each. SharePoint enforces access, visibly and
 auditably, which beats reasoning about a filter expression.
 
 A filter in the browser hides nothing. The data is still in the file.
@@ -135,16 +147,16 @@ A filter in the browser hides nothing. The data is still in the file.
 
 ```
 docs/          vision, measured constraints, architecture, skill tree, onboarding
-skills/        the RAIWork skills (plain English — edit these freely)
+skills/        the RAIWork skills (plain English, edit these freely)
 templates/     dashboard, cube and portable slide-deck templates; no framework
 tools/         builders and generic/browser verification tools
-probe/         tenant-probe.py — re-verify the constraints in any tenant
+probe/         tenant-probe.py, re-verify the constraints in any tenant
 examples/      working dashboards, reports and slide decks with sample data
 ```
 
 ## Contributing
 
-The skills are prose, not code — if RAIWork does something the wrong way, fix the
+The skills are prose, not code. If RAIWork does something the wrong way, fix the
 instruction in `skills/*/SKILL.md`. Business knowledge about how reports are really
 consumed is more valuable here than engineering.
 
@@ -161,6 +173,13 @@ Two standing rules:
 
 See [`ROADMAP.md`](ROADMAP.md) for what's next.
 
+## Project files
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md): how to run the gates and the tests
+- [`SECURITY.md`](SECURITY.md): what is in scope and how to report a problem privately
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md): Contributor Covenant 2.1
+- [`CHANGELOG.md`](CHANGELOG.md): what changed
+
 ## Licence
 
 Copyright (C) 2026 The Tún authors (see AUTHORS.md)
@@ -173,20 +192,20 @@ files that carry the notice.
 **Documents you generate are yours.** Tún copies its own markup, CSS and templates into
 every dashboard, deck or report it builds, so without an explicit permission each of those
 documents could count as a covered work and its recipient could demand corresponding
-source. The [Tún Artefact Exception](COPYING.ARTEFACT-EXCEPTION) — an additional permission
-under AGPLv3 section 7 — removes that: you may convey a generated artefact, and the data it
+source. The [Tún Artefact Exception](COPYING.ARTEFACT-EXCEPTION), an additional permission
+under AGPLv3 section 7, removes that: you may convey a generated artefact, and the data it
 carries, under any terms you like.
 
 Two conditions, both narrow. The artefact must not itself be a competing generator, and it
 must keep its **Origin Notice**: the provenance line naming Tún and where to find the
-project. That notice does **not** have to be visible to a reader — keeping it in the
+project. That notice does **not** have to be visible to a reader. Keeping it in the
 provenance block is enough, and any visible "made with Tún" text is a removable default. So
 an unbranded client report is fine; the file still says where it came from to anyone who
 opens its source. `tests/test_origin_notice.py` gates it.
 
 Modifying Tún itself, and passing that modified version to someone else, stays under the
 AGPL: share the corresponding source. Section 13 extends that to making a **modified**
-version available to users over a network, which is deliberate — it is what keeps a hosted
+version available to users over a network. That is deliberate, and it is what keeps a hosted
 fork's improvements reachable. Running an unmodified copy triggers nothing. See
 [`docs/17-licensing.md`](docs/17-licensing.md) for why AGPL was chosen over GPL, and why
 that choice does not by itself achieve attribution.

@@ -74,5 +74,7 @@ slide 1 (landscape) and slide 2 (portrait).
 
 ## Reuse
 
-Copy `build_sample_deck.py`, replace `TITLE` and `SLIDES`, keep the shell and controls, then
-run all four checks above against the built file.
+Start from `templates/portable-slide-deck.html`: `python3 tools/build_slide_deck.py --out deck.html`
+writes it in Norwegian, and `--lang en` writes it in English. To keep your own slides in a
+script, copy `build_sample_deck.py`: it calls the same builder with its own `TITLE` and
+`SLIDES`. Keep the shell and controls, then run all four checks above against the built file.

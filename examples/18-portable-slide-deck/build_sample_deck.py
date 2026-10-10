@@ -13,29 +13,27 @@ template: keep the shell (controls, rail, mobile rules, no-JavaScript fallback) 
 replace the sample slides. Everything outside <main> comes from the template unchanged;
 tests/test_portable_slide_deck.py asserts that.
 
-    python3 examples/18-portable-slide-deck/build_sample_deck.py
+The template is filled by tools/build_slide_deck.py (strings, palette, provenance), so
+this file holds only what is the deck's own: its title and its slides.
 
-Stdlib only. Colours come from tools/tun_tokens.py, like every other builder.
+    python3 examples/18-portable-slide-deck/build_sample_deck.py [--lang nb|en] [--out FILE]
+
+--lang changes the page chrome (buttons, labels). The slide text below is the deck's own
+and is never translated. --out defaults to sample-deck.html next to this file. Stdlib only.
 """
 from __future__ import annotations
 
-import datetime
+import argparse
 import pathlib
-import re
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
-TEMPLATE = REPO_ROOT / "templates" / "portable-slide-deck.html"
 OUT = HERE / "sample-deck.html"
 
 sys.path.insert(0, str(REPO_ROOT / "tools"))
-import tun_tokens  # noqa: E402
-
-#: The template marks where its sample slides start. Everything after this marker up to
-#: </main> is replaced; everything else is kept byte for byte.
-SLIDES_START = '  <!-- Replace these sample slides. Keep class="slide" and data-sec. -->\n'
-SLIDES_END = "</main>"
+import build_slide_deck  # noqa: E402
+import i18n  # noqa: E402
 
 TITLE = "Del et dashboard som én fil"
 
@@ -64,35 +62,19 @@ SLIDES = """  <section class="slide dark" data-sec="Start">
 
 
 def main() -> int:
-    template = TEMPLATE.read_text(encoding="utf-8")
-    if template.count(SLIDES_START) != 1 or template.count(SLIDES_END) != 1:
-        sys.exit(f"error: {TEMPLATE.name} no longer has exactly one slide marker and one "
-                 f"</main>; update this builder with the template")
-
-    token_css, token_source = tun_tokens.load_token_css(core_files=())
-    head, rest = template.split(SLIDES_START)
-    _, tail = rest.split(SLIDES_END)
-    # The marker stays in the output, so a reader of the built file sees where the
-    # template ends and the deck's own content begins.
-    html = head + SLIDES_START + SLIDES + SLIDES_END + tail
-
-    subs = {
-        "TOKEN_CSS": token_css,
-        "ARTIFACT_TITLE": TITLE,
-        "SOURCE_DESCRIPTION": "none — synthetic sample content",
-        "BUILD_TIMESTAMP": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "REQUESTED_BY": "n/a (sample deck)",
-        "BUILT_BY": "examples/18-portable-slide-deck/build_sample_deck.py",
-    }
-    for key, value in subs.items():
-        html = html.replace("{{" + key + "}}", value)
-    leftover = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", html)))
-    if leftover:
-        sys.exit(f"error: template placeholders not substituted: {leftover}")
-
-    OUT.write_text(html, encoding="utf-8")
-    print(f"wrote {OUT} ({OUT.stat().st_size} bytes, palette: {token_source})")
-    print("next: uv run --extra verify python tools/verify_slide_deck.py " + str(OUT)
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--out", type=pathlib.Path, default=OUT, help="the .html file to write")
+    i18n.add_lang_argument(ap)
+    args = ap.parse_args()
+    html, token_source = build_slide_deck.build(
+        args.lang, title=TITLE, slides=SLIDES,
+        source="none — synthetic sample content",
+        requested_by="n/a (sample deck)",
+        built_by="examples/18-portable-slide-deck/build_sample_deck.py")
+    args.out.write_text(html, encoding="utf-8")
+    print(f"wrote {args.out} ({args.out.stat().st_size} bytes, palette: {token_source})")
+    print("next: uv run --extra verify python tools/verify_slide_deck.py " + str(args.out)
           + " --out /tmp/sample-deck-check")
     return 0
 

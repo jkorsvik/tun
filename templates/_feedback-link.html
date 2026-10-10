@@ -6,7 +6,7 @@
   under terms of your choice, provided the Origin Notice is preserved.
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<p style="margin:0;padding:0 1.5rem 1.5rem;font-size:.875rem"><a id="tun-feedback" href="{{FEEDBACK_HREF}}" style="color:inherit">Gi tilbakemelding</a></p><script>
+<p style="margin:0;padding:0 1.5rem 1.5rem;font-size:.875rem"><a id="tun-feedback" href="{{FEEDBACK_HREF}}" style="color:inherit">{{T:link}}</a></p><script>
 (function () {
   "use strict";
   // Filled in by tools/feedback_link.py. The static href above already works with
@@ -18,22 +18,22 @@
 
   function view() {
     var h = location.hostname, where =
-      location.protocol === "file:" ? "lokal fil" :
+      location.protocol === "file:" ? "{{T:where_file}}" :
       /-my\.sharepoint\.com$/i.test(h) ? "OneDrive" :
-      /\.sharepoint\.com$/i.test(h) ? "SharePoint" : "ukjent";
+      /\.sharepoint\.com$/i.test(h) ? "SharePoint" : "{{T:where_unknown}}";
     var framed;
     try { framed = window.top !== window.self; } catch (e) { framed = true; }
-    return framed ? where + ", i en ramme" : where;
+    return framed ? where + "{{T:in_frame}}" : where;
   }
 
   function href() {
     var live = [
-      ["Protokoll", location.protocol.replace(":", "")],
-      ["Visning", view()],
-      ["Nettleser", navigator.userAgent],
-      ["Vindu", innerWidth + "x" + innerHeight + " @" + (window.devicePixelRatio || 1) + "x"],
-      ["JavaScript", "ja"],
-      ["Skriptfeil", String(errors)]
+      ["{{T:f_protocol}}", location.protocol.replace(":", "")],
+      ["{{T:f_view}}", view()],
+      ["{{T:f_browser}}", navigator.userAgent],
+      ["{{T:f_window}}", innerWidth + "x" + innerHeight + " @" + (window.devicePixelRatio || 1) + "x"],
+      ["JavaScript", "{{T:yes}}"],
+      ["{{T:f_errors}}", String(errors)]
     ];
     var body = C.head + live.map(function (f) { return f[0] + ": " + f[1]; }).join("\n");
     if (C.crlf) body = body.replace(/\n/g, "\r\n");

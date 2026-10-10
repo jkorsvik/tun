@@ -108,6 +108,14 @@ run "builder provenance (no OS user name, documented commands pass a role)" \
     "$PY" tests/test_builder_provenance.py
 run "cube reproducibility (same data, same bytes, any Python build)" \
     "$PY" tests/test_cube_reproducible.py
+# A strict harness drops a skill whose frontmatter is not strict YAML, in silence.
+run "skill frontmatter (Agent Skills spec, strict YAML)" \
+    "$PY" tests/test_skill_frontmatter.py
+# Every built example must carry the Origin Notice, or the Exception does not cover it.
+run "origin notice (every built example names Tún and tun.community)" \
+    "$PY" tests/test_origin_notice.py
+run "export-clean gate tests (denylist, manifests, binaries)" \
+    "$PY" tests/test_export_clean_gate.py
 
 # --- only when their inputs are staged, to keep the hook worth running ----------------
 if printf '%s\n' "$STAGED" | grep -q '^tools/'; then

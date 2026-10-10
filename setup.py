@@ -12,8 +12,13 @@ macOS assumptions. Works on Windows, macOS and Linux. Stdlib only.
     python3 setup.py --check   # check only, change nothing (reports stale copies)
     python3 setup.py --link    # symlink instead of copy, for editing the skills
     python3 setup.py --hooks   # install the pre-commit gate, then exit
+    python3 setup.py --tool agents --tool claude   # also install for other AI tools
 
-Read-only apart from installing the skills into ~/.raiwork/skills.
+Read-only apart from installing the skills into ~/.raiwork/skills (and the folders --tool
+names). The skills are in the open Agent Skills format, so other tools read the same
+folders (docs/28): ~/.agents/skills is read by Codex, Gemini CLI, GitHub Copilot, VS Code
+and OpenCode; ~/.claude/skills by Claude Code, VS Code and OpenCode. VS Code and OpenCode read
+both, so installing both shows them each skill twice; pick the one your tool reads.
 
 Skills are copied, not symlinked. A symlink makes ~/.raiwork/skills/<name>/SKILL.md the
 same file as a tracked file in this checkout, so editing a skill silently edits the repo
@@ -35,6 +40,10 @@ REPO = Path(__file__).resolve().parent
 HOME = Path.home()
 RAIWORK = HOME / ".raiwork"
 SKILLS_DIR = RAIWORK / "skills"
+# --tool name -> the folder that tool reads. Same files everywhere; see the docstring.
+TOOLS = {"raiwork": SKILLS_DIR,
+         "agents": HOME / ".agents" / "skills",
+         "claude": HOME / ".claude" / "skills"}
 IS_WIN = platform.system() == "Windows"
 IS_MAC = platform.system() == "Darwin"
 
@@ -127,7 +136,8 @@ def _install_copy(src: Path, dst: Path) -> None:
     )
 
 
-def _cleanup_renamed(sources: list[tuple[str, Path]], check_only: bool) -> None:
+def _cleanup_renamed(sources: list[tuple[str, Path]], check_only: bool,
+                     skills_dir: Path = SKILLS_DIR) -> None:
     """Remove an install left behind by a skill that has since been renamed or deleted in
     this repo (e.g. dashboard-new -> tun-new).
 
@@ -137,30 +147,40 @@ def _cleanup_renamed(sources: list[tuple[str, Path]], check_only: bool) -> None:
     symlink another tool owns;
     neither of those carries our marker, so neither is touched here.
     """
-    if not SKILLS_DIR.is_dir():
+    if not skills_dir.is_dir():
         return
     current_names = {src.name for _, src in sources}
-    for dst in sorted(SKILLS_DIR.iterdir()):
+    for dst in sorted(skills_dir.iterdir()):
         if dst.name in current_names or not _is_ours(dst):
             continue
         label = f"{dst.name}  (stale)"
         if check_only:
             warn(label, "installed by a skill no longer in this repo — renamed or removed")
-            fix(f"python3 setup.py   # removes the stale ~/.raiwork/skills/{dst.name}")
+            fix(f"python3 setup.py   # removes the stale {_show(skills_dir)}/{dst.name}")
         else:
             shutil.rmtree(dst)
             ok(label, "removed — no longer a skill in this repo")
 
 
-def install_skills(check_only: bool, use_symlinks: bool = False) -> None:
-    section("Skills")
+def _show(path: Path) -> str:
+    """~/... for messages, so a fix line can be pasted on any machine."""
+    try:
+        return "~/" + path.relative_to(HOME).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def install_skills(check_only: bool, use_symlinks: bool = False,
+                   skills_dir: Path = SKILLS_DIR) -> None:
+    section(f"Skills  {D}({_show(skills_dir)}){Z}")
     global blocking
-    if not RAIWORK.exists():
+    if skills_dir == SKILLS_DIR and not RAIWORK.exists():
         bad("~/.raiwork", "RAIWork not installed?")
         fix("Install RAIWork - see docs/04-onboarding.md")
         blocking += 1
         return
-    SKILLS_DIR.mkdir(parents=True, exist_ok=True)
+    if not check_only:
+        skills_dir.mkdir(parents=True, exist_ok=True)
 
     # Two groups, flattened into ~/.raiwork/skills/ because RAIWork looks one level deep.
     # The directory split exists for the reader, not the loader: skills/ is what this
@@ -175,11 +195,11 @@ def install_skills(check_only: bool, use_symlinks: bool = False) -> None:
             if p.is_dir():
                 sources.append(("dev", p))
 
-    _cleanup_renamed(sources, check_only)
+    _cleanup_renamed(sources, check_only, skills_dir)
 
     for group, src in sources:
         label = src.name if group == "project" else f"{src.name}  (dev)"
-        dst = SKILLS_DIR / src.name
+        dst = skills_dir / src.name
 
         # Whose is it? Answer this before touching anything.
         ours_link = dst.is_symlink() and Path(os.readlink(dst)).resolve() == src.resolve()
@@ -222,7 +242,7 @@ def install_skills(check_only: bool, use_symlinks: bool = False) -> None:
 
         if user_own:
             warn(label, "you already have a skill with this name — left alone")
-            fix(f"rename or remove ~/.raiwork/skills/{src.name} "
+            fix(f"rename or remove {_show(skills_dir)}/{src.name} "
                 f"if you want this repo's version instead")
             continue
 
@@ -514,6 +534,10 @@ def main() -> int:
     ap.add_argument("--link", action="store_true",
                     help="symlink the skills instead of copying them — for editing the "
                          "skills themselves. Edits then change this repo's working tree.")
+    ap.add_argument("--tool", action="append", choices=list(TOOLS), default=[],
+                    help="also install into the folder this tool reads (repeatable): "
+                         "agents = ~/.agents/skills (Codex, Gemini CLI, Copilot, VS Code, OpenCode), "
+                         "claude = ~/.claude/skills (Claude Code, VS Code, OpenCode)")
     args = ap.parse_args()
 
     print(f"{B}Tún setup + check{Z}  {D}({platform.system()}, {REPO}){Z}")
@@ -527,7 +551,8 @@ def main() -> int:
     check_tools()
     check_repo()
     install_hooks(args.check)
-    install_skills(args.check, use_symlinks=args.link)
+    for tool in dict.fromkeys(["raiwork", *args.tool]):
+        install_skills(args.check, use_symlinks=args.link, skills_dir=TOOLS[tool])
     check_mcp()
     check_onedrive()
     smoke()

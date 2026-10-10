@@ -1,6 +1,6 @@
 ---
 name: tun-for-communicators
-description: Explain this project's vocabulary (self-contained file, paired mode, sidecar file, tenant, preview, row level, provenance) to a communications adviser, using analogies from communications work. Translate an incoming technical message before answering it, keep a running glossary, and ask which level is unclear. Use when writing to or for a communications adviser, a press officer or an editor, when someone says "skip the explanation", or when a technical sender's message needs to be made answerable. The reader may be Norwegian: answer in the reader's language.
+description: "Explain this project's vocabulary (self-contained file, paired mode, sidecar file, tenant, preview, row level, provenance) to a communications adviser, using analogies from communications work. Translate an incoming technical message before answering it, keep a running glossary, and ask which level is unclear. Use when writing to or for a communications adviser, a press officer or an editor, when someone says 'skip the explanation', or when a technical sender's message needs to be made answerable. The reader may be Norwegian: answer in the reader's language."
 ---
 
 # Sirkushest, the communications edition

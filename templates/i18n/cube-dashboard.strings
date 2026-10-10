@@ -1,0 +1,91 @@
+# Strings for templates/cube-dashboard.html and tools/build_cube_dashboard.py.
+# Format: see tools/i18n.py. nb is what the dashboard said before --lang existed.
+# source_line: the nb line keeps its dash and its English words, as it always had.
+
+[nb]
+html_lang = no
+boot = dekoder datasett…
+measure_label = Mål
+reset = Nullstill filtre
+filters = Filtre
+details = Detaljer
+num_locale = nb-NO
+dec = ,
+unit_bn = mrd
+unit_m = mill.
+c_fmt = kompakt tallformat, med enhet
+c_decode = dekoding: base64 -> gunzip -> typed arrays over kubens minne
+c_geometry = kubens geometri
+c_agg_1 = aggregering: én pass over de valgte cellene ----
+c_agg_2 = Gruppering skjer på plass i en tett utmatrise; ingen hashing, ingen allokering
+c_agg_3 = per celle. Med <= 2 mill. celler er et fullt sveip raskere enn et musklikk.
+c_build = oppbygging
+count_rows = antall rader
+trend_per = Utvikling per
+kpi_rows = Antall rader
+kpi_selected = Rader i utvalg
+kpi_avg = Snitt per rad
+kpi_cells = Kubeceller lest
+per = Per
+th_count = antall
+th_rows = rader
+th_avg = snitt
+rows_word = rader
+agg_to = aggregert til
+cells = celler
+no_server = ingen server
+p_source_rows = kilderader
+p_cells = kubeceller
+p_file = data i fil
+p_decoded = dekodet
+p_query = siste spørring
+p_built = bygget
+p_for = for
+p_from = fra
+err_stream = nettleseren mangler DecompressionStream (krever Chrome/Edge 80+, Safari 16.4+)
+err_load = Klarte ikke å laste data:
+source_line = {name} — {rows} rows aggregated to {cells} cube cells over {dims}
+
+[en]
+html_lang = en
+boot = decoding dataset…
+measure_label = Measure
+reset = Reset filters
+filters = Filters
+details = Details
+num_locale = en-GB
+dec = .
+unit_bn = bn
+unit_m = M
+c_fmt = compact number format, with unit
+c_decode = decoding: base64 -> gunzip -> typed arrays over the cube memory
+c_geometry = cube geometry
+c_agg_1 = rollup: one pass over the selected cells ----
+c_agg_2 = Grouping happens in place in a dense output array: no hashing, no allocation
+c_agg_3 = per cell. With <= 2 million cells a full sweep is faster than a mouse click.
+c_build = building the page
+count_rows = row count
+trend_per = Trend by
+kpi_rows = Rows
+kpi_selected = Rows in selection
+kpi_avg = Average per row
+kpi_cells = Cells read
+per = By
+th_count = count
+th_rows = rows
+th_avg = average
+rows_word = rows
+agg_to = aggregated to
+cells = cells
+no_server = no server
+p_source_rows = source rows
+p_cells = cube cells
+p_file = data in file
+p_decoded = decoded
+p_query = last query
+p_built = built
+p_for = for
+p_from = from
+err_stream = this browser has no DecompressionStream (needs Chrome or Edge 80+, Safari 16.4+)
+err_load = Could not load the data:
+source_line = {name}, {rows} rows aggregated to {cells} cube cells over {dims}

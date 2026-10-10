@@ -119,6 +119,13 @@ not lost. None is committed to. Each needs an issue before work starts.
       repository, applied to itself: request, modelling, approval, rendering, with nodes
       flagged where the step should improve. Its purpose is teaching: help a beginner turn a
       script into a skill, and move from a local skill to a marketplace one.
+- [x] **Spec-valid skill frontmatter** for every Agent Skills harness, with a gate
+      (`docs/28`). Four of twelve skills were invalid YAML under the reference validator.
+- [x] **Install into every harness:** `setup.py --tool agents|claude`. Tested: Gemini CLI
+      and Claude Code load every skill (`docs/28`).
+- [ ] **The rest of the `docs/28` harvest:** `compatibility` lines, `SOURCE_DATE_EPOCH` in
+      every builder, a measured `<meta>` CSP, measured `<details name>` / `popover` /
+      `:has()` rows, axe-core in the verifiers, a CSV download, text linked to the picture.
 
 ---
 

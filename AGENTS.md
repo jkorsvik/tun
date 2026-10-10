@@ -115,6 +115,8 @@ See [`docs/06-way-of-working.md`](docs/06-way-of-working.md). The load-bearing o
   trace back is a liability.
 - **Norwegian for user-facing output** (dashboard chrome, announcements) — match the
   user's language. English for docs and code.
+  The builders take `--lang nb|en` (default `nb`); the strings live in `templates/i18n/`
+  (docs/12 section 5).
 - **Brand colours come from the active plugin**, never from core. The example brand
   (fictional Eksempel AS) lives in `plugins/eksempel/tokens/palette.css`; status
   colours live in `tools/tokens/status-semantic.css`. Do not invent a colour or recall

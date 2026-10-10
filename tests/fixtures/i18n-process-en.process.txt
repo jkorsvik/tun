@@ -1,0 +1,29 @@
+# Synthetic English input for tests/test_i18n.py. Nothing here is real.
+# The step field words (beskrivelse, verktøy, varighet, forslag) are the spec language;
+# the builder never writes them into the page. Only the values below show up.
+
+title: How a request becomes a report
+description: From a question to a file people open, and back again when something must change.
+source: A made-up example for the i18n test
+requested-by: The test suite
+
+lane Requester
+  start ask: Needs numbers to share
+    beskrivelse: Someone has numbers to share with colleagues.
+    input: A question and a spreadsheet
+  step describe: Describes the question
+    output: A clear audience
+    verktøy: A short chat
+    varighet: 10 minutes
+lane Analyst
+  step build: Builds the report
+    improve: Often starts without an example
+      problem: The first draft misses the point
+      forslag: Ask for one example first
+  decision ok: Approved?
+  end done: Report shared
+
+flow
+  ask -> describe -> build -> ok
+  ok -> build [no]
+  ok -> done [yes]
