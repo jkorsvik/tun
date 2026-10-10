@@ -296,7 +296,7 @@ __TOKEN_CSS__
     border:1px solid rgba(128,128,128,.4);vertical-align:middle;margin-right:.4rem}
   .ref-hex{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;color:var(--muted)}
   .ref-pass{color:var(--ok);font-weight:600}
-  .ref-fail{color:var(--bad);font-weight:600}
+  .ref-fail{color:var(--bad);font-weight:600;background:var(--bad-bg);padding:0 .2rem;border-radius:.2rem}
   .ref-caveat{background:var(--panel);border-left:.2rem solid var(--palette-accent);padding:.5rem .75rem;
     font-size:.8rem;color:var(--muted);margin:0 0 1.75rem;max-width:56rem}
   .swatches{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.25rem}
@@ -305,7 +305,7 @@ __TOKEN_CSS__
   .sw-box{width:1rem;height:1rem;border-radius:.2rem;border:1px solid rgba(128,128,128,.4);display:inline-block;
     flex-shrink:0}
   .sw-ratio.pass{color:var(--ok);font-weight:600}
-  .sw-ratio.fail{color:var(--bad);font-weight:600}
+  .sw-ratio.fail{color:var(--bad);font-weight:600;background:var(--bad-bg);padding:0 .2rem;border-radius:.2rem}  /* Fire Red needs white: 4.48:1 on the panel */
   .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;margin-bottom:1rem}
   .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:.375rem;padding:.75rem}
   .chart-card h3{margin:0 0 .5rem;font-size:.85rem;font-weight:600;color:var(--muted);
@@ -340,6 +340,7 @@ __TOKEN_CSS__
 <main>
 
   <section id="tab-categorical" class="tabpage">
+    <h2>Kategorisk</h2>
     <div class="palette-row">
       <label for="sel-qual">Palett:</label>
       <select id="sel-qual">
@@ -367,6 +368,7 @@ __TOKEN_CSS__
   </section>
 
   <section id="tab-sequential" class="tabpage">
+    <h2>Sekvensiell</h2>
     <div class="palette-row">
       <label for="sel-seq">Palett:</label>
       <select id="sel-seq">
@@ -384,6 +386,7 @@ __TOKEN_CSS__
   </section>
 
   <section id="tab-diverging" class="tabpage">
+    <h2>Divergerende</h2>
     <div class="palette-row">
       <label for="sel-div">Palett:</label>
       <select id="sel-div">

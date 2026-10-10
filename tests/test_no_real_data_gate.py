@@ -123,6 +123,8 @@ FIXTURES: list[tuple[str, str | None, str]] = [
     (f"Fodselsnummer {FNR}", "national identity number",
      "a checksum-valid identity number"),
     (f"Ring {PHONE}", "Norwegian phone number", "a Norwegian phone number"),
+    (f"MVA-nummer NO{ORGNR}MVA", "organisation number", "an orgnr between letters that are not hex"),
+    (f"orgnr {ORGNR} ({'ab' * 20})", "organisation number", "an orgnr next to, not inside, a digest"),
     # Must NOT fire. Each of these broke an earlier version of the gate.
     (_join("git clone git", "@", "forge.intern", ":org/dotfiles.git"), None,
      "an scp-style git remote"),
@@ -132,6 +134,10 @@ FIXTURES: list[tuple[str, str | None, str]] = [
      "an RFC 2606 documentation domain"),
     ('"coordinates": [884287641, 12]', None, "nine digits that fail the orgnr checksum"),
     ("Timestamp 17589312000 millis", None, "eleven digits that fail the fnr checksum"),
+    (f'"x.html": "ea575e7d08fa1c7436c14a31a{ORGNR}ef9198d48be5709"', None,
+     "a valid orgnr inside a sha256 pin"),
+    (f'"x.html": "{FNR}ab5e7d08fa1c7436c14a31aef9198d48be5709"', None,
+     "a valid identity number inside a sha256 pin"),
 ]
 
 print("shape detection, both directions")

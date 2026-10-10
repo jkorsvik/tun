@@ -16,7 +16,7 @@
   Slik blir et Tún-dashboard til
   PROVENANCE  (do not delete — this is how output gets traced back)
     Source data : Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data)
-    Built       : 2026-10-10 10:27 CEST
+    Built       : 2026-10-10 13:09 CEST
     Requested by: Teamet bak Tún
     Built by    : tools/build_process_diagram.py
     Repo        : tun
@@ -77,7 +77,7 @@
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
-  --bad-bg:var(--status-negative-bg);
+  --bad-bg:var(--palette-surface);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -161,12 +161,13 @@ html.fit .pd{width:100%;height:auto}
 .num,.badge{flex:none;display:inline-grid;place-items:center;min-width:1.75rem;height:1.75rem;
   padding:0 .375rem;border-radius:999px;font-size:.875rem;font-weight:700}
 .num{background:var(--panel);color:var(--ink);border:1px solid var(--role,var(--line))}
-.badge{background:var(--bad-bg);color:var(--ink);border:2px solid var(--bad)}
+/* Fills behind ink text keep the pale-red tint; red TEXT sits on white (--bad-bg). */
+.badge{background:var(--status-negative-bg);color:var(--ink);border:2px solid var(--bad)}
 .facts{margin:0;display:grid;gap:.625rem}
 .facts dt{color:var(--muted);font-size:.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 .facts dd{margin:0;overflow-wrap:anywhere}
 .card{overflow-wrap:anywhere}
-.card-flag{margin:.75rem 0 0;padding:.625rem .75rem;border-radius:.5rem;background:var(--bad-bg)}
+.card-flag{margin:.75rem 0 0;padding:.625rem .75rem;border-radius:.5rem;background:var(--status-negative-bg)}
 .card-flag p{margin:.125rem 0}
 .card-actions{margin:.75rem 0 0}
 .show-in-flow{display:none}
@@ -201,8 +202,8 @@ footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
 .pd .step-no circle{fill:var(--role);fill-opacity:.16;stroke:var(--role);stroke-width:1}
 .pd .step-no text{fill:var(--ink)}
 .pd .node-start .step-no circle,.pd .node-end .step-no circle{fill:var(--bg);fill-opacity:1}
-.pd .flagged .node-shape{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2}
-.pd .flag-badge circle{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2}
+.pd .flagged .node-shape{fill:var(--status-negative-bg);stroke:var(--bad);stroke-width:2}
+.pd .flag-badge circle{fill:var(--status-negative-bg);stroke:var(--bad);stroke-width:2}
 .pd .flag-badge text{fill:var(--ink)}
 .pd .edge-line{fill:none;stroke:var(--muted);stroke-width:1.75;stroke-linejoin:round}
 .pd .edge[data-loop] .edge-line{stroke-dasharray:6 4}
@@ -214,10 +215,10 @@ html.js .pd .node{cursor:pointer}
 .pd .node:focus-visible .node-shape,.pd .node.selected .node-shape{stroke:var(--brand);stroke-width:3}
 .pd .edge.hl .edge-line{stroke:var(--brand);stroke-width:2.5}
 .pd .edge.hl .edge-arrow{fill:var(--brand)}
-.pd.focusing .node:not(.hl),.pd.focusing .edge:not(.hl){opacity:.22}
-.pd.lane-filter .node:not(.in-lane),.pd.lane-filter .edge:not(.in-lane){opacity:.18}
+.pd.focusing .node:not(.hl),.pd.focusing .edge:not(.hl),.pd.focusing .flag-badge:not(.hl){opacity:.22}
+.pd.lane-filter .node:not(.in-lane),.pd.lane-filter .edge:not(.in-lane),.pd.lane-filter .flag-badge:not(.in-lane){opacity:.18}
 .pd.lane-filter .lane:not(.in-lane) .lane-band{fill-opacity:0}
-.pd .node,.pd .edge{transition:opacity .15s}
+.pd .node,.pd .edge,.pd .flag-badge{transition:opacity .15s}
 
 @media print{
   @page{size:A4;margin:12mm}
@@ -240,7 +241,8 @@ html.js .pd .node{cursor:pointer}
   .cards{grid-template-columns:1fr 1fr 1fr;gap:.5rem}
   .card{padding:.625rem .75rem}
   .card{break-inside:avoid}
-  .pd.focusing .node,.pd.focusing .edge,.pd.lane-filter .node,.pd.lane-filter .edge{opacity:1}
+  .pd.focusing .node,.pd.focusing .edge,.pd.lane-filter .node,.pd.lane-filter .edge,
+  .pd.focusing .flag-badge,.pd.lane-filter .flag-badge{opacity:1}
 }
 @media (max-width:40rem){
   main{padding:1rem}
@@ -304,17 +306,17 @@ html.js .pd .node{cursor:pointer}
 <g class="edge" data-from="change" data-to="done"><path class="edge-line" d="M164 1396 L164 1462"/><path class="edge-arrow" d="M164 1462 L160 1452 L168 1452 Z"/><g class="edge-label"><rect class="pill" x="168" y="1399" width="33" height="18" rx="9"/><text x="184.5" y="1412" text-anchor="middle" font-size="12">nei</text></g></g>
 </g>
 <g class="nodes">
-<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(52 112)"><title>1. Trenger tall å dele</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Trenger tall å dele</tspan></text></g>
-<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(52 244)"><title>2. Beskriver spørsmålet og hvem som skal se svaret</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Beskriver spørsmålet</tspan><tspan x="123" dy="18">og hvem som skal se</tspan><tspan x="123" dy="18">svaret</tspan></text></g>
-<g class="node node-step c1 flagged" data-node="model" data-lane="1" transform="translate(374 376)"><title>3. Modellerer dataene (Forbedringspunkt 1: Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.)</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">3</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Modellerer dataene</tspan></text><g class="flag-badge"><circle cx="224" cy="0" r="10"/><text x="224" y="4.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g></g>
-<g class="node node-decision c2 flagged" data-node="approve" data-lane="2" transform="translate(703 508)"><title>4. Godkjent for denne målgruppen? (Forbedringspunkt 2: Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.)</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">4</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Godkjent for denne</tspan><tspan x="123" dy="18">målgruppen?</tspan></text><g class="flag-badge"><circle cx="206" cy="0" r="10"/><text x="206" y="4.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g></g>
-<g class="node node-step c1" data-node="build" data-lane="1" transform="translate(374 650)"><title>5. Bygger én HTML-fil</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">5</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Bygger én HTML-fil</tspan></text></g>
-<g class="node node-decision c1" data-node="verified" data-lane="1" transform="translate(374 782)"><title>6. Består tun-verify?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">6</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Består tun-verify?</tspan></text></g>
-<g class="node node-step c1" data-node="publish" data-lane="1" transform="translate(374 924)"><title>7. Publiserer i delt mappe</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">7</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Publiserer i delt</tspan><tspan x="123" dy="18">mappe</tspan></text></g>
-<g class="node node-step c0" data-node="use" data-lane="0" transform="translate(52 1056)"><title>8. Åpner filen og bruker tallene</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">8</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Åpner filen og bruker</tspan><tspan x="123" dy="18">tallene</tspan></text></g>
-<g class="node node-step c0" data-node="feedback" data-lane="0" transform="translate(52 1188)"><title>9. Gir tilbakemelding</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">9</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Gir tilbakemelding</tspan></text></g>
-<g class="node node-decision c0" data-node="change" data-lane="0" transform="translate(52 1320)"><title>10. Må noe endres?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">10</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Må noe endres?</tspan></text></g>
-<g class="node node-end c0" data-node="done" data-lane="0" transform="translate(52 1462)"><title>11. Ferdig, til neste gang</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">11</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Ferdig, til neste</tspan><tspan x="123" dy="18">gang</tspan></text></g>
+<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(52 112)"><title>1. Trenger tall å dele</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">1 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Trenger tall å dele</tspan></text></g>
+<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(52 244)"><title>2. Beskriver spørsmålet og hvem som skal se svaret</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">2 </text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Beskriver spørsmålet </tspan><tspan x="123" dy="18">og hvem som skal se </tspan><tspan x="123" dy="18">svaret</tspan></text></g>
+<g class="node node-step c1 flagged" data-node="model" data-lane="1" transform="translate(374 376)"><title>3. Modellerer dataene (Forbedringspunkt 1: Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.)</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">3 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Modellerer dataene</tspan></text></g><g class="flag-badge" data-node="model" data-lane="1" aria-hidden="true" transform="translate(374 376)"><circle cx="224" cy="0" r="10"/><text x="224" y="4.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g>
+<g class="node node-decision c2 flagged" data-node="approve" data-lane="2" transform="translate(703 508)"><title>4. Godkjent for denne målgruppen? (Forbedringspunkt 2: Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.)</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">4 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Godkjent for denne </tspan><tspan x="123" dy="18">målgruppen?</tspan></text></g><g class="flag-badge" data-node="approve" data-lane="2" aria-hidden="true" transform="translate(703 508)"><circle cx="206" cy="0" r="10"/><text x="206" y="4.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g>
+<g class="node node-step c1" data-node="build" data-lane="1" transform="translate(374 650)"><title>5. Bygger én HTML-fil</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">5 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Bygger én HTML-fil</tspan></text></g>
+<g class="node node-decision c1" data-node="verified" data-lane="1" transform="translate(374 782)"><title>6. Består tun-verify?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">6 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Består tun-verify?</tspan></text></g>
+<g class="node node-step c1" data-node="publish" data-lane="1" transform="translate(374 924)"><title>7. Publiserer i delt mappe</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">7 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Publiserer i delt </tspan><tspan x="123" dy="18">mappe</tspan></text></g>
+<g class="node node-step c0" data-node="use" data-lane="0" transform="translate(52 1056)"><title>8. Åpner filen og bruker tallene</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">8 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Åpner filen og bruker </tspan><tspan x="123" dy="18">tallene</tspan></text></g>
+<g class="node node-step c0" data-node="feedback" data-lane="0" transform="translate(52 1188)"><title>9. Gir tilbakemelding</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">9 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Gir tilbakemelding</tspan></text></g>
+<g class="node node-decision c0" data-node="change" data-lane="0" transform="translate(52 1320)"><title>10. Må noe endres?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">10 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Må noe endres?</tspan></text></g>
+<g class="node node-end c0" data-node="done" data-lane="0" transform="translate(52 1462)"><title>11. Ferdig, til neste gang</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">11 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Ferdig, til neste </tspan><tspan x="123" dy="18">gang</tspan></text></g>
 </g>
 </svg>
 </figure>
@@ -395,7 +397,7 @@ stegets nummer, det samme som i fanen Steg.</p>
 </section>
 
 <footer>
-<p>Kilde: Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data). Bestilt av: Teamet bak Tún. Laget 2026-10-10 10:27 CEST.
+<p>Kilde: Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data). Bestilt av: Teamet bak Tún. Laget 2026-10-10 13:09 CEST.
 Én selvstendig fil: ingen server, ingen nettverk, ingen lisens.</p>
 </footer>
 </main>
@@ -468,6 +470,9 @@ stegets nummer, det samme som i fanen Steg.</p>
 
   /* Highlight: hover or focus a step to see its connections; the rest dims. */
   var nodes = Array.prototype.slice.call(svg.querySelectorAll("g.node"));
+  var badges = Array.prototype.slice.call(svg.querySelectorAll("g.flag-badge"));
+  /* The steps become buttons below, so the picture is a group of them, not one image. */
+  svg.setAttribute("role", "group");
   var edges = Array.prototype.slice.call(svg.querySelectorAll("g.edge"));
   var lanes = Array.prototype.slice.call(svg.querySelectorAll("g.lane"));
   var laneOf = {};
@@ -477,7 +482,7 @@ stegets nummer, det samme som i fanen Steg.</p>
   }
   function highlight(id) {
     svg.classList.toggle("focusing", !!id);
-    nodes.forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });
+    nodes.concat(badges).forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });
     edges.forEach(function (e) {
       e.classList.toggle("hl", !!id && (e.getAttribute("data-from") === id || e.getAttribute("data-to") === id));
     });
@@ -541,7 +546,7 @@ stegets nummer, det samme som i fanen Steg.</p>
       var lane = c.getAttribute("data-lane");
       chips.forEach(function (o) { o.setAttribute("aria-pressed", o === c ? "true" : "false"); });
       svg.classList.toggle("lane-filter", lane !== "");
-      nodes.forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });
+      nodes.concat(badges).forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });
       lanes.forEach(function (l) { l.classList.toggle("in-lane", l.getAttribute("data-lane") === lane); });
       edges.forEach(function (e) {
         e.classList.toggle("in-lane", laneOf[e.getAttribute("data-from")] === lane ||

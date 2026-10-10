@@ -92,7 +92,7 @@ p{max-width:62ch;color:var(--muted);font-size:clamp(14px,2.6vmin,20px);line-heig
 .card span{font-size:clamp(12px,2vmin,16px);line-height:1.4}
 
 #rail{position:fixed;z-index:10;left:2.2vw;top:50%;width:145px;transform:translateY(-50%)}
-.rail-sec{display:flex;align-items:center;gap:9px;padding:5px 0;opacity:.35;cursor:pointer}
+.rail-sec{display:flex;align-items:center;gap:9px;padding:5px 0;opacity:.7;cursor:pointer}
 .rail-sec.on{opacity:1}
 .rail-sec .tick{width:13px;height:2px;flex:none;background:currentColor}
 .rail-sec.on .tick{width:28px;background:var(--accent)}
@@ -113,8 +113,8 @@ body.on-dark .control-btn{color:var(--paper)}
 .control-btn:active{transform:scale(.96)}
 .control-btn[disabled]{opacity:.28;cursor:default;transform:none}
 .control-icon{font-size:20px;line-height:1}
-#counter{min-width:52px;padding:0 8px;color:var(--muted);font-size:11px;letter-spacing:.12em;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
-body.on-dark #counter{color:rgba(247,245,240,.64)}
+#counter{min-width:52px;padding:0 8px;color:var(--ink);font-size:11px;letter-spacing:.12em;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+body.on-dark #counter{color:var(--paper)}
 #toast{position:fixed;z-index:30;left:50%;bottom:88px;width:min(88vw,560px);
   padding:12px 16px;transform:translate(-50%,12px);border-radius:10px;
   background:#101820;color:#fff;font:500 13px/1.4 var(--body);text-align:center;
@@ -185,7 +185,7 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
 #blank-screen.show{display:block}
 
 @media(hover:hover) and (pointer:fine){
-  #controls{opacity:.42;transition:opacity .2s}
+  #controls{opacity:.75;transition:opacity .2s}
   #controls:hover,#controls:focus-within{opacity:1}
 }
 @media(hover:none),(pointer:coarse){
@@ -219,7 +219,7 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
 <body>
 <script>document.documentElement.className+=" js"</script>
 <div id="js-warning">Begrenset forhåndsvisning: Lagre filen og åpne den fra Filer eller Nedlastinger i en nettleser for navigasjon og fullskjerm.</div>
-<div id="rail"><div id="railnav"></div></div>
+<nav id="rail" aria-label="Deler av presentasjonen"><div id="railnav"></div></nav>
 <main>
   <section class="slide dark" data-sec="Start">
     <div class="eyebrow">Eksempel 21 · worked example for issue #37</div>
@@ -256,7 +256,7 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
   </section>
 </main>
 
-<div id="controls" role="group" aria-label="Presentasjonskontroller">
+<nav id="controls" aria-label="Presentasjonskontroller">
   <button class="control-btn" id="nprev" type="button" aria-label="Forrige lysbilde" title="Forrige lysbilde">
     <span class="control-icon" aria-hidden="true">←</span>
   </button>
@@ -268,7 +268,7 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
     <span class="control-icon" id="fullscreen-icon" aria-hidden="true">⛶</span>
     <span id="fullscreen-label">Fullskjerm</span>
   </button>
-</div>
+</nav>
 <div id="progress"><i></i></div>
 <div id="toast" role="status" aria-live="polite"></div>
 

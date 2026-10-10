@@ -545,7 +545,7 @@ __TOKEN_CSS__
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
     font-size:1rem;line-height:1.5}
-  header{background:var(--brand-dark);color:var(--eksempel-cream);padding:1.25rem 2rem}
+  header{background:var(--brand-dark);color:var(--palette-on-dark);padding:1.25rem 2rem}
   header h1{margin:0;font-size:1.4rem;font-weight:500}
   header .meta{opacity:.85;font-size:.85rem;line-height:1.5;margin-top:.5rem;max-width:52rem}
   header code{background:rgba(255,255,255,.12);padding:.05rem .3rem;border-radius:.2rem}

@@ -142,7 +142,7 @@ a{color:var(--brand)}
   padding:0 145px 0 56px;z-index:10;transition:height .15s}
 #topbar .logo{display:inline-flex;flex:none}
 #topbar .logo svg{fill:currentColor}
-#topbar .title{font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;
+#topbar .title{margin:0;font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;min-width:0}
 .title-short{display:none}
 /* Mobile: right padding above (145px) already permanently reserves room
@@ -271,7 +271,7 @@ a{color:var(--brand)}
    Bonus the :target version could not give: a visible current-page
    indicator, which docs/09 §5 (Nielsen Norman Group) asks for. Signalled by
    weight AND background, not colour alone (WCAG 2.2 1.4.1). */
-main{padding:0 16px 40px;max-width:860px;margin:0 auto}
+.page-content{padding:0 16px 40px;max-width:860px;margin:0 auto}
 
 /* Off-canvas but still focusable and arrow-key navigable as a native radio
    group — deliberately not display:none, same reasoning as #theme-toggle. */
@@ -369,10 +369,10 @@ BODY = r"""
     <rect x="40" y="26" width="24" height="48" rx="4" fill="currentColor"/>
     <rect x="74" y="8" width="24" height="66" rx="4" fill="currentColor"/>
   </svg></span>
-  <span class="title">
+  <h1 class="title">
     <span class="title-full">Javascript-løs standalone HTML — POC</span>
     <span class="title-short">JS-løs standalone HTML — POC</span>
-  </span>
+  </h1>
 </header>
 
 <nav id="nav-menu" aria-label="Sidenavigasjon">
@@ -384,7 +384,7 @@ BODY = r"""
 
 <div id="info-panel">
   <label for="info-toggle" class="panel-close">✕ Lukk</label>
-  <h3 style="margin-top:0">Om denne siden</h3>
+  <h2 style="margin-top:0;font-size:1.1rem">Om denne siden</h2>
   <p>Bevis-av-konsept for JavaScript-fri standalone HTML.
   Meny, sideskift og dette panelet bruker ingen JavaScript i det hele tatt —
   prøv å skru av JavaScript i nettleseren og se at ingenting endrer seg her.</p>
@@ -408,7 +408,7 @@ BODY = r"""
 </div>
 <script>document.getElementById('preview-notice-global').style.display = 'none';</script>
 
-<main>
+<div class="page-content">
 
 <section id="page-charts" class="page">
   <h2>Grafer: tre ulike svar på "hva om JavaScript ikke kjører"</h2>
@@ -485,7 +485,7 @@ BODY = r"""
   og skjult-uten-erstatning.</p>
 </section>
 
-</main>
+</div>
 </div><!-- /#below-header -->
 </div><!-- /#app-root -->
 
@@ -707,10 +707,15 @@ DOC = """<!doctype html>
 <title>JavaScript-løs standalone HTML — POC</title>
 <style>
 """ + PLACEHOLDER_STYLE + """
+/* The landmark wraps everything, but adds no box: the toggles must stay siblings
+   of #app-root for the :checked ~ selectors, and the layout stays as it was. */
+body > main{display:contents}
 </style>
 </head>
 <body>
+<main>
 """ + PLACEHOLDER_BODY + """
+</main>
 <script>
 """ + PLACEHOLDER_SCRIPT + """
 </script>
