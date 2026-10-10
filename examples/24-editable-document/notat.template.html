@@ -1,0 +1,323 @@
+<!doctype html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beslutningsnotat: Eierskap til møteromsbookingen</title>
+<!--
+  Beslutningsnotat: Eierskap til møteromsbookingen (oppdiktet eksempel)
+  PROVENANCE  (do not delete, this is how output gets traced back)
+    Source data : none. Synthetic memo: every name, unit and number is invented
+    Built       : {{BUILT}}
+    Requested by: maintainer
+    Built by    : RAIWork
+    Repo        : tun
+    Generator   : examples/24-editable-document/build_editable_document.py
+    Made with   : Tún, tun.community
+    Palette     : {{TOKEN_SOURCE}}
+  Tier 1, STANDALONE. Reads fully without JavaScript. With JavaScript, an
+  edit mode lets the reader change the text and download an edited copy.
+  The copy is a new file: nothing is written back to where this file lives.
+  SECURITY: all content below is readable by anyone who can open this file.
+-->
+<style>
+{{TOKEN_CSS}}
+:root{
+  --fill:#FFF4C2; --fill-line:#C9A100; --page:#F3F4F6; --edit-tint:#F2F6FB;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);
+  font:1rem/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+a{color:var(--brand)}
+a:focus-visible,button:focus-visible{outline:.1875rem solid var(--brand);outline-offset:.125rem}
+
+.top{background:var(--brand-dark);color:var(--palette-on-dark)}
+.top .in{max-width:54rem;margin:0 auto;padding:.875rem 1.5rem;display:flex;align-items:center;gap:1rem}
+.mark{font-weight:700;letter-spacing:.04em}
+.lbl{font-size:.875rem;opacity:.9;border-left:.0625rem solid currentColor;padding-left:1rem}
+.tools{margin-left:auto;display:flex;gap:.5rem}
+.tools button{font:inherit;font-size:.875rem;font-weight:600;color:var(--palette-on-dark);background:transparent;
+  border:.0625rem solid currentColor;border-radius:.25rem;padding:.375rem .875rem;cursor:pointer}
+.tools button[aria-pressed="true"]{background:var(--palette-on-dark);color:var(--brand-dark)}
+.tools button[disabled]{opacity:.45;cursor:default}
+
+.strip{background:var(--fill);border-bottom:.0625rem solid var(--fill-line);font-size:.875rem}
+.strip .in{max-width:54rem;margin:0 auto;padding:.5rem 1.5rem}
+body.editing .strip{background:var(--edit-tint);border-color:var(--brand)}
+
+main{max-width:54rem;margin:0 auto;padding:2rem 1.5rem 4rem}
+.sheet{background:var(--bg);border:.0625rem solid var(--line);border-radius:.25rem;padding:3rem 3.5rem}
+.sheet:focus{outline:none}
+body.editing .sheet{outline:.125rem dashed var(--brand);outline-offset:.375rem}
+body.editing .sheet :is(p,li,td,th,h1,h2,h3,dd):hover{background:var(--edit-tint)}
+
+.mock{font-size:.875rem;color:var(--muted);border:.0625rem dashed var(--muted);border-radius:.25rem;padding:.5rem .75rem;margin:0 0 1.5rem}
+.kicker{font-size:.8125rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin:0 0 .5rem}
+h1{font-size:1.875rem;line-height:1.25;color:var(--brand-dark);margin:0 0 1.5rem}
+h2{font-size:1.3125rem;color:var(--brand-dark);margin:3rem 0 .75rem;padding-top:1rem;border-top:.125rem solid var(--brand)}
+h3{font-size:1.0625rem;margin:1.75rem 0 .5rem}
+p{margin:0 0 .75rem}
+.meta{display:grid;grid-template-columns:max-content 1fr;gap:.25rem 1.5rem;margin:0 0 2rem;font-size:.9375rem;
+  padding:1rem 0;border-top:.0625rem solid var(--line);border-bottom:.0625rem solid var(--line)}
+.meta dt{font-weight:600;color:var(--muted)} .meta dd{margin:0}
+.ask{background:var(--panel);border-left:.25rem solid var(--brand);padding:1.25rem 1.5rem;border-radius:0 .25rem .25rem 0}
+.ask h2{margin:0 0 .5rem;padding:0;border:0;font-size:1.125rem}
+.ask ol{margin:.5rem 0 0;padding-left:1.375rem}
+.fill{background:var(--fill);border-bottom:.125rem solid var(--fill-line);padding:0 .25rem;border-radius:.125rem}
+.fill::before{content:"Fyll inn: ";font-weight:600}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.75rem;margin:1rem 0 1.25rem}
+.fact{border:.0625rem solid var(--line);border-radius:.25rem;padding:.75rem .875rem}
+.fact b{display:block;font-size:1.625rem;line-height:1.1;color:var(--brand)}
+.fact span{font-size:.875rem;color:var(--muted)}
+.tw{overflow-x:auto;margin:.75rem 0 1.25rem}
+table{border-collapse:collapse;width:100%;font-size:.9375rem}
+th,td{text-align:left;vertical-align:top;padding:.625rem .75rem;border-bottom:.0625rem solid var(--line)}
+thead th{font-size:.8125rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);border-bottom:.125rem solid var(--brand-dark);white-space:nowrap}
+.k{font-weight:700;color:var(--brand);margin-right:.375rem}
+.m td,.m th{text-align:center;padding:.5rem .25rem} .m th:first-child{text-align:left;padding-left:.75rem}
+.s{display:inline-block;padding:.125rem .5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;white-space:nowrap}
+.s-pos{background:var(--ok-bg);color:var(--ok)} .s-neg{background:var(--bad-bg);color:var(--bad)} .s-mid{background:var(--panel);color:var(--muted)}
+.note{font-size:.875rem;color:var(--muted)}
+.vedtak{background:var(--brand-dark);color:var(--palette-on-dark);border-radius:.25rem;padding:1.5rem 1.75rem}
+.vedtak ol{margin:0;padding-left:1.375rem} .vedtak li{margin:.5rem 0}
+.vedtak .fill{color:var(--ink)}
+footer{max-width:54rem;margin:0 auto;padding:0 1.5rem 2.5rem;font-size:.8125rem;color:var(--muted)}
+
+@media (max-width:40rem){
+  .top .in{flex-wrap:wrap;padding:.75rem 1.25rem;row-gap:.75rem}
+  .tools{margin-left:0;width:100%} .tools button{flex:1;padding:.375rem .5rem;white-space:nowrap}
+  main{padding:0 0 2.5rem} .sheet{padding:1.75rem 1.25rem;border-radius:0;border-left:0;border-right:0}
+  h1{font-size:1.5625rem}
+  .meta{grid-template-columns:1fr;gap:0} .meta dd{margin-bottom:.5rem}
+  .m .full{display:none} .m td,.m th{padding:.5rem .0625rem} .m .s{font-size:.6875rem;padding:.125rem .25rem}
+  .stack thead{display:none}
+  .stack tr{display:block;padding:.75rem 0;border-bottom:.0625rem solid var(--line)}
+  .stack th,.stack td{display:block;border:0;padding:.125rem 0}
+  .stack td::before{content:attr(data-label);display:block;font-size:.75rem;font-weight:600;text-transform:uppercase;color:var(--muted);margin-top:.375rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@page{size:A4;margin:18mm 16mm}
+@media print{
+  body{background:#fff;font-size:11pt}
+  .strip,.tools,footer{display:none}
+  main{padding:0;max-width:none} .sheet{border:0;padding:0;outline:none}
+  .top,.ask,.vedtak,.s,.fill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  h2,h3{break-after:avoid} tr,.ask,.vedtak,.facts{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="in">
+  <span class="mark">EKSEMPEL AS</span>
+  <span class="lbl">Beslutningsnotat</span>
+  <div class="tools" id="tools" hidden>
+    <button type="button" id="b-edit" aria-pressed="false">Rediger</button>
+    <button type="button" id="b-save" disabled>Lagre kopi</button>
+    <button type="button" id="b-print">Skriv ut</button>
+  </div>
+</div></header>
+
+<div class="strip"><div class="in" id="status" role="status">Utkast. Gule felt må fylles ut før notatet sendes.</div></div>
+
+<main><article class="sheet" id="doc">
+
+<p class="mock">Oppdiktet eksempel. Alle navn, enheter og tall er laget for å vise mønsteret.</p>
+<p class="kicker">Beslutningssak</p>
+<h1>Eierskap til møteromsbookingen</h1>
+
+<dl class="meta">
+  <dt>Til</dt><dd>Driftsdirektør</dd>
+  <dt>Fra</dt><dd>Arbeidsplassteamet</dd>
+  <dt>Dato</dt><dd>7. oktober 2026</dd>
+  <dt>Sakstype</dt><dd>Beslutningssak</dd>
+</dl>
+
+<section class="ask" aria-labelledby="ask-h">
+  <h2 id="ask-h">Dette ber vi om</h2>
+  <p>Romfinner er løsningen alle bruker for å booke møterom. Tre personer drifter den på dugnad, ved siden av egne jobber. Ingen enhet eier den. Vi ber om tre ting:</p>
+  <ol>
+    <li>At Romfinner får én eier.</li>
+    <li>At fem kriterier (K1 til K5) brukes når eieren velges.</li>
+    <li>At aktuelle enheter vurderes mot kriteriene og legges frem for beslutning.</li>
+  </ol>
+</section>
+
+<h2>Problemstilling</h2>
+<p>Romfinner ble laget som et sideprosjekt i 2024. Nå booker den nesten alle møterom i selskapet.</p>
+<p>Driften betales i dag av <span class="fill">hvem som betaler driften i dag</span>. Når noe feiler, vet ingen hvem som skal rette det. Forrige feil ble liggende i fire dager.</p>
+
+<h2>Vurdering</h2>
+<div class="facts">
+  <div class="fact"><b>214</b><span>møterom</span></div>
+  <div class="fact"><b>6</b><span>lokasjoner</span></div>
+  <div class="fact"><b>~9 000</b><span>bookinger per uke</span></div>
+  <div class="fact"><b>3</b><span>personer, på dugnad</span></div>
+</div>
+<p>Bookingene viser hvem som møter hvem, og når. Det er personopplysninger, og eieren må ha korte linjer til personvern.</p>
+
+<h3>Risiko</h3>
+<div class="tw"><table class="stack">
+  <thead><tr><th scope="col">Risiko</th><th scope="col">Hva kan skje</th><th scope="col">Dempes av</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Ingen eier</th><td data-label="Hva kan skje">Feil blir liggende fordi ingen har ansvaret.</td><td data-label="Dempes av"><span class="k">K1</span> <span class="k">K2</span></td></tr>
+    <tr><th scope="row">Nøkkelperson</th><td data-label="Hva kan skje">Én av de tre slutter, og ingen andre kan drifte løsningen.</td><td data-label="Dempes av"><span class="k">K4</span></td></tr>
+    <tr><th scope="row">Personvern</th><td data-label="Hva kan skje">Bookingdata brukes til noe annet enn booking.</td><td data-label="Dempes av"><span class="k">K5</span></td></tr>
+  </tbody>
+</table></div>
+
+<h3>Kriterier for valg av eier</h3>
+<div class="tw"><table class="stack">
+  <thead><tr><th scope="col">Kriterium</th><th scope="col">Slik sjekker vi det</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><span class="k">K1</span> Én eier med budsjett</th><td data-label="Slik sjekker vi det">Én leder har ansvaret, og driften ligger i budsjettet.</td></tr>
+    <tr><th scope="row"><span class="k">K2</span> Avtalt responstid</th><td data-label="Slik sjekker vi det">Feil får en svarfrist som brukerne kjenner.</td></tr>
+    <tr><th scope="row"><span class="k">K3</span> Nær brukerne</th><td data-label="Slik sjekker vi det">Eieren møter dem som booker rom, også resepsjonen.</td></tr>
+    <tr><th scope="row"><span class="k">K4</span> Teknisk kapasitet</th><td data-label="Slik sjekker vi det">Minst to personer kan drifte og feilsøke løsningen.</td></tr>
+    <tr><th scope="row"><span class="k">K5</span> Personvern</th><td data-label="Slik sjekker vi det">Eieren har korte linjer til personvern og sikkerhet.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Handlingsalternativer</h2>
+<div class="tw"><table class="stack">
+  <thead><tr><th scope="col">Alternativ</th><th scope="col">Fordel</th><th scope="col">Risiko</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">A. IT-drift</th><td data-label="Fordel">Har vaktordning og driftsrutiner.</td><td data-label="Risiko">Langt fra dem som booker rom.</td></tr>
+    <tr><th scope="row">B. Eiendom</th><td data-label="Fordel">Eier rommene og resepsjonen.</td><td data-label="Risiko">Har ingen som kan drifte programvare.</td></tr>
+    <tr><th scope="row">C. Kjøpe ferdig løsning</th><td data-label="Fordel">Leverandøren drifter.</td><td data-label="Risiko">Lisens koster, og bookingdata flytter ut av huset.</td></tr>
+    <tr><th scope="row">D. Fortsette som i dag</th><td data-label="Fordel">Koster ingenting nå.</td><td data-label="Risiko">Alle tre risikoene blir liggende.</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Foreløpig bilde mot kriteriene</h3>
+<div class="tw"><table class="m">
+  <thead><tr><th scope="col">Alt<span class="full">ernativ</span></th><th scope="col">K1</th><th scope="col">K2</th><th scope="col">K3</th><th scope="col">K4</th><th scope="col">K5</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">A.<span class="full"> IT-drift</span></th><td><span class="s s-mid">Åpent</span></td><td><span class="s s-pos">Støtter</span></td><td><span class="s s-neg">Risiko</span></td><td><span class="s s-pos">Støtter</span></td><td><span class="s s-mid">Åpent</span></td></tr>
+    <tr><th scope="row">B.<span class="full"> Eiendom</span></th><td><span class="s s-mid">Åpent</span></td><td><span class="s s-mid">Åpent</span></td><td><span class="s s-pos">Støtter</span></td><td><span class="s s-neg">Risiko</span></td><td><span class="s s-mid">Åpent</span></td></tr>
+    <tr><th scope="row">C.<span class="full"> Kjøpe</span></th><td><span class="s s-mid">Åpent</span></td><td><span class="s s-pos">Støtter</span></td><td><span class="s s-mid">Åpent</span></td><td><span class="s s-pos">Støtter</span></td><td><span class="s s-neg">Risiko</span></td></tr>
+    <tr><th scope="row">D.<span class="full"> Som i dag</span></th><td><span class="s s-neg">Risiko</span></td><td><span class="s s-neg">Risiko</span></td><td><span class="s s-mid">Åpent</span></td><td><span class="s s-neg">Risiko</span></td><td><span class="s s-mid">Åpent</span></td></tr>
+  </tbody>
+</table></div>
+<p class="note">«Åpent» betyr at svaret avhenger av den konkrete enheten.</p>
+
+<h3>Anbefaling</h3>
+<p>Vi anbefaler at eieren velges ut fra hvilken enhet som samlet oppfyller K1 til K5 best.</p>
+
+<h2>Prosess</h2>
+<ol>
+  <li>Driftsdirektøren tar stilling til kriteriene i dette notatet.</li>
+  <li><span class="fill">ansvarlig</span> vurderer aktuelle enheter mot kriteriene innen <span class="fill">dato</span>.</li>
+  <li>Innstilling legges frem innen <span class="fill">dato</span>.</li>
+</ol>
+
+<h2>Forslag til vedtak</h2>
+<div class="vedtak"><ol>
+  <li>Driftsdirektøren sluttet seg til at Romfinner skal ha én eier.</li>
+  <li>Driftsdirektøren sluttet seg til kriteriene K1 til K5 som grunnlag for valg av eier.</li>
+  <li>Driftsdirektøren ba om at innstilling legges frem innen <span class="fill">dato</span>.</li>
+</ol></div>
+
+</article></main>
+<footer id="foot">Selvstendig fil uten avhengigheter. Laget med Tún.</footer>
+
+<script>
+(function(){
+  // The page exactly as it was opened, before anything below changes it. A saved copy is
+  // this shell with the edited memo put in, so no live edit state can leak into the copy.
+  var pristine=document.documentElement.outerHTML;
+  var doc=document.getElementById('doc'), tools=document.getElementById('tools'),
+      bEdit=document.getElementById('b-edit'), bSave=document.getElementById('b-save'),
+      bPrint=document.getElementById('b-print'), status=document.getElementById('status');
+  // SharePoint's inline preview runs the file in <iframe sandbox="allow-scripts"> (docs/01,
+  // row 28). Downloads and print are blocked there, so an edit could never be saved: offer none.
+  if(window.self!==window.top && self.origin==='null'){
+    status.textContent='Forhåndsvisning. Last ned filen og åpne den fra disk for å redigere og lagre den.';
+    return;
+  }
+  var dirty=false, editing=false;
+  var hint=new Map();  // each yellow field, and the hint text it opened with
+  Array.prototype.forEach.call(doc.querySelectorAll('.fill'), function(f){ hint.set(f, f.textContent); });
+  tools.hidden=false;
+
+  function showStatus(){
+    var n=doc.querySelectorAll('.fill').length;
+    var s = n ? ('Utkast. ' + n + (n===1 ? ' gult felt gjenstår.' : ' gule felt gjenstår.')) : 'Alle gule felt er fylt ut.';
+    if(editing) s = 'Redigerer. Klikk i teksten og skriv. ' + s + ' Lagre med «Lagre kopi» eller Ctrl+S / \u2318S.';
+    else if(dirty) s += ' Du har endringer som ikke er lagret.';
+    else s += ' Trykk «Rediger» for å endre teksten.';
+    if(status.textContent!==s) status.textContent=s;  // role=status: unchanged text is not re-announced
+  }
+  function setEditing(on){
+    editing=on;
+    doc.contentEditable = on ? 'true' : 'false';
+    document.body.classList.toggle('editing', on);
+    bEdit.setAttribute('aria-pressed', String(on));
+    bEdit.textContent = on ? 'Ferdig' : 'Rediger';
+    if(on) doc.focus();
+    showStatus();
+  }
+
+  // A field is yellow while its text is still its hint: typing unmarks it, undo re-marks it.
+  // (Emptying a field deletes the element itself, in all three engines, so it just goes.)
+  doc.addEventListener('input', function(){
+    hint.forEach(function(h, f){ f.classList.toggle('fill', f.textContent===h); });
+    dirty=true; bSave.disabled=false; showStatus();
+  });
+  // Clicking a yellow field selects all of it, so typing replaces the hint instead of joining it.
+  doc.addEventListener('click', function(e){
+    var f=editing && e.target.closest('.fill');
+    if(!f) return;
+    var r=document.createRange(); r.selectNodeContents(f);
+    var s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  });
+  // Paste as plain text, so formatting from a word processor does not come along.
+  doc.addEventListener('paste', function(e){
+    if(!editing) return;
+    e.preventDefault();
+    var txt=(e.clipboardData||window.clipboardData).getData('text/plain');
+    if(!document.execCommand('insertText', false, txt)){
+      var sel=window.getSelection(); if(!sel.rangeCount) return;
+      var r=sel.getRangeAt(0); r.deleteContents(); r.insertNode(document.createTextNode(txt)); r.collapse(false);
+      doc.dispatchEvent(new Event('input'));
+    }
+  });
+
+  // Save = download a copy: the opened page, with the edited memo and a footer stamp in it.
+  function save(){
+    var copy=new DOMParser().parseFromString(pristine, 'text/html');
+    copy.getElementById('doc').innerHTML=doc.innerHTML;
+    var d=new Date(), p=function(n){ return (n<10?'0':'')+n; };
+    copy.getElementById('foot').textContent='Selvstendig fil uten avhengigheter. Laget med Tún. Sist redigert '
+      + d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+'.';
+    var url=URL.createObjectURL(new Blob(['<!doctype html>\n'+copy.documentElement.outerHTML], {type:'text/html'}));
+    var a=document.createElement('a'); a.href=url;
+    a.download=decodeURIComponent(location.pathname.split('/').pop()) || 'notat.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    dirty=false; bSave.disabled=true; showStatus();
+  }
+
+  bEdit.addEventListener('click', function(){ setEditing(!editing); });
+  bSave.addEventListener('click', save);
+  bPrint.addEventListener('click', function(){ if(editing) setEditing(false); window.print(); });
+  document.addEventListener('keydown', function(e){
+    if((e.metaKey||e.ctrlKey) && (e.key==='s'||e.key==='S')){ e.preventDefault(); save(); }
+    if(e.key==='Escape' && editing) setEditing(false);
+  });
+  window.addEventListener('beforeunload', function(e){ if(dirty){ e.preventDefault(); e.returnValue=''; } });
+  showStatus();
+})();
+</script>
+</body>
+</html>

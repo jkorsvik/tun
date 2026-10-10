@@ -72,6 +72,10 @@ ALLOWED_DATA: dict[str, str] = {
         "public county geometry, no personal or commercial content",
     "plugin/manifest.json":
         "configuration, not data",
+    ".claude-plugin/plugin.json":
+        "configuration, not data: Claude Code requires this exact path",
+    ".claude-plugin/marketplace.json":
+        "configuration, not data: Claude Code requires this exact path",
     "tools/core_generic_baseline.json":
         "gate state: file paths and match counts for the core boundary ratchet, no content",
 }

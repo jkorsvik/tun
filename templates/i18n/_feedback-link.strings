@@ -1,0 +1,42 @@
+# Strings for templates/_feedback-link.html and tools/feedback_link.py.
+# Format: see tools/i18n.py. nb is what the link said before --lang existed.
+
+[nb]
+link = Gi tilbakemelding
+where_file = lokal fil
+where_unknown = ukjent
+in_frame = , i en ramme
+f_protocol = Protokoll
+f_view = Visning
+f_browser = Nettleser
+f_window = Vindu
+yes = ja
+no = nei
+f_errors = Skriptfeil
+intro_what = Hva skjedde?
+intro_expect = Hva forventet du?
+intro_snapshot = -- Øyeblikksbilde, lagt inn automatisk. Fjern det du ikke vil sende. --
+subject = Tilbakemelding:
+k_artefact = Artefakt
+k_built = Bygget
+k_source = Kilde
+
+[en]
+link = Give feedback
+where_file = local file
+where_unknown = unknown
+in_frame = , embedded
+f_protocol = Protocol
+f_view = View
+f_browser = Browser
+f_window = Window
+yes = yes
+no = no
+f_errors = Script errors
+intro_what = What happened?
+intro_expect = What did you expect?
+intro_snapshot = -- Snapshot, added automatically. Remove anything you do not want to send. --
+subject = Feedback:
+k_artefact = Artefact
+k_built = Built
+k_source = Source

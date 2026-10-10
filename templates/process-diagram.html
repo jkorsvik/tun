@@ -7,7 +7,7 @@
   under terms of your choice, provided the Origin Notice is preserved.
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<html lang="nb">
+<html lang="{{T:html_lang}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -79,7 +79,7 @@ html.js .panel-h{position:absolute;width:1px;height:1px;overflow:hidden;clip-pat
   white-space:nowrap;margin:0}
 html.js .panel{padding-top:1.25rem}
 
-/* Flyt: toolbar, drawing and the detail panel beside it. */
+/* {{T:tab_flow}}: toolbar, drawing and the detail panel beside it. */
 .toolbar{display:none}
 html.js .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:0 0 .75rem}
 .toolbar .group{display:flex;gap:.25rem;align-items:center}
@@ -217,66 +217,66 @@ html.js .pd .node{cursor:pointer}
 <p class="meta">{{META}}</p>
 </header>
 
-<div class="tabs" role="tablist" aria-label="Visninger">
-<button type="button" role="tab" id="tab-flyt" aria-controls="panel-flyt" aria-selected="true">Flyt</button>
-<button type="button" role="tab" id="tab-steg" aria-controls="panel-steg" aria-selected="false" tabindex="-1">Steg</button>
-<button type="button" role="tab" id="tab-roller" aria-controls="panel-roller" aria-selected="false" tabindex="-1">Roller</button>
-<button type="button" role="tab" id="tab-forbedring" aria-controls="panel-forbedring" aria-selected="false" tabindex="-1">Forbedringspunkter</button>
-<button type="button" role="tab" id="tab-tekst" aria-controls="panel-tekst" aria-selected="false" tabindex="-1">Tekstversjon</button>
+<div class="tabs" role="tablist" aria-label="{{T:tabs_label}}">
+<button type="button" role="tab" id="tab-flyt" aria-controls="panel-flyt" aria-selected="true">{{T:tab_flow}}</button>
+<button type="button" role="tab" id="tab-steg" aria-controls="panel-steg" aria-selected="false" tabindex="-1">{{T:tab_steps}}</button>
+<button type="button" role="tab" id="tab-roller" aria-controls="panel-roller" aria-selected="false" tabindex="-1">{{T:tab_roles}}</button>
+<button type="button" role="tab" id="tab-forbedring" aria-controls="panel-forbedring" aria-selected="false" tabindex="-1">{{T:tab_flags}}</button>
+<button type="button" role="tab" id="tab-tekst" aria-controls="panel-tekst" aria-selected="false" tabindex="-1">{{T:tab_text}}</button>
 </div>
 
 <section class="panel" id="panel-flyt" aria-labelledby="flyt-h">
-<h2 class="panel-h" id="flyt-h">Flyt</h2>
+<h2 class="panel-h" id="flyt-h">{{T:tab_flow}}</h2>
 <div class="toolbar">
-<div class="group" role="group" aria-label="Størrelse">
-<button type="button" id="zoom-out" aria-label="Zoom ut">−</button>
-<span class="zoom-level" id="zoom-level" aria-live="polite">100 %</span>
-<button type="button" id="zoom-in" aria-label="Zoom inn">+</button>
-<button type="button" id="zoom-reset">100 %</button>
-<button type="button" id="fit" aria-pressed="false">Tilpass til bredden</button>
+<div class="group" role="group" aria-label="{{T:size_label}}">
+<button type="button" id="zoom-out" aria-label="{{T:zoom_out}}">−</button>
+<span class="zoom-level" id="zoom-level" aria-live="polite">{{T:pct_100}}</span>
+<button type="button" id="zoom-in" aria-label="{{T:zoom_in}}">+</button>
+<button type="button" id="zoom-reset">{{T:pct_100}}</button>
+<button type="button" id="fit" aria-pressed="false">{{T:fit}}</button>
 </div>
-<div class="chips" role="group" aria-label="Fremhev en rolle">{{CHIPS}}</div>
+<div class="chips" role="group" aria-label="{{T:highlight_role}}">{{CHIPS}}</div>
 </div>
 <div class="flow">
 <figure class="figure">
 {{SVG}}
 </figure>
 <aside class="detail" id="detail" aria-labelledby="detail-h" hidden>
-<div class="detail-top"><p id="detail-h">Valgt steg</p>
-<button type="button" class="detail-close" id="detail-close">Lukk</button></div>
+<div class="detail-top"><p id="detail-h">{{T:selected_step}}</p>
+<button type="button" class="detail-close" id="detail-close">{{T:close}}</button></div>
 <div id="detail-body"></div>
 </aside>
 </div>
-<p class="legend">Hvert bånd er én rolle. Avrundet boks: start eller slutt. Rektangel: et steg.
-Sekskant: en beslutning, med svaret i en boble ved hver pil. Stiplet linje: tilbake til et
-tidligere steg. Rød kant og rødt merke med tall: et forbedringspunkt. Tallet inne i hver boks er
-stegets nummer, det samme som i fanen Steg.</p>
+<p class="legend">{{T:legend_1}}
+{{T:legend_2}}
+{{T:legend_3}}
+{{T:legend_4}}</p>
 </section>
 
 <section class="panel" id="panel-steg" aria-labelledby="steg-h">
-<h2 class="panel-h" id="steg-h">Steg</h2>
+<h2 class="panel-h" id="steg-h">{{T:tab_steps}}</h2>
 {{STEPS}}
 </section>
 
 <section class="panel" id="panel-roller" aria-labelledby="roller-h">
-<h2 class="panel-h" id="roller-h">Roller</h2>
+<h2 class="panel-h" id="roller-h">{{T:tab_roles}}</h2>
 {{ROLES}}
 </section>
 
 <section class="panel" id="panel-forbedring" aria-labelledby="forbedring-h">
-<h2 class="panel-h" id="forbedring-h">Forbedringspunkter</h2>
+<h2 class="panel-h" id="forbedring-h">{{T:tab_flags}}</h2>
 {{FLAGS}}
 </section>
 
 <section class="panel textalt" id="panel-tekst" aria-labelledby="tekst-h">
-<h2 class="panel-h" id="tekst-h">Tekstversjon</h2>
-<p>Den samme flyten som i diagrammet, rolle for rolle, i den rekkefølgen stegene skjer.</p>
+<h2 class="panel-h" id="tekst-h">{{T:tab_text}}</h2>
+<p>{{T:textalt_intro}}</p>
 {{TEXT_ALTERNATIVE}}
 </section>
 
 <footer>
-<p>Kilde: {{SOURCE_DESCRIPTION}}. Bestilt av: {{REQUESTED_BY}}. Laget {{BUILD_TIMESTAMP}}.
-Én selvstendig fil: ingen server, ingen nettverk, ingen lisens.</p>
+<p>{{T:foot_source}}: {{SOURCE_DESCRIPTION}}. {{T:foot_by}}: {{REQUESTED_BY}}. {{T:foot_made}} {{BUILD_TIMESTAMP}}.
+{{T:foot_standalone}}</p>
 </footer>
 </main>
 <script>
@@ -334,7 +334,7 @@ stegets nummer, det samme som i fanen Steg.</p>
     svg.style.width = fit ? "" : (natW * scale) + "px";
     svg.style.height = fit ? "" : (natH * scale) + "px";
     fitBtn.setAttribute("aria-pressed", fit ? "true" : "false");
-    level.textContent = fit ? "Tilpasset" : Math.round(scale * 100) + " %";
+    level.textContent = fit ? "{{T:fitted}}" : Math.round(scale * 100) + "{{T:pct_suffix}}";
   }
   function zoomBy(step) {
     fit = false;
@@ -363,7 +363,7 @@ stegets nummer, det samme som i fanen Steg.</p>
     });
   }
 
-  /* Detail panel: a copy of the step's card from the Steg panel, so there is one source. */
+  /* Detail panel: a copy of the step's card from the {{T:tab_steps}} panel, so there is one source. */
   var detail = doc.getElementById("detail"), body = doc.getElementById("detail-body");
   var selected = null;
   function openDetail(id) {
@@ -430,7 +430,7 @@ stegets nummer, det samme som i fanen Steg.</p>
     });
   });
 
-  /* "Vis i flyten": switch to Flyt, open the step, put focus on it. */
+  /* "{{T:show}}": switch to {{T:tab_flow}}, open the step, put focus on it. */
   each(doc.querySelectorAll(".show-in-flow"), function (b) {
     b.addEventListener("click", function () {
       var id = b.getAttribute("data-node"), n = nodeById(id);

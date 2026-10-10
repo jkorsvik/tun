@@ -1,12 +1,12 @@
 ---
 name: hotshot
-description: Full change-to-reviewable-PR pipeline under one name — "use hotshot" or "implement this with hotshot". Drive a change the user described in chat (bug, feature, refactor, wording, tooling) end to end: understand, implement, verify with whatever gate the repo documents, run the magnus-review loop and fix until it relents, run simplify, commit to a typed branch, push, open the PR. Repo-agnostic: it discovers the build/test/verify commands, the base branch and the forge rather than assuming them. Use when the user says "hotshot", "use hotshot", "implement this with hotshot", or names the sequence (review → simplify → push → PR).
+description: "Full change-to-reviewable-PR pipeline under one name — 'use hotshot' or 'implement this with hotshot'. Drive a change the user described in chat (bug, feature, refactor, wording, tooling) end to end: understand, implement, verify with whatever gate the repo documents, run the magnus-review loop and fix until it relents, run simplify, commit to a typed branch, push, open the PR. Repo-agnostic: it discovers the build/test/verify commands, the base branch and the forge rather than assuming them. Use when the user says 'hotshot', 'use hotshot', 'implement this with hotshot', or names the sequence (review → simplify → push → PR)."
 license: AGPL-3.0-or-later
 metadata:
   title: Hotshot
   version: 2.0.0
-  tags: [git, workflow, pr, review, agnostic]
-  platforms: [darwin, linux, win32]
+  tags: "git, workflow, pr, review, agnostic"
+  platforms: "darwin, linux, win32"
 ---
 
 # Hotshot
