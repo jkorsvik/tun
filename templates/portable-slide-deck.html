@@ -84,7 +84,7 @@ p{max-width:62ch;color:var(--muted);font-size:clamp(14px,1.3vw,20px);line-height
 .card span{font-size:clamp(12px,1vw,16px);line-height:1.4}
 
 #rail{position:fixed;z-index:10;left:2.2vw;top:50%;width:145px;transform:translateY(-50%)}
-.rail-sec{display:flex;align-items:center;gap:9px;padding:5px 0;opacity:.35;cursor:pointer}
+.rail-sec{display:flex;align-items:center;gap:9px;padding:5px 0;opacity:.7;cursor:pointer}  /* .35 put 9px labels at 2.8:1 */
 .rail-sec.on{opacity:1}
 .rail-sec .tick{width:13px;height:2px;flex:none;background:currentColor}
 .rail-sec.on .tick{width:28px;background:var(--accent)}
@@ -105,8 +105,8 @@ body.on-dark .control-btn{color:var(--paper)}
 .control-btn:active{transform:scale(.96)}
 .control-btn[disabled]{opacity:.28;cursor:default;transform:none}
 .control-icon{font-size:20px;line-height:1}
-#counter{min-width:52px;padding:0 8px;color:var(--muted);font-size:11px;letter-spacing:.12em;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
-body.on-dark #counter{color:rgba(247,245,240,.64)}
+#counter{min-width:52px;padding:0 8px;color:var(--ink);font-size:11px;letter-spacing:.12em;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+body.on-dark #counter{color:var(--paper)}
 #toast{position:fixed;z-index:30;left:50%;bottom:88px;width:min(88vw,560px);
   padding:12px 16px;transform:translate(-50%,12px);border-radius:10px;
   background:#101820;color:#fff;font:500 13px/1.4 var(--body);text-align:center;
@@ -114,7 +114,7 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 
 @media(hover:hover) and (pointer:fine){
-  #controls{opacity:.42;transition:opacity .2s}
+  #controls{opacity:.75;transition:opacity .2s}  /* idle, still 4.5:1 for its text */
   #controls:hover,#controls:focus-within{opacity:1}
 }
 @media(hover:none),(pointer:coarse){
@@ -148,7 +148,7 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
 <body>
 <script>document.documentElement.className+=" js"</script>
 <div id="js-warning">{{T:js_warning}}</div>
-<div id="rail"><div id="railnav"></div></div>
+<nav id="rail" aria-label="{{T:rail_label}}"><div id="railnav"></div></nav>
 <main>
   <!-- Replace these sample slides. Keep class="slide" and data-sec. -->
   <section class="slide dark" data-sec="{{T:sec_start}}">
@@ -174,7 +174,7 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
   </section>
 </main>
 
-<div id="controls" role="group" aria-label="{{T:controls_label}}">
+<nav id="controls" aria-label="{{T:controls_label}}">
   <button class="control-btn" id="nprev" type="button" aria-label="{{T:prev}}" title="{{T:prev}}">
     <span class="control-icon" aria-hidden="true">←</span>
   </button>
@@ -186,7 +186,7 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
     <span class="control-icon" id="fullscreen-icon" aria-hidden="true">⛶</span>
     <span id="fullscreen-label">{{T:fs_label}}</span>
   </button>
-</div>
+</nav>
 <div id="progress"><i></i></div>
 <div id="toast" role="status" aria-live="polite"></div>
 

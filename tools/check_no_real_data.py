@@ -116,6 +116,23 @@ NON_PERSON_DOMAINS = {
 }
 
 
+HEX_DIGIT = set("0123456789abcdefABCDEF")
+
+
+def _inside_hex_digest(line: str, start: int, end: int) -> bool:
+    """True when the digits sit inside a hash, not in text: a run of at least 32 hex
+    characters that also holds a letter a-f, like a sha256 pin. One in eleven 9-digit runs
+    inside a digest passes the orgnr checksum, so every re-pin would trip the gate. A
+    number written in text ("Orgnr 123456789", "NO123456789MVA") is still caught."""
+    lo, hi = start, end
+    while lo > 0 and line[lo - 1] in HEX_DIGIT:
+        lo -= 1
+    while hi < len(line) and line[hi] in HEX_DIGIT:
+        hi += 1
+    token = line[lo:hi]
+    return len(token) >= 32 and any(c in "abcdefABCDEF" for c in token)
+
+
 def _orgnr_valid(number: str) -> bool:
     """Norwegian organisation number: nine digits, mod-11 with weights 3,2,7,6,5,4,3,2.
 
@@ -192,10 +209,10 @@ def scan_text(rel: str, text: str) -> list[tuple[int, str, str]]:
         for match in PHONE_NO.finditer(line):
             findings.append((lineno, "Norwegian phone number", redact(match.group(0))))
         for match in DIGITS_9.finditer(line):
-            if _orgnr_valid(match.group(0)):
+            if _orgnr_valid(match.group(0)) and not _inside_hex_digest(line, *match.span()):
                 findings.append((lineno, "organisation number", redact(match.group(0))))
         for match in DIGITS_11.finditer(line):
-            if _fnr_valid(match.group(0)):
+            if _fnr_valid(match.group(0)) and not _inside_hex_digest(line, *match.span()):
                 findings.append((lineno, "national identity number", redact(match.group(0))))
     return findings
 
