@@ -8,14 +8,14 @@ setup.py — install the Tún skills and check this machine. Cross-platform.
 Replaces the old setup-skills.sh + doctor.sh, which were bash-only and full of
 macOS assumptions. Works on Windows, macOS and Linux. Stdlib only.
 
-    python3 setup.py           # install skills, check tools, run a smoke test
+    python3 setup.py           # check tools, run a smoke test; skills for RAIWork if installed
     python3 setup.py --check   # check only, change nothing (reports stale copies)
     python3 setup.py --link    # symlink instead of copy, for editing the skills
     python3 setup.py --hooks   # install the pre-commit gate, then exit
-    python3 setup.py --tool agents --tool claude   # also install for other AI tools
+    python3 setup.py --tool claude                 # skills for Claude Code (repeatable: agents)
 
-Read-only apart from installing the skills into ~/.raiwork/skills (and the folders --tool
-names). The skills are in the open Agent Skills format, so other tools read the same
+Read-only apart from installing the skills into ~/.raiwork/skills when RAIWork is
+installed, and into the folders --tool names. The skills are in the open Agent Skills format, so other tools read the same
 folders (docs/28): ~/.agents/skills is read by Codex, Gemini CLI, GitHub Copilot, VS Code
 and OpenCode; ~/.claude/skills by Claude Code, VS Code and OpenCode. VS Code and OpenCode read
 both, so installing both shows them each skill twice; pick the one your tool reads.
@@ -156,10 +156,17 @@ def _cleanup_renamed(sources: list[tuple[str, Path]], check_only: bool,
         label = f"{dst.name}  (stale)"
         if check_only:
             warn(label, "installed by a skill no longer in this repo — renamed or removed")
-            fix(f"python3 setup.py   # removes the stale {_show(skills_dir)}/{dst.name}")
+            fix(f"{_rerun(skills_dir)}   # removes the stale {_show(skills_dir)}/{dst.name}")
         else:
             shutil.rmtree(dst)
             ok(label, "removed — no longer a skill in this repo")
+
+
+def _rerun(skills_dir: Path) -> str:
+    """The command that repairs skills_dir. RAIWork's folder is the default; any other
+    tool's folder needs its --tool, or the advice would install nothing."""
+    tool = next((k for k, v in TOOLS.items() if v == skills_dir and k != "raiwork"), None)
+    return "python3 setup.py" + (f" --tool {tool}" if tool else "")
 
 
 def _show(path: Path) -> str:
@@ -219,17 +226,17 @@ def install_skills(check_only: bool, use_symlinks: bool = False,
                 n = _drift(src, dst)
                 if n:
                     warn(label, f"stale — {n} file(s) differ from this repo")
-                    fix("python3 setup.py")
+                    fix(_rerun(skills_dir))
                 elif old_marker:
                     warn(label, "up to date, but carries the old install marker")
-                    fix("python3 setup.py   # replaces the old marker")
+                    fix(f"{_rerun(skills_dir)}   # replaces the old marker")
                 else:
                     ok(label, "installed, up to date")
             elif user_own:
                 warn(label, "your own skill with this name — not managed here")
             else:
                 bad(label, "not installed")
-                fix("python3 setup.py")
+                fix(_rerun(skills_dir))
             continue
 
         if foreign_link:
@@ -444,6 +451,9 @@ def raiwork_cli() -> str | None:
 def check_mcp() -> None:
     section("MCP servers")
     global blocking
+    if not RAIWORK.exists():
+        warn("RAIWork", "not installed - skipping its MCP checks")
+        return
     cli = raiwork_cli()
     if not cli:
         warn("raiwork CLI", "not found - skipping MCP checks")
@@ -535,7 +545,8 @@ def main() -> int:
                     help="symlink the skills instead of copying them — for editing the "
                          "skills themselves. Edits then change this repo's working tree.")
     ap.add_argument("--tool", action="append", choices=list(TOOLS), default=[],
-                    help="also install into the folder this tool reads (repeatable): "
+                    help="install into the folder this tool reads (repeatable; RAIWork is "
+                         "included when ~/.raiwork exists): "
                          "agents = ~/.agents/skills (Codex, Gemini CLI, Copilot, VS Code, OpenCode), "
                          "claude = ~/.claude/skills (Claude Code, VS Code, OpenCode)")
     args = ap.parse_args()
@@ -551,7 +562,15 @@ def main() -> int:
     check_tools()
     check_repo()
     install_hooks(args.check)
-    for tool in dict.fromkeys(["raiwork", *args.tool]):
+    # RAIWork gets the skills when it is installed, as before. Anyone else names
+    # their tool; with neither, say how instead of failing on a tool they never had.
+    tools = (["raiwork"] if RAIWORK.exists() else []) + args.tool
+    if not tools:
+        section("Skills")
+        warn("no AI tool chosen", "skills not installed")
+        fix("Install the skills for your AI tool: python3 setup.py --tool claude "
+            "(Claude Code) or --tool agents (Codex, Gemini CLI, Copilot, VS Code, OpenCode)")
+    for tool in dict.fromkeys(tools):
         install_skills(args.check, use_symlinks=args.link, skills_dir=TOOLS[tool])
     check_mcp()
     check_onedrive()
@@ -560,7 +579,7 @@ def main() -> int:
     print("\n" + "-" * 60)
     if not fixes:
         print(f"{G}Everything the Tún skills need is in place.{Z}\n")
-        print("  Open RAIWork, set the working folder to this repo, and try:\n")
+        print("  Open your AI tool in this repo and try:\n")
         print('    "Build me a dashboard from examples/01-hello-dashboard/salgsdata.csv')
         print('     showing amounts by product and the trend over months,')
         print('     filterable by region."\n')

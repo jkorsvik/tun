@@ -45,32 +45,42 @@ versioning, audit, sync and offline. Reuse that machinery instead of fighting it
 | **[Portable slide deck](examples/18-portable-slide-deck/README.md)** (synthetic sample deck, one file, offline) | ✅ **working**. Responsive portrait/landscape controls, Chromium/WebKit matrix, guarded fullscreen |
 | In-page embedding (SPFx) | 🔶 designed, **blocked** on an SPFx package getting through tenant admin review |
 | Tier 3 (Parquet + DuckDB-WASM) | 🔶 designed. HTTP Range **measured and confirmed**, but it **cannot run from a portable file** and needs Tier 2 to host it |
-| Skills | ✅ 6 written (`tun-help`, `-new`, `-data`, `-verify`, `-publish`, `tun-powerbi-escape`) |
+| Skills | ✅ 9 written (`tun-help`, `-new`, `-data`, `-verify`, `-publish`, `-process`, `-feedback`, `tun-powerbi-escape`, `tun-for-communicators`) |
 | Onboarding | ✅ [written for a new contributor](docs/04-onboarding.md) |
 
-## Try it in two commands
+## Try it
+
+You need Python 3. From a clone of this repo:
 
 ```bash
-python3 setup.py
 python3 tools/build_dashboard.py \
   --data examples/01-hello-dashboard/salgsdata.csv \
   --title "Salg per region og produkt 2026" \
   --dimension Produkt --measure Belop --time Maaned \
   --filters Region,Produkt,Kanal \
   --requested-by "Prosjekteier" \
-  --out /tmp/demo.html && python3 tools/verify_dashboard.py /tmp/demo.html
+  --out /tmp/demo.html
 ```
 
-Or just open RAIWork and say *"make me a dashboard from this Excel file"*.
+Open `/tmp/demo.html` in a browser. That is the whole product: one file, no server.
 
-**Use another AI tool?** The skills are in the open
-[Agent Skills](https://agentskills.io/specification) format, so other tools read them too:
+Before you share a file, prove it in a real browser. This needs
+[uv](https://docs.astral.sh/uv/):
+
+```bash
+uv sync --extra verify && uv run playwright install chromium   # once
+uv run python tools/verify_dashboard.py /tmp/demo.html
+```
+
+**Use it from your AI tool.** The skills are in the open
+[Agent Skills](https://agentskills.io/specification) format. Install them for your tool,
+then ask for *"a dashboard from this Excel file"*:
 
 | Tool | Install |
 |---|---|
-| RAIWork | `python3 setup.py` |
 | Claude Code | `python3 setup.py --tool claude` |
 | Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode | `python3 setup.py --tool agents` |
+| RAIWork | `python3 setup.py` (when RAIWork is installed) |
 
 Tested on 2026-10-08: Gemini CLI and Claude Code load every skill. Codex is checked in its
 source code, the rest in each tool's own docs ([docs/28](docs/28-prior-art.md)).
@@ -129,7 +139,10 @@ python3 setup.py
 ```
 
 Reports what's present, what's missing, and the exact command to fix each gap. Then it runs
-a real build-and-verify smoke test. Read-only and safe to re-run.
+a real build smoke test, and verifies it in a browser when Playwright is installed. It
+changes two things: it points this clone's `core.hooksPath` at `tools/hooks` (the pre-commit
+gate), and it installs the skills for your tool. Safe to re-run. `python3 setup.py --check`
+changes nothing.
 
 
 ## The one rule
