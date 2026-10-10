@@ -7,7 +7,7 @@
   under terms of your choice, provided the Origin Notice is preserved.
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<html lang="nb">
+<html lang="{{T:html_lang}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -63,14 +63,14 @@ html.js #js-warning{display:none}
 .eyebrow{margin-bottom:2vh;color:var(--accent2);font-size:clamp(10px,.85vw,13px);
   font-weight:700;letter-spacing:.2em;text-transform:uppercase}
 .slide.dark .eyebrow{color:var(--accent)}
-/* overflow-wrap/word-break: a real, long Norwegian compound word in h1/h2/p can exceed
+/* overflow-wrap/word-break: a real, long {{T:c_wrap_kind}} in h1/h2/p can exceed
    its box at any of the clamp() sizes below. .slide has overflow:hidden (by design, to
    clip the slide-change transform), so an unwrapped long word is not just visually
    ugly — it is silently and invisibly clipped, with no scrollbar and no sign anything
-   is missing. Reproduced on the shipped template: a 34-character real word ("Trygde-
-   avgiftsberegningsforskriften") in <h1> overflowed its box by 229px on a 390px-wide
+   is missing. Reproduced on the shipped template: {{T:c_wrap_a}}
+   {{T:c_wrap_b}} in <h1> overflowed its box by 229px on a 390px-wide
    mobile viewport (scrollWidth 564 vs clientWidth 335) and vanished with zero visual
-   trace. hyphens:auto is a second, cosmetic layer on top — lang="nb" is already set on
+   trace. hyphens:auto is a second, cosmetic layer on top — lang="{{T:html_lang}}" is already set on
    <html>, so supporting browsers get a real hyphen at the break instead of a bare cut. */
 h1,h2,p,.card strong,.card span{overflow-wrap:break-word;word-break:break-word;hyphens:auto}
 h1,h2{max-width:24ch;font-family:var(--display);font-weight:600;letter-spacing:-.02em}
@@ -147,44 +147,44 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
 </head>
 <body>
 <script>document.documentElement.className+=" js"</script>
-<div id="js-warning">Begrenset forhåndsvisning: Lagre filen og åpne den fra Filer eller Nedlastinger i en nettleser for navigasjon og fullskjerm.</div>
+<div id="js-warning">{{T:js_warning}}</div>
 <div id="rail"><div id="railnav"></div></div>
 <main>
   <!-- Replace these sample slides. Keep class="slide" and data-sec. -->
-  <section class="slide dark" data-sec="Start">
-    <div class="eyebrow">Organisasjon · måned 2026</div>
-    <h1>Én tydelig påstand per lysbilde.</h1>
-    <p style="margin-top:3vh">Denne filen virker lokalt, uten server eller nettverk.</p>
+  <section class="slide dark" data-sec="{{T:sec_start}}">
+    <div class="eyebrow">{{T:s1_eyebrow}}</div>
+    <h1>{{T:s1_h1}}</h1>
+    <p style="margin-top:3vh">{{T:s1_p}}</p>
   </section>
 
-  <section class="slide" data-sec="Forklaring">
-    <div class="eyebrow">Det viktigste først</div>
-    <h2>Bruk innhold som kan leses på en liten skjerm</h2>
+  <section class="slide" data-sec="{{T:sec_explain}}">
+    <div class="eyebrow">{{T:s2_eyebrow}}</div>
+    <h2>{{T:s2_h2}}</h2>
     <div class="grid">
-      <div class="card"><strong>1</strong><span>Én idé per lysbilde</span></div>
-      <div class="card"><strong>48 px</strong><span>Minste berøringsflate</span></div>
-      <div class="card"><strong>0</strong><span>Eksterne avhengigheter</span></div>
+      <div class="card"><strong>1</strong><span>{{T:card_1}}</span></div>
+      <div class="card"><strong>48 px</strong><span>{{T:card_2}}</span></div>
+      <div class="card"><strong>0</strong><span>{{T:card_3}}</span></div>
     </div>
   </section>
 
-  <section class="slide dark" data-sec="Avslutning">
-    <div class="eyebrow">Neste steg</div>
-    <h2>Bytt ut eksemplene og kjør verifikasjonen.</h2>
-    <p>Behold kontrollene, fullskjermkontrollen og mobilreglene.</p>
+  <section class="slide dark" data-sec="{{T:sec_end}}">
+    <div class="eyebrow">{{T:s3_eyebrow}}</div>
+    <h2>{{T:s3_h2}}</h2>
+    <p>{{T:s3_p}}</p>
   </section>
 </main>
 
-<div id="controls" role="group" aria-label="Presentasjonskontroller">
-  <button class="control-btn" id="nprev" type="button" aria-label="Forrige lysbilde" title="Forrige lysbilde">
+<div id="controls" role="group" aria-label="{{T:controls_label}}">
+  <button class="control-btn" id="nprev" type="button" aria-label="{{T:prev}}" title="{{T:prev}}">
     <span class="control-icon" aria-hidden="true">←</span>
   </button>
   <div id="counter" aria-live="polite">1 / 1</div>
-  <button class="control-btn" id="nnext" type="button" aria-label="Neste lysbilde" title="Neste lysbilde">
+  <button class="control-btn" id="nnext" type="button" aria-label="{{T:next}}" title="{{T:next}}">
     <span class="control-icon" aria-hidden="true">→</span>
   </button>
-  <button class="control-btn" id="fullscreen" type="button" aria-label="Vis i fullskjerm" title="Vis i fullskjerm" aria-pressed="false">
+  <button class="control-btn" id="fullscreen" type="button" aria-label="{{T:fs_enter}}" title="{{T:fs_enter}}" aria-pressed="false">
     <span class="control-icon" id="fullscreen-icon" aria-hidden="true">⛶</span>
-    <span id="fullscreen-label">Fullskjerm</span>
+    <span id="fullscreen-label">{{T:fs_label}}</span>
   </button>
 </div>
 <div id="progress"><i></i></div>
@@ -218,9 +218,9 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
   function updateFullscreenControl(){
     var active = !!fullscreenElement();
     fullscreenButton.setAttribute('aria-pressed', active ? 'true' : 'false');
-    fullscreenButton.setAttribute('aria-label', active ? 'Avslutt fullskjerm' : 'Vis i fullskjerm');
-    fullscreenButton.title = active ? 'Avslutt fullskjerm' : 'Vis i fullskjerm';
-    fullscreenLabel.textContent = active ? 'Avslutt' : 'Fullskjerm';
+    fullscreenButton.setAttribute('aria-label', active ? '{{T:fs_exit}}' : '{{T:fs_enter}}');
+    fullscreenButton.title = active ? '{{T:fs_exit}}' : '{{T:fs_enter}}';
+    fullscreenLabel.textContent = active ? '{{T:fs_exit_short}}' : '{{T:fs_label}}';
     fullscreenIcon.textContent = active ? '×' : '⛶';
   }
   function toggleFullscreen(){
@@ -231,23 +231,23 @@ body.on-dark #counter{color:rgba(247,245,240,.64)}
     }
     var request = fullscreenRequest();
     if(!request){
-      notify('Nettleseren støtter ikke fullskjerm for HTML. Presentasjonen virker fortsatt i nettleservinduet.');
+      notify('{{T:msg_unsupported}}');
       return;
     }
     try{
       var result = request.call(document.documentElement);
       if(result && result.catch){
-        result.catch(function(){ notify('Nettleseren avslo fullskjerm. Presentasjonen virker fortsatt i nettleservinduet.'); });
+        result.catch(function(){ notify('{{T:msg_refused}}'); });
       }
     }catch(err){
-      notify('Nettleseren avslo fullskjerm. Presentasjonen virker fortsatt i nettleservinduet.');
+      notify('{{T:msg_refused}}');
     }
   }
 
   var railnav = document.getElementById('railnav');
   var sections = [], seen = {};
   slides.forEach(function(slide,index){
-    var name = slide.dataset.sec || 'Lysbilde';
+    var name = slide.dataset.sec || '{{T:default_section}}';
     if(!(name in seen)){
       seen[name] = sections.length;
       sections.push({name:name,first:index,slides:[]});

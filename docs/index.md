@@ -68,6 +68,7 @@ constraints measured so that nobody has to rediscover them.
 | [The hosted route](23-hosted-route-it-brief.md) | The one route that is not a file: what it needs, and the five questions only IT can answer |
 | [Generic-layer manifest](14-generic-layer-manifest.md) | What another repo may vendor from this one |
 | [What was built](27-what-was-built.md) | Applications made this way, by pattern, and the one lesson each taught |
+| [Prior art](28-prior-art.md) | Similar projects and standards, what Tún takes from each, every quote checked against its page |
 
 ## Licence, name and release
 

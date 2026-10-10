@@ -105,6 +105,15 @@ strip_copyright_lines = export_gate.strip_copyright_lines
 strip_attribution = export_gate.strip_attribution
 
 
+#: Attribution in JSON, where the comment markers above cannot live (the two Claude Code
+#: manifests). Defined in tools/check_export_clean.py, one definition for both gates: exactly
+#: one value per file is exempt, only the person label is exempt, and a declared manifest that
+#: is not plain JSON is a problem of its own (see export_gate.manifest_subjects).
+JSON_ATTRIBUTION = export_gate.JSON_ATTRIBUTION
+JSON_ATTRIBUTION_EXEMPT = tuple(f"local:{label}" for label in export_gate.JSON_ATTRIBUTION_EXEMPT)
+NotPlainJson = export_gate.NotPlainJson
+
+
 # --- Where the patterns come from -------------------------------------------------------
 #
 # Nothing identifying is written in this file. A tracked list of the organisation's name,
@@ -227,29 +236,52 @@ def total(hits: dict[str, int]) -> int:
     return sum(hits.values())
 
 
-def scan() -> dict[str, dict]:
-    """Return {category: {rel: count}} over core files, plus "_scope"."""
-    files = [f for f in tree_scan.tracked_paths() if in_core(f)]
-    if not files:
-        raise tree_scan.ScopeError(
-            "resolved zero core files — the scope is broken, not clean")
+def scan_texts(texts: dict[str, str]) -> dict[str, dict]:
+    """Return {category: {rel: count}} for {rel: text}, plus "_scope".
+
+    Pure over its input, so a hypothetical tree can be scanned without touching git."""
     compiled = {name: re.compile(pat) for name, (pat, _k, _w) in CATEGORIES.items() if pat}
     out: dict[str, dict] = {n: {} for n in CATEGORIES}
-    for rel in files:
-        path = tree_scan.REPO / rel
-        if not path.exists():
-            raise tree_scan.ScopeError(f"tracked file missing from the working tree: {rel}")
-        text = path.read_text(encoding="utf-8", errors="replace")
+    shape: dict[str, str] = {}
+    for rel, text in texts.items():
         attributed = strip_attribution(text) if ATTRIBUTION_START in text else text
+        try:
+            subjects = export_gate.manifest_subjects(rel, text)
+        except NotPlainJson:
+            subjects = None
+            shape[rel] = "not plain JSON"
         for name, rx in compiled.items():
             subject = attributed if name in ATTRIBUTION_EXEMPT else text
             if name in NOTICE_EXEMPT:
                 subject = strip_copyright_lines(subject)
             hits = len(rx.findall(subject))
+            if subjects is not None and name in JSON_ATTRIBUTION_EXEMPT:
+                hits = max(len(rx.findall(t)) for t in subjects)
             if hits:
                 out[name][rel] = hits
-    out["_scope"] = {"files": len(files)}
+    out["_scope"] = {"files": len(texts)}
+    out["_shape"] = shape
     return out
+
+
+def read_core() -> dict[str, str]:
+    """{rel: text} for every tracked core file."""
+    files = [f for f in tree_scan.tracked_paths() if in_core(f)]
+    if not files:
+        raise tree_scan.ScopeError(
+            "resolved zero core files — the scope is broken, not clean")
+    texts: dict[str, str] = {}
+    for rel in files:
+        path = tree_scan.REPO / rel
+        if not path.exists():
+            raise tree_scan.ScopeError(f"tracked file missing from the working tree: {rel}")
+        texts[rel] = path.read_text(encoding="utf-8", errors="replace")
+    return texts
+
+
+def scan() -> dict[str, dict]:
+    """Return {category: {rel: count}} over core files, plus "_scope"."""
+    return scan_texts(read_core())
 
 
 def load_baseline() -> dict[str, dict[str, int]]:
@@ -282,6 +314,48 @@ def load_baseline() -> dict[str, dict[str, int]]:
                     f"baseline {name}/{path} has a non-integer count {count!r}. "
                     f"Regenerate with --baseline.")
     return data
+
+
+def judge(name: str, kind: str, why: str, hits: dict[str, int],
+          want: dict[str, int]) -> tuple[str | None, str, str, str]:
+    """Compare one category to its baseline. Returns (problem or None, icon, colour, note)."""
+    got_total, got_files = total(hits), set(hits)
+    if kind == "forbidden":
+        if got_total:
+            return (f"{name}: forbidden, found {got_total} occurrence(s) in "
+                    f"{len(got_files)} file(s) — {why}", "✗", R, f"{got_total} FORBIDDEN")
+        return None, "✓", G, "absent, as required"
+    want_total, want_files = total(want), set(want)
+    new = got_files - want_files
+    if new:
+        return (f"{name}: {len(new)} new file(s): " + ", ".join(sorted(new)[:5]),
+                "✗", R, f"{len(new)} NEW file(s)")
+    if got_total > want_total:
+        return (f"{name}: {got_total} occurrences, baseline {want_total} — core drifted back",
+                "✗", R, f"{got_total} > {want_total}")
+    if got_total < want_total:
+        return (f"{name}: {got_total} occurrences, baseline {want_total} — progress,"
+                f" bank it with --baseline", "✗", Y, f"{got_total} < {want_total}, bank it")
+    if got_total:
+        return None, "•", Y, f"{got_total} in {len(got_files)} file(s)"
+    return None, "✓", G, "clean"
+
+
+def shape_problems(current: dict[str, dict]) -> list[str]:
+    """One problem per declared manifest that is not plain JSON."""
+    return [f"{export_gate.MANIFEST_SHAPE}: {rel} is not plain JSON" for rel in sorted(current["_shape"])]
+
+
+def problems_for(current: dict[str, dict], baseline: dict[str, dict[str, int]]) -> list[str]:
+    """Every problem the CLI would print for this scan, in order."""
+    out = []
+    for name, (pat, kind, why) in CATEGORIES.items():
+        if not pat:
+            continue      # nothing to look for: main() says so, and judges nothing
+        problem = judge(name, kind, why, current[name], baseline.get(name, {}))[0]
+        if problem:
+            out.append(problem)
+    return out + shape_problems(current)
 
 
 def main() -> int:
@@ -339,38 +413,13 @@ def main() -> int:
             if not args.quiet:
                 print(f"  {D}- {name:<{width}}  {kind:<10} nothing to look for (no plugin declares it){Z}")
             continue
-        got_total = total(current[name])
-        got_files = set(current[name])
-        if kind == "forbidden":
-            if got_total:
-                problems.append(f"{name}: forbidden, found {got_total} occurrence(s) in "
-                                f"{len(got_files)} file(s) — {why}")
-                icon, colour, note = "✗", R, f"{got_total} FORBIDDEN"
-            else:
-                icon, colour, note = "✓", G, "absent, as required"
-        else:
-            want = baseline.get(name, {})
-            want_total, want_files = total(want), set(want)
-            new = got_files - want_files
-            if new:
-                problems.append(f"{name}: {len(new)} new file(s): "
-                                + ", ".join(sorted(new)[:5]))
-                icon, colour, note = "✗", R, f"{len(new)} NEW file(s)"
-            elif got_total > want_total:
-                problems.append(f"{name}: {got_total} occurrences, baseline {want_total}"
-                                f" — core drifted back")
-                icon, colour, note = "✗", R, f"{got_total} > {want_total}"
-            elif got_total < want_total:
-                problems.append(
-                    f"{name}: {got_total} occurrences, baseline {want_total} — progress,"
-                    f" bank it with --baseline")
-                icon, colour, note = "✗", Y, f"{got_total} < {want_total}, bank it"
-            elif got_total:
-                icon, colour, note = "•", Y, f"{got_total} in {len(got_files)} file(s)"
-            else:
-                icon, colour, note = "✓", G, "clean"
+        problem, icon, colour, note = judge(name, kind, why, current[name],
+                                            baseline.get(name, {}))
+        if problem:
+            problems.append(problem)
         if not args.quiet:
             print(f"  {colour}{icon}{Z} {name:<{width}}  {D}{kind:<10}{Z} {colour}{note}{Z}")
+    problems += shape_problems(current)
 
     if not args.quiet:
         print("─" * 78)

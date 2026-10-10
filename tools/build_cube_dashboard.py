@@ -48,6 +48,8 @@ import sys
 import zlib
 
 TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "cube-dashboard.html"
+# The strings table is named, not derived from TEMPLATE: a test points TEMPLATE at a copy.
+STRINGS = "cube-dashboard"
 
 # Colours come from tools/tun_tokens.py, never from the template. The cube template
 # defines its own neutral greys and uses only the palette slots, so no theme file is
@@ -55,6 +57,7 @@ TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "cube-das
 TOOLS_DIR = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS_DIR))
 import feedback_link  # noqa: E402
+import i18n  # noqa: E402
 import tun_tokens  # noqa: E402
 
 # Bounds the browser's decoded footprint: cells x measures x 4 bytes.
@@ -294,7 +297,9 @@ def main() -> int:
                     help="a role, e.g. \"Salgsavdelingen\". Not a person's name.")
     ap.add_argument("--feedback-to", default="", metavar="ADDRESS_OR_ISSUE_URL",
                     help=feedback_link.FLAG_HELP)
+    i18n.add_lang_argument(ap)
     args = ap.parse_args()
+    t = i18n.load(STRINGS, args.lang)
 
     if not args.data.exists():
         die(f"{args.data} not found")
@@ -326,19 +331,19 @@ def main() -> int:
                 # Only the provenance comment spells that out as NOT_STATED.
                 requested_by=args.requested_by, source=args.data.name)
 
-    source = (f"{args.data.name} — {meta['source_rows']:,} rows aggregated to "
-              f"{meta['n']:,} cube cells over {', '.join(meta['dims'])}")
+    source = i18n.fill(t["source_line"], name=args.data.name, rows=f"{meta['source_rows']:,}",
+                       cells=f"{meta['n']:,}", dims=", ".join(meta["dims"]))
     feedback = ""
     if args.feedback_to:
         try:
             feedback = feedback_link.block(args.feedback_to, title=args.title,
-                                           built=meta["built"], source=source)
+                                           built=meta["built"], source=source, lang=args.lang)
         except ValueError as exc:
             die(f"--feedback-to: {exc}")
 
     token_css, token_source = tun_tokens.load_token_css(core_files=())
 
-    html = (TEMPLATE.read_text(encoding="utf-8")
+    html = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
             .replace("{{TOKEN_CSS}}", token_css)
             .replace("{{META}}", json.dumps(meta, ensure_ascii=False))
             .replace("{{DATA}}", b64)

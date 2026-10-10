@@ -1,0 +1,14 @@
+{
+  "name": "tun",
+  "description": "Tún: standalone artefacts",
+  "owner": {
+    "name": "Jon-Mikkel Ryen Korsvik"
+  },
+  "plugins": [
+    {
+      "name": "tun",
+      "source": "./",
+      "description": "Turn any data file into an interactive artefact that is just a file. Skills to build, refresh, verify and publish artefacts."
+    }
+  ]
+}

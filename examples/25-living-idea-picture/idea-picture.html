@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tún: idéen, levende</title>
+<!--
+  ===========================================================================
+  PROVENANCE
+    Source      : examples/25-living-idea-picture/idea-picture.template.html
+    Source data : none. The host lines are measured facts, each from docs/01 or docs/11
+    Built       : 2026-10-09
+    Requested by: maintainer
+    Built by    : examples/25-living-idea-picture/build_idea_picture.py
+    Repo        : tun
+    Made with   : Tún, tun.community
+    Generator   : build_idea_picture.py (stdlib only)
+    Palette     : the Tún mark (plugins/tun/README.md), hard-coded, no tokens
+  No scripts. Motion and exploration are CSS only. Nothing is loaded from
+  anywhere. The figure between the figure:start and figure:end markers is
+  the part the public site copies.
+  ===========================================================================
+-->
+<style>
+:root{--ink:#0d2b21;--ink-soft:#28473c;--accent:#3f8f3f;--paper:#f7f7f5;--panel:#fff;
+  --line:#dfe3e0;--muted:#5d6b65;--warn:#8c3b2e;--warn-soft:#fbf1ee}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:1.0625rem/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:62rem;margin:0 auto;padding:2.5rem 1.5rem 5rem}
+h1{font-size:2.1rem;line-height:1.2;letter-spacing:-.015em;margin:0 0 .5rem}
+.lede{font-size:1.2rem;color:var(--ink-soft);margin:0 0 2rem;max-width:46rem}
+h2{font-size:1.15rem;margin:2.75rem 0 .75rem}
+footer{margin-top:4rem;padding-top:1.5rem;border-top:.0625rem solid var(--line);font-size:.87rem;color:var(--muted)}
+/* figure-css:start */
+/* Up to 62rem wide even inside a narrower column, so the picture's text stays readable. */
+.lv{position:relative;margin:1.5rem calc(50% - min(31rem, 50vw - 1rem));padding:1.25rem;
+  background:var(--panel,#fff);border:.0625rem solid var(--line,#dfe3e0);border-radius:.6rem}
+.lv-r{position:absolute;width:.0625rem;height:.0625rem;margin:-.0625rem;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;opacity:0}
+.lv-stage svg{display:block;width:100%;height:auto}
+.lv-stage .lv-tall{display:none}
+@media (max-width:52rem){.lv{padding:.75rem}.lv-stage .lv-wide{display:none}
+  .lv-stage .lv-tall{display:block;max-width:28rem;margin:0 auto}}
+.lv text{font-family:inherit}
+/* SVG text sizes are user units of the viewBox, not page layout: px keeps the picture's
+   proportions fixed when the reader's root font size changes. */
+.lv .t-h{font-size:15px;font-weight:700;fill:#0d2b21}
+.lv .t-core{font-size:34px;font-weight:700;fill:#0d2b21}
+.lv .t-file{font-size:17px;font-weight:700;fill:#0d2b21}
+.lv .t-b{font-size:14px;fill:#28473c}
+.lv .t-js{font-size:13px;font-style:italic;fill:#2f6b4f}
+.lv .t-s{font-size:12.5px;fill:#5d6b65}
+.lv .t-s2{font-size:13px;fill:#28473c}
+.lv .t-cap{font-size:12.5px;font-weight:700;letter-spacing:.06em;fill:#28473c}
+.lv .t-kill{font-size:13px;font-weight:700;letter-spacing:.06em;fill:#8c3b2e}
+.lv .t-k{font-size:13.5px;fill:#6b3229}
+.lv .t-w{font-size:12px;fill:#8c3b2e}
+.lv .t-loop{font-size:12.5px;fill:#5d6b65}
+.lv .g{transition:opacity .45s ease}
+.lv .pk{fill:#3f8f3f;opacity:0;offset-rotate:0deg;animation:lv-flow 3.2s linear infinite}
+.lv .pk.back{fill:#7f9a90}
+.lv .pk.warn{fill:#8c3b2e}
+.lv .rays,.lv .glow{transform-box:fill-box;transform-origin:center;
+  animation:lv-breathe 6s ease-in-out infinite}
+.lv .strike{fill:none;stroke:#8c3b2e;stroke-width:1.6;stroke-dasharray:1;stroke-dashoffset:0;
+  animation:lv-strike .9s ease-out both}
+.lv .k1{animation-delay:1.2s}.lv .k2{animation-delay:1.6s}
+.lv .k3{animation-delay:2s}.lv .k4{animation-delay:2.4s}
+@keyframes lv-flow{0%{offset-distance:0%;opacity:0}12%,88%{opacity:1}
+  100%{offset-distance:100%;opacity:0}}
+@keyframes lv-breathe{0%,100%{opacity:.6;transform:scale(.97)}50%{opacity:1;transform:scale(1.03)}}
+@keyframes lv-strike{from{stroke-dashoffset:1}}
+@keyframes lv-run{0%{offset-distance:0%;opacity:1}23%{offset-distance:100%;opacity:1}
+  25%,100%{offset-distance:100%;opacity:0}}
+@keyframes lv-step{0%,23%{opacity:1}27%,96%{opacity:.18}100%{opacity:1}}
+@keyframes lv-cap{0%,23%{opacity:1}25%,100%{opacity:0}}
+@keyframes lv-restrike{0%{stroke-dashoffset:1}6%,100%{stroke-dashoffset:0}}
+.lv-cap{position:relative;min-height:1.6em;margin:.75rem 0 0;font-weight:600;color:#0d2b21;
+  display:none}
+.lv-cap span{position:absolute;left:0;right:0;opacity:0}
+#lv-play:checked~.lv-cap{display:block}
+.lv-lenses,.lv-hosts{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 0}
+.lv-lenses label,.lv-hosts label{cursor:pointer;padding:.25rem .8rem;border-radius:999px;
+  border:.09375rem solid var(--line,#dfe3e0);background:var(--paper,#f7f7f5);
+  color:#28473c;font-size:.9rem;line-height:1.5}
+.lv-lenses label:hover,.lv-hosts label:hover{border-color:#28473c}
+.lv-play{margin-left:auto}
+.lv-play .off,#lv-play:checked~.lv-lenses .lv-play .on{display:none}
+#lv-play:checked~.lv-lenses .lv-play .off{display:inline}
+.lv-play::before{content:"\25B6\FE0E  ";color:#3f8f3f}
+#lv-play:checked~.lv-lenses .lv-play::before{content:"\25A0\FE0E  "}
+.lv-panels{margin:1rem 0 0;font-size:.95rem;color:#28473c}
+.lv-panels h3{font-size:1rem;margin:0 0 .3rem;color:#0d2b21}
+.lv-panels p{margin:0}
+.lv-p,.lv-ht{display:none}
+.lv-p p+p{margin-top:.6rem}
+.lv-hosts{margin:.25rem 0 .6rem}
+.lv-hosts label{font-size:.85rem}
+.lv-r[name=lv-host]:checked~.lv-panels .lv-ht-none{display:none}
+.lv-ideas{margin:1.5rem 0 0;padding-top:1rem;border-top:.0625rem solid var(--line,#dfe3e0)}
+.lv-ideas h3{font-size:1rem;margin:0 0 .5rem;color:#0d2b21}
+.lv-ideas ul{list-style:none;margin:0;padding:0;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.6rem}
+.lv-ideas li{margin:0;padding:.6rem .75rem;border:.0625rem solid var(--line,#dfe3e0);
+  border-radius:.5rem;font-size:.9rem;color:#28473c;background:var(--paper,#f7f7f5)}
+.lv-ideas b{display:inline-block;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:0 .45rem;border-radius:999px;margin-right:.3rem;vertical-align:.1em}
+.lv-ideas .now{background:#0d2b21;color:#fff}
+.lv-ideas .soon{background:#e4efe4;color:#0d2b21}
+.lv-ideas .dir{border:.0625rem solid #5d6b65;color:#28473c}
+.lv-ideas strong{color:#0d2b21}
+.lv-ideas li.lead{grid-column:1/-1}
+/* Paper: the whole picture lit and still, every lens text and host line as a list. */
+@media print{
+  .lv *{animation:none!important;transition:none!important}
+  .lv .pk,.lv-lenses,.lv-hosts,.lv-ht-none,.lv-cap{display:none!important}
+  .lv .g{opacity:1!important}
+  .lv-p,.lv-ht{display:block!important;margin:0 0 .5rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .lv *{animation:none!important;transition:none!important}
+  .lv .pk{display:none}
+  .lv-cap{min-height:0}
+  .lv-cap span{position:static;display:block;opacity:1}
+}
+.lv .pk-w-author{offset-path:path('M214,366 C236,358 252,350 274,342');animation-delay:0s}
+#lv-play:checked~.lv-stage .pk-w-author{animation:lv-run 12s linear infinite;animation-delay:0s}
+.lv .pk-w-comm{offset-path:path('M240,182 C268,214 296,232 300,256');animation-delay:1.2s}
+#lv-play:checked~.lv-stage .pk-w-comm{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-w-commback{offset-path:path('M300,256 C296,232 268,214 240,182');animation-delay:2.6s}
+#lv-play:checked~.lv-stage .pk-w-commback{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-w-fb{offset-path:path('M396,164 V222');animation-delay:3.6s}
+#lv-play:checked~.lv-stage .pk-w-fb{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-w-out{offset-path:path('M462,300 H556');animation-delay:0.8s}
+#lv-play:checked~.lv-stage .pk-w-out{animation:lv-run 12s linear infinite;animation-delay:-9s}
+.lv .pk-w-kill{offset-path:path('M742,250 C790,232 800,226 812,222');animation-delay:2.0s}
+#lv-play:checked~.lv-stage .pk-w-kill{animation:lv-run 12s linear infinite;animation-delay:-6s}
+.lv .pk-w-down{offset-path:path('M666,384 V520');animation-delay:1.6s}
+#lv-play:checked~.lv-stage .pk-w-down{animation:lv-run 12s linear infinite;animation-delay:-6s}
+.lv .pk-w-read{offset-path:path('M682,526 C752,520 806,502 856,484');animation-delay:2.4s}
+#lv-play:checked~.lv-stage .pk-w-read{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-w-loop{offset-path:path('M902,450 C958,428 986,384 986,306 L986,70 C986,60 978,52 968,52 L456,52 C446,52 438,60 438,70 L438,106');animation-delay:2.8s}
+#lv-play:checked~.lv-stage .pk-w-loop{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-t-author{offset-path:path('M76,304 C94,290 106,280 124,266');animation-delay:0s}
+#lv-play:checked~.lv-stage .pk-t-author{animation:lv-run 12s linear infinite;animation-delay:0s}
+.lv .pk-t-comm{offset-path:path('M130,82 C134,118 142,142 154,166');animation-delay:1.2s}
+#lv-play:checked~.lv-stage .pk-t-comm{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-t-commback{offset-path:path('M154,166 C142,142 134,118 130,82');animation-delay:2.6s}
+#lv-play:checked~.lv-stage .pk-t-commback{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-t-fb{offset-path:path('M318,78 C316,118 292,148 262,170');animation-delay:3.6s}
+#lv-play:checked~.lv-stage .pk-t-fb{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-t-out{offset-path:path('M200,312 V380');animation-delay:0.8s}
+#lv-play:checked~.lv-stage .pk-t-out{animation:lv-run 12s linear infinite;animation-delay:-9s}
+.lv .pk-t-kill{offset-path:path('M284,488 C292,498 298,506 304,516');animation-delay:2.0s}
+#lv-play:checked~.lv-stage .pk-t-kill{animation:lv-run 12s linear infinite;animation-delay:-6s}
+.lv .pk-t-down{offset-path:path('M120,486 V708');animation-delay:1.6s}
+#lv-play:checked~.lv-stage .pk-t-down{animation:lv-run 12s linear infinite;animation-delay:-6s}
+.lv .pk-t-read{offset-path:path('M134,714 C206,708 262,698 310,688');animation-delay:2.4s}
+#lv-play:checked~.lv-stage .pk-t-read{animation:lv-run 12s linear infinite;animation-delay:-3s}
+.lv .pk-t-loop{offset-path:path('M370,652 C390,640 394,620 394,600 L394,60 C394,52 392,48 388,48');animation-delay:2.8s}
+#lv-play:checked~.lv-stage .pk-t-loop{animation:lv-run 12s linear infinite;animation-delay:-3s}
+#lv-play:checked~.lv-stage .s1{animation:lv-step 12s linear infinite;animation-delay:0s}
+#lv-play:checked~.lv-cap .c1{animation:lv-cap 12s linear infinite;animation-delay:0s}
+#lv-play:checked~.lv-stage .s2{animation:lv-step 12s linear infinite;animation-delay:-9s}
+#lv-play:checked~.lv-cap .c2{animation:lv-cap 12s linear infinite;animation-delay:-9s}
+#lv-play:checked~.lv-stage .s3{animation:lv-step 12s linear infinite;animation-delay:-6s}
+#lv-play:checked~.lv-cap .c3{animation:lv-cap 12s linear infinite;animation-delay:-6s}
+#lv-play:checked~.lv-stage .s4{animation:lv-step 12s linear infinite;animation-delay:-3s}
+#lv-play:checked~.lv-cap .c4{animation:lv-cap 12s linear infinite;animation-delay:-3s}
+#lv-play:checked~.lv-stage .k1{animation:lv-restrike 12s linear infinite;animation-delay:-5.7s}
+#lv-play:checked~.lv-stage .k2{animation:lv-restrike 12s linear infinite;animation-delay:-5.4s}
+#lv-play:checked~.lv-stage .k3{animation:lv-restrike 12s linear infinite;animation-delay:-5.1s}
+#lv-play:checked~.lv-stage .k4{animation:lv-restrike 12s linear infinite;animation-delay:-4.8s}
+#lv-all:not(:checked)~.lv-stage .g{opacity:.16}
+#lv-all:checked~.lv-lenses [for=lv-all]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-all:focus-visible~.lv-lenses [for=lv-all]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-all:checked~.lv-panels .lv-p-all{display:block}
+#lv-author:checked~.lv-stage .l-author{opacity:1}
+#lv-author:checked~.lv-lenses [for=lv-author]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-author:focus-visible~.lv-lenses [for=lv-author]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-author:checked~.lv-panels .lv-p-author{display:block}
+#lv-reader:checked~.lv-stage .l-reader{opacity:1}
+#lv-reader:checked~.lv-lenses [for=lv-reader]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-reader:focus-visible~.lv-lenses [for=lv-reader]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-reader:checked~.lv-panels .lv-p-reader{display:block}
+#lv-community:checked~.lv-stage .l-community{opacity:1}
+#lv-community:checked~.lv-lenses [for=lv-community]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-community:focus-visible~.lv-lenses [for=lv-community]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-community:checked~.lv-panels .lv-p-community{display:block}
+#lv-host:checked~.lv-stage .l-host{opacity:1}
+#lv-host:checked~.lv-lenses [for=lv-host]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-host:focus-visible~.lv-lenses [for=lv-host]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-host:checked~.lv-panels .lv-p-host{display:block}
+#lv-kill:checked~.lv-stage .l-kill{opacity:1}
+#lv-kill:checked~.lv-lenses [for=lv-kill]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-kill:focus-visible~.lv-lenses [for=lv-kill]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-kill:checked~.lv-panels .lv-p-kill{display:block}
+#lv-play:checked~.lv-lenses .lv-play{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-play:focus-visible~.lv-lenses .lv-play{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-play:checked~.lv-lenses .lv-play::before{color:#fff}
+#lv-h-sp:checked~.lv-panels .lv-ht-sp{display:block}
+#lv-h-sp:checked~.lv-panels [for=lv-h-sp]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-h-sp:focus-visible~.lv-panels [for=lv-h-sp]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-host:checked~#lv-h-sp:checked~.lv-stage .h-sp{fill:#0d2b21;font-weight:700;text-decoration:underline}
+#lv-h-od:checked~.lv-panels .lv-ht-od{display:block}
+#lv-h-od:checked~.lv-panels [for=lv-h-od]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-h-od:focus-visible~.lv-panels [for=lv-h-od]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-host:checked~#lv-h-od:checked~.lv-stage .h-od{fill:#0d2b21;font-weight:700;text-decoration:underline}
+#lv-h-teams:checked~.lv-panels .lv-ht-teams{display:block}
+#lv-h-teams:checked~.lv-panels [for=lv-h-teams]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-h-teams:focus-visible~.lv-panels [for=lv-h-teams]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-host:checked~#lv-h-teams:checked~.lv-stage .h-teams{fill:#0d2b21;font-weight:700;text-decoration:underline}
+#lv-h-mail:checked~.lv-panels .lv-ht-mail{display:block}
+#lv-h-mail:checked~.lv-panels [for=lv-h-mail]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-h-mail:focus-visible~.lv-panels [for=lv-h-mail]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-host:checked~#lv-h-mail:checked~.lv-stage .h-mail{fill:#0d2b21;font-weight:700;text-decoration:underline}
+#lv-h-usb:checked~.lv-panels .lv-ht-usb{display:block}
+#lv-h-usb:checked~.lv-panels [for=lv-h-usb]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-h-usb:focus-visible~.lv-panels [for=lv-h-usb]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-host:checked~#lv-h-usb:checked~.lv-stage .h-usb{fill:#0d2b21;font-weight:700;text-decoration:underline}
+#lv-h-sky:checked~.lv-panels .lv-ht-sky{display:block}
+#lv-h-sky:checked~.lv-panels [for=lv-h-sky]{background:#0d2b21;color:#fff;border-color:#0d2b21}
+#lv-h-sky:focus-visible~.lv-panels [for=lv-h-sky]{outline:.125rem solid #3f8f3f;outline-offset:.125rem}
+#lv-host:checked~#lv-h-sky:checked~.lv-stage .h-sky{fill:#0d2b21;font-weight:700;text-decoration:underline}
+/* figure-css:end */
+</style>
+</head>
+<body>
+<main class="wrap">
+<h1>Idéen, levende</h1>
+<p class="lede">Hele Tún på ett bilde. Se det gå, trykk på en rolle for å se den
+delen, eller spill det av steg for steg. Siden har ingen kode som kjører.</p>
+
+<!-- figure:start -->
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+  Made with Tún, tun.community
+-->
+<figure class="lv" aria-label="Idéen på ett bilde, med roller du kan velge og en avspilling steg for steg">
+<input class="lv-r" type="radio" name="lv-lens" id="lv-all" checked>
+<input class="lv-r" type="radio" name="lv-lens" id="lv-author">
+<input class="lv-r" type="radio" name="lv-lens" id="lv-reader">
+<input class="lv-r" type="radio" name="lv-lens" id="lv-community">
+<input class="lv-r" type="radio" name="lv-lens" id="lv-host">
+<input class="lv-r" type="radio" name="lv-lens" id="lv-kill">
+<input class="lv-r" type="radio" name="lv-host" id="lv-h-sp" aria-label="SharePoint">
+<input class="lv-r" type="radio" name="lv-host" id="lv-h-od" aria-label="OneDrive">
+<input class="lv-r" type="radio" name="lv-host" id="lv-h-teams" aria-label="Teams">
+<input class="lv-r" type="radio" name="lv-host" id="lv-h-mail" aria-label="E-post">
+<input class="lv-r" type="radio" name="lv-host" id="lv-h-usb" aria-label="Minnepinne">
+<input class="lv-r" type="radio" name="lv-host" id="lv-h-sky" aria-label="Sky">
+<input class="lv-r" type="checkbox" id="lv-play">
+
+<div class="lv-stage">
+<svg class="lv-wide" viewBox="0 0 1000 650" role="img" aria-label="Fellesskapet og tilbakemeldingene går inn i Tún-kjernen av skills og Markdown. Kjernen er et rammeverk uten rammeverk. Ut kommer én fil av HTML og CSS, med JavaScript bare der det trengs. Den erstatter omveiene med Power BI, PowerPoint, Excel og Word for en liten deleoppgave, legges på hvilken som helst vert, og leseren svarer tilbake.">
+  <defs>
+    <marker id="lvw-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5d6b65"/></marker>
+    <marker id="lvw-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0d2b21"/></marker>
+    <marker id="lvw-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8c3b2e"/></marker>
+    <radialGradient id="lvw-glow" cx="50%" cy="50%" r="50%"><stop offset="58%" stop-color="#fbecd0" stop-opacity="0"/><stop offset="100%" stop-color="#fbecd0" stop-opacity=".9"/></radialGradient>
+    <g id="lvw-person"><circle cx="0" cy="-11" r="5.2" fill="none" stroke="#5d6b65" stroke-width="2"/><path d="M0,-6 V6 M-7,0 H7 M0,6 L-6,16 M0,6 L6,16" fill="none" stroke="#5d6b65" stroke-width="2" stroke-linecap="round"/></g>
+  </defs>
+
+  <g class="g l-host l-reader s3">
+    <path d="M0,532 C120,518 210,546 330,534 C450,522 540,550 660,538 C780,526 880,550 1000,538 L1000,650 L0,650 Z" fill="#e9eeeb"/>
+    <path d="M0,532 C120,518 210,546 330,534 C450,522 540,550 660,538 C780,526 880,550 1000,538" fill="none" stroke="#9db3aa" stroke-width="2"/>
+    <text x="26" y="578" class="t-cap">VERTEN ER VALGFRI</text>
+    <text x="26" y="603" class="t-b"><tspan class="h-sp">SharePoint</tspan> · <tspan class="h-od">OneDrive</tspan> · <tspan class="h-teams">Teams</tspan> · <tspan class="h-sky">GCP</tspan> · <tspan class="h-sky">Azure</tspan> · <tspan class="h-sky">AWS</tspan></text>
+    <text x="26" y="626" class="t-b"><tspan class="h-sky">Cloudflare</tspan> · <tspan class="h-sky">Vercel</tspan> · <tspan class="h-sky">Firebase</tspan> · <tspan class="h-usb">en minnepinne</tspan> · <tspan class="h-mail">en e-post</tspan></text>
+  </g>
+
+  <g class="g l-author l-community s0">
+    <circle class="glow" cx="366" cy="322" r="150" fill="url(#lvw-glow)"/>
+    <g class="rays" stroke="#d9a441" stroke-width="3" stroke-linecap="round">
+      <path d="M366,168 V138"/><path d="M366,476 V506"/><path d="M212,322 H182"/><path d="M520,322 H550"/>
+      <path d="M257,213 L236,192"/><path d="M475,431 L496,452"/><path d="M257,431 L236,452"/><path d="M475,213 L496,192"/>
+      <path d="M311,181 L299,153"/><path d="M421,463 L433,491"/><path d="M225,377 L197,389"/><path d="M507,267 L535,255"/>
+    </g>
+    <circle class="core-ring" cx="366" cy="322" r="96" fill="#fff" stroke="#d9a441" stroke-width="3"/>
+    <text x="366" y="308" text-anchor="middle" class="t-core">TÚN</text>
+    <text x="366" y="335" text-anchor="middle" class="t-b">skills</text>
+    <text x="366" y="356" text-anchor="middle" class="t-b">+ Markdown</text>
+    <text x="366" y="446" text-anchor="middle" class="t-cap">ÅPEN KJERNE</text>
+    <text x="366" y="464" text-anchor="middle" class="t-s">et rammeverk uten rammeverk</text>
+  </g>
+
+  <g class="g l-community s4">
+    <path d="M96,116 h192 a30,30 0 0 1 0,60 h-192 a30,30 0 0 1 0,-60 z" fill="#fff" stroke="#9db3aa" stroke-width="2"/>
+    <text x="192" y="142" text-anchor="middle" class="t-h">tun.community</text>
+    <text x="192" y="162" text-anchor="middle" class="t-s">skills · maler · kontroller</text>
+    <use href="#lvw-person" x="120" y="214"/>
+    <text x="120" y="250" text-anchor="middle" class="t-s">bidrar</text>
+    <path d="M240,182 C268,214 296,232 300,256" fill="none" stroke="#0d2b21" stroke-width="2.4" marker-start="url(#lvw-c)" marker-end="url(#lvw-c)"/>
+    <circle class="pk pk-w-comm" r="5"/><circle class="pk pk-w-commback" r="5"/>
+  </g>
+
+  <g class="g l-community l-reader s4">
+    <rect x="330" y="112" width="132" height="52" rx="8" fill="#fff" stroke="#9db3aa" stroke-width="2"/>
+    <text x="396" y="134" text-anchor="middle" class="t-h">tilbakemelding</text>
+    <text x="396" y="152" text-anchor="middle" class="t-s">fra den som leste</text>
+    <path d="M396,164 V222" fill="none" stroke="#5d6b65" stroke-width="2.2" marker-end="url(#lvw-a)"/>
+    <circle class="pk pk-w-fb" r="4.5"/>
+  </g>
+
+  <g class="g l-author s1">
+    <use href="#lvw-person" x="196" y="372"/>
+    <text x="196" y="408" text-anchor="middle" class="t-s">skriver Markdown</text>
+    <text x="196" y="424" text-anchor="middle" class="t-js">med AI, i sitt eget verktøy</text>
+    <path d="M214,366 C236,358 252,350 274,342" fill="none" stroke="#0d2b21" stroke-width="2.2" marker-end="url(#lvw-c)"/>
+    <circle class="pk pk-w-author" r="4.5"/>
+  </g>
+
+  <g class="g l-author l-reader l-host l-kill s2">
+    <path d="M462,300 H556" fill="none" stroke="#0d2b21" stroke-width="2.8" marker-end="url(#lvw-c)"/>
+    <rect x="560" y="246" width="212" height="134" rx="10" fill="#fff" stroke="#0d2b21" stroke-width="2.4"/>
+    <text x="666" y="276" text-anchor="middle" class="t-file">HTML · CSS · JS</text>
+    <text x="666" y="300" text-anchor="middle" class="t-b">én fil, ingen server</text>
+    <text x="666" y="320" text-anchor="middle" class="t-b">ingen lisens for å åpne</text>
+    <text x="666" y="340" text-anchor="middle" class="t-b">virker uten nett</text>
+    <text x="666" y="364" text-anchor="middle" class="t-js">JS bare der det trengs</text>
+    <circle class="pk pk-w-out" r="5.5"/>
+  </g>
+
+  <g class="g l-kill s3">
+    <rect x="800" y="96" width="176" height="130" rx="10" fill="#fbf1ee" stroke="#8c3b2e" stroke-width="2"/>
+    <text x="888" y="122" text-anchor="middle" class="t-kill">KILLBOX</text>
+    <text x="888" y="148" text-anchor="middle" class="t-k">Power BI-lisensen</text>
+    <text x="888" y="168" text-anchor="middle" class="t-k">PPTX på e-post</text>
+    <text x="888" y="188" text-anchor="middle" class="t-k">Excel-arket</text>
+    <text x="888" y="208" text-anchor="middle" class="t-k">Word-rapporten</text>
+    <path class="strike k1" pathLength="1" d="M826,143 H950"/>
+    <path class="strike k2" pathLength="1" d="M836,163 H940"/>
+    <path class="strike k3" pathLength="1" d="M848,183 H928"/>
+    <path class="strike k4" pathLength="1" d="M836,203 H940"/>
+    <path d="M742,250 C790,232 800,226 812,222" fill="none" stroke="#8c3b2e" stroke-width="2.4" stroke-dasharray="6 4" marker-end="url(#lvw-w)"/>
+    <text x="792" y="250" class="t-w">erstatter</text>
+    <circle class="pk pk-w-kill warn" r="4.5"/>
+  </g>
+
+  <g class="g l-host s3">
+    <path d="M666,384 V520" fill="none" stroke="#0d2b21" stroke-width="2.6" marker-end="url(#lvw-c)"/>
+    <text x="678" y="440" class="t-s2">legges hvor som helst</text>
+    <text x="678" y="458" class="t-s2">mappen er adgangskontrollen</text>
+    <circle class="pk pk-w-down" r="5.5"/>
+  </g>
+
+  <g class="g l-reader s4">
+    <path d="M682,526 C752,520 806,502 856,484" fill="none" stroke="#5d6b65" stroke-width="2" marker-end="url(#lvw-a)"/>
+    <use href="#lvw-person" x="878" y="472"/>
+    <use href="#lvw-person" x="922" y="472"/>
+    <text x="900" y="508" text-anchor="middle" class="t-s">leser, åpner, svarer</text>
+    <circle class="pk pk-w-read" r="4.5"/>
+  </g>
+
+  <g class="g l-reader l-community s4">
+    <path d="M902,450 C958,428 986,384 986,306 L986,70 C986,60 978,52 968,52 L456,52 C446,52 438,60 438,70 L438,106" fill="none" stroke="#9db3aa" stroke-width="1.8" stroke-dasharray="4 5" marker-end="url(#lvw-a)"/>
+    <text x="712" y="44" text-anchor="middle" class="t-loop">svaret går tilbake</text>
+    <circle class="pk pk-w-loop back" r="4.5"/>
+  </g>
+</svg>
+
+<svg class="lv-tall" viewBox="0 0 400 860" role="img" aria-label="Fellesskapet og tilbakemeldingene går inn i Tún-kjernen. Kjernen er et rammeverk uten rammeverk. Ut kommer én fil av HTML og CSS, med JavaScript bare der det trengs, som legges på hvilken som helst vert, og leseren svarer tilbake.">
+  <defs>
+    <marker id="lvt-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5d6b65"/></marker>
+    <marker id="lvt-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0d2b21"/></marker>
+    <marker id="lvt-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8c3b2e"/></marker>
+    <radialGradient id="lvt-glow" cx="50%" cy="50%" r="50%"><stop offset="58%" stop-color="#fbecd0" stop-opacity="0"/><stop offset="100%" stop-color="#fbecd0" stop-opacity=".9"/></radialGradient>
+    <g id="lvt-person"><circle cx="0" cy="-11" r="5.2" fill="none" stroke="#5d6b65" stroke-width="2"/><path d="M0,-6 V6 M-7,0 H7 M0,6 L-6,16 M0,6 L6,16" fill="none" stroke="#5d6b65" stroke-width="2" stroke-linecap="round"/></g>
+  </defs>
+
+  <g class="g l-host l-reader s3">
+    <path d="M0,716 C80,706 150,730 230,720 C300,712 350,728 400,720 L400,860 L0,860 Z" fill="#e9eeeb"/>
+    <path d="M0,716 C80,706 150,730 230,720 C300,712 350,728 400,720" fill="none" stroke="#9db3aa" stroke-width="2"/>
+    <text x="20" y="760" class="t-cap">VERTEN ER VALGFRI</text>
+    <text x="20" y="786" class="t-b"><tspan class="h-sp">SharePoint</tspan> · <tspan class="h-od">OneDrive</tspan> · <tspan class="h-teams">Teams</tspan></text>
+    <text x="20" y="810" class="t-b"><tspan class="h-sky">GCP</tspan> · <tspan class="h-sky">Azure</tspan> · <tspan class="h-sky">AWS</tspan> · <tspan class="h-sky">Cloudflare</tspan></text>
+    <text x="20" y="834" class="t-b"><tspan class="h-sky">Vercel</tspan> · <tspan class="h-sky">Firebase</tspan> · <tspan class="h-usb">minnepinne</tspan> · <tspan class="h-mail">e-post</tspan></text>
+  </g>
+
+  <g class="g l-author l-community s0">
+    <circle class="glow" cx="200" cy="230" r="122" fill="url(#lvt-glow)"/>
+    <g class="rays" stroke="#d9a441" stroke-width="3" stroke-linecap="round">
+      <path d="M200,104 V86"/><path d="M76,230 H58"/><path d="M324,230 H342"/>
+      <path d="M112,142 L99,129"/><path d="M288,318 L301,331"/><path d="M112,318 L99,331"/><path d="M288,142 L301,129"/>
+    </g>
+    <circle class="core-ring" cx="200" cy="230" r="80" fill="#fff" stroke="#d9a441" stroke-width="3"/>
+    <text x="200" y="202" text-anchor="middle" class="t-core">TÚN</text>
+    <text x="200" y="226" text-anchor="middle" class="t-b">skills + Markdown</text>
+    <text x="200" y="248" text-anchor="middle" class="t-cap">ÅPEN KJERNE</text>
+    <text x="200" y="266" text-anchor="middle" class="t-s">rammeverk</text>
+    <text x="200" y="281" text-anchor="middle" class="t-s">uten rammeverk</text>
+  </g>
+
+  <g class="g l-community s4">
+    <path d="M52,22 h176 a27,27 0 0 1 0,54 h-176 a27,27 0 0 1 0,-54 z" fill="#fff" stroke="#9db3aa" stroke-width="2"/>
+    <text x="140" y="45" text-anchor="middle" class="t-h">tun.community</text>
+    <text x="140" y="64" text-anchor="middle" class="t-s">skills · maler · kontroller</text>
+    <path d="M130,82 C134,118 142,142 154,166" fill="none" stroke="#0d2b21" stroke-width="2.4" marker-start="url(#lvt-c)" marker-end="url(#lvt-c)"/>
+    <circle class="pk pk-t-comm" r="5"/><circle class="pk pk-t-commback" r="5"/>
+  </g>
+
+  <g class="g l-community l-reader s4">
+    <rect x="256" y="22" width="128" height="54" rx="8" fill="#fff" stroke="#9db3aa" stroke-width="2"/>
+    <text x="320" y="45" text-anchor="middle" class="t-h">tilbakemelding</text>
+    <text x="320" y="64" text-anchor="middle" class="t-s">fra den som leste</text>
+    <path d="M318,78 C316,118 292,148 262,170" fill="none" stroke="#5d6b65" stroke-width="2.2" marker-end="url(#lvt-a)"/>
+    <circle class="pk pk-t-fb" r="4.5"/>
+  </g>
+
+  <g class="g l-author s1">
+    <use href="#lvt-person" x="52" y="322"/>
+    <text x="52" y="358" text-anchor="middle" class="t-s">skriver</text>
+    <text x="52" y="374" text-anchor="middle" class="t-s">Markdown</text>
+    <text x="52" y="390" text-anchor="middle" class="t-js">med AI</text>
+    <path d="M76,304 C94,290 106,280 124,266" fill="none" stroke="#0d2b21" stroke-width="2.2" marker-end="url(#lvt-c)"/>
+    <circle class="pk pk-t-author" r="4.5"/>
+  </g>
+
+  <g class="g l-author l-reader l-host l-kill s2">
+    <path d="M200,312 V380" fill="none" stroke="#0d2b21" stroke-width="2.8" marker-end="url(#lvt-c)"/>
+    <rect x="80" y="384" width="240" height="100" rx="10" fill="#fff" stroke="#0d2b21" stroke-width="2.4"/>
+    <text x="200" y="412" text-anchor="middle" class="t-file">HTML · CSS · JS</text>
+    <text x="200" y="434" text-anchor="middle" class="t-b">én fil, ingen server</text>
+    <text x="200" y="453" text-anchor="middle" class="t-b">ingen lisens, virker uten nett</text>
+    <text x="200" y="474" text-anchor="middle" class="t-js">JS bare der det trengs</text>
+    <circle class="pk pk-t-out" r="5.5"/>
+  </g>
+
+  <g class="g l-kill s3">
+    <rect x="216" y="520" width="172" height="118" rx="10" fill="#fbf1ee" stroke="#8c3b2e" stroke-width="2"/>
+    <text x="302" y="543" text-anchor="middle" class="t-kill">KILLBOX</text>
+    <text x="302" y="566" text-anchor="middle" class="t-k">Power BI-lisensen</text>
+    <text x="302" y="584" text-anchor="middle" class="t-k">PPTX på e-post</text>
+    <text x="302" y="602" text-anchor="middle" class="t-k">Excel-arket</text>
+    <text x="302" y="620" text-anchor="middle" class="t-k">Word-rapporten</text>
+    <path class="strike k1" pathLength="1" d="M240,561 H364"/>
+    <path class="strike k2" pathLength="1" d="M250,579 H354"/>
+    <path class="strike k3" pathLength="1" d="M262,597 H342"/>
+    <path class="strike k4" pathLength="1" d="M250,615 H354"/>
+    <path d="M284,488 C292,498 298,506 304,516" fill="none" stroke="#8c3b2e" stroke-width="2.4" stroke-dasharray="6 4" marker-end="url(#lvt-w)"/>
+    <text x="314" y="506" class="t-w">erstatter</text>
+    <circle class="pk pk-t-kill warn" r="4.5"/>
+  </g>
+
+  <g class="g l-host s3">
+    <path d="M120,486 V708" fill="none" stroke="#0d2b21" stroke-width="2.6" marker-end="url(#lvt-c)"/>
+    <text x="22" y="560" class="t-s2">legges hvor</text>
+    <text x="22" y="578" class="t-s2">som helst</text>
+    <text x="22" y="632" class="t-s2">mappen er</text>
+    <text x="22" y="650" class="t-s2">adgangs-</text>
+    <text x="22" y="668" class="t-s2">kontrollen</text>
+    <circle class="pk pk-t-down" r="5.5"/>
+  </g>
+
+  <g class="g l-reader s4">
+    <path d="M134,714 C206,708 262,698 310,688" fill="none" stroke="#5d6b65" stroke-width="2" marker-end="url(#lvt-a)"/>
+    <use href="#lvt-person" x="322" y="672"/>
+    <use href="#lvt-person" x="358" y="672"/>
+    <text x="340" y="708" text-anchor="middle" class="t-s">leser og svarer</text>
+    <circle class="pk pk-t-read" r="4.5"/>
+  </g>
+
+  <g class="g l-reader l-community s4">
+    <path d="M370,652 C390,640 394,620 394,600 L394,60 C394,52 392,48 388,48" fill="none" stroke="#9db3aa" stroke-width="1.8" stroke-dasharray="4 5" marker-end="url(#lvt-a)"/>
+    <text x="0" y="0" transform="translate(381,400) rotate(-90)" text-anchor="middle" class="t-loop">svaret går tilbake</text>
+    <circle class="pk pk-t-loop back" r="4.5"/>
+  </g>
+</svg>
+</div>
+
+<p class="lv-cap" aria-hidden="true">
+  <span class="c1">1 · Du skriver en oppskrift i Markdown.</span>
+  <span class="c2">2 · Tún bygger én fil, med alt inni.</span>
+  <span class="c3">3 · Du legger den der arbeidet ditt ligger. Omveiene forsvinner.</span>
+  <span class="c4">4 · Noen leser og svarer. Svaret gjør oppskriften bedre.</span>
+</p>
+
+<div class="lv-lenses" role="group" aria-label="Utforsk bildet">
+  <label for="lv-all">Hele bildet</label>
+  <label for="lv-author">Forfatteren</label>
+  <label for="lv-reader">Leseren</label>
+  <label for="lv-community">Fellesskapet</label>
+  <label for="lv-host">Verten</label>
+  <label for="lv-kill">Killbox</label>
+  <label for="lv-play" class="lv-play"><span class="on">Spill av steg for steg</span><span class="off">Stopp avspillingen</span></label>
+</div>
+
+<div class="lv-panels">
+  <div class="lv-p lv-p-all">
+    <p>Kjernen er åpen og felles. Ut av den kommer én fil, ikke et system å drifte.
+    Filen legges der arbeidet allerede ligger, og mappen er adgangskontrollen.
+    Velg en rolle over for å se din del av bildet.</p>
+    <p>Tún er et rammeverk uten rammeverk: vanlig HTML, CSS og JavaScript, uten
+    bibliotek å installere eller holde ved like. JavaScript er lov, men brukes bare
+    der det trengs. Dette bildet trengte det ikke: bevegelse, valg og avspilling er
+    ren CSS.</p>
+  </div>
+  <div class="lv-p lv-p-author">
+    <h3>Forfatteren</h3>
+    <p>Du skriver vanlig tekst i Markdown og velger en oppskrift, en skill. Tún legger
+    alt inn i én HTML-fil, også tallene. Du trenger ingen server og ingen plattform å
+    be om tilgang til.</p>
+    <p>Tún kommer som en plugin til AI-verktøyet du allerede bruker. Du sier hva du vil
+    ha, AI-en følger oppskriften, og du itererer: tune med AI, tunfeste det som virker.</p>
+  </div>
+  <div class="lv-p lv-p-reader">
+    <h3>Leseren</h3>
+    <p>Leseren åpner filen uten lisens, uten å installere noe og uten nett. Svaret
+    kommer i en vanlig melding, og det er nok: neste versjon blir bedre av det.</p>
+  </div>
+  <div class="lv-p lv-p-community">
+    <h3>Fellesskapet</h3>
+    <p>En skill er en oppskrift som går fra hus til hus på tunet. Den som bruker den,
+    kan gjøre den litt bedre. Det som virket, blir liggende igjen til den neste.</p>
+  </div>
+  <div class="lv-p lv-p-host">
+    <h3>Verten</h3>
+    <p class="lv-hosts" role="group" aria-label="Velg en vert">
+      <label for="lv-h-sp">SharePoint</label><label for="lv-h-od">OneDrive</label><label for="lv-h-teams">Teams</label><label for="lv-h-mail">E-post</label><label for="lv-h-usb">Minnepinne</label><label for="lv-h-sky">Sky</label>
+    </p>
+    <p class="lv-ht lv-ht-none">Velg en vert. Hver linje sier hva som er målt der, og når.</p>
+    <p class="lv-ht lv-ht-sp">Lenken til selve filen laster den ned. I forhåndsvisningen kjører filen, men ingenting kan lastes ned eller skrives ut fra den. Målt 2026-10-08.</p>
+    <p class="lv-ht lv-ht-od">Fra en synkronisert mappe åpnes filen fra disk og virker fullt. En OneDrive-lenke i en e-post virket på PC, men på mobil reagerte ingenting. Målt september 2026, på én telefon.</p>
+    <p class="lv-ht lv-ht-teams">En lenke limt inn i en melding og åpnet fra forhåndsvisningskortet virket på PC og mobil. Den rene tekstlenken under kortet viste kildekoden. Målt september 2026.</p>
+    <p class="lv-ht lv-ht-mail">Et vedlegg i e-postappens forhåndsvisning på iPhone kjørte ikke kode, men den statiske siden sto og kunne leses. Bygg filen så den virker uten kode. Målt 2026-09-28.</p>
+    <p class="lv-ht lv-ht-usb">Lastet ned og åpnet fra disk, uten nett, virket filen på PC og mobil. Det er grunntilfellet. Alt annet er en bonus.</p>
+    <p class="lv-ht lv-ht-sky">Et statisk nettsted serverer filen som den er, slik som denne siden. Mål det som faktisk leveres: et kantnettverk kan legge et skript inn i siden uten at du ser det.</p>
+  </div>
+  <div class="lv-p lv-p-kill">
+    <h3>Killbox</h3>
+    <p>Killbox er omveiene rundt en liten deleoppgave. PPTX-en på e-post, Excel-arket,
+    Word-rapporten og Power BI-lisensen blir til én fil som virker på telefonen også.</p>
+  </div>
+</div>
+
+<div class="lv-ideas">
+  <h3>Hva verktøysettet kan, og hva som kommer</h3>
+  <ul>
+    <li class="lead"><b class="soon">På vei</b> <strong>En plugin til de gode AI-verktøyene.</strong> Skills er vanlig Markdown, så Tún kan installeres i verktøyet og agentmiljøet du allerede bruker. Iterer fort: tune med AI, og tunfest det som virker.</li>
+    <li><b class="now">Finnes</b> <strong>Én fil.</strong> Alt ligger inni, også tallene. Den virker fra en mappe, en e-post eller en minnepinne.</li>
+    <li><b class="now">Finnes</b> <strong>Data i en fil ved siden av.</strong> Bytt tallene uten å bygge siden på nytt.</li>
+    <li><b class="now">Finnes</b> <strong>Millioner av rader i en liten fil.</strong> Ferdige summer for hvert filter, eksakte ned til øret.</li>
+    <li><b class="now">Finnes</b> <strong>Svarknappen i filen.</strong> En lenke som gjør det lett å si hva som var feil.</li>
+    <li><b class="soon">På vei</b> <strong>Et notat du retter i nettleseren</strong> og lagrer som en ny fil. I SharePoints forhåndsvisning kan det bare leses, med vilje.</li>
+    <li><b class="dir">Retning</b> <strong>Mappevelger, backends og betalte tjenester.</strong> Ingenting av det er levert ennå.</li>
+  </ul>
+</div>
+</figure>
+<!-- figure:end -->
+
+<footer>
+  <p>Selvstendig fil. JavaScript er lov, men dette bildet trengte det ikke. Ingenting lastes utenfra. Bygget 2026-10-09.</p>
+</footer>
+</main>
+</body>
+</html>

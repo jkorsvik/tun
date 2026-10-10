@@ -341,6 +341,182 @@ finally:
     gate.tree_scan.REPO, gate.tree_scan.tracked_paths = _orig_repo, _orig_paths
     gate.strip_copyright_lines = _orig_notice
 
+print("\nthe two Claude Code manifests: one attribution value each, nothing else")
+# Fixtures are assembled at runtime for the same reason as above. They are scanned as
+# hypothetical files (scan_texts), so this block proves the same thing whether or not the real
+# manifests are tracked yet.
+import json  # noqa: E402
+
+_FULL = _j("Zyx", "qorp Vuw", "tenk")      # both fixture person terms: two matches
+_PLUGIN, _MARKET = ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json"
+
+
+def _forbidden(category: str, occurrences: int, files: int) -> str:
+    """The exact problem line a forbidden local category prints."""
+    return (f"{category}: forbidden, found {occurrences} occurrence(s) in {files} file(s) — "
+            f"{gate.CATEGORIES[category][2]}")
+
+
+def _plugin(description="A plain description.", author=_FULL, keywords=("reporting",)) -> str:
+    return json.dumps({"name": "x", "description": description,
+                       "author": {"name": author}, "keywords": list(keywords)}, indent=2)
+
+
+def _market(owner=_FULL, description="A plain description.") -> str:
+    return json.dumps({"name": "x", "description": description, "owner": {"name": owner},
+                       "plugins": [{"name": "x", "source": "./"}]}, indent=2)
+
+
+_core = gate.read_core()
+
+
+def _problems(**override) -> list[str]:
+    texts = dict(_core)
+    texts.update(override)
+    return gate.problems_for(gate.scan_texts(texts), baseline)
+
+
+def _esc(s: str) -> str:
+    """A JSON string literal with every character written as a \\uXXXX escape."""
+    return '"' + "".join("\\u%04x" % ord(c) for c in s) + '"'
+
+
+def _doc(description: str = '"Plain"', author: str = "Example Team", tail: str = "") -> str:
+    """Hand-built manifest text; `description` is an already-quoted JSON value."""
+    return ('{"name":"x","author":{"name":"' + author + '"},"description":'
+            + description + tail + "}")
+
+
+_SHAPE = [f"manifest-shape: {_PLUGIN} is not plain JSON"]
+
+# (a) the two manifests pass
+chk("both real manifests are tracked, so the next check is not vacuous",
+    (_PLUGIN in _core, _MARKET in _core), (True, True))
+chk("the real tree, with both real manifests, has no problems", _problems(), [])
+chk("both manifests with the owner name only: no problems",
+    _problems(**{_PLUGIN: _plugin(), _MARKET: _market()}), [])
+_escaped_author = _doc(author=_FULL).replace(_FULL, _esc(_FULL)[1:-1])
+chk("the escaped fixture really differs from the raw name", _FULL in _escaped_author, False)
+chk("an author written fully as \\u escapes is the exempt value too",
+    _problems(**{_PLUGIN: _escaped_author}), [])
+
+# (b) a name anywhere else in those files still counts, alone, with the exact message
+_exact = _forbidden("local:person", 1, 1)
+chk("a person name in plugin.json description fails with exactly one problem",
+    _problems(**{_PLUGIN: _plugin(description=f"Made by {_WHO[1]}.")}), [_exact])
+chk("a person name in plugin.json keywords fails the same way",
+    _problems(**{_PLUGIN: _plugin(keywords=(_WHO[0],))}), [_exact])
+chk("a person name in marketplace.json description fails the same way",
+    _problems(**{_MARKET: _market(description=_OUT1)}),
+    [_exact])
+# The full name is two matches (first name, surname). Author field exempt, description not.
+chk("the owner name repeated in the description still counts (2 matches, not 0)",
+    gate.scan_texts({_PLUGIN: _plugin(description=_FULL)})["local:person"], {_PLUGIN: 2})
+chk("an organisation in author.name still counts (only local:person is exempt)",
+    _problems(**{_PLUGIN: _plugin(author=_j("Qorp", "corp"))}),
+    [_forbidden("local:org", 1, 1)])
+chk("an exempt key path in the wrong file exempts nothing",
+    gate.scan_texts({".claude-plugin/other.json": _plugin()})["local:person"],
+    {".claude-plugin/other.json": 2})
+chk("a non-string name is not exempt",
+    gate.scan_texts({_PLUGIN: json.dumps({"author": {"name": [_FULL]}})})["local:person"],
+    {_PLUGIN: 2})
+chk("a name written as \\u escapes in the description of a clean manifest fails",
+    _problems(**{_PLUGIN: _doc(description=_esc(_FULL))}), [_forbidden("local:person", 2, 1)])
+chk("the same in marketplace.json",
+    _problems(**{_MARKET: _doc(description=_esc(_FULL)).replace('"author"', '"owner"')}),
+    [_forbidden("local:person", 2, 1)])
+
+# A declared manifest that does not parse as plain JSON is a problem of its own. Every case
+# below hides an escaped name that a raw-text fallback would miss, and strict
+# `claude plugin validate` accepts the duplicate and BOM variants.
+_hidden = _esc(_FULL)
+_dup = _doc(description='"Plain"', tail=',"description":' + _hidden)
+_cases = {
+    "a repeated key": _dup,
+    "a repeated key at depth": _doc(author=_FULL).replace(
+        '"name":"' + _FULL + '"}', '"name":"x","name":' + _hidden + "}"),
+    "a repeated key inside a list": _doc(tail=',"l":[{"a":' + _hidden + ',"a":"b"}]'),
+    "a leading BOM": "\ufeff" + _doc(description=_hidden),
+    "trailing data": _doc(description=_hidden) + " {}",
+    "nesting too deep": "[" * 1200 + _hidden + "]" * 1200,
+    "NaN (Python json accepts it, JSON does not)": _doc(tail=',"k":[NaN]'),
+    "Infinity": _doc(tail=',"k":Infinity'),
+    "-Infinity": _doc(tail=',"k":-Infinity'),
+}
+for _label, _text in _cases.items():
+    chk(f"{_label}: fails with exactly the manifest-shape message, and only that",
+        _problems(**{_PLUGIN: _text}), _SHAPE)
+for _const in ("NaN", "Infinity", "-Infinity"):
+    chk(f"{_const}: fails with exactly the manifest-shape message, and only that",
+        _problems(**{_PLUGIN: _doc(tail=',"keywords":[' + _const + "]")}), _SHAPE)
+# Attribution must be written plainly: an escaped attribution is rejected (fails closed, leaks
+# nothing). Pinned so that loosening it is a decision.
+chk("an attribution written with an escape is rejected",
+    _problems(**{_PLUGIN: _doc(author=_WHO[0].replace(" ", "\\u0020"))}),
+    [_forbidden("local:person", 1, 1)])
+chk("the same attribution written plainly passes",
+    _problems(**{_PLUGIN: _doc(author=_WHO[0])}), [])
+# A truncated file also carries the literal name, so it fails twice. The shape message must
+# still be there.
+chk("invalid JSON: reported as manifest-shape",
+    _SHAPE[0] in _problems(**{_PLUGIN: '{"author": {"name": "' + _FULL}), True)
+chk("a repeated key in marketplace.json is reported for that file",
+    _problems(**{_MARKET: _dup.replace('"author"', '"owner"')}),
+    [f"manifest-shape: {_MARKET} is not plain JSON"])
+chk("a file that is not a declared manifest is never reported as one",
+    gate.scan_texts({"docs/x.json": "{not json"})["_shape"], {})
+import contextlib as _ctx  # noqa: E402
+import io as _io  # noqa: E402
+
+_orig_read_core = gate.read_core
+try:
+    gate.read_core = lambda: {**_core, _PLUGIN: _dup}
+    _buf = _io.StringIO()
+    with _ctx.redirect_stdout(_buf):
+        _rc = gate.main()
+finally:
+    gate.read_core = _orig_read_core
+chk("main() exits 1 and prints the manifest-shape problem",
+    (_rc, _SHAPE[0] in _buf.getvalue()), (1, True))
+
+print("\nthe JSON exemption is load-bearing, and narrow (mutation)")
+_orig_sub = gate.export_gate.manifest_subjects
+_orig_nodup = gate.export_gate._no_duplicates
+
+
+def _old_fallback(rel, text):
+    """The previous behaviour: a manifest that will not parse is scanned as raw text."""
+    try:
+        return _orig_sub(rel, text)
+    except gate.NotPlainJson:
+        return None
+
+
+try:
+    gate.export_gate.manifest_subjects = lambda rel, text: None
+    chk("exemption removed: the owner name alone now fails (so the pass above was earned)",
+        _problems(**{_PLUGIN: _plugin(), _MARKET: _market()}),
+        [_forbidden("local:person", 4, 2)])
+    gate.export_gate.manifest_subjects = lambda rel, text: ("", "") if rel in gate.JSON_ATTRIBUTION else None
+    chk("exemption widened to the whole file: the description check stops firing, so it "
+        "is the check that would notice",
+        _problems(**{_PLUGIN: _plugin(description=f"Made by {_WHO[1]}.")}) == [_exact], False)
+    gate.export_gate.manifest_subjects = _old_fallback
+    for _label, _text in _cases.items():
+        chk(f"raw fallback re-enabled: the '{_label}' test would notice",
+            _problems(**{_PLUGIN: _text}) == _SHAPE, False)
+    gate.export_gate.manifest_subjects = _orig_sub
+    gate.export_gate._no_duplicates = lambda pairs: dict(pairs)
+    chk("duplicate check removed: the repeated-key test would notice",
+        _problems(**{_PLUGIN: _dup}) == _SHAPE, False)
+finally:
+    gate.export_gate.manifest_subjects = _orig_sub
+    gate.export_gate._no_duplicates = _orig_nodup
+chk("restored: a repeated key is refused again", _problems(**{_PLUGIN: _dup}), _SHAPE)
+chk("restored: a description name fails again",
+    _problems(**{_PLUGIN: _plugin(description=f"Made by {_WHO[1]}.")}), [_exact])
+
 print("\n" + "-" * 66)
 print(f"{passed} passed, {failed} failed")
 raise SystemExit(1 if failed else 0)

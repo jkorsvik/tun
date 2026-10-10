@@ -1,6 +1,6 @@
 ---
 name: tun-process
-description: Draw a process as a swimlane diagram in one self-contained HTML file: who does what, in which order, where it branches, and where it goes wrong. Use when someone wants a process diagram, flowchart, swimlane or workflow drawn, wants to map how work really flows between people or teams, or wants to show where a process should improve.
+description: "Draw a process as a swimlane diagram in one self-contained HTML file: who does what, in which order, where it branches, and where it goes wrong. Use when someone wants a process diagram, flowchart, swimlane or workflow drawn, wants to map how work really flows between people or teams, or wants to show where a process should improve."
 ---
 
 # Draw a process diagram
