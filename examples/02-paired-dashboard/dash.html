@@ -25,10 +25,10 @@
   ----------------------------------------------------------------------------
   PROVENANCE  (do not delete — this is how numbers get traced back)
     Source data : salgsdata.csv
-    Extracted   : 2026-10-06 19:09 CEST
-    Built       : 2026-10-07 17:15 CEST
-    Requested by: the product owner
-    Built by    : RAIWork skill `tun-new`
+    Extracted   : 2026-10-10 13:06 CEST
+    Built       : 2026-10-10 13:09 CEST
+    Requested by: Prosjekteier
+    Built by    : Tún skill `tun-new`
     Repo        : tun
     Made with   : Tún — tun.community
     Rows inlined: 776
@@ -160,7 +160,7 @@
 :root,
 :root[data-theme="light"]{
   --ink:        var(--palette-ink);      /* body text */
-  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */
   --line:       #ebebeb;               /* neutral grey: borders, gridlines */
   --bg:         var(--palette-surface);
   --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
@@ -171,7 +171,9 @@
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
-  --bad-bg:var(--status-negative-bg);
+  /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
+     is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
+  --bad-bg:var(--palette-surface);
 }
 
   :root{
@@ -228,9 +230,9 @@
   .dropbar button:disabled{opacity:.45;cursor:default}
   .linklike{color:var(--brand);text-decoration:underline;cursor:pointer}
   @media print{.dropbar{display:none}}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(17rem,100%),1fr));
     gap:var(--sp-2);margin-bottom:var(--sp-3)}
-  .kpi{background:var(--panel);border-left:.25rem solid var(--brand);
+  .kpi{min-width:0;background:var(--panel);border-left:.25rem solid var(--brand);
     padding:var(--sp-2);border-radius:.25rem}
   .kpi .label{font-size:.75rem;line-height:1rem;text-transform:uppercase;
     letter-spacing:.04em;color:var(--muted)}
@@ -247,7 +249,7 @@
     gap:.3rem;padding:.1rem .4rem;border-radius:.2rem}
   .kpi .delta.up{color:var(--ok);background:var(--ok-bg)}
   .kpi .delta.down{color:var(--bad);background:var(--bad-bg)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(26rem,1fr));gap:var(--sp-3)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(26rem,100%),1fr));gap:var(--sp-3)}
   .card{border:1px solid var(--line);border-radius:.25rem;padding:var(--sp-2);
     background:var(--bg)}
   .card h2{margin:0 0 var(--sp-2);font-size:1rem;line-height:1.5rem;font-weight:500}
@@ -300,14 +302,14 @@
     <div class="card"><h2 id="chart2-title">Belop over Maaned</h2><svg id="chart2" viewBox="0 0 640 300"></svg></div>
   </section>
   <section class="card" style="margin-top:1.5rem">
-    <h2>Detaljer <span id="rowcount" style="font-weight:400;color:var(--muted);font-size:.875rem"></span></h2>
-    <div class="table-wrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+    <h2 id="details-title">Detaljer <span id="rowcount" style="font-weight:400;color:var(--muted);font-size:.875rem"></span></h2>
+    <div class="table-wrap" role="region" aria-labelledby="details-title" tabindex="0"><table id="tbl"><thead></thead><tbody></tbody></table></div>
   </section>
 </main>
 
 <footer>
-  Selvstendig dashboard bygget av RAIWork &middot; ingen Power BI-lisens kreves &middot;
-  bygget 2026-10-07 17:15 CEST fra salgsdata.csv.<br>
+  Selvstendig dashboard laget med Tún &middot; ingen Power BI-lisens kreves &middot;
+  bygget 2026-10-10 13:09 CEST fra salgsdata.csv.<br>
   <span id="footnote"></span>
 </footer>
 <div class="tooltip" id="tip"></div>
@@ -369,13 +371,23 @@ function showTip(e, text) {
 }
 function hideTip() { tip.style.opacity = 0; }
 
+/* ---------- chart size ----------------------------------------------------- */
+/* Draw in the card's own pixels, so 11 px text stays 11 px. A fixed 640-wide
+   viewBox scaled to a 330 px phone card drew it at 6 px. */
+function chartSize(svg) {
+  const w = Math.round(svg.getBoundingClientRect().width) || 640;
+  const W = Math.max(280, w), H = 300;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  return [W, H];
+}
+
 /* ---------- SVG bar chart -------------------------------------------------- */
 function barChart(svgId, data, opts) {
-  const svg = $(svgId); const W = 640, H = 300;
+  const svg = $(svgId); const [W, H] = chartSize(svg);
   const m = { t: 12, r: 16, b: 58, l: 64 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   svg.innerHTML = "";
-  if (!data.length) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">Ingen data</text>'; return; }
+  if (!data.length) { svg.innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">Ingen data</text>`; return; }
 
   data = [...data].sort((a, b) => b.value - a.value).slice(0, opts.limit || 12);
   const max = Math.max(...data.map(d => d.value), 1);
@@ -410,11 +422,11 @@ function barChart(svgId, data, opts) {
 
 /* ---------- SVG line chart ------------------------------------------------- */
 function lineChart(svgId, data) {
-  const svg = $(svgId); const W = 640, H = 300;
+  const svg = $(svgId); const [W, H] = chartSize(svg);
   const m = { t: 12, r: 16, b: 48, l: 64 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   svg.innerHTML = "";
-  if (data.length < 2) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">For få punkter</text>'; return; }
+  if (data.length < 2) { svg.innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">For få punkter</text>`; return; }
 
   const max = Math.max(...data.map(d => d.value), 1);
   const ns = "http://www.w3.org/2000/svg";
@@ -438,7 +450,7 @@ function lineChart(svgId, data) {
     c.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
     c.addEventListener("mouseleave", hideTip);
     svg.appendChild(c);
-    const step = Math.ceil(data.length / 10);
+    const step = Math.ceil(data.length / Math.max(2, Math.floor(iw / 56)));  // 10 labels at 640
     if (i % step === 0 || i === data.length - 1) {
       const t = el("text", { class: "axis-label", x: X(i), y: m.t + ih + 18, "text-anchor": "middle" });
       t.textContent = d.key; svg.appendChild(t);
@@ -623,30 +635,42 @@ function readFile(file){
 })();
 
 /* ---------- render loop --------------------------------------------------- */
-function render() {
-  const rows = visibleRows();
-  renderKpis(rows);
+function renderCharts(rows) {
   barChart("chart1", groupSum(rows, META.dimension, META.measure), { limit: 12 });
   if (META.timeColumn) {
     const byTime = groupSum(rows, META.timeColumn, META.measure)
       .sort((a, b) => String(a.key).localeCompare(String(b.key), "nb"));
     lineChart("chart2", byTime);
   } else {
-    $("chart2").innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">Ingen tidskolonne</text>';
+    const [W] = chartSize($("chart2"));
+    $("chart2").innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">Ingen tidskolonne</text>`;
   }
+}
+
+function render() {
+  const rows = visibleRows();
+  renderKpis(rows);
+  renderCharts(rows);
   renderTable(rows);
 }
+
+/* Redraw the charts, not the table, when the card changes width. */
+let resizeFrame = 0;
+addEventListener("resize", () => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(() => renderCharts(visibleRows()));
+});
 
 (function footNote(){
   const el = document.getElementById("footnote"); if (!el) return;
   el.innerHTML = "paired" === "paired"
     ? 'Dataene ligger i <code>data.js</code> ved siden av denne filen. Bytt den ut, og alle ser nye tall.'
-    : 'Tallene er bygget inn i denne filen. Be RAIWork om <code>tun-data</code> for \u00e5 oppdatere.';
+    : 'Tallene er bygget inn i denne filen. Oppdater dem med <code>tun-data</code>.';
 })();
 
 /* ---------- header meta (freshness comes from the DATA, not the shell) ----- */
 (function renderMeta(){
-  const asOf = DATA_META.generated || "2026-10-06 19:09 CEST";
+  const asOf = DATA_META.generated || "2026-10-10 13:06 CEST";
   const src  = DATA_META.source || "salgsdata.csv";
   const mode = "paired";
   const rows = LIVE.length ? fmt(LIVE.length) : "0";

@@ -156,6 +156,47 @@ auditably, which beats reasoning about a filter expression.
 
 A filter in the browser hides nothing. The data is still in the file.
 
+## Questions people ask
+
+**Why not just use Power BI?**
+Use Power BI when the answer depends on who is looking. A Tún file is a snapshot: you
+rebuild it to refresh the numbers. It is for the many small reports where a licence per
+viewer, a workspace and a publish step cost more than the report.
+[docs/07](docs/07-portable-cube.md) has the table.
+
+**Can I hide some rows from some readers?**
+No. Everything in the file is readable by whoever opens it, so split the data and give each
+audience its own folder ([the one rule](#the-one-rule)).
+
+**Does it work on a phone?**
+It depends on how the file arrives. Opened from a Teams preview card, it worked on a PC and
+a phone. A OneDrive link pasted into an e-mail worked on the PC and did nothing on the phone
+([docs/01](docs/01-tenant-constraints.md), row 22).
+
+**Why are the charts empty in the Mac or iPhone preview?**
+Quick Look turns JavaScript off on purpose. Open the file in a browser instead
+([docs/11](docs/11-responsiveness-and-browser-support.md)).
+
+**Can I send it outside my organisation?**
+Yes, as an e-mail attachment. Anonymous SharePoint links were blocked in the tenant we
+measured, and a file you have sent cannot be recalled, so check what is in it first
+([docs/01](docs/01-tenant-constraints.md), row 11).
+
+**How much data fits?**
+A bundled dashboard carries its rows. For large data, the cube mode put 4 000 000 rows into
+a 0.81 MB file, at a median of 0.10 ms per filter click
+([docs/07](docs/07-portable-cube.md)).
+
+**Does the file load anything from the internet?**
+No. `tools/verify_dashboard.py` fails any file that references an outside http(s) resource,
+and it renders the file from `file://` in a real browser.
+
+**Can I use the files I make for paid work?**
+Yes. You may share the files you generate under terms of your choice, on two conditions:
+keep the Origin Notice (the provenance block in the file), and the file must not itself be
+a tool that produces documents from data and templates the way Tún does
+([Licence](#licence), [COPYING.ARTEFACT-EXCEPTION](COPYING.ARTEFACT-EXCEPTION)).
+
 ## Layout
 
 ```

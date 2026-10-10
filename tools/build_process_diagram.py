@@ -1281,18 +1281,26 @@ def render_svg(spec: Spec, lay: Layout) -> str:
         left, right = text_span(b.kind)
         tx = (left + right) / 2
         first = (h - len(b.lines) * LINE_H) / 2 + 13.5
-        tspans = "".join(f'<tspan x="{fmt(tx)}" dy="{0 if j == 0 else LINE_H}">{esc(t)}</tspan>'
-                         for j, t in enumerate(b.lines))
+        # A space ends every line but the last, and the step number. SVG does not draw
+        # it, but a screen reader and a speech-input user read the words apart:
+        # "spørsmålet og", not "spørsmåletog" (axe label-content-name-mismatch).
+        last = len(b.lines) - 1
+        tspans = "".join(f'<tspan x="{fmt(tx)}" dy="{0 if j == 0 else LINE_H}">{esc(t)}'
+                         f'{" " if j < last else ""}</tspan>' for j, t in enumerate(b.lines))
         nx = inset(b.kind) + NUM_R + 2
         number = (f'<g class="step-no"><circle cx="{fmt(nx)}" cy="{fmt(h / 2)}" r="{NUM_R}"/>'
                   f'<text x="{fmt(nx)}" y="{fmt(h / 2 + 4.2)}" text-anchor="middle" '
-                  f'font-size="{LABEL_FONT}" font-weight="700">{b.number}</text></g>')
+                  f'font-size="{LABEL_FONT}" font-weight="700">{b.number} </text></g>')
         tip = f"{b.number}. {n.label}" + (f" ({T['flag']} {b.flag}: {n.improve.text})"
                                           if n.improve else "")
         badge = ""
         if b.flag:
             bx = w - HEX if b.kind == "decision" else w
-            badge = (f'<g class="flag-badge"><circle cx="{fmt(bx)}" cy="0" r="{BADGE_R}"/>'
+            # A sibling of the node, not a child: the node is a button, and its name already
+            # says "Forbedringspunkt {flag}". A bare digit inside it would not match the name.
+            badge = (f'<g class="flag-badge" data-node="{esc(node_id)}" data-lane="{b.lane}" '
+                     f'aria-hidden="true" transform="translate({fmt(b.v)} {fmt(b.u)})">'
+                     f'<circle cx="{fmt(bx)}" cy="0" r="{BADGE_R}"/>'
                      f'<text x="{fmt(bx)}" y="4.2" text-anchor="middle" font-size="{LABEL_FONT}" '
                      f'font-weight="700">{b.flag}</text></g>')
         classes = f"node node-{b.kind} {lane_class(b.lane)}" + (" flagged" if b.flag else "")
@@ -1300,7 +1308,7 @@ def render_svg(spec: Spec, lay: Layout) -> str:
             f'<g class="{classes}" data-node="{esc(node_id)}" data-lane="{b.lane}" '
             f'transform="translate({fmt(b.v)} {fmt(b.u)})"><title>{esc(tip)}</title>{shape}'
             f'{number}<text class="node-label" x="{fmt(tx)}" y="{fmt(first)}" '
-            f'text-anchor="middle">{tspans}</text>{badge}</g>')
+            f'text-anchor="middle">{tspans}</text></g>{badge}')
     out.append('</g>')
     out.append('</svg>')
     return "\n".join(out)

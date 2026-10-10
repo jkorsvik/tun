@@ -121,12 +121,13 @@ html.fit .pd{width:100%;height:auto}
 .num,.badge{flex:none;display:inline-grid;place-items:center;min-width:1.75rem;height:1.75rem;
   padding:0 .375rem;border-radius:999px;font-size:.875rem;font-weight:700}
 .num{background:var(--panel);color:var(--ink);border:1px solid var(--role,var(--line))}
-.badge{background:var(--bad-bg);color:var(--ink);border:2px solid var(--bad)}
+/* Fills behind ink text keep the pale-red tint; red TEXT sits on white (--bad-bg). */
+.badge{background:var(--status-negative-bg);color:var(--ink);border:2px solid var(--bad)}
 .facts{margin:0;display:grid;gap:.625rem}
 .facts dt{color:var(--muted);font-size:.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 .facts dd{margin:0;overflow-wrap:anywhere}
 .card{overflow-wrap:anywhere}
-.card-flag{margin:.75rem 0 0;padding:.625rem .75rem;border-radius:.5rem;background:var(--bad-bg)}
+.card-flag{margin:.75rem 0 0;padding:.625rem .75rem;border-radius:.5rem;background:var(--status-negative-bg)}
 .card-flag p{margin:.125rem 0}
 .card-actions{margin:.75rem 0 0}
 .show-in-flow{display:none}
@@ -161,8 +162,8 @@ footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
 .pd .step-no circle{fill:var(--role);fill-opacity:.16;stroke:var(--role);stroke-width:1}
 .pd .step-no text{fill:var(--ink)}
 .pd .node-start .step-no circle,.pd .node-end .step-no circle{fill:var(--bg);fill-opacity:1}
-.pd .flagged .node-shape{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2}
-.pd .flag-badge circle{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2}
+.pd .flagged .node-shape{fill:var(--status-negative-bg);stroke:var(--bad);stroke-width:2}
+.pd .flag-badge circle{fill:var(--status-negative-bg);stroke:var(--bad);stroke-width:2}
 .pd .flag-badge text{fill:var(--ink)}
 .pd .edge-line{fill:none;stroke:var(--muted);stroke-width:1.75;stroke-linejoin:round}
 .pd .edge[data-loop] .edge-line{stroke-dasharray:6 4}
@@ -174,10 +175,10 @@ html.js .pd .node{cursor:pointer}
 .pd .node:focus-visible .node-shape,.pd .node.selected .node-shape{stroke:var(--brand);stroke-width:3}
 .pd .edge.hl .edge-line{stroke:var(--brand);stroke-width:2.5}
 .pd .edge.hl .edge-arrow{fill:var(--brand)}
-.pd.focusing .node:not(.hl),.pd.focusing .edge:not(.hl){opacity:.22}
-.pd.lane-filter .node:not(.in-lane),.pd.lane-filter .edge:not(.in-lane){opacity:.18}
+.pd.focusing .node:not(.hl),.pd.focusing .edge:not(.hl),.pd.focusing .flag-badge:not(.hl){opacity:.22}
+.pd.lane-filter .node:not(.in-lane),.pd.lane-filter .edge:not(.in-lane),.pd.lane-filter .flag-badge:not(.in-lane){opacity:.18}
 .pd.lane-filter .lane:not(.in-lane) .lane-band{fill-opacity:0}
-.pd .node,.pd .edge{transition:opacity .15s}
+.pd .node,.pd .edge,.pd .flag-badge{transition:opacity .15s}
 
 @media print{
   @page{size:A4;margin:12mm}
@@ -200,7 +201,8 @@ html.js .pd .node{cursor:pointer}
   .cards{grid-template-columns:1fr 1fr 1fr;gap:.5rem}
   .card{padding:.625rem .75rem}
   .card{break-inside:avoid}
-  .pd.focusing .node,.pd.focusing .edge,.pd.lane-filter .node,.pd.lane-filter .edge{opacity:1}
+  .pd.focusing .node,.pd.focusing .edge,.pd.lane-filter .node,.pd.lane-filter .edge,
+  .pd.focusing .flag-badge,.pd.lane-filter .flag-badge{opacity:1}
 }
 @media (max-width:40rem){
   main{padding:1rem}
@@ -348,6 +350,9 @@ html.js .pd .node{cursor:pointer}
 
   /* Highlight: hover or focus a step to see its connections; the rest dims. */
   var nodes = Array.prototype.slice.call(svg.querySelectorAll("g.node"));
+  var badges = Array.prototype.slice.call(svg.querySelectorAll("g.flag-badge"));
+  /* The steps become buttons below, so the picture is a group of them, not one image. */
+  svg.setAttribute("role", "group");
   var edges = Array.prototype.slice.call(svg.querySelectorAll("g.edge"));
   var lanes = Array.prototype.slice.call(svg.querySelectorAll("g.lane"));
   var laneOf = {};
@@ -357,7 +362,7 @@ html.js .pd .node{cursor:pointer}
   }
   function highlight(id) {
     svg.classList.toggle("focusing", !!id);
-    nodes.forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });
+    nodes.concat(badges).forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });
     edges.forEach(function (e) {
       e.classList.toggle("hl", !!id && (e.getAttribute("data-from") === id || e.getAttribute("data-to") === id));
     });
@@ -421,7 +426,7 @@ html.js .pd .node{cursor:pointer}
       var lane = c.getAttribute("data-lane");
       chips.forEach(function (o) { o.setAttribute("aria-pressed", o === c ? "true" : "false"); });
       svg.classList.toggle("lane-filter", lane !== "");
-      nodes.forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });
+      nodes.concat(badges).forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });
       lanes.forEach(function (l) { l.classList.toggle("in-lane", l.getAttribute("data-lane") === lane); });
       edges.forEach(function (e) {
         e.classList.toggle("in-lane", laneOf[e.getAttribute("data-from")] === lane ||

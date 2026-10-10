@@ -157,7 +157,7 @@ STYLE = """
 body{margin:0;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
   font-size:1rem;line-height:1.55}
-header{background:var(--brand-dark);color:var(--eksempel-cream);padding:1.5rem 2rem}
+header{background:var(--brand-dark);color:var(--palette-on-dark);padding:1.5rem 2rem}
 header h1{margin:0;font-size:1.5rem;font-weight:500}
 header .meta{opacity:.85;font-size:.85rem;line-height:1.5;margin-top:.5rem;max-width:56rem}
 header code{background:rgba(255,255,255,.12);padding:.05rem .3rem;border-radius:.2rem}
@@ -360,7 +360,7 @@ SECTION_3 = f"""
 
     <div class="filter-block">
       <h3>JavaScript-filtrering</h3>
-      <select id="js-filter-select">
+      <select id="js-filter-select" aria-label="Filtrer regioner">
         <option value="all">Alle regioner</option>
         <option value="over">Over snittet ({AVG:.0f})</option>
         <option value="under">Under snittet ({AVG:.0f})</option>

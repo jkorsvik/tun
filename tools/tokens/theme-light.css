@@ -39,5 +39,7 @@
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
-  --bad-bg:var(--status-negative-bg);
+  /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
+     is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
+  --bad-bg:var(--palette-surface);
 }

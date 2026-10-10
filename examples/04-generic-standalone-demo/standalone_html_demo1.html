@@ -18,7 +18,7 @@
   ----------------------------------------------------------------------------
   PROVENANCE
     Source data : none — this is a static demonstration, not a real report
-    Built       : 2026-10-06 20:18 
+    Built       : 2026-10-10 13:09 
     Requested by: the product owner
     Built by    : RAIWork, as a PROPOSAL artefact for
                   docs/08-generic-artifact-model.md (not yet adopted)
@@ -140,7 +140,7 @@
 :root,
 :root[data-theme="light"]{
   --ink:        var(--palette-ink);      /* body text */
-  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */
   --line:       #ebebeb;               /* neutral grey: borders, gridlines */
   --bg:         var(--palette-surface);
   --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
@@ -151,7 +151,9 @@
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
-  --bad-bg:var(--status-negative-bg);
+  /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
+     is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
+  --bad-bg:var(--palette-surface);
 }
 
   :root{

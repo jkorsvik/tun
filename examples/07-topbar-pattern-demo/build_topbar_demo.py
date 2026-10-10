@@ -132,7 +132,7 @@ HTML = f"""<!DOCTYPE html>
     background:var(--accent-dark); color:#fff; display:flex; align-items:center;
     gap:var(--sp-2); padding:0 var(--sp-3);
   }}
-  #topbar .title{{font-size:1rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+  #topbar .title{{margin:0;font-size:1rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
   .icon-btn{{
     background:transparent;border:none;color:#fff;font-size:1.25rem;line-height:1;
     padding:.4rem .6rem;border-radius:.25rem;cursor:pointer;touch-action:manipulation;
@@ -198,7 +198,7 @@ HTML = f"""<!DOCTYPE html>
 <header id="topbar">
   <button id="hamburger-btn" class="icon-btn" aria-expanded="false" aria-controls="nav-menu"
           title="Meny" onclick="toggleMenu()">☰</button>
-  <span class="title">Topbar-mønster — demo</span>
+  <h1 class="title">Topbar-mønster — demo</h1>
   <button id="info-btn" class="icon-btn" aria-expanded="false" aria-controls="info-panel"
           title="Om denne siden" onclick="toggleInfo()">ℹ️</button>
   <button id="fs-btn" class="icon-btn" aria-pressed="false"

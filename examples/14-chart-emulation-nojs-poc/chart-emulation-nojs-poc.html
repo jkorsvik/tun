@@ -16,7 +16,7 @@
   Chart-emulering uten JavaScript
   PROVENANCE
     Source data : none — same synthetic regional counts as examples/06-chart-palette-demo/
-    Built       : 2026-10-07 17:16
+    Built       : 2026-10-10 13:09
     Companion to: examples/06-chart-palette-demo/, examples/13-js-free-standalone-poc/
     Built by    : RAIWork
     Repo        : tun
@@ -135,7 +135,7 @@
 :root,
 :root[data-theme="light"]{
   --ink:        var(--palette-ink);      /* body text */
-  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */
   --line:       #ebebeb;               /* neutral grey: borders, gridlines */
   --bg:         var(--palette-surface);
   --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
@@ -146,7 +146,9 @@
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
-  --bad-bg:var(--status-negative-bg);
+  /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
+     is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
+  --bad-bg:var(--palette-surface);
 }
 
 
@@ -154,7 +156,7 @@
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
     font-size:1rem;line-height:1.5}
-  header{background:var(--brand-dark);color:var(--eksempel-cream);padding:1.25rem 2rem}
+  header{background:var(--brand-dark);color:var(--palette-on-dark);padding:1.25rem 2rem}
   header h1{margin:0;font-size:1.4rem;font-weight:500}
   header .meta{opacity:.85;font-size:.85rem;line-height:1.5;margin-top:.5rem;max-width:52rem}
   header code{background:rgba(255,255,255,.12);padding:.05rem .3rem;border-radius:.2rem}
@@ -308,7 +310,7 @@
       v&aelig;re kjent f&oslash;r filen genereres; en side som skal vise data brukeren selv
       laster opp eller filtrerer interaktivt trenger fortsatt JavaScript, uansett diagramtype.</p>
     <div class="note">
-      Byggetidspunkt: 2026-10-07 17:16 &middot; generert av <code>build_chart_emulation_poc.py</code>,
+      Byggetidspunkt: 2026-10-10 13:09 &middot; generert av <code>build_chart_emulation_poc.py</code>,
       aldri h&aring;ndskrevet.
     </div>
   </div>
