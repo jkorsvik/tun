@@ -32,9 +32,9 @@ mark and the one-colour version derived from it. The files are in
 
 ## Who holds the mark
 
-This is open. It follows the ownership question in
-[`docs/17-licensing.md`](docs/17-licensing.md) ("Blocking", item 1), which is not answered.
-This policy says how the name and the mark may be used. It does not say who holds them.
+The mark follows the project. The project belongs to the authors in [`AUTHORS.md`](AUTHORS.md),
+and no employer holds rights in it ([`docs/17-licensing.md`](docs/17-licensing.md), "Status",
+item 1). This policy says how the name and the mark may be used.
 
 This text has not been reviewed by a lawyer. Searches in trademark registries are still open:
 see [`docs/18-naming.md`](docs/18-naming.md).
