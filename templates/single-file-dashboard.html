@@ -250,13 +250,23 @@ function showTip(e, text) {
 }
 function hideTip() { tip.style.opacity = 0; }
 
+/* ---------- chart size ----------------------------------------------------- */
+/* Draw in the card's own pixels, so 11 px text stays 11 px. A fixed 640-wide
+   viewBox scaled to a 330 px phone card drew it at 6 px. */
+function chartSize(svg) {
+  const w = Math.round(svg.getBoundingClientRect().width) || 640;
+  const W = Math.max(280, w), H = 300;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  return [W, H];
+}
+
 /* ---------- SVG bar chart -------------------------------------------------- */
 function barChart(svgId, data, opts) {
-  const svg = $(svgId); const W = 640, H = 300;
+  const svg = $(svgId); const [W, H] = chartSize(svg);
   const m = { t: 12, r: 16, b: 58, l: 64 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   svg.innerHTML = "";
-  if (!data.length) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">{{T:no_data}}</text>'; return; }
+  if (!data.length) { svg.innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">{{T:no_data}}</text>`; return; }
 
   data = [...data].sort((a, b) => b.value - a.value).slice(0, opts.limit || 12);
   const max = Math.max(...data.map(d => d.value), 1);
@@ -291,11 +301,11 @@ function barChart(svgId, data, opts) {
 
 /* ---------- SVG line chart ------------------------------------------------- */
 function lineChart(svgId, data) {
-  const svg = $(svgId); const W = 640, H = 300;
+  const svg = $(svgId); const [W, H] = chartSize(svg);
   const m = { t: 12, r: 16, b: 48, l: 64 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   svg.innerHTML = "";
-  if (data.length < 2) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">{{T:few_points}}</text>'; return; }
+  if (data.length < 2) { svg.innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">{{T:few_points}}</text>`; return; }
 
   const max = Math.max(...data.map(d => d.value), 1);
   const ns = "http://www.w3.org/2000/svg";
@@ -319,7 +329,7 @@ function lineChart(svgId, data) {
     c.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
     c.addEventListener("mouseleave", hideTip);
     svg.appendChild(c);
-    const step = Math.ceil(data.length / 10);
+    const step = Math.ceil(data.length / Math.max(2, Math.floor(iw / 56)));  // 10 labels at 640
     if (i % step === 0 || i === data.length - 1) {
       const t = el("text", { class: "axis-label", x: X(i), y: m.t + ih + 18, "text-anchor": "middle" });
       t.textContent = d.key; svg.appendChild(t);
@@ -504,19 +514,31 @@ function readFile(file){
 })();
 
 /* ---------- render loop --------------------------------------------------- */
-function render() {
-  const rows = visibleRows();
-  renderKpis(rows);
+function renderCharts(rows) {
   barChart("chart1", groupSum(rows, META.dimension, META.measure), { limit: 12 });
   if (META.timeColumn) {
     const byTime = groupSum(rows, META.timeColumn, META.measure)
       .sort((a, b) => String(a.key).localeCompare(String(b.key), "{{T:collate}}"));
     lineChart("chart2", byTime);
   } else {
-    $("chart2").innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">{{T:no_time_column}}</text>';
+    const [W] = chartSize($("chart2"));
+    $("chart2").innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">{{T:no_time_column}}</text>`;
   }
+}
+
+function render() {
+  const rows = visibleRows();
+  renderKpis(rows);
+  renderCharts(rows);
   renderTable(rows);
 }
+
+/* Redraw the charts, not the table, when the card changes width. */
+let resizeFrame = 0;
+addEventListener("resize", () => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(() => renderCharts(visibleRows()));
+});
 
 (function footNote(){
   const el = document.getElementById("footnote"); if (!el) return;

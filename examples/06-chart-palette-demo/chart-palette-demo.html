@@ -16,7 +16,7 @@
   Chart.js fargepalett-demo
   PROVENANCE
     Source data : none — synthetic regional counts, not a real report
-    Built       : 2026-10-06 20:18
+    Built       : 2026-10-10 13:09
     Companion to: docs/10-chart-colour-palettes.md
     Built by    : RAIWork
     Repo        : tun
@@ -135,7 +135,7 @@
 :root,
 :root[data-theme="light"]{
   --ink:        var(--palette-ink);      /* body text */
-  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */
   --line:       #ebebeb;               /* neutral grey: borders, gridlines */
   --bg:         var(--palette-surface);
   --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
@@ -146,7 +146,9 @@
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
-  --bad-bg:var(--status-negative-bg);
+  /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
+     is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
+  --bad-bg:var(--palette-surface);
 }
 
 /*
@@ -251,7 +253,7 @@
     border:1px solid rgba(128,128,128,.4);vertical-align:middle;margin-right:.4rem}
   .ref-hex{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;color:var(--muted)}
   .ref-pass{color:var(--ok);font-weight:600}
-  .ref-fail{color:var(--bad);font-weight:600}
+  .ref-fail{color:var(--bad);font-weight:600;background:var(--bad-bg);padding:0 .2rem;border-radius:.2rem}
   .ref-caveat{background:var(--panel);border-left:.2rem solid var(--palette-accent);padding:.5rem .75rem;
     font-size:.8rem;color:var(--muted);margin:0 0 1.75rem;max-width:56rem}
   .swatches{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.25rem}
@@ -260,7 +262,7 @@
   .sw-box{width:1rem;height:1rem;border-radius:.2rem;border:1px solid rgba(128,128,128,.4);display:inline-block;
     flex-shrink:0}
   .sw-ratio.pass{color:var(--ok);font-weight:600}
-  .sw-ratio.fail{color:var(--bad);font-weight:600}
+  .sw-ratio.fail{color:var(--bad);font-weight:600;background:var(--bad-bg);padding:0 .2rem;border-radius:.2rem}  /* Fire Red needs white: 4.48:1 on the panel */
   .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;margin-bottom:1rem}
   .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:.375rem;padding:.75rem}
   .chart-card h3{margin:0 0 .5rem;font-size:.85rem;font-weight:600;color:var(--muted);
@@ -295,6 +297,7 @@
 <main>
 
   <section id="tab-categorical" class="tabpage">
+    <h2>Kategorisk</h2>
     <div class="palette-row">
       <label for="sel-qual">Palett:</label>
       <select id="sel-qual">
@@ -322,6 +325,7 @@
   </section>
 
   <section id="tab-sequential" class="tabpage">
+    <h2>Sekvensiell</h2>
     <div class="palette-row">
       <label for="sel-seq">Palett:</label>
       <select id="sel-seq">
@@ -339,6 +343,7 @@
   </section>
 
   <section id="tab-diverging" class="tabpage">
+    <h2>Divergerende</h2>
     <div class="palette-row">
       <label for="sel-div">Palett:</label>
       <select id="sel-div">
@@ -389,7 +394,7 @@
       f&oslash;rst: navn, hex og m&aring;lt
       kontrast mot begge bakgrunner for alle syv paletter, samlet p&aring; &eacute;n side.</p>
     <div class="note">
-      Byggetidspunkt: 2026-10-06 20:18 &middot; generert av <code>build_chart_palette_demo.py</code>,
+      Byggetidspunkt: 2026-10-10 13:09 &middot; generert av <code>build_chart_palette_demo.py</code>,
       aldri h&aring;ndskrevet &middot; Chart.js 4.4.0 vendret i <code>vendor/</code> og inlinet ved bygg,
       aldri lastet av denne filen ved &aring;pning.
     </div>

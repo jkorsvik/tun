@@ -176,10 +176,23 @@ function rollup(groupDim, mi){
 
 /* ---- SVG ---- */
 const esc = s => String(s).replace(/[<>&"]/g, m => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[m]));
-function barChart(labels, values, unit){
-  const rowH = 24, W = 560, padL = 118, padR = 66, H = labels.length*rowH + 8;
+/* Charts draw in their panel's own pixels, so 10 px text stays 10 px. A fixed
+   560/1120-wide viewBox scaled to a 330 px phone panel drew it at 3 to 6 px.
+   measureCharts() reads the real widths after a render; boot and resize redraw
+   once when they changed. */
+let barW = 560, lineW = 1120;
+function measureCharts(){
+  const px = sel => { const el = document.querySelector(sel);
+    return el ? Math.round(el.getBoundingClientRect().width) : 0; };
+  const b = px("#charts svg") || barW, l = px("#trend svg") || lineW;
+  const changed = Math.abs(b - barW) > 1 || Math.abs(l - lineW) > 1;
+  barW = Math.max(280, b); lineW = Math.max(280, l);
+  return changed;
+}
+function barChart(labels, values, unit, name){
+  const rowH = 24, W = barW, padL = 118, padR = 66, H = labels.length*rowH + 8;
   const max = Math.max(...values, 1), bw = W - padL - padR;
-  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${esc(name)}">`;
   labels.forEach((l, i) => { const y = i*rowH + 4, w = Math.max(1, values[i]/max*bw);
     s += `<text class="lbl" x="${padL-8}" y="${y+13}" text-anchor="end">${esc(l)}</text>`
       +  `<rect class="bar" x="${padL}" y="${y+3}" width="${w.toFixed(1)}" height="${rowH-9}" rx="2">`
@@ -187,12 +200,12 @@ function barChart(labels, values, unit){
       +  `<text class="vlbl" x="${padL+w+6}" y="${y+13}">${fmt(values[i], "")}</text>`; });
   return s + "</svg>";
 }
-function lineChart(labels, values, unit){
-  const W = 1120, H = 230, padL = 62, padR = 14, padT = 12, padB = 34;
+function lineChart(labels, values, unit, name){
+  const W = lineW, H = 230, padL = 62, padR = 14, padT = 12, padB = 34;
   const n = labels.length, max = Math.max(...values, 1);
   const x = i => padL + (n < 2 ? (W-padL-padR)/2 : i*(W-padL-padR)/(n-1));
   const y = v => H - padB - (v/max)*(H-padT-padB);
-  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${esc(name)}">`;
   for (let g = 0; g <= 4; g++){ const v = max*g/4, yy = y(v);
     s += `<line class="gl" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`
       +  `<text class="vlbl" x="${padL-8}" y="${yy+3}" text-anchor="end">${fmt(v, "")}</text>`; }
@@ -202,7 +215,7 @@ function lineChart(labels, values, unit){
     +  `<polyline fill="none" stroke="var(--gr)" stroke-width="2" points="${pts}"/>`;
   if (n <= 60) values.forEach((v,i) => { s += `<circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" `
     + `fill="#fff" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });
-  const step = Math.ceil(n/12);
+  const step = Math.ceil(n / Math.max(2, Math.floor((W-padL-padR)/87)));  // 12 labels at 1120
   labels.forEach((l,i) => { if (i % step) return;
     s += `<text class="lbl" x="${x(i).toFixed(1)}" y="${H-padB+16}" text-anchor="middle">${esc(l)}</text>`; });
   return s + "</svg>";
@@ -251,13 +264,14 @@ function render(){
 
   if (TIME){ const ti = active(TIME);
     document.getElementById("trend").innerHTML =
-      lineChart(ti.map(i => META.labels[TIME][i]), ti.map(i => base.out[i]), unit); }
+      lineChart(ti.map(i => META.labels[TIME][i]), ti.map(i => base.out[i]), unit,
+                "{{T:trend_per}} " + TIME); }
 
   const ranked = d => { const r = per[d], idx = active(d).sort((a,b) => r.out[b] - r.out[a]);
     return [idx, idx.map(i => META.labels[d][i]), idx.map(i => r.out[i])]; };
   document.getElementById("charts").innerHTML = CHART_DIMS.slice(0, 2).map(d => {
     const [, l, v] = ranked(d);
-    return `<div class="panel"><h2>{{T:per}} ${esc(d)}</h2>${barChart(l, v, unit)}</div>`; }).join("");
+    return `<div class="panel"><h2>{{T:per}} ${esc(d)}</h2>${barChart(l, v, unit, "{{T:per}} " + d)}</div>`; }).join("");
 
   const rest = CHART_DIMS.slice(2);
   const tp = document.getElementById("tablePanel");
@@ -293,6 +307,10 @@ function render(){
     document.getElementById("boot").hidden = true;
     document.getElementById("app").hidden = false;
     render();
+    if (measureCharts()) render();
+    let frame = 0;
+    addEventListener("resize", () => { cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => { if (measureCharts()) render(); }); });
     window.__READY__ = true;
   } catch (e) {
     const b = document.getElementById("boot");
