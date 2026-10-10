@@ -11,7 +11,9 @@ tools/verify_slide_deck.py.
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
+import tempfile
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
@@ -20,6 +22,8 @@ from typing import Optional, Tuple
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tools"))
 
+import i18n  # noqa: E402
+import tun_tokens  # noqa: E402
 import verify_standalone_core as core  # noqa: E402
 DECKS = {
     "presentation": REPO / "examples" / "18-portable-slide-deck" / "sample-deck.html",
@@ -53,6 +57,9 @@ class PortableDeckTest(unittest.TestCase):
     def load(self, path: Path) -> tuple[str, DeckParser]:
         self.assertTrue(path.is_file(), path)
         text = path.read_text(encoding="utf-8")
+        # The template holds {{T:key}} words; what a person gets is the nb build of it,
+        # which tools/build_slide_deck.py writes. tests/test_i18n.py covers both languages.
+        text = i18n.apply(text, i18n.load("portable-slide-deck", "nb"))
         parser = DeckParser()
         parser.feed(text)
         parser.close()
@@ -211,6 +218,44 @@ class PortableDeckTest(unittest.TestCase):
                 )
                 self.assertTrue(touch_blocks)
                 self.assertFalse(any("#controls{display:none" in block for block in touch_blocks))
+
+
+class BuilderTest(unittest.TestCase):
+    """One builder path fills the template, in both languages, with the neutral palette."""
+
+    STAMP = re.compile(r"Built       : \d{4}-\d\d-\d\d \d\d:\d\d")
+    STARTER = REPO / "tools" / "build_slide_deck.py"
+    SAMPLE = REPO / "examples" / "18-portable-slide-deck" / "build_sample_deck.py"
+
+    def build(self, script: Path, lang: str, tmp: Path) -> str:
+        out = tmp / f"{script.stem}-{lang}.html"
+        run = subprocess.run([sys.executable, str(script), "--lang", lang, "--out", str(out)],
+                             capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        return out.read_text(encoding="utf-8")
+
+    def test_both_builders_fill_every_placeholder_in_nb_and_en(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            for script in (self.STARTER, self.SAMPLE):
+                for lang in ("nb", "en"):
+                    with self.subTest(builder=script.name, lang=lang):
+                        text = self.build(script, lang, tmp)
+                        self.assertIn(f'<html lang="{lang}">', text)
+                        self.assertEqual(PLACEHOLDER.findall(text), [])
+                        self.assertNotIn("{{T:", text)
+                        self.assertEqual(tun_tokens.missing_slots(text), [])
+                        # the export's palette, never a brand's: the theme colour is the
+                        # neutral palette's darkest value
+                        self.assertIn('<meta name="theme-color" content="#0E1C2E">', text)
+
+    def test_the_committed_sample_is_what_its_builder_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            built = self.build(self.SAMPLE, "nb", Path(raw))
+        committed = DECKS["presentation"].read_text(encoding="utf-8")
+        self.assertEqual(len(self.STAMP.findall(committed)), 1)
+        self.assertEqual(self.STAMP.sub("Built       : STAMP", built),
+                         self.STAMP.sub("Built       : STAMP", committed))
 
 
 if __name__ == "__main__":

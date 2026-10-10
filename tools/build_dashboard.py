@@ -8,7 +8,7 @@
 """
 build_dashboard.py — fill the single-file dashboard template with real data.
 
-Used by the RAIWork skill `tun-new`. Stdlib only: no pip install, no
+Used by the skill `tun-new`. Stdlib only: no pip install, no
 node_modules, nothing for a non-developer to set up.
 
     python3 tools/build_dashboard.py \
@@ -33,6 +33,8 @@ import re
 import sys
 
 TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "single-file-dashboard.html"
+# The strings table is named, not derived from TEMPLATE: a test points TEMPLATE at a copy.
+STRINGS = "single-file-dashboard"
 
 # Colours come from tools/tun_tokens.py, never from the template: it resolves the active
 # palette (core's neutral one unless TUN_PALETTE says otherwise), validates every slot,
@@ -41,6 +43,7 @@ TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "single-f
 TOOLS_DIR = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS_DIR))
 import feedback_link  # noqa: E402
+import i18n  # noqa: E402
 import tun_tokens  # noqa: E402
 
 TOKEN_FILES = ("status-semantic.css", "theme-light.css")
@@ -143,7 +146,9 @@ def main() -> None:
                          "data updates for everyone without rebuilding the dashboard.")
     ap.add_argument("--feedback-to", default="", metavar="ADDRESS_OR_ISSUE_URL",
                     help=feedback_link.FLAG_HELP)
+    i18n.add_lang_argument(ap)
     args = ap.parse_args()
+    t = i18n.load(STRINGS, args.lang)
 
     rows = coerce_numbers(load_rows(args.data))
     if not rows:
@@ -193,7 +198,8 @@ def main() -> None:
     if args.feedback_to:
         try:
             feedback = feedback_link.block(args.feedback_to, title=args.title, built=now,
-                                           source=args.source or args.data.name)
+                                           source=args.source or args.data.name,
+                                           lang=args.lang)
         except ValueError as exc:
             sys.exit(f"error: --feedback-to: {exc}")
 
@@ -206,19 +212,21 @@ def main() -> None:
         "EXTRACT_TIMESTAMP": extracted,
         "BUILD_TIMESTAMP": now,
         "REQUESTED_BY": args.requested_by or NOT_STATED,
-        "ROW_COUNT": f"{len(rows):,}".replace(",", " "),
+        "ROW_COUNT": i18n.group_int(len(rows), args.lang),
         "DIMENSION_COL": args.dimension,
         "TIME_COL": args.time,
         "MEASURE_COL": args.measure,
         "FILTER_COLS_JSON": json.dumps(filters or [args.dimension], ensure_ascii=False),
-        "CHART1_TITLE": f"{args.measure} per {args.dimension}",
-        "CHART2_TITLE": f"{args.measure} over {args.time}" if args.time else "Utvikling",
+        "CHART1_TITLE": i18n.fill(t["chart1_title"], measure=args.measure,
+                                  dimension=args.dimension),
+        "CHART2_TITLE": (i18n.fill(t["chart2_title"], measure=args.measure, time=args.time)
+                         if args.time else t["chart2_default"]),
         # Last on purpose: the block holds reader-facing text (the title), and no
         # later replacement should get a chance to rewrite a token inside it.
         "FEEDBACK_BLOCK": feedback,
     }
 
-    html = TEMPLATE.read_text(encoding="utf-8")
+    html = i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
     for key, value in subs.items():
         html = html.replace("{{" + key + "}}", str(value))
 

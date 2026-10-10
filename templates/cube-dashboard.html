@@ -7,7 +7,7 @@
   under terms of your choice, provided the Origin Notice is preserved.
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<html lang="no"><head><meta charset="utf-8">
+<html lang="{{T:html_lang}}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}}</title>
 <!--
@@ -82,20 +82,20 @@ footer b{color:var(--gr2);font-weight:650}
 #boot{padding:3rem 1.5rem;text-align:center;color:var(--mut)}
 #boot.err{color:#b00020}
 </style></head><body>
-<div id="boot">dekoder datasett…</div>
+<div id="boot">{{T:boot}}</div>
 <div id="app" hidden>
 <header>
   <h1 id="title"></h1><span class="sub" id="scope"></span>
   <span style="flex:1"></span>
-  <select class="ms" id="measure" aria-label="Mål"></select>
-  <button class="rst" id="reset">Nullstill filtre</button>
+  <select class="ms" id="measure" aria-label="{{T:measure_label}}"></select>
+  <button class="rst" id="reset">{{T:reset}}</button>
 </header>
 <main>
-  <div class="panel"><h2>Filtre</h2><div class="filters" id="filters"></div></div>
+  <div class="panel"><h2>{{T:filters}}</h2><div class="filters" id="filters"></div></div>
   <div class="kpis" id="kpis"></div>
   <div class="panel" id="trendPanel" style="margin-top:1rem" hidden><h2 id="trendTitle"></h2><div id="trend"></div></div>
   <div class="grid2" id="charts"></div>
-  <div class="panel" id="tablePanel"><h2>Detaljer</h2><div id="tbl"></div></div>
+  <div class="panel" id="tablePanel"><h2>{{T:details}}</h2><div id="tbl"></div></div>
 </main>
 <footer id="perf"></footer>
 </div>{{FEEDBACK_BLOCK}}
@@ -104,19 +104,19 @@ footer b{color:var(--gr2);font-weight:650}
 <script>
 "use strict";
 const META = {{META}};
-const NB = n => n.toLocaleString("nb-NO");
+const NB = n => n.toLocaleString("{{T:num_locale}}");
 const T = () => performance.now();
 
-/* ---- kompakt tallformat, med enhet ---- */
+/* ---- {{T:c_fmt}} ---- */
 function fmt(v, unit){
   const a = Math.abs(v), u = unit ? " " + unit : "";
-  if (a >= 1e9) return (v/1e9).toFixed(2).replace(".", ",") + " mrd" + u;
-  if (a >= 1e6) return (v/1e6).toFixed(1).replace(".", ",") + " mill." + u;
+  if (a >= 1e9) return (v/1e9).toFixed(2).replace(".", "{{T:dec}}") + " {{T:unit_bn}}" + u;
+  if (a >= 1e6) return (v/1e6).toFixed(1).replace(".", "{{T:dec}}") + " {{T:unit_m}}" + u;
   if (a >= 1e4) return NB(Math.round(v/1e3)) + "k" + u;
   return NB(Math.round(v * 100) / 100) + u;
 }
 
-/* ---- dekoding: base64 -> gunzip -> typed arrays over kubens minne ---- */
+/* ---- {{T:c_decode}} ---- */
 async function loadCube(){
   const t0 = T();
   const b64 = document.getElementById("cube").textContent.trim();
@@ -142,7 +142,7 @@ async function loadCube(){
   return {cols, cnt, t_b64: t1-t0, t_gunzip: t2-t1, bytes_b64: b64.length, bytes_raw: buf.byteLength};
 }
 
-/* ---- kubens geometri ---- */
+/* ---- {{T:c_geometry}} ---- */
 const D = META.dims, S = META.shape;
 const STRIDE = (() => { const s = new Array(S.length); s[S.length-1] = 1;
   for (let i = S.length-2; i >= 0; i--) s[i] = s[i+1] * S[i+1]; return s; })();
@@ -150,9 +150,9 @@ const sel = {}; D.forEach(d => sel[d] = new Set());
 const active = d => { const i = D.indexOf(d);
   return sel[d].size ? [...sel[d]].sort((a,b)=>a-b) : Array.from({length: S[i]}, (_,k) => k); };
 
-/* ---- aggregering: én pass over de valgte cellene ----
-   Gruppering skjer på plass i en tett utmatrise; ingen hashing, ingen allokering
-   per celle. Med <= 2 mill. celler er et fullt sveip raskere enn et musklikk. */
+/* ---- {{T:c_agg_1}}
+   {{T:c_agg_2}}
+   {{T:c_agg_3}} */
 let CUBE = null;
 function rollup(groupDim, mi){
   const gi = D.indexOf(groupDim);
@@ -208,14 +208,14 @@ function lineChart(labels, values, unit){
   return s + "</svg>";
 }
 
-/* ---- oppbygging ---- */
+/* ---- {{T:c_build}} ---- */
 const TIME = META.time_dim, CHART_DIMS = D.filter(d => d !== TIME);
 let MI = 0;
 
 function buildChrome(){
   document.getElementById("title").textContent = META.title;
   document.getElementById("measure").innerHTML = META.measures
-    .map((m,i) => `<option value="${i}">${esc(m.agg === "count" ? "antall rader" : m.field)}</option>`).join("");
+    .map((m,i) => `<option value="${i}">${esc(m.agg === "count" ? "{{T:count_rows}}" : m.field)}</option>`).join("");
   document.getElementById("measure").hidden = META.measures.length < 2;
   document.getElementById("measure").onchange = e => { MI = +e.target.value; render(); };
 
@@ -232,7 +232,7 @@ function buildChrome(){
   document.getElementById("reset").onclick = () => { D.forEach(d => sel[d].clear());
     document.querySelectorAll(".chip.on").forEach(c => c.classList.remove("on")); render(); };
   if (TIME){ document.getElementById("trendPanel").hidden = false;
-    document.getElementById("trendTitle").textContent = "Utvikling per " + TIME; }
+    document.getElementById("trendTitle").textContent = "{{T:trend_per}} " + TIME; }
 }
 
 function render(){
@@ -242,10 +242,10 @@ function render(){
   const per = {}; for (const d of CHART_DIMS) per[d] = rollup(d, MI);
   const ms = T() - t0;
 
-  const kpis = [[meas.agg === "count" ? "Antall rader" : meas.field, fmt(base.tot, unit)],
-                ["Rader i utvalg", NB(base.totN)]];
-  if (meas.agg === "sum") kpis.push(["Snitt per rad", fmt(base.tot / Math.max(1, base.totN), unit)]);
-  kpis.push(["Kubeceller lest", NB(base.cells)]);
+  const kpis = [[meas.agg === "count" ? "{{T:kpi_rows}}" : meas.field, fmt(base.tot, unit)],
+                ["{{T:kpi_selected}}", NB(base.totN)]];
+  if (meas.agg === "sum") kpis.push(["{{T:kpi_avg}}", fmt(base.tot / Math.max(1, base.totN), unit)]);
+  kpis.push(["{{T:kpi_cells}}", NB(base.cells)]);
   document.getElementById("kpis").innerHTML = kpis
     .map(([l,v]) => `<div class="kpi"><div class="v">${v}</div><div class="l">${esc(l)}</div></div>`).join("");
 
@@ -257,7 +257,7 @@ function render(){
     return [idx, idx.map(i => META.labels[d][i]), idx.map(i => r.out[i])]; };
   document.getElementById("charts").innerHTML = CHART_DIMS.slice(0, 2).map(d => {
     const [, l, v] = ranked(d);
-    return `<div class="panel"><h2>Per ${esc(d)}</h2>${barChart(l, v, unit)}</div>`; }).join("");
+    return `<div class="panel"><h2>{{T:per}} ${esc(d)}</h2>${barChart(l, v, unit)}</div>`; }).join("");
 
   const rest = CHART_DIMS.slice(2);
   const tp = document.getElementById("tablePanel");
@@ -265,29 +265,29 @@ function render(){
   if (rest.length) document.getElementById("tbl").innerHTML = rest.map(d => {
     const [idx, l, v] = ranked(d), r = per[d];
     return `<table style="margin-bottom:1rem"><thead><tr><th>${esc(d)}</th>`
-      + `<th class="n">${esc(meas.agg === "count" ? "antall" : meas.field)}</th>`
-      + `<th class="n">rader</th><th class="n">snitt</th></tr></thead><tbody>`
+      + `<th class="n">${esc(meas.agg === "count" ? "{{T:th_count}}" : meas.field)}</th>`
+      + `<th class="n">{{T:th_rows}}</th><th class="n">{{T:th_avg}}</th></tr></thead><tbody>`
       + idx.map((i, k) => `<tr><td>${esc(l[k])}</td><td class="n">${fmt(v[k], "")}</td>`
         + `<td class="n">${NB(r.outN[i])}</td>`
         + `<td class="n">${fmt(v[k] / Math.max(1, r.outN[i]), "")}</td></tr>`).join("")
       + `</tbody></table>`; }).join("");
 
   document.getElementById("scope").textContent =
-    `${NB(META.source_rows)} rader aggregert til ${NB(META.n)} celler · ingen server`;
+    `${NB(META.source_rows)} {{T:rows_word}} {{T:agg_to}} ${NB(META.n)} {{T:cells}} · {{T:no_server}}`;
   document.getElementById("perf").innerHTML =
-      `<span>kilderader <b>${NB(META.source_rows)}</b></span>`
-    + `<span>kubeceller <b>${NB(META.n)}</b></span>`
-    + `<span>data i fil <b>${(CUBE.bytes_b64/1e6).toFixed(2)} MB</b></span>`
-    + `<span>dekodet <b>${(CUBE.t_b64 + CUBE.t_gunzip).toFixed(0)} ms</b></span>`
-    + `<span>siste spørring <b>${ms.toFixed(1)} ms</b></span>`
-    + `<span>bygget ${esc(META.built)}${META.requested_by ? " for " + esc(META.requested_by) : ""} fra ${esc(META.source)}</span>`;
+      `<span>{{T:p_source_rows}} <b>${NB(META.source_rows)}</b></span>`
+    + `<span>{{T:p_cells}} <b>${NB(META.n)}</b></span>`
+    + `<span>{{T:p_file}} <b>${(CUBE.bytes_b64/1e6).toFixed(2)} MB</b></span>`
+    + `<span>{{T:p_decoded}} <b>${(CUBE.t_b64 + CUBE.t_gunzip).toFixed(0)} ms</b></span>`
+    + `<span>{{T:p_query}} <b>${ms.toFixed(1)} ms</b></span>`
+    + `<span>{{T:p_built}} ${esc(META.built)}${META.requested_by ? " {{T:p_for}} " + esc(META.requested_by) : ""} {{T:p_from}} ${esc(META.source)}</span>`;
   window.__LAST_MS__ = ms; window.__TOTAL__ = base.tot; window.__ROWS__ = base.totN;
 }
 
 (async () => {
   try {
     if (typeof DecompressionStream === "undefined")
-      throw new Error("nettleseren mangler DecompressionStream (krever Chrome/Edge 80+, Safari 16.4+)");
+      throw new Error("{{T:err_stream}}");
     CUBE = await loadCube();
     buildChrome();
     document.getElementById("boot").hidden = true;
@@ -296,7 +296,7 @@ function render(){
     window.__READY__ = true;
   } catch (e) {
     const b = document.getElementById("boot");
-    b.className = "err"; b.textContent = "Klarte ikke å laste data: " + e.message;
+    b.className = "err"; b.textContent = "{{T:err_load}} " + e.message;
     window.__READY__ = false;
   }
 })();

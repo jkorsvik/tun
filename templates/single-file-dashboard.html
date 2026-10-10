@@ -7,7 +7,7 @@
   under terms of your choice, provided the Origin Notice is preserved.
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<html lang="nb">
+<html lang="{{T:html_lang}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -28,7 +28,7 @@
     Extracted   : {{EXTRACT_TIMESTAMP}}
     Built       : {{BUILD_TIMESTAMP}}
     Requested by: {{REQUESTED_BY}}
-    Built by    : RAIWork skill `tun-new`
+    Built by    : Tún skill `tun-new`
     Repo        : tun
     Made with   : Tún — tun.community
     Rows inlined: {{ROW_COUNT}}
@@ -109,9 +109,9 @@
   .dropbar button:disabled{opacity:.45;cursor:default}
   .linklike{color:var(--brand);text-decoration:underline;cursor:pointer}
   @media print{.dropbar{display:none}}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(17rem,100%),1fr));
     gap:var(--sp-2);margin-bottom:var(--sp-3)}
-  .kpi{background:var(--panel);border-left:.25rem solid var(--brand);
+  .kpi{min-width:0;background:var(--panel);border-left:.25rem solid var(--brand);
     padding:var(--sp-2);border-radius:.25rem}
   .kpi .label{font-size:.75rem;line-height:1rem;text-transform:uppercase;
     letter-spacing:.04em;color:var(--muted)}
@@ -123,12 +123,12 @@
      (WCAG 2.2 1.4.1 — colour must never be the only signal) so that whoever wires an
      actual period-over-period delta into renderKpis() inherits the right pattern instead
      of a colour-only one. Do not render `<div class="delta up">` with only a colour — pair
-     it with the arrow + text, e.g. `<div class="delta up">&#9650; opp 6,2 %</div>`. */
+     it with the arrow + text, e.g. `<div class="delta up">&#9650; {{T:c_delta_example}}</div>`. */
   .kpi .delta{font-size:.875rem;margin-top:.25rem;display:inline-flex;align-items:center;
     gap:.3rem;padding:.1rem .4rem;border-radius:.2rem}
   .kpi .delta.up{color:var(--ok);background:var(--ok-bg)}
   .kpi .delta.down{color:var(--bad);background:var(--bad-bg)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(26rem,1fr));gap:var(--sp-3)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(26rem,100%),1fr));gap:var(--sp-3)}
   .card{border:1px solid var(--line);border-radius:.25rem;padding:var(--sp-2);
     background:var(--bg)}
   .card h2{margin:0 0 var(--sp-2);font-size:1rem;line-height:1.5rem;font-weight:500}
@@ -169,11 +169,11 @@
 <main>
   <section class="controls" id="controls"><!-- filters injected by init() --></section>
   <section class="dropbar" id="dropbar">
-    <span><strong>Oppdatere tallene?</strong> Dra en CSV-fil hit
-      &mdash; eller <label for="pick" class="linklike">velg fil</label>.
+    <span><strong>{{T:drop_title}}</strong> {{T:drop_lead}}
+      {{T:drop_join}} <label for="pick" class="linklike">{{T:drop_pick}}</label>.
       <input type="file" id="pick" accept=".csv,.tsv,.txt,.json" hidden>
     </span>
-    <button type="button" id="export" disabled>Lagre datafil (data.js)</button>
+    <button type="button" id="export" disabled>{{T:export_btn}}</button>
   </section>
   <section class="kpis" id="kpis"></section>
   <section class="grid">
@@ -181,14 +181,14 @@
     <div class="card"><h2 id="chart2-title">{{CHART2_TITLE}}</h2><svg id="chart2" viewBox="0 0 640 300"></svg></div>
   </section>
   <section class="card" style="margin-top:1.5rem">
-    <h2>Detaljer <span id="rowcount" style="font-weight:400;color:var(--muted);font-size:.875rem"></span></h2>
-    <div class="table-wrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+    <h2 id="details-title">{{T:details}} <span id="rowcount" style="font-weight:400;color:var(--muted);font-size:.875rem"></span></h2>
+    <div class="table-wrap" role="region" aria-labelledby="details-title" tabindex="0"><table id="tbl"><thead></thead><tbody></tbody></table></div>
   </section>
 </main>
 
 <footer>
-  Selvstendig dashboard bygget av RAIWork &middot; ingen Power BI-lisens kreves &middot;
-  bygget {{BUILD_TIMESTAMP}} fra {{SOURCE_DESCRIPTION}}.<br>
+  {{T:footer_a}} &middot; {{T:footer_b}} &middot;
+  {{T:footer_built}} {{BUILD_TIMESTAMP}} {{T:from}} {{SOURCE_DESCRIPTION}}.<br>
   <span id="footnote"></span>
 </footer>{{FEEDBACK_BLOCK}}
 <div class="tooltip" id="tip"></div>
@@ -216,8 +216,8 @@ const META = {
   dimension:   "{{DIMENSION_COL}}",   // primary categorical column (bar chart, filter)
   timeColumn:  "{{TIME_COL}}",        // ordered column for the line chart ("" to disable)
   measure:     "{{MEASURE_COL}}",     // numeric column being summed
-  filters:     {{FILTER_COLS_JSON}},  // e.g. ["Region","Produkt"]
-  numberFormat: new Intl.NumberFormat("nb-NO",{maximumFractionDigits:0})
+  filters:     {{FILTER_COLS_JSON}},  // e.g. ["Region","{{T:c_filter_example}}"]
+  numberFormat: new Intl.NumberFormat("{{T:num_locale}}",{maximumFractionDigits:0})
 };
 
 /* ---------- tiny helpers ---------------------------------------------------- */
@@ -256,7 +256,7 @@ function barChart(svgId, data, opts) {
   const m = { t: 12, r: 16, b: 58, l: 64 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   svg.innerHTML = "";
-  if (!data.length) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">Ingen data</text>'; return; }
+  if (!data.length) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">{{T:no_data}}</text>'; return; }
 
   data = [...data].sort((a, b) => b.value - a.value).slice(0, opts.limit || 12);
   const max = Math.max(...data.map(d => d.value), 1);
@@ -295,7 +295,7 @@ function lineChart(svgId, data) {
   const m = { t: 12, r: 16, b: 48, l: 64 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   svg.innerHTML = "";
-  if (data.length < 2) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">For få punkter</text>'; return; }
+  if (data.length < 2) { svg.innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">{{T:few_points}}</text>'; return; }
 
   const max = Math.max(...data.map(d => d.value), 1);
   const ns = "http://www.w3.org/2000/svg";
@@ -333,10 +333,10 @@ function renderKpis(rows) {
   const dims = uniq(rows, META.dimension).length;
   const avg = rows.length ? total / rows.length : 0;
   const cards = [
-    { label: `Total ${META.measure}`, value: fmt(total) },
-    { label: "Antall rader", value: fmt(rows.length) },
-    { label: `Unike ${META.dimension}`, value: fmt(dims) },
-    { label: "Gjennomsnitt", value: fmt(avg) }
+    { label: `{{T:kpi_total}} ${META.measure}`, value: fmt(total) },
+    { label: "{{T:kpi_rows}}", value: fmt(rows.length) },
+    { label: `{{T:kpi_unique}} ${META.dimension}`, value: fmt(dims) },
+    { label: "{{T:kpi_avg}}", value: fmt(avg) }
   ];
   $("kpis").innerHTML = cards.map(c =>
     `<div class="kpi"><div class="label">${c.label}</div><div class="value">${c.value}</div></div>`).join("");
@@ -353,14 +353,14 @@ function renderTable(rows) {
   const sorted = [...rows].sort((a, b) => {
     const x = a[sortState.col], y = b[sortState.col];
     if (typeof x === "number" && typeof y === "number") return (x - y) * sortState.dir;
-    return String(x ?? "").localeCompare(String(y ?? ""), "nb") * sortState.dir;
+    return String(x ?? "").localeCompare(String(y ?? ""), "{{T:collate}}") * sortState.dir;
   }).slice(0, 500);
 
   $("tbl").querySelector("tbody").innerHTML = sorted.map(r => "<tr>" + cols.map(c =>
     `<td class="${isNum(c) ? "num" : ""}">${
       typeof r[c] === "number" ? fmt(r[c]) : (r[c] ?? "")}</td>`).join("") + "</tr>").join("");
 
-  $("rowcount").textContent = `(viser ${Math.min(sorted.length, 500)} av ${rows.length})`;
+  $("rowcount").textContent = `({{T:showing}} ${Math.min(sorted.length, 500)} {{T:of}} ${rows.length})`;
   $("tbl").querySelectorAll("th").forEach(th => th.onclick = () => {
     const c = th.dataset.col;
     sortState = { col: c, dir: sortState.col === c ? -sortState.dir : -1 };
@@ -373,10 +373,10 @@ function renderControls() {
   $("controls").innerHTML = META.filters.map(c => `<div>
       <label for="f_${c}">${c}</label>
       <select id="f_${c}" data-col="${c}">
-        <option value="__ALL__">Alle</option>
+        <option value="__ALL__">{{T:all}}</option>
         ${uniq(LIVE, c).map(v => `<option value="${String(v).replace(/"/g, "&quot;")}">${v}</option>`).join("")}
       </select></div>`).join("")
-    + `<div><label>&nbsp;</label><button id="reset" type="button">Nullstill</button></div>`;
+    + `<div><label>&nbsp;</label><button id="reset" type="button">{{T:reset}}</button></div>`;
 
   META.filters.forEach(c => {
     activeFilters[c] = "__ALL__";
@@ -390,7 +390,7 @@ function renderControls() {
 /* ---------- CSV in, data.js out -------------------------------------------
    Lets someone update the numbers with no tooling at all:
      drag a CSV onto the dashboard  ->  see it render
-     click "Lagre datafil"          ->  get a data.js
+     click "{{T:export_short}}"          ->  get a data.js
      drop that in the SharePoint folder  ->  everyone is updated
    ------------------------------------------------------------------------- */
 function parseNum(v){
@@ -446,11 +446,11 @@ let LIVE = (typeof window.DASHBOARD_CSV === "string" && window.DASHBOARD_CSV.tri
   ? parseCSV(window.DASHBOARD_CSV)
   : DATA.slice();
 function loadRows(rows, label){
-  if (!rows.length){ alert("Fant ingen rader i filen."); return; }
+  if (!rows.length){ alert("{{T:alert_no_rows}}"); return; }
   const missing = [META.dimension, META.measure].filter(c => !(c in rows[0]));
   if (missing.length){
-    alert("Filen mangler kolonnen(e): " + missing.join(", ") +
-          "\nFant: " + Object.keys(rows[0]).join(", "));
+    alert("{{T:alert_missing_cols}} " + missing.join(", ") +
+          "\n{{T:alert_found}} " + Object.keys(rows[0]).join(", "));
     return;
   }
   LIVE = rows;
@@ -459,8 +459,8 @@ function loadRows(rows, label){
   document.getElementById("export").disabled = false;
   renderControls(); render();
   const el = document.getElementById("meta");
-  if (el) el.innerHTML = `${label} &middot; lest lokalt ${DATA_META.generated} &middot; ` +
-    `${fmt(rows.length)} rader &middot; <strong>ikke lagret ennå</strong>`;
+  if (el) el.innerHTML = `${label} &middot; {{T:read_locally}} ${DATA_META.generated} &middot; ` +
+    `${fmt(rows.length)} {{T:rows_word}} &middot; <strong>{{T:not_saved}}</strong>`;
 }
 
 function readFile(file){
@@ -470,7 +470,7 @@ function readFile(file){
     try {
       loadRows(file.name.toLowerCase().endsWith(".json") ? JSON.parse(txt) : parseCSV(txt),
                file.name);
-    } catch (e) { alert("Klarte ikke lese filen: " + e.message); }
+    } catch (e) { alert("{{T:alert_read_failed}} " + e.message); }
   };
   r.readAsText(file, "utf-8");
 }
@@ -491,8 +491,8 @@ function readFile(file){
   $("export").onclick = () => {
     // backticks / ${ would break a template literal, so ship JSON — always safe
     const body =
-      "// Datafil for dette dashboardet. Bytt ut denne filen for å oppdatere tallene.\n" +
-      "// Generert " + new Date().toISOString() + " fra " + (DATA_META.source || "ukjent kilde") + "\n" +
+      "// {{T:datafile_header}}\n" +
+      "// {{T:generated}} " + new Date().toISOString() + " {{T:from}} " + (DATA_META.source || "{{T:unknown_source}}") + "\n" +
       "window.DASHBOARD_DATA=" + JSON.stringify(LIVE) + ";\n" +
       "window.DASHBOARD_META=" + JSON.stringify({
         generated: DATA_META.generated, source: DATA_META.source, rows: LIVE.length }) + ";\n";
@@ -510,10 +510,10 @@ function render() {
   barChart("chart1", groupSum(rows, META.dimension, META.measure), { limit: 12 });
   if (META.timeColumn) {
     const byTime = groupSum(rows, META.timeColumn, META.measure)
-      .sort((a, b) => String(a.key).localeCompare(String(b.key), "nb"));
+      .sort((a, b) => String(a.key).localeCompare(String(b.key), "{{T:collate}}"));
     lineChart("chart2", byTime);
   } else {
-    $("chart2").innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">Ingen tidskolonne</text>';
+    $("chart2").innerHTML = '<text x="320" y="150" text-anchor="middle" class="axis-label">{{T:no_time_column}}</text>';
   }
   renderTable(rows);
 }
@@ -521,8 +521,8 @@ function render() {
 (function footNote(){
   const el = document.getElementById("footnote"); if (!el) return;
   el.innerHTML = "{{DATA_MODE}}" === "paired"
-    ? 'Dataene ligger i <code>data.js</code> ved siden av denne filen. Bytt den ut, og alle ser nye tall.'
-    : 'Tallene er bygget inn i denne filen. Be RAIWork om <code>tun-data</code> for \u00e5 oppdatere.';
+    ? '{{T:foot_paired}}'
+    : '{{T:foot_bundled}}';
 })();
 
 /* ---------- header meta (freshness comes from the DATA, not the shell) ----- */
@@ -532,16 +532,16 @@ function render() {
   const mode = "{{DATA_MODE}}";
   const rows = LIVE.length ? fmt(LIVE.length) : "0";
   const note = mode === "paired"
-    ? '<strong>oppdateres n\u00e5r datafilen synkes</strong>'
-    : '<strong>fast \u00f8yeblikksbilde</strong>';
+    ? '<strong>{{T:note_paired}}</strong>'
+    : '<strong>{{T:note_bundled}}</strong>';
   const el = document.getElementById("meta");
-  if (el) el.innerHTML = `${src} &middot; data per ${asOf} &middot; ${rows} rader &middot; ${note}`;
+  if (el) el.innerHTML = `${src} &middot; {{T:data_as_of}} ${asOf} &middot; ${rows} {{T:rows_word}} &middot; ${note}`;
 })();
 
 /* ---------- init ---------------------------------------------------------- */
 if (!Array.isArray(LIVE) || !LIVE.length) {
   document.querySelector("main").innerHTML =
-    '<p class="empty">Ingen data ble bygget inn i denne filen.</p>';
+    '<p class="empty">{{T:no_data_built}}</p>';
 } else {
   renderControls();
   render();

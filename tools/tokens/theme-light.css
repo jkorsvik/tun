@@ -28,7 +28,7 @@
 :root,
 :root[data-theme="light"]{
   --ink:        var(--palette-ink);      /* body text */
-  --muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */
+  --muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */
   --line:       #ebebeb;               /* neutral grey: borders, gridlines */
   --bg:         var(--palette-surface);
   --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */

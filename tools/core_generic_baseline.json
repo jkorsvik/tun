@@ -5,7 +5,12 @@
     "examples/06-chart-palette-demo/chart-palette-demo.html": 5,
     "examples/13-js-free-standalone-poc/build_js_free_poc.py": 12,
     "examples/13-js-free-standalone-poc/js-free-standalone-poc.html": 12,
-    "examples/23-process-diagram/tun-workflow.html": 6
+    "examples/23-process-diagram/tun-workflow.html": 6,
+    "examples/25-living-idea-picture/build_idea_picture.py": 25,
+    "examples/25-living-idea-picture/figure.css": 66,
+    "examples/25-living-idea-picture/figure.fragment.html": 12,
+    "examples/25-living-idea-picture/idea-picture.html": 82,
+    "examples/25-living-idea-picture/idea-picture.template.html": 4
   },
   "brand-token": {
     "docs/10-chart-colour-palettes.md": 2,

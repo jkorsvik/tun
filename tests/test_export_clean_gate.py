@@ -150,6 +150,90 @@ chk("an organisation inside the region is still caught", (code, findings(out)), 
 code, out, _ = run(tree({**clean, "A.md": f"{S}\nOla {TERM.title()}\n"}), deny2)
 chk("an unterminated region exempts nothing", (code, findings(out)), (1, ["person"]))
 
+print("\nthe two Claude Code manifests may name their author; nothing else in them may")
+import json  # noqa: E402
+
+PLUGIN, MARKET = ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json"
+WHO = f"Ola {TERM.title()}"
+
+
+def esc(text: str) -> str:
+    """The characters of `text` written as \\uXXXX escapes, without the quotes."""
+    return "".join("\\u%04x" % ord(c) for c in text)
+
+
+def plugin(author=WHO, description="Plain.") -> str:
+    return json.dumps({"name": "x", "author": {"name": author}, "description": description})
+
+
+def market(owner=WHO, description="Plain.") -> str:
+    return json.dumps({"name": "x", "owner": {"name": owner}, "description": description})
+
+
+code, out, _ = run(tree({**clean, PLUGIN: plugin(), MARKET: market()}), deny2)
+chk("the author and owner values pass", (code, findings(out)), (0, []))
+code, out, _ = run(tree({**clean, PLUGIN: '{"name":"x","author":{"name":"' + esc(WHO) + '"}}'}), deny2)
+chk("an author written fully as \\u escapes is the exempt value too", (code, findings(out)), (0, []))
+code, out, _ = run(tree({**clean, PLUGIN: plugin(description=f"by {TERM}")}), deny2)
+chk("the name in the description fires alone, on its line",
+    (code, findings(out), f"{PLUGIN}:1" in out), (1, ["person"], True))
+code, out, _ = run(tree({**clean, MARKET: market(description=f"by {TERM}")}), deny2)
+chk("the same in marketplace.json", (code, findings(out)), (1, ["person"]))
+code, out, _ = run(tree({**clean, PLUGIN: '{"name":"x","description":"' + esc(TERM) + '"}'}), deny2)
+chk("an escaped name in the description is found in the decoded text",
+    (code, findings(out), "decoded" in out), (1, ["person"], True))
+code, out, _ = run(tree({**clean, PLUGIN: plugin(author=ORG.upper())}), deny2)
+chk("an organisation in the author value still fires", (code, findings(out)), (1, ["org"]))
+code, out, _ = run(tree({**clean, ".claude-plugin/other.json": plugin()}), deny2)
+chk("the exemption is by exact path: another file in the directory fires",
+    (code, findings(out)), (1, ["person"]))
+code, out, _ = run(tree({**clean, "docs/" + PLUGIN: plugin()}), deny2)
+chk("and not below another directory", (code, findings(out)), (1, ["person"]))
+hidden = esc(TERM)
+for label, text in {
+    "a repeated key": '{"name":"x","description":"a","description":"' + hidden + '"}',
+    "a leading BOM": "\ufeff" + '{"name":"x","description":"' + hidden + '"}',
+    "trailing data": '{"name":"x","description":"' + hidden + '"} {}',
+    "invalid JSON": '{"author": {"name": "' + WHO,
+}.items():
+    code, out, _ = run(tree({**clean, PLUGIN: text}), deny2)
+    got = findings(out)
+    # Truncated JSON also carries the literal name, so it may fire twice; the shape finding
+    # must be there either way, and for the others it must be the only one.
+    chk(f"{label}: reported as manifest-shape", (code, "manifest-shape" in got), (1, True))
+    if label != "invalid JSON":
+        chk(f"{label}: and nothing else fires", got, ["manifest-shape"])
+for const in ("NaN", "Infinity", "-Infinity"):
+    code, out, _ = run(tree({**clean, PLUGIN: '{"name":"x","author":{"name":"Example Team"},"keywords":[' + const + ']}'}), deny2)
+    chk(f"{const} in a manifest: exactly the not-plain-JSON finding, and only that",
+        (code, findings(out), "not plain JSON" in out), (1, ["manifest-shape"], True))
+    code, out, _ = run(tree({**clean, MARKET: '{"name":"x","owner":{"name":"Example Team"},"v":' + const + '}'}), deny2)
+    chk(f"{const} in marketplace.json: the same", (code, findings(out)), (1, ["manifest-shape"]))
+# Attribution must be written plainly: only the canonical spellings of the value are stripped
+# from the raw text, so an escaped one is rejected. It fails closed and leaks nothing; this
+# pins the behaviour so loosening it is a decision, not an accident.
+code, out, _ = run(tree({**clean, PLUGIN: '{"name":"x","author":{"name":"Ola\\u0020' + TERM.title() + '"}}'}), deny2)
+chk("an attribution written with an escape is rejected (fail closed)", (code, findings(out)), (1, ["person"]))
+code, out, _ = run(tree({**clean, PLUGIN: '{"name":"x","author":{"name":"Ola ' + TERM.title() + '"}}'}), deny2)
+chk("the same attribution written plainly passes", (code, findings(out)), (0, []))
+orig = gate.manifest_subjects
+try:
+    gate.manifest_subjects = lambda rel, text: None
+    code, out, _ = run(tree({**clean, PLUGIN: plugin(), MARKET: market()}), deny2)
+    chk("exemption removed: the author alone now fires (so the pass above was earned)",
+        (code, sorted(findings(out))), (1, ["person", "person"]))
+finally:
+    gate.manifest_subjects = orig
+
+# Binary files: invalid UTF-8 bytes must break a match, never glue fragments into one.
+# errors="ignore" turned compressed PNG bytes into a fake email in a real preview.
+glued = b"\x89PNG\r\n\x1a\n\x00y\x80@R\x80.K\x80ZK\x00"
+code, out, _ = run(tree({**clean, "shot.png": glued}), deny)
+chk("fragments split by invalid bytes are not glued into an email", (code, findings(out)), (0, []))
+real = b"\x89PNG\r\n\x1a\n\x00tEXtAuthor\x00ola.nordmann" + b"@" + b"corp.no\x00\xff\xfe"
+code, out, _ = run(tree({**clean, "shot.png": real}), deny)
+chk("a plain email inside a binary file still fires", (code, findings(out)), (1, ["email"]))
+
 print("\n" + "─" * 66)
 print(f"{passed} passed, {failed} failed")
 raise SystemExit(1 if failed else 0)

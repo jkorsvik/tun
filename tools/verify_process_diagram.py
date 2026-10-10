@@ -69,13 +69,15 @@ import tempfile
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import build_process_diagram as bpd  # noqa: E402
+import i18n  # noqa: E402
 import verify_standalone_core as core  # noqa: E402
 
 ENGINES = ("chromium", "firefox", "webkit")
 VIEWPORT = {"width": 1280, "height": 900}
 TOL = 0.75          # rendering rounds; anything under a pixel is not a visible overlap
 MIN_FONT_PX = 12
-TABS = ("Flyt", "Steg", "Roller", "Forbedringspunkter", "Tekstversjon")
+TAB_KEYS = ("tab_flow", "tab_steps", "tab_roles", "tab_flags", "tab_text")
+TABS = tuple(i18n.load("process-diagram", "nb")[k] for k in TAB_KEYS)   # set per page by use_page_lang()
 PANELS = ("panel-flyt", "panel-steg", "panel-roller", "panel-forbedring", "panel-tekst")
 SETTLE_MS = 300     # the dimming has a 0.15 s transition
 
@@ -725,11 +727,21 @@ def run_nojs(browser, path: pathlib.Path, spec: bpd.Spec, r: Report) -> None:
         ctx.close()
 
 
+def use_page_lang(html: str) -> str:
+    """The tab names the page should carry, from its <html lang>. Returns the language."""
+    m = re.search(r'<html lang="([a-z]+)"', html)
+    lang = m.group(1) if m else i18n.DEFAULT_LANG
+    global TABS
+    TABS = tuple(i18n.load("process-diagram", lang)[k] for k in TAB_KEYS)
+    return lang
+
+
 def verify(path: pathlib.Path, spec: bpd.Spec, engines, shots: bool, quiet: bool = False,
            max_crossings: int | None = None) -> Report:
     from playwright.sync_api import sync_playwright
     r = Report(quiet)
-    r.say(f"verify {path.name} against {spec.name}")
+    lang = use_page_lang(path.read_text(encoding="utf-8"))
+    r.say(f"verify {path.name} against {spec.name} (page language {lang})")
     static_checks(r, path.read_text(encoding="utf-8"), path)
     with sync_playwright() as pw:
         # The no-JS pass always runs in Chromium, whichever engines were asked for.

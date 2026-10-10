@@ -192,6 +192,18 @@ chk("a data file smuggled into a plugin is still refused",
     gate.data_file_is_allowed("plugins/eksempel/export.csv"), False)
 chk("a nested manifest-shaped path is not allowed",
     gate.data_file_is_allowed("plugins/eksempel/examples/manifest.json"), False)
+# The Claude Code manifests are allowed by exact path, and nothing else in that directory is.
+for _rel in (".claude-plugin/plugin.json", ".claude-plugin/marketplace.json"):
+    chk(f"allowed by exact path, not by shape: {_rel}",
+        (gate.data_file_is_allowed(_rel), _rel in gate.ALLOWED_DATA), (True, True))
+chk("another JSON file in .claude-plugin/ is refused",
+    gate.data_file_is_allowed(".claude-plugin/other.json"), False)
+chk("a data file in .claude-plugin/ is refused",
+    gate.data_file_is_allowed(".claude-plugin/export.csv"), False)
+chk("the manifest names are not matched below another directory",
+    gate.data_file_is_allowed("docs/.claude-plugin/plugin.json"), False)
+chk("the manifest names are not matched at the wrong level",
+    gate.data_file_is_allowed("plugin.json"), False)
 
 print("\nassert_synthetic (the builder-side, allowlist form)")
 COLUMNS = ("Kode", "Status")
@@ -311,6 +323,18 @@ chk("the shape rule alone does not admit the core packaging manifest",
     "plugin/manifest.json" in gate.ALLOWED_DATA, True)
 chk("the allowlist alone does not admit a plugin manifest",
     "plugins/eksempel/manifest.json" in gate.ALLOWED_DATA, False)
+
+# The two Claude Code manifest entries must be what admits them. Remove them and the
+# manifests are refused, so the "allowed" checks above are not passing for another reason.
+_saved = {k: gate.ALLOWED_DATA.pop(k) for k in
+          (".claude-plugin/plugin.json", ".claude-plugin/marketplace.json")}
+try:
+    chk("without their allowlist entries the two manifests are refused",
+        [gate.data_file_is_allowed(k) for k in _saved], [False, False])
+finally:
+    gate.ALLOWED_DATA.update(_saved)
+chk("restored: the two manifests are admitted again",
+    [gate.data_file_is_allowed(k) for k in _saved], [True, True])
 
 print("\nafter the mutation pass, every detector is live again")
 for text, want_kind, label in FIXTURES:

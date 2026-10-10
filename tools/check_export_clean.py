@@ -40,6 +40,7 @@ Exit codes: 0 clean, 1 findings, 2 the check could not run.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import pathlib
 import re
@@ -143,6 +144,94 @@ def strip_attribution(text: str) -> str:
         pos = end
 
 
+#: Attribution in JSON, where the comment markers above cannot live. Claude Code fixes the
+#: path and the shape of these two manifests, and it requires a human name in each: the same
+#: attribution the copyright notice makes. Exactly one value per file is exempt: the one at
+#: this key path. A name in `description`, `keywords` or anywhere else in the same file still
+#: counts, because the exemption subtracts the hits inside that one parsed value rather than
+#: skipping the file. Only the person label is exempt: an organisation, host or colour inside
+#: the name field is still a leak. A declared manifest that is not plain JSON (see
+#: manifest_subjects) is a finding of its own, never a fallback. tools/check_core_is_generic.py
+#: uses these same definitions.
+JSON_ATTRIBUTION: dict[str, tuple[str, ...]] = {
+    ".claude-plugin/marketplace.json": ("owner", "name"),
+    ".claude-plugin/plugin.json": ("author", "name"),
+}
+JSON_ATTRIBUTION_EXEMPT = ("person",)
+MANIFEST_SHAPE = "manifest-shape"      # the label of a finding about a manifest that is not plain JSON
+
+
+def _strings(node) -> list[str]:
+    """Every key and string value in a parsed JSON document, decoded."""
+    if isinstance(node, str):
+        return [node]
+    if isinstance(node, dict):
+        return [t for k, v in node.items() for t in [k, *_strings(v)]]
+    if isinstance(node, list):
+        return [t for v in node for t in _strings(v)]
+    return []
+
+
+class DuplicateKey(ValueError):
+    """A JSON object repeated a key. json.loads would keep only the last value."""
+
+
+def _no_duplicates(pairs: list[tuple[str, object]]) -> dict:
+    """object_pairs_hook: refuse a repeated key at any depth.
+
+    json.loads keeps the last value of a repeated key, so the first one would ship in the
+    file but never reach the scan. Strict validators accept such a file."""
+    keys = [k for k, _v in pairs]
+    dup = sorted({k for k in keys if keys.count(k) > 1})
+    if dup:
+        raise DuplicateKey(f"duplicate key(s): {', '.join(dup)}")
+    return dict(pairs)
+
+
+def _no_constants(name: str):
+    """parse_constant hook: refuse NaN, Infinity and -Infinity. Python's json accepts them,
+    JSON does not, and a strict validator will not read a file that holds one."""
+    raise ValueError(f"not JSON: {name}")
+
+
+class NotPlainJson(ValueError):
+    """A declared manifest the gate cannot parse as plain, unambiguous JSON."""
+
+
+def manifest_subjects(rel: str, text: str) -> tuple[str, str] | None:
+    """For a declared JSON manifest, the two texts the person scan reads, else None.
+
+    Returns (raw text with the attribution value removed, decoded strings with that one
+    value blanked). A hit in either counts: the raw form catches a literal name, the
+    decoded form catches one written as \\u escapes. Duplicate keys are refused at any
+    depth, because json.loads keeps only the last value and the first would ship unseen.
+
+    Raises NotPlainJson for anything that does not parse: invalid JSON, a repeated key, a
+    leading BOM, trailing data, NaN or Infinity, nesting too deep. There is no fallback and
+    no exemption, because a validator that tolerates the file is not evidence that a scan of
+    it is complete. The gate reports it as a finding instead."""
+    path = JSON_ATTRIBUTION.get(rel)
+    if path is None:
+        return None
+    try:
+        doc = json.loads(text, object_pairs_hook=_no_duplicates, parse_constant=_no_constants)
+        parent, value = doc, ""
+        for key in path[:-1]:
+            parent = parent.get(key) if isinstance(parent, dict) else None
+        if isinstance(parent, dict) and isinstance(parent.get(path[-1]), str):
+            value = parent[path[-1]]
+            parent[path[-1]] = ""
+        decoded = "\n".join(_strings(doc))
+    except (ValueError, RecursionError) as exc:  # ValueError includes DuplicateKey
+        raise NotPlainJson(rel) from exc
+    raw = text
+    if value:
+        # Attribution must be written plainly: only canonical spellings are stripped, an escaped one is rejected (fails closed).
+        for form in {json.dumps(value), json.dumps(value, ensure_ascii=False)}:
+            raw = raw.replace(form, '""')
+    return raw, decoded
+
+
 def redact(s: str) -> str:
     s = s.strip()
     return s[:1] + "…" * min(len(s) - 1, 3) + f"({len(s)})" if s else "(empty)"
@@ -162,18 +251,33 @@ def scan(root: pathlib.Path, rules) -> tuple[int, list[tuple[str, str, int, str]
         p = root / rel
         if not p.is_file():
             continue
-        text = p.read_bytes().decode("utf-8", errors="ignore")
+        # "replace", not "ignore": an invalid byte must break a match, never glue two
+        # fragments of binary data into one (a PNG once decoded to a fake email).
+        text = p.read_bytes().decode("utf-8", errors="replace")
         noticed = strip_copyright_lines(text)
         credited = strip_attribution(noticed)
+        try:
+            manifest = manifest_subjects(rel, text)
+        except NotPlainJson:
+            manifest = None
+            hits.append((MANIFEST_SHAPE, rel, 1, "not plain JSON"))
         for label, rx in rules:
             subject = text
             if label in NOTICE_EXEMPT:
                 subject = noticed
             if label in ATTRIBUTION_EXEMPT:
                 subject = credited
-            for m in rx.finditer(subject):
+            if manifest is not None and label in JSON_ATTRIBUTION_EXEMPT:
+                subject = manifest[0]
+            found = list(rx.finditer(subject))
+            for m in found:
                 line = subject.count("\n", 0, m.start()) + 1
                 hits.append((label, rel, line, redact(m.group(0))))
+            if manifest is not None and label in JSON_ATTRIBUTION_EXEMPT:
+                # A name written as \u escapes is invisible to the raw text: count the
+                # decoded strings too, and report what the raw text did not already show.
+                for m in list(rx.finditer(manifest[1]))[len(found):]:
+                    hits.append((label, rel, 1, redact(m.group(0)) + " decoded"))
     return len(files), hits
 
 

@@ -26,9 +26,9 @@ one source file, and every rebuild re-applies the same table to whatever is in i
 **Consequence for `tools/build_dashboard.py` and `build_cube_dashboard.py`:** an
 English-language dashboard is a build-time flag plus a translation table
 (`{"Region": "Region", "Kanal": "Channel", ...}` — column headers and category labels,
-not the numbers), not a separately maintained English source CSV. Neither builder has
-this flag today; every dashboard built so far has shipped in the language its source data
-already happened to be in.
+not the numbers), not a separately maintained English source CSV. The page chrome now
+has its flag, `--lang` (section 5). The data-label table does not exist yet: your column
+names and category values come out exactly as they went in.
 
 ## 2. Independent filter dimensions combine with AND logic, never merged into one control
 
@@ -97,6 +97,39 @@ between "mutate" and "restore". It left a broken file and an empty screenshot fo
 looked like a real build. Run such a harness in the background, or work on a copy. After any
 kill, rebuild from source before you trust the tree.
 
+## 5. The page speaks nb or en: `--lang`
+
+`tools/build_dashboard.py`, `build_cube_dashboard.py`, `build_process_diagram.py` and
+`build_slide_deck.py` take `--lang nb|en`. The default is `nb`, and `nb` output is byte for
+byte what the builders wrote before the flag existed. `en` has no Norwegian in it.
+
+- **One table per template**, in `templates/i18n/<template>.strings`, with a `[nb]` and an
+  `[en]` section. The format is described at the top of `tools/i18n.py`: `key = value`, the
+  value is everything after the first `= `, no escaping.
+- **The template holds `{{T:key}}`** where a person reads a word. The builder swaps the
+  tokens for one language before it puts any data in, so data is never scanned for tokens.
+  Words the builder writes itself (the process diagram's step cards, the cube's source line)
+  are read from the same table in Python.
+- **What changes with the language:** labels, buttons, aria-labels, titles, the number
+  format and sort order, `<html lang>`, the feedback link, and the sample slides of the deck.
+- **What does not:** your data, element ids (`tab-flyt`, `panel-steg`: nobody reads them,
+  the verifiers use them), the spec keywords of a `.process.txt` (`beskrivelse:`), the
+  provenance comment's English labels, and what a builder prints in the terminal.
+- **Add a string:** add the key to both sections and put the token in the template.
+  **Add a language:** add a section to every table and the code to `LANGS` in
+  `tools/i18n.py`. A key missing in one section stops the build, naming the key.
+- **en copy** is written as English, not translated word for word, and holds no quote,
+  backslash or backtick, because a value is pasted into HTML, a JavaScript string or a comment.
+- `nb` keeps its old wording even where it is a little off (a diagram with one role says
+  "1 roller"), so that the frozen output stays frozen. Fix those on purpose, and move the
+  baseline hash in the same commit.
+
+`tests/test_i18n.py` enforces all of it: same keys in both sections, every token exists,
+the nb build of each case has the sha256 it had before, the en build of an English fixture
+has no `æøåÆØÅ` and none of the nb strings, and a damaged copy of the tables is noticed.
+The verifiers read the page's `<html lang>` where wording matters
+(`tools/verify_process_diagram.py` takes its tab names from the table).
+
 ## What this does not do
 
 - Does not add a translation-table mechanism to either builder script — that is future
@@ -107,9 +140,8 @@ kill, rebuild from source before you trust the tree.
 
 ## Open items this document does not resolve
 
-- [ ] Design the translation-table mechanism for `tools/build_dashboard.py` /
-      `build_cube_dashboard.py` — no dashboard has needed a second language yet, so this
-      has never been forced into an actual shape.
+- [x] Design the translation-table mechanism for the page chrome: section 5, `--lang`.
+- [ ] Translate data labels (column headers, category values) at render: not built.
 - [ ] Decide whether a filter-independence check belongs in `tools/verify_dashboard.py`
       (it currently checks portability and DOM presence, not filter *logic* — see
       `docs/08`'s proposal to split that script, which this would sit alongside as a

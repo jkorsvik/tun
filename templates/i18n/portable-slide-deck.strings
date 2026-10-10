@@ -1,0 +1,67 @@
+# Strings for templates/portable-slide-deck.html and tools/build_slide_deck.py.
+# Format: see tools/i18n.py. nb is what the starter deck said before --lang existed.
+# s1_* to s3_*, card_* and sec_* are the three sample slides: replace them with your own.
+
+[nb]
+html_lang = nb
+title = Portable presentasjon
+c_wrap_kind = Norwegian compound word
+c_wrap_a = a 34-character real word ("Trygde-
+c_wrap_b = avgiftsberegningsforskriften")
+js_warning = Begrenset forhåndsvisning: Lagre filen og åpne den fra Filer eller Nedlastinger i en nettleser for navigasjon og fullskjerm.
+sec_start = Start
+sec_explain = Forklaring
+sec_end = Avslutning
+s1_eyebrow = Organisasjon · måned 2026
+s1_h1 = Én tydelig påstand per lysbilde.
+s1_p = Denne filen virker lokalt, uten server eller nettverk.
+s2_eyebrow = Det viktigste først
+s2_h2 = Bruk innhold som kan leses på en liten skjerm
+card_1 = Én idé per lysbilde
+card_2 = Minste berøringsflate
+card_3 = Eksterne avhengigheter
+s3_eyebrow = Neste steg
+s3_h2 = Bytt ut eksemplene og kjør verifikasjonen.
+s3_p = Behold kontrollene, fullskjermkontrollen og mobilreglene.
+controls_label = Presentasjonskontroller
+prev = Forrige lysbilde
+next = Neste lysbilde
+fs_enter = Vis i fullskjerm
+fs_exit = Avslutt fullskjerm
+fs_label = Fullskjerm
+fs_exit_short = Avslutt
+msg_unsupported = Nettleseren støtter ikke fullskjerm for HTML. Presentasjonen virker fortsatt i nettleservinduet.
+msg_refused = Nettleseren avslo fullskjerm. Presentasjonen virker fortsatt i nettleservinduet.
+default_section = Lysbilde
+
+[en]
+html_lang = en
+title = Portable presentation
+c_wrap_kind = compound word
+c_wrap_a = a real 34-character compound word
+c_wrap_b = (a Norwegian tax regulation title)
+js_warning = Limited preview: save the file and open it from Files or Downloads in a browser for navigation and full screen.
+sec_start = Start
+sec_explain = Basics
+sec_end = Wrap-up
+s1_eyebrow = Organisation · Month 2026
+s1_h1 = One clear claim per slide.
+s1_p = This file works locally, with no server or network.
+s2_eyebrow = Most important first
+s2_h2 = Write for a small screen
+card_1 = One idea per slide
+card_2 = Big enough to tap
+card_3 = External dependencies
+s3_eyebrow = Next steps
+s3_h2 = Replace the examples and run the checks.
+s3_p = Keep the controls, the full-screen button and the mobile layout.
+controls_label = Presentation controls
+prev = Previous slide
+next = Next slide
+fs_enter = Full screen
+fs_exit = Exit full screen
+fs_label = Full screen
+fs_exit_short = Exit
+msg_unsupported = This browser does not support full screen for HTML. The presentation still works in the browser window.
+msg_refused = The browser blocked full screen.
+default_section = Slide
