@@ -73,17 +73,17 @@ trustworthy — plus the two power tools worth knowing.
 - The Tier 1 path needs neither tool — `tools/` is stdlib-only on purpose. A
   prerequisite is a failure on the main path.
 
-## There is no CI. The pre-commit hook is the whole gate.
+## Two gates: the pre-commit hook before the commit, CI on every pull request
 
-This repo assumes no CI runner is available. Probe that rather than assume it: a workflow
-run that no runner picks up produces zero steps and no logs, and it still shows up in the
-run list. GitHub Pages builds use their own builder, so a green Pages run says nothing
-about runners.
+`.github/workflows/gates.yml` runs every gate on GitHub-hosted runners for each pull
+request, including every documented example check in Chromium, Firefox and WebKit. Its
+job carries `if: github.server_url == 'https://github.com'`, so on a host without hosted
+runners it shows as skipped, never as green, and never waits for a runner. A workflow that
+never executes but reports success would be worse than none, because it looks like a gate.
+Where runners may be disabled, probe that rather than assume it: a run that no runner
+picks up produces zero steps and no logs, and it still shows up in the run list.
 
-So do not add a `.github/workflows/` file expecting it to run. A workflow that never
-executes is worse than none: it looks like a gate.
-
-What exists instead:
+CI sees a mistake only after the push. The hook stops it before the commit:
 
 ```
 python3 setup.py --hooks     # once per clone — sets core.hooksPath to tools/hooks

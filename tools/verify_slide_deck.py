@@ -10,6 +10,7 @@ and writes screenshots plus contact sheets.
 
 Run with:
     uv run --extra verify python tools/verify_slide_deck.py deck.html --out /tmp/deck-check
+    (add --engines all for firefox too; the default is chromium and webkit)
 """
 
 from __future__ import annotations
@@ -20,6 +21,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from verify_standalone_core import ENGINES, engines_arg  # noqa: E402
 
 try:
     from playwright.sync_api import BrowserType, Page, sync_playwright
@@ -52,6 +56,14 @@ def parse_args() -> argparse.Namespace:
         "--quick",
         action="store_true",
         help="Use Chromium only and the two mobile viewports.",
+    )
+    parser.add_argument(
+        "--engines",
+        type=engines_arg,
+        default=None,
+        metavar="LIST",
+        help=f"comma-separated subset of {','.join(ENGINES)}, or all "
+             "(default: chromium,webkit; chromium with --quick)",
     )
     return parser.parse_args()
 
@@ -213,9 +225,8 @@ def main() -> int:
     results: list[Result] = []
 
     with sync_playwright() as playwright:
-        engines: list[tuple[str, BrowserType]] = [("chromium", playwright.chromium)]
-        if not args.quick:
-            engines.append(("webkit", playwright.webkit))
+        names = args.engines or (("chromium",) if args.quick else ("chromium", "webkit"))
+        engines: list[tuple[str, BrowserType]] = [(n, getattr(playwright, n)) for n in names]
         viewports = VIEWPORTS
         if args.quick:
             viewports = {name: value for name, value in VIEWPORTS.items() if "mobile" in name}
@@ -225,8 +236,9 @@ def main() -> int:
             for viewport_name, (width, height, mobile) in viewports.items():
                 page = browser.new_page(
                     viewport={"width": width, "height": height},
-                    is_mobile=mobile,
                     has_touch=mobile,
+                    # Firefox has no mobile emulation and rejects is_mobile; touch stays on.
+                    **({"is_mobile": mobile} if engine_name != "firefox" else {}),
                 )
                 result = verify_page(
                     page,
