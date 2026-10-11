@@ -13,7 +13,8 @@ no longer exists fails here instead of failing the reader.
 
     uv run --extra verify python tools/verify_documented.py [--engines LIST] [--list]
 
-A command whose artefact path is not under examples/ (a template such as
+An example's own verifier (examples/<x>/verify_*.py) runs as documented; it knows
+its file. A command whose artefact path is not under examples/ (a template such as
 dashboards/<slug>.html) is printed as skipped, not run. Finding zero commands is a
 failure: a gate that checked nothing must not pass.
 
@@ -33,7 +34,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from verify_standalone_core import ENGINES, add_engines_arg  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-TOOL = re.compile(r"(?:^|/)tools/(verify_[a-z_]+)\.py$")
+TOOL = re.compile(r"(?:^|/)(?:tools|examples/[^/]+)/(verify_[a-z_]+)\.py$")
 SOURCES = ("AGENTS.md", "examples/*/README.md")
 
 
@@ -85,28 +86,41 @@ def set_flag(args: list[str], flag: str, value: str) -> None:
         args.append(value)
 
 
+def failure_detail(output: str, root: pathlib.Path = ROOT) -> str:
+    """What a failed command's log must show: the engine that was running, the
+    frames in this repo (not the library's), then the last lines. A bare tail is
+    all Playwright internals and does not say which engine broke."""
+    lines = output.strip().splitlines()
+    engine = [ln.strip() for ln in lines if ln.lstrip().startswith("· ")][-1:]
+    frames = [ln.strip() for ln in lines
+              if ln.lstrip().startswith('File "') and str(root) in ln and "site-packages" not in ln]
+    return "\n      ".join(engine + frames[-4:] + lines[-12:])
+
+
 def run(doc, cwd, argv, engines, tmp: pathlib.Path, n: int) -> tuple[str, str]:
     """Run one documented command. Returns (status, detail): PASS, FAIL or SKIP."""
     tool = (cwd / argv[0]).resolve()
     args = list(argv[1:])
+    if not tool.is_file():
+        return "FAIL", f"{doc.relative_to(ROOT)} documents {argv[0]}, which does not exist"
     artefacts = [a for a in args if a.endswith(".html")]
-    if not artefacts:
-        return "SKIP", "no .html argument"
-    target = (cwd / artefacts[0]).resolve()
-    if ROOT / "examples" not in target.parents:
-        return "SKIP", f"template path {artefacts[0]}"
-    if not target.is_file():
-        return "FAIL", f"{doc.relative_to(ROOT)} documents {artefacts[0]}, which does not exist"
+    if artefacts:
+        target = (cwd / artefacts[0]).resolve()
+        if ROOT / "examples" not in target.parents:
+            return "SKIP", f"template path {artefacts[0]}"
+        if not target.is_file():
+            return "FAIL", f"{doc.relative_to(ROOT)} documents {artefacts[0]}, which does not exist"
+    elif ROOT / "examples" not in tool.parents:
+        return "SKIP", "no .html argument"          # an example's own verifier knows its file
     if "--out" in args:                       # keep screenshots out of /tmp and the tree
         set_flag(args, "--out", str(tmp / f"out-{n}"))
     set_flag(args, "--engines", ",".join(engines))
     r = subprocess.run([sys.executable, str(tool), *args], cwd=cwd,
                        capture_output=True, text=True)
-    tail = (r.stdout + r.stderr).strip().splitlines()
-    detail = tail[-1] if tail else "(no output)"
     if r.returncode != 0:
-        detail = "\n      ".join(tail[-12:])
-    return ("PASS" if r.returncode == 0 else "FAIL"), detail
+        return "FAIL", failure_detail(r.stdout + r.stderr)
+    tail = (r.stdout + r.stderr).strip().splitlines()
+    return "PASS", tail[-1] if tail else "(no output)"
 
 
 def main(argv: list[str] | None = None) -> int:

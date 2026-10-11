@@ -22,7 +22,7 @@
   PROVENANCE  (do not delete — this is how output gets traced back)
     Source data : Syntetisk eksempeldata (ingen virkelige elever)
     Extracted   : 2026-09-19 06:40
-    Built       : 2026-10-10 13:09
+    Built       : 2026-10-11 02:47
     Requested by: Skoleadministrasjonen
     Built by    : examples/17-multi-regime-day-board/build_day_board.py
     Repo        : tun
@@ -197,7 +197,14 @@
   #controls select,#controls button{padding:var(--sp-1);border-radius:0.25rem;
     border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
     font-family:inherit;font-size:0.875rem;line-height:1.5rem;min-height:2.5rem}
-  #controls select{min-width:9rem}
+  /* WebKit draws a native select at its own height and ignores min-height, so the 48px
+     touch target below came out 22px tall in Safari. Drop the native look in every engine
+     and draw the arrow with two gradients (url() is not allowed in this file). */
+  #controls select{min-width:9rem;-webkit-appearance:none;appearance:none;padding-right:1.75rem;
+    background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),
+      linear-gradient(135deg,currentColor 50%,transparent 50%);
+    background-position:calc(100% - 0.95rem) 50%,calc(100% - 0.65rem) 50%;
+    background-size:0.3rem 0.3rem;background-repeat:no-repeat}
   #controls button{cursor:pointer}
   #controls button:hover{border-color:var(--primary);color:var(--primary)}
 
@@ -446,7 +453,7 @@
   </section>
   <footer>
     Eksempelskolen &middot; mønstereksempel med syntetiske data, ingen
-    virkelige elever &middot; bygget 2026-10-10 13:09 av
+    virkelige elever &middot; bygget 2026-10-11 02:47 av
     build_day_board.py &middot; data i data.js (84 rader,
     uttrekk 2026-09-19 06:40) &middot; ingen lisens, ingen server, ingen CDN.
     Hvilke målte rader i docs/01-tenant-constraints.md som styrer hvert valg

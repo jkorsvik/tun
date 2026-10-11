@@ -23,9 +23,9 @@ need script, so it has none.
 
 - **It moves.** Small packets travel along the arrows (CSS `offset-path`): Markdown
   into the core, the file out, down onto a host, to the readers, and back up the dashed
-  loop as an answer. The sun breathes. The killbox items are struck through one by one.
+  loop as an answer. The sun breathes. The detour items are struck through one by one.
 - **You can explore it.** Six chips under the picture: the whole picture, Forfatteren,
-  Leseren, Fellesskapet, Verten, Killbox. Choosing one lights its part of the picture,
+  Leseren, Fellesskapet, Verten, Omveier. Choosing one lights its part of the picture,
   dims the rest, and opens its text. Verten has its own chips (SharePoint, OneDrive,
   Teams, e-post, minnepinne, sky). Each one shows one line about what was **measured**
   there, and lights that host's name on the ground.
@@ -119,7 +119,7 @@ The verifier runs Chromium, Firefox and WebKit from `file://`. It checks:
 - that a packet really moves;
 - every lens (its groups lit, the rest dimmed, its own panel);
 - the SharePoint line and its lit name;
-- the four detours named in the Killbox text;
+- the four detours named in the Omveier text;
 - playback at 1.5 s and 4.5 s (the right step, the right caption);
 - reduced motion;
 - zero console errors.

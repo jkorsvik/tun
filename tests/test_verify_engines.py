@@ -71,23 +71,29 @@ core.label_failures(f2, 1, "chromium", ("chromium",))
 chk("one engine: the text is left alone", f2, ["old", "new"])
 
 print("every tool that opens a browser takes the shared --engines")
-tools = sorted((REPO / "tools").glob("verify_*.py"))
+tools = sorted((REPO / "tools").glob("verify_*.py")) + sorted(REPO.glob("examples/*/verify_*.py"))
 launching = [t for t in tools if ".launch()" in t.read_text(encoding="utf-8")]
-chk("found the browser-launching tools", len(launching) >= 6, True)
+chk("found the browser-launching tools and example verifiers", len(launching) >= 12, True)
 for t in launching:
     src = t.read_text(encoding="utf-8")
+    name = t.relative_to(REPO)
     hard = re.findall(r"\.(chromium|firefox|webkit)\.launch\(", src)
-    chk(f"{t.name}: no hard-coded engine launch", hard, [])
-    chk(f"{t.name}: uses the shared --engines parser",
+    chk(f"{name}: no hard-coded engine launch", hard, [])
+    chk(f"{name}: uses the shared --engines parser",
         "add_engines_arg" in src or "engines_arg" in src, True)
+    chk(f"{name}: keeps no engine list of its own",
+        re.search(r"^ENGINES\s*=", src, re.M) is None or t.name == "verify_standalone_core.py", True)
 
 print("the documented commands the CI runs")
 found = documented.commands()
 chk("finds documented commands (a runner with none checks nothing)", len(found) >= 10, True)
 names = {pathlib.Path(words[0]).stem for _, _, words in found}
 for tool in ("verify_dashboard", "verify_standalone_core", "verify_slide_deck",
-             "verify_process_diagram", "verify_viewports", "verify_nojs_fallback"):
+             "verify_process_diagram", "verify_viewports", "verify_nojs_fallback",
+             "verify_app_shell"):
     chk(f"covers {tool}", tool in names, True)
+example_verifiers = {t.stem for t in REPO.glob("examples/*/verify_*.py")}
+chk("covers every example's own verifier", sorted(example_verifiers - names), [])
 fence = "x\n```bash\npython3 tools/verify_x.py \\\n  a.html \\\n  --out o\n```\npython3 tools/verify_y.py b.html\n"
 for given, want in ((["a.html"], ["a.html", "--engines", "all"]),
                     (["a.html", "--engines", "webkit"], ["a.html", "--engines", "all"]),
@@ -95,6 +101,17 @@ for given, want in ((["a.html"], ["a.html", "--engines", "all"]),
     got = list(given)
     documented.set_flag(got, "--engines", "all")
     chk(f"set_flag {given}", got, want)
+root = pathlib.Path("/repo")
+log = "\n".join(["  · chromium", "  ✓ fine", "  · webkit",
+                 'Traceback (most recent call last):',
+                 '  File "/repo/examples/13/verify_x.py", line 232, in run_with_js',
+                 '  File "/venv/lib/python3.12/site-packages/playwright/_impl/x.py", line 9, in f',
+                 *[f"  call log {i}" for i in range(14)]])
+detail = documented.failure_detail(log, root).split("\n      ")
+chk("failure names the engine that was running last", detail[0], "· webkit")
+chk("failure keeps this repo's frame and drops the library's",
+    [d for d in detail if d.startswith("File")], ['File "/repo/examples/13/verify_x.py", line 232, in run_with_js'])
+chk("failure still ends with the last twelve lines", detail[-12:], [f"  call log {i}" for i in range(2, 14)])
 chk("joins continuations, reads only fenced lines", documented.fenced_lines(fence),
     ["python3 tools/verify_x.py a.html --out o"])
 
