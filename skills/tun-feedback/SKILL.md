@@ -1,12 +1,14 @@
 ---
 name: tun-feedback
-description: Record feedback (tilbakemelding) about a Tún skill or a built dashboard to a local log, and offer to file it as an issue on the project's forge. Use when the user says "this was wrong", "feedback", "tilbakemelding", "det funket ikke", "the dashboard looks wrong", or when any tun-* skill finishes. Also covers the --feedback-to build flag that puts a "Gi tilbakemelding" link inside an artefact.
+description: Record feedback (tilbakemelding) or an idea (forslag) about a Tún skill or a built dashboard to a local log, and offer to file it as an issue on the public Tún repository. Use when the user says "this was wrong", "feedback", "tilbakemelding", "det funket ikke", "the dashboard looks wrong", "I have an idea", "forslag", "it would be nice if", or when any tun-* skill finishes. Also covers the --feedback-to build flag that puts a "Gi tilbakemelding" link inside an artefact.
 ---
 
 # Feedback
 
 **Tier and cost, for the first reply:** none. The log is a local file. Filing an issue is
-optional, needs `gh`, and happens only after the user says yes to the exact text.
+optional and happens only after the user says yes to the exact text. It goes to the Tún
+repository the tool prints as TARGET. That is usually public, so anyone can read it. `gh`
+logged in to that host files it directly; without that, the user gets a prefilled link.
 
 Two paths, one per audience:
 
@@ -24,18 +26,21 @@ from the checkout.
 
 ## When it runs
 
-1. **The user says something is wrong, or right.** Record it in their words.
-2. **A tun-* skill finishes.** Ask once: "Vil du gi en tilbakemelding på dette? Du ser
+1. **The user says something is wrong, or right.** Record it in their words, `--kind bug`.
+2. **The user suggests an improvement.** Record it in their words, `--kind idea`.
+3. **A tun-* skill finishes.** Ask once: "Gikk noe galt, eller har du et forslag? Du ser
    teksten før noe lagres." No answer means no.
 
 ## Record an item
 
 Collect, in the user's own words:
 
-- **what happened** (required)
-- **what they expected** (ask; record empty if they do not say)
-- **severity**: `low`, `medium` or `high`. Ask if unclear. `high` means they could not
-  finish.
+- **kind**: `bug` (something went wrong) or `idea` (a suggestion)
+- **what happened**, or for an idea, the idea itself (required, `--happened`)
+- **what they expected**, or for an idea, what it would make possible (ask; record empty
+  if they do not say)
+- **severity**, for a bug only: `low`, `medium` or `high`. Ask if unclear. `high` means
+  they could not finish. Do not ask for an idea.
 - **skill**: the tun-* skill it is about, or `artefact` for a built file
 - **artefact path**, if it is about a file. The tool reads the title from the file.
 - **browser**, only if the user named it
@@ -43,38 +48,44 @@ Collect, in the user's own words:
 Show the full record first, with `--dry-run`:
 
 ```bash
-python3 tools/tun_feedback.py append --skill tun-new --severity medium \
+python3 tools/tun_feedback.py append --skill tun-new --kind bug --severity medium \
   --happened "<their words>" --expected "<their words>" \
   --artefact <path> --dry-run
 ```
 
 Paste the printed record into the reply in full. Then run the same command without
 `--dry-run`. Write only what the user typed: name, e-mail and machine name stay out unless
-they wrote them into the text themselves. The tool adds the OS, and the Tún version from
-`git describe`.
+they wrote them into the text themselves. The tool adds the OS and the Tún version. The
+artefact's title and path stay in the local log. The issue only says it was about a built
+file.
 
 ## Offer an issue
 
-Ask: "Skal jeg lage en sak av dette i prosjektet? Du får se tittel og tekst først."
+Ask: "Skal jeg lage en offentlig sak av dette i Tún-prosjektet? Du får se tittel og tekst
+først."
 
 On yes, print the exact issue:
 
 ```bash
 python3 tools/tun_feedback.py issue          # the last record; give a number for another
-git remote get-url origin                    # where it will be filed
 ```
 
-Paste the TITLE and BODY in full and say which forge and repository will get it. File it
-only after an explicit yes to that text ("ja", "send", "ok"):
+It prints TARGET, TITLE, BODY and a prefilled link. Paste TARGET, TITLE and BODY in full.
+Say plainly who can read the issue (for a public repository: anyone), and ask the user to check that the text holds no
+internal names, numbers or customer data. Offer to rewrite it if it does. Never take the
+target from the git repository the user works in: the tool has its own.
+
+File it only after an explicit yes to that text ("ja", "send", "ok"):
 
 ```bash
 python3 tools/tun_feedback.py issue --send
 ```
 
-`--send` files exactly what `issue` printed, with `gh issue create` in the checkout, so `gh`
-picks the forge from the `origin` remote. Read back the issue URL it prints and give it to
-the user. If `gh` is missing or not logged in, give them the title and body to paste into a
-new issue by hand.
+`--send` files exactly what `issue` printed, on the printed target, with
+`gh issue create --repo`. Read back the issue URL it prints, open it with
+`gh issue view <url>` to confirm it exists, and give it to the user. If `gh` is missing,
+not logged in to that host, or fails, give the user the prefilled link instead. It opens
+the same title and body, and they press Submit.
 
 ## Feedback from inside a file
 
