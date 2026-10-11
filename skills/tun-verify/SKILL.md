@@ -23,7 +23,12 @@ calls it.
 
 ```bash
 python3 tools/verify_dashboard.py <path-to-dashboard.html>
+python3 tools/verify_dashboard.py <path-to-dashboard.html> --engines all   # + Firefox and WebKit
 ```
+
+Readers open the file in Edge, Chrome, Safari or Firefox. Use `--engines all` before a
+file goes to a wide audience: it runs every check in Chromium, Firefox and WebKit (Safari's
+engine), and names the engine in each failure.
 
 Exit `0` = safe to publish. Anything else = do not publish.
 
@@ -132,6 +137,7 @@ Install it:
 
 ```bash
 uv sync --extra verify && uv run playwright install chromium
+uv run playwright install firefox webkit   # only for --engines all
 ```
 
 `uv` only — never `pip`. Sources (PyPI) are in `pyproject.toml`.

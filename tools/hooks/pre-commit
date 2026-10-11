@@ -15,8 +15,10 @@
 # caught them already existed in tools/verify_standalone_core.py. Nothing ran them. This
 # is the thing that runs them.
 #
-# It is NOT a substitute for CI. It protects only clones that ran `setup.py --hooks`.
-# Treat a green commit as evidence about this machine, not about the repo.
+# It is NOT a substitute for CI. CI (.github/workflows/gates.yml) runs every gate on each
+# pull request; this hook stops a mistake earlier, before the commit, and protects only
+# clones that ran `setup.py --hooks`. Treat a green commit as evidence about this machine,
+# not about the repo.
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel)
@@ -149,8 +151,8 @@ pre-commit: BLOCKED — a gate failed.
   Fix the file, or if the failure is genuinely accepted debt, add it to KNOWN_DEBT
   in tools/tree_scan.py with a reason and an issue reference.
 
-  'git commit --no-verify' bypasses this. It is a real option, but there is no CI
-  behind it on this repo: nothing else will catch the mistake before it reaches main.
+  'git commit --no-verify' bypasses this. It is a real option: CI still checks the
+  pull request, but only after the push.
 MSG
     exit 1
 fi

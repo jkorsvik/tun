@@ -188,6 +188,13 @@ Must print `✓ PASS`. Then **look at the screenshot**.
 having never opened the file is worse than one that reports nothing. Install it with
 `uv sync --extra verify && uv run playwright install chromium`.
 
+Every verify tool takes `--engines` (`chromium`, `firefox`, `webkit` or `all`; the default
+is `chromium`). A reader may open the file in Safari or Firefox, so before you change a
+template, a builder or a verify tool, run every documented example check in all three:
+`uv run --extra verify python tools/verify_documented.py` (it needs
+`uv run playwright install chromium firefox webkit`). CI on the public repository runs the
+same command on every pull request.
+
 Then run the three suites. All are stdlib-only and none touch anything outside a temp
 directory:
 

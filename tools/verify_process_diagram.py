@@ -71,8 +71,6 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import build_process_diagram as bpd  # noqa: E402
 import i18n  # noqa: E402
 import verify_standalone_core as core  # noqa: E402
-
-ENGINES = ("chromium", "firefox", "webkit")
 VIEWPORT = {"width": 1280, "height": 900}
 TOL = 0.75          # rendering rounds; anything under a pixel is not a visible overlap
 MIN_FONT_PX = 12
@@ -941,8 +939,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("html", type=pathlib.Path)
     ap.add_argument("--spec", type=pathlib.Path, required=True,
                     help="the .process.txt the diagram was built from; expected counts come from it")
-    ap.add_argument("--engines", default=",".join(ENGINES),
-                    help=f"comma-separated, default {','.join(ENGINES)}")
+    core.add_engines_arg(ap, default=core.ENGINES)
     ap.add_argument("--max-crossings", type=int, default=None,
                     help="fail if any engine renders more crossings than this")
     ap.add_argument("--mutation-check", action="store_true",
@@ -965,11 +962,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     if args.mutation_check:
         return mutation_check(args.html, spec)
-    engines = tuple(e for e in args.engines.split(",") if e)
-    unknown = [e for e in engines if e not in ENGINES]
-    if unknown or not engines:
-        print(f"✗ FAIL: unknown engine(s) {unknown}; choose from {ENGINES}", file=sys.stderr)
-        return 1
+    engines = args.engines
     r = verify(args.html, spec, engines, shots=True, max_crossings=args.max_crossings)
     print()
     if r.failures:

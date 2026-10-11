@@ -93,21 +93,23 @@ The original requirements asked one question ("which browsers do we support") an
 effect, an unverified guess. Splitting it in two, because the sharing-path tests showed
 they fail independently and a fix for one does nothing for the other:
 
-### 3a. Which browser engine and version — still not measured
+### 3a. Which browser engine and version — three engines tested, versions and devices not
 
-> **Same caveat the original requirements carried, unchanged:** Edge and Chrome, last two major versions, is
-> still an assumption based on what has come up anecdotally in past deliveries — not a
-> confirmed IT policy, and not something this repo has tested. `probe/
-> browser-capability-probe.py` (`docs/01-tenant-constraints.md` rows 19-20) only drives
-> Chromium; it does not compare Edge, Chrome, Safari and Firefox against each other. This
-> open item is carried forward, not resolved, by the topbar or sharing-path work.
+> **Same caveat the original requirements carried, narrowed:** Edge and Chrome, last two
+> major versions, as *the* delivery browsers is still an assumption from past deliveries,
+> not a confirmed IT policy. What is now measured: every verify tool takes `--engines`,
+> and CI runs every documented example check (`tools/verify_documented.py`) in
+> Playwright's Chromium, Firefox and WebKit on each pull request. That tests the three
+> engines, not the shipped browsers: Playwright's WebKit is the engine behind Safari, not
+> Safari on an iPhone, and no specific version is pinned. `probe/
+> browser-capability-probe.py` (`docs/01-tenant-constraints.md` rows 19-20) still drives
+> Chromium only.
 
-- Officially supported (full QA responsibility): Microsoft Edge, Google Chrome (last two
-  major versions) — pending confirmation above.
-- Explicitly not supported/tested: Firefox, Safari, Internet Explorer, and any other
-  browser.
-- No polyfills or fallback code are built for browsers outside that list. "Doesn't work /
-  looks wrong" in an unsupported browser is an accepted outcome, not a bug.
+- Supported and tested on every pull request: Chromium (Edge, Chrome), Firefox, and
+  WebKit (Safari), in current Playwright builds.
+- Edge and Chrome stay the assumed delivery browsers, pending confirmation above.
+- Not supported: Internet Explorer.
+- No polyfills. A file that breaks or looks wrong in Firefox or Safari is a bug.
 
 ### 3b. Whether JavaScript executes at all in the delivery context — measured, and the answer is more specific than "browser support"
 
@@ -389,8 +391,9 @@ lives.
 
 - [ ] Confirm or correct the Edge/Chrome browser assumption (§3a) against actual IT
       policy — carried over unchanged from the original requirements, still not done.
-- [ ] Run a real cross-browser comparison (Edge, Chrome, Safari, Firefox) on mobile —
-      `browser-capability-probe.py` only drives Chromium today.
+- [ ] Run the comparison on real mobile devices (Safari on iOS, Chrome on Android). CI
+      covers the three engines in emulation (§3a); `browser-capability-probe.py` still
+      drives Chromium only.
 - [ ] The still-open sharing-path combinations: Android; Gmail and the Outlook mobile app specifically; a real
       e-mail attachment rather than a link; named-recipient sharing scope; mobile
       browsers distinguished from each other; the §3b warning pattern verified against a

@@ -12,8 +12,8 @@ Stdlib only.
 Why this file is larger than the checks it tests
 ------------------------------------------------
 This gate exists because one `git add -A` is enough to put a survey export with names and
-e-mail addresses on main. The gate is the only automatic thing standing between a repeat and main, and
-this repository has no CI, so "it passed locally" is the whole assurance. That makes the
+e-mail addresses on main. The gate is the first automatic thing standing between a repeat and main;
+CI checks again on every pull request, but only after the push. That makes the
 gate a single point of failure and makes a green suite worth nothing on its own.
 
 So every fixture asserts three things, not one:

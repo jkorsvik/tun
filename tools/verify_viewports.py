@@ -29,7 +29,7 @@ It never reports success when it did not run. A missing Playwright is an error w
 exit code 2, not a skip — see an earlier pull request for why that matters.
 
 Usage:
-    python3 tools/verify_viewports.py path/to/artefact.html [--out DIR] [--quiet]
+    python3 tools/verify_viewports.py path/to/artefact.html [--out DIR] [--quiet] [--engines all]
 
 Exit codes: 0 all viewports clean, 1 at least one finding, 2 could not run.
 """
@@ -39,6 +39,9 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from verify_standalone_core import add_engines_arg  # noqa: E402
 
 # name, width, height, touch
 VIEWPORTS = [
@@ -103,7 +106,7 @@ MEASURE_JS = """
 """ % (INTERACTIVE_SELECTOR,)
 
 
-def check(path: Path, out_dir: Path, quiet: bool) -> int:
+def check(path: Path, out_dir: Path, quiet: bool, engines: tuple[str, ...]) -> int:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -117,67 +120,75 @@ def check(path: Path, out_dir: Path, quiet: bool) -> int:
     findings: list[str] = []
 
     with sync_playwright() as p:
-        browser = p.chromium.launch()
-        try:
-            for name, w, h, touch in VIEWPORTS:
-                page = browser.new_page(
-                    viewport={"width": w, "height": h},
-                    has_touch=touch,
-                    is_mobile=touch,
-                )
-                errors: list[str] = []
-                page.on("pageerror", lambda e: errors.append(str(e)))
-                page.goto(url)
-                page.wait_for_timeout(700)  # let entry animations settle
-
-                m = page.evaluate(MEASURE_JS, MIN_TOUCH_PX)
-                shot = out_dir / f"{path.stem}.{name}.png"
-                page.screenshot(path=str(shot), full_page=False)
-
-                line = f"  {name:<17} {w}x{h}"
-                overflow = m["scrollWidth"] - max(m["clientWidth"], m["innerWidth"])
-                if overflow > OVERFLOW_SLACK_PX:
-                    findings.append(
-                        f"{name} ({w}x{h}): content is {overflow}px wider than the "
-                        f"viewport — docs/11 forbids clipped or hidden content"
+        for engine in engines:
+            if len(engines) > 1 and not quiet:
+                print(f"  · {engine}")
+            browser = getattr(p, engine).launch()
+            try:
+                for name, w, h, touch in VIEWPORTS:
+                    page = browser.new_page(
+                        viewport={"width": w, "height": h},
+                        has_touch=touch,
+                        # Firefox has no mobile emulation and rejects is_mobile; touch stays on.
+                        **({"is_mobile": touch} if engine != "firefox" else {}),
                     )
-                    line += f"  ✗ overflows by {overflow}px"
-                elif touch and m["smallTargets"]:
-                    worst = m["smallTargets"][:4]
-                    shown = ", ".join(
-                        f"<{t['tag']}>{(' ' + t['label']) if t['label'] else ''} "
-                        f"{t['w']}x{t['h']}"
-                        for t in worst
-                    )
-                    more = len(m["smallTargets"]) - len(worst)
-                    findings.append(
-                        f"{name} ({w}x{h}): {len(m['smallTargets'])} interactive "
-                        f"element(s) below {MIN_TOUCH_PX}x{MIN_TOUCH_PX}px — {shown}"
-                        + (f", +{more} more" if more > 0 else "")
-                    )
-                    line += f"  ✗ {len(m['smallTargets'])} target(s) < {MIN_TOUCH_PX}px"
-                else:
-                    line += "  ✓"
+                    errors: list[str] = []
+                    page.on("pageerror", lambda e: errors.append(str(e)))
+                    page.goto(url)
+                    page.wait_for_timeout(700)  # let entry animations settle
 
-                if errors:
-                    findings.append(f"{name} ({w}x{h}): JavaScript error — {errors[0]}")
-                    line += f"  ✗ JS error"
+                    m = page.evaluate(MEASURE_JS, MIN_TOUCH_PX)
+                    tag = "" if engine == "chromium" else f".{engine}"
+                    shot = out_dir / f"{path.stem}{tag}.{name}.png"
+                    page.screenshot(path=str(shot), full_page=False)
 
-                if not quiet:
-                    print(line)
-                page.close()
-        finally:
-            browser.close()
+                    line = f"  {name:<17} {w}x{h}"
+                    where = f"{name} ({w}x{h})" + (f" [{engine}]" if len(engines) > 1 else "")
+                    overflow = m["scrollWidth"] - max(m["clientWidth"], m["innerWidth"])
+                    if overflow > OVERFLOW_SLACK_PX:
+                        findings.append(
+                            f"{where}: content is {overflow}px wider than the "
+                            f"viewport — docs/11 forbids clipped or hidden content"
+                        )
+                        line += f"  ✗ overflows by {overflow}px"
+                    elif touch and m["smallTargets"]:
+                        worst = m["smallTargets"][:4]
+                        shown = ", ".join(
+                            f"<{t['tag']}>{(' ' + t['label']) if t['label'] else ''} "
+                            f"{t['w']}x{t['h']}"
+                            for t in worst
+                        )
+                        more = len(m["smallTargets"]) - len(worst)
+                        findings.append(
+                            f"{where}: {len(m['smallTargets'])} interactive "
+                            f"element(s) below {MIN_TOUCH_PX}x{MIN_TOUCH_PX}px — {shown}"
+                            + (f", +{more} more" if more > 0 else "")
+                        )
+                        line += f"  ✗ {len(m['smallTargets'])} target(s) < {MIN_TOUCH_PX}px"
+                    else:
+                        line += "  ✓"
+
+                    if errors:
+                        findings.append(f"{where}: JavaScript error — {errors[0]}")
+                        line += f"  ✗ JS error"
+
+                    if not quiet:
+                        print(line)
+                    page.close()
+            finally:
+                browser.close()
 
     print()
     if findings:
-        print(f"✗ FAIL — {len(findings)} finding(s) across {len(VIEWPORTS)} viewports:")
+        print(f"✗ FAIL — {len(findings)} finding(s) across {len(VIEWPORTS)} viewports "
+              f"({', '.join(engines)}):")
         for f in findings:
             print(f"    • {f}")
         print(f"\n  Screenshots in {out_dir}/ — look at them; a clean measurement is not a clean layout.")
         return 1
 
-    print(f"✓ PASS — {len(VIEWPORTS)} viewports checked, no overflow, no undersized touch targets.")
+    print(f"✓ PASS — {len(VIEWPORTS)} viewports checked in {', '.join(engines)}, "
+          "no overflow, no undersized touch targets.")
     print(f"  Screenshots in {out_dir}/ — still look at them before sharing.")
     return 0
 
@@ -187,6 +198,7 @@ def main() -> int:
     ap.add_argument("artefact", type=Path, help="built .html file to check")
     ap.add_argument("--out", type=Path, default=None, help="screenshot directory (default: alongside the artefact)")
     ap.add_argument("--quiet", action="store_true", help="only print the verdict")
+    add_engines_arg(ap)
     args = ap.parse_args()
 
     if not args.artefact.is_file():
@@ -194,7 +206,7 @@ def main() -> int:
         return 2
 
     out_dir = args.out or args.artefact.parent / "viewport-shots"
-    return check(args.artefact, out_dir, args.quiet)
+    return check(args.artefact, out_dir, args.quiet, args.engines)
 
 
 if __name__ == "__main__":

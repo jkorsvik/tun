@@ -67,10 +67,11 @@ uv run --extra verify python tools/verify_slide_deck.py \
 ```
 
 The last command visits every slide at 1600×900, 1366×768, 844×390, and 390×844 in both
-engines. It checks controls, navigation, JavaScript errors, external requests, and
-fullscreen or its fallback. It writes one screenshot per slide and a contact sheet per
-engine and viewport for human review. The two previews above are its WebKit screenshots of
-slide 1 (landscape) and slide 2 (portrait).
+engines (add `--engines all` for Firefox as well; CI runs all three). It checks controls,
+navigation, JavaScript errors, external requests, and fullscreen or its fallback. It
+writes one screenshot per slide and a contact sheet per engine and viewport for human
+review. The two previews above are its WebKit screenshots of slide 1 (landscape) and
+slide 2 (portrait).
 
 ## Reuse
 
