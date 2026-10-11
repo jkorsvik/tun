@@ -53,6 +53,7 @@ point of those; looking at them is.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import pathlib
 import re
@@ -66,7 +67,8 @@ HTML = HERE / "oversikt.html"
 DATA = HERE / "data.js"
 
 sys.path.insert(0, str(REPO / "tools"))
-from verify_standalone_core import check_no_stray_script_text  # noqa: E402
+from verify_standalone_core import (  # noqa: E402
+    add_engines_arg, check_no_stray_script_text, label_failures, shot_path)
 
 TOUCH_MIN_PX = 44  # docs/11 §5
 
@@ -434,153 +436,161 @@ def run_static(failures: list[str]) -> None:
           f"meta says {fields.get('rows')}, file has {actual}")
 
 
-def run_no_js(failures: list[str], shots: list[pathlib.Path]) -> None:
+def run_no_js(failures: list[str], shots: list[pathlib.Path], engines: tuple[str, ...]) -> None:
     from playwright.sync_api import sync_playwright
 
     print("\n-- JavaScript DISABLED --")
     with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": 1280, "height": 800},
-                                java_script_enabled=False)
-        page.goto(HTML.as_uri())
+        for engine in engines:
+            print(f"  · {engine}")
+            mark = len(failures)
+            browser = getattr(pw, engine).launch()
+            page = browser.new_page(viewport={"width": 1280, "height": 800},
+                                    java_script_enabled=False)
+            page.goto(HTML.as_uri())
 
-        shown = page.eval_on_selector("#js-warning",
-                                      "el => getComputedStyle(el).display !== 'none'")
-        check("warning banner visible with no script at all", shown, failures)
+            shown = page.eval_on_selector("#js-warning",
+                                          "el => getComputedStyle(el).display !== 'none'")
+            check("warning banner visible with no script at all", shown, failures)
 
-        for view in ("view-day", "view-schemes", "view-routines"):
-            vis = page.eval_on_selector(f"#{view}",
-                                        "el => getComputedStyle(el).display !== 'none'")
-            check(f"#{view} readable without script", vis, failures)
-        text = page.inner_text("#view-schemes")
-        check("the three Ordning regimes are in static markup",
-              all(s in text for s in ("Grunnskole drosje", "langdagSFO TT-kort",
-                                      "VGS TT-kort")), failures)
-        text = page.inner_text("#view-routines")
-        check("the routines are in static markup",
-              "07:00" in text and "412 Precondition Failed" in text, failures)
-
-        nav = page.eval_on_selector("#nav", "el => getComputedStyle(el).display === 'none'")
-        check("nav hidden without script (no dead links)", nav, failures)
-        fs = page.eval_on_selector("#fullscreen", "el => el.hidden === true")
-        check("fullscreen button hidden without script", fs, failures)
-        live = page.eval_on_selector("#day-live", "el => getComputedStyle(el).display === 'none'")
-        check("empty day furniture hidden without script", live, failures)
-        static_note = page.eval_on_selector("#day-static",
+            for view in ("view-day", "view-schemes", "view-routines"):
+                vis = page.eval_on_selector(f"#{view}",
                                             "el => getComputedStyle(el).display !== 'none'")
-        check("a static line explains the missing day list", static_note, failures)
-        rows = page.locator("#tbl tbody tr").count()
-        check("day list is empty and the banner says why", rows == 0, failures,
-              f"{rows} rows")
+                check(f"#{view} readable without script", vis, failures)
+            text = page.inner_text("#view-schemes")
+            check("the three Ordning regimes are in static markup",
+                  all(s in text for s in ("Grunnskole drosje", "langdagSFO TT-kort",
+                                          "VGS TT-kort")), failures)
+            text = page.inner_text("#view-routines")
+            check("the routines are in static markup",
+                  "07:00" in text and "412 Precondition Failed" in text, failures)
 
-        shot = HERE / "preview-nojs-1280.png"
-        page.screenshot(path=str(shot), full_page=True)
-        shots.append(shot)
-        browser.close()
+            nav = page.eval_on_selector("#nav", "el => getComputedStyle(el).display === 'none'")
+            check("nav hidden without script (no dead links)", nav, failures)
+            fs = page.eval_on_selector("#fullscreen", "el => el.hidden === true")
+            check("fullscreen button hidden without script", fs, failures)
+            live = page.eval_on_selector("#day-live", "el => getComputedStyle(el).display === 'none'")
+            check("empty day furniture hidden without script", live, failures)
+            static_note = page.eval_on_selector("#day-static",
+                                                "el => getComputedStyle(el).display !== 'none'")
+            check("a static line explains the missing day list", static_note, failures)
+            rows = page.locator("#tbl tbody tr").count()
+            check("day list is empty and the banner says why", rows == 0, failures,
+                  f"{rows} rows")
+
+            shot = shot_path(HERE / "preview-nojs-1280.png", ".png", engine)
+            page.screenshot(path=str(shot), full_page=True)
+            shots.append(shot)
+            browser.close()
+            label_failures(failures, mark, engine, engines)
 
 
-def run_with_js(failures: list[str], shots: list[pathlib.Path]) -> None:
+def run_with_js(failures: list[str], shots: list[pathlib.Path], engines: tuple[str, ...]) -> None:
     from playwright.sync_api import sync_playwright
 
     print("\n-- JavaScript ENABLED --")
     with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": 1280, "height": 800})
-        errors: list[str] = []
-        page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
-        page.on("pageerror", lambda e: errors.append(str(e)))
-        page.goto(HTML.as_uri())
-        page.wait_for_timeout(400)
+        for engine in engines:
+            print(f"  · {engine}")
+            mark = len(failures)
+            browser = getattr(pw, engine).launch()
+            page = browser.new_page(viewport={"width": 1280, "height": 800})
+            errors: list[str] = []
+            page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+            page.on("pageerror", lambda e: errors.append(str(e)))
+            page.goto(HTML.as_uri())
+            page.wait_for_timeout(400)
 
-        for box in ("js-warning", "js-partial", "data-error"):
-            hidden = page.eval_on_selector(f"#{box}", "el => el.hidden === true")
-            check(f"#{box} hidden on a healthy page", hidden, failures)
-        check("nav visible once a script ran",
-              page.eval_on_selector("#nav", "el => getComputedStyle(el).display !== 'none'"),
-              failures)
-        check("day list shown, static stand-in hidden",
-              page.eval_on_selector("#day-live", "el => getComputedStyle(el).display !== 'none'")
-              and page.eval_on_selector("#day-static",
-                                        "el => getComputedStyle(el).display === 'none'"),
-              failures)
+            for box in ("js-warning", "js-partial", "data-error"):
+                hidden = page.eval_on_selector(f"#{box}", "el => el.hidden === true")
+                check(f"#{box} hidden on a healthy page", hidden, failures)
+            check("nav visible once a script ran",
+                  page.eval_on_selector("#nav", "el => getComputedStyle(el).display !== 'none'"),
+                  failures)
+            check("day list shown, static stand-in hidden",
+                  page.eval_on_selector("#day-live", "el => getComputedStyle(el).display !== 'none'")
+                  and page.eval_on_selector("#day-static",
+                                            "el => getComputedStyle(el).display === 'none'"),
+                  failures)
 
-        # Row 26: exactly one scrolling container in the whole document.
-        scrollers = page.evaluate(
-            "() => [...document.querySelectorAll('*')]"
-            ".filter(e => ['auto','scroll'].includes(getComputedStyle(e).overflowY))"
-            ".map(e => e.id || e.tagName)")
-        check("#content is the sole overflow-y container", scrollers == ["content"],
-              failures, str(scrollers))
-        check("body does not scroll",
-              page.eval_on_selector("body", "el => getComputedStyle(el).overflowY") == "hidden",
-              failures)
+            # Row 26: exactly one scrolling container in the whole document.
+            scrollers = page.evaluate(
+                "() => [...document.querySelectorAll('*')]"
+                ".filter(e => ['auto','scroll'].includes(getComputedStyle(e).overflowY))"
+                ".map(e => e.id || e.tagName)")
+            check("#content is the sole overflow-y container", scrollers == ["content"],
+                  failures, str(scrollers))
+            check("body does not scroll",
+                  page.eval_on_selector("body", "el => getComputedStyle(el).overflowY") == "hidden",
+                  failures)
 
-        # Row 24: a class toggle, and no fragment navigation at all.
-        page.click("#nav a[data-view='view-schemes']")
-        page.wait_for_timeout(200)
-        check("clicking Ordninger activates #view-schemes",
-              page.eval_on_selector("#view-schemes", "el => el.classList.contains('active')"),
-              failures)
-        check("clicking Ordninger deactivates #view-day",
-              not page.eval_on_selector("#view-day", "el => el.classList.contains('active')"),
-              failures)
-        frag = page.evaluate("() => location.hash")
-        check("location.hash stayed empty (preventDefault ran, not :target)",
-              frag == "", failures, repr(frag))
-        shot = HERE / "preview-1280-ordninger.png"
-        page.screenshot(path=str(shot), full_page=True)
-        shots.append(shot)
-
-        page.click("#nav a[data-view='view-day']")
-        page.wait_for_timeout(200)
-        check("clicking back activates #view-day",
-              page.eval_on_selector("#view-day", "el => el.classList.contains('active')"),
-              failures)
-
-        # Row 21: the button is revealed, and using it never surfaces an error.
-        check("fullscreen button revealed",
-              page.eval_on_selector("#fullscreen", "el => el.hidden === false"), failures)
-        before = len(errors)
-        page.click("#fullscreen")
-        page.wait_for_timeout(400)
-        check("clicking fullscreen raised no error", len(errors) == before, failures,
-              errors[before] if len(errors) > before else "")
-        if page.evaluate("() => !!document.fullscreenElement"):
-            page.keyboard.press("Escape")
+            # Row 24: a class toggle, and no fragment navigation at all.
+            page.click("#nav a[data-view='view-schemes']")
             page.wait_for_timeout(200)
+            check("clicking Ordninger activates #view-schemes",
+                  page.eval_on_selector("#view-schemes", "el => el.classList.contains('active')"),
+                  failures)
+            check("clicking Ordninger deactivates #view-day",
+                  not page.eval_on_selector("#view-day", "el => el.classList.contains('active')"),
+                  failures)
+            frag = page.evaluate("() => location.hash")
+            check("location.hash stayed empty (preventDefault ran, not :target)",
+                  frag == "", failures, repr(frag))
+            shot = shot_path(HERE / "preview-1280-ordninger.png", ".png", engine)
+            page.screenshot(path=str(shot), full_page=True)
+            shots.append(shot)
 
-        check("console clean", not errors, failures, errors[0][:120] if errors else "")
+            page.click("#nav a[data-view='view-day']")
+            page.wait_for_timeout(200)
+            check("clicking back activates #view-day",
+                  page.eval_on_selector("#view-day", "el => el.classList.contains('active')"),
+                  failures)
 
-        shot = HERE / "preview-1280.png"
-        page.screenshot(path=str(shot), full_page=True)
-        shots.append(shot)
-        page.close()
+            # Row 21: the button is revealed, and using it never surfaces an error.
+            check("fullscreen button revealed",
+                  page.eval_on_selector("#fullscreen", "el => el.hidden === false"), failures)
+            before = len(errors)
+            page.click("#fullscreen")
+            page.wait_for_timeout(400)
+            check("clicking fullscreen raised no error", len(errors) == before, failures,
+                  errors[before] if len(errors) > before else "")
+            if page.evaluate("() => !!document.fullscreenElement"):
+                page.keyboard.press("Escape")
+                page.wait_for_timeout(200)
 
-        # 390px — the narrow end docs/11 §2 says is supported.
-        page = browser.new_page(viewport={"width": 390, "height": 844})
-        page.goto(HTML.as_uri())
-        page.wait_for_timeout(400)
-        overflow = page.evaluate(
-            "() => document.documentElement.scrollWidth - document.documentElement.clientWidth")
-        check("390px: no horizontal overflow", overflow <= 1, failures, f"{overflow}px")
-        check("390px: table collapsed to cards",
-              page.eval_on_selector("#tbl thead", "el => getComputedStyle(el).display") == "none",
-              failures)
-        small = page.evaluate(
-            "() => [...document.querySelectorAll('#nav a, #controls select, "
-            "#controls button, #fullscreen')]"
-            ".filter(e => e.getBoundingClientRect().height < %d)"
-            ".map(e => (e.id || e.textContent.trim()) + ':' "
-            "+ Math.round(e.getBoundingClientRect().height))" % TOUCH_MIN_PX)
-        check(f"390px: every control at least {TOUCH_MIN_PX}px tall", small == [],
-              failures, str(small))
-        shot = HERE / "preview-390.png"
-        page.screenshot(path=str(shot), full_page=True)
-        shots.append(shot)
-        browser.close()
+            check("console clean", not errors, failures, errors[0][:120] if errors else "")
+
+            shot = shot_path(HERE / "preview-1280.png", ".png", engine)
+            page.screenshot(path=str(shot), full_page=True)
+            shots.append(shot)
+            page.close()
+
+            # 390px — the narrow end docs/11 §2 says is supported.
+            page = browser.new_page(viewport={"width": 390, "height": 844})
+            page.goto(HTML.as_uri())
+            page.wait_for_timeout(400)
+            overflow = page.evaluate(
+                "() => document.documentElement.scrollWidth - document.documentElement.clientWidth")
+            check("390px: no horizontal overflow", overflow <= 1, failures, f"{overflow}px")
+            check("390px: table collapsed to cards",
+                  page.eval_on_selector("#tbl thead", "el => getComputedStyle(el).display") == "none",
+                  failures)
+            small = page.evaluate(
+                "() => [...document.querySelectorAll('#nav a, #controls select, "
+                "#controls button, #fullscreen')]"
+                ".filter(e => e.getBoundingClientRect().height < %d)"
+                ".map(e => (e.id || e.textContent.trim()) + ':' "
+                "+ Math.round(e.getBoundingClientRect().height))" % TOUCH_MIN_PX)
+            check(f"390px: every control at least {TOUCH_MIN_PX}px tall", small == [],
+                  failures, str(small))
+            shot = shot_path(HERE / "preview-390.png", ".png", engine)
+            page.screenshot(path=str(shot), full_page=True)
+            shots.append(shot)
+            browser.close()
+            label_failures(failures, mark, engine, engines)
 
 
-def run_bad_data(failures: list[str]) -> None:
+def run_bad_data(failures: list[str], engines: tuple[str, ...]) -> None:
     """The docs/13 §2 gap: the INITIAL data.js load must fail visibly too."""
     from playwright.sync_api import sync_playwright
 
@@ -617,60 +627,68 @@ def run_bad_data(failures: list[str]) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = pathlib.Path(tmp)
         with sync_playwright() as pw:
-            browser = pw.chromium.launch()
-            for label, body_text, expect in cases:
-                folder = root / label.replace(" ", "-")
-                folder.mkdir()
+            for engine in engines:
+                print(f"  · {engine}")
+                mark = len(failures)
+                browser = getattr(pw, engine).launch()
+                for label, body_text, expect in cases:
+                    folder = root / engine / label.replace(" ", "-")
+                    folder.mkdir(parents=True)
+                    shutil.copy(HTML, folder / "oversikt.html")
+                    if body_text is not None:
+                        (folder / "data.js").write_text(body_text, encoding="utf-8")
+                    page = browser.new_page(viewport={"width": 1280, "height": 800})
+                    page.goto((folder / "oversikt.html").as_uri())
+                    page.wait_for_timeout(400)
+                    shown = page.eval_on_selector("#data-error", "el => el.hidden === false")
+                    said = page.inner_text("#data-error")
+                    check(f"{label}: error shown on initial load", shown, failures)
+                    check(f"{label}: message names what is wrong", expect in said, failures,
+                          said.replace("\n", " ")[:110])
+                    # A deliberate, explained failure must not also claim it crashed.
+                    partial = page.eval_on_selector("#js-partial", "el => el.hidden === true")
+                    check(f"{label}: no false 'stopped partway' banner", partial, failures)
+                    page.close()
+
+                # An unrecognised value must warn WITHOUT blanking the board: a day
+                # list that disappears over one typo is worse than one that renders
+                # and says which values it did not know.
+                odd = (good.replace('"Status": "I rute"', '"Status": "Fremskutt"', 1)
+                           .replace('"Ordning": "VGS TT-kort"', '"Ordning": "Ny ordning"', 1))
+                folder = root / engine / "unknown-values"
+                folder.mkdir(parents=True)
                 shutil.copy(HTML, folder / "oversikt.html")
-                if body_text is not None:
-                    (folder / "data.js").write_text(body_text, encoding="utf-8")
+                (folder / "data.js").write_text(odd, encoding="utf-8")
                 page = browser.new_page(viewport={"width": 1280, "height": 800})
                 page.goto((folder / "oversikt.html").as_uri())
                 page.wait_for_timeout(400)
-                shown = page.eval_on_selector("#data-error", "el => el.hidden === false")
-                said = page.inner_text("#data-error")
-                check(f"{label}: error shown on initial load", shown, failures)
-                check(f"{label}: message names what is wrong", expect in said, failures,
-                      said.replace("\n", " ")[:110])
-                # A deliberate, explained failure must not also claim it crashed.
-                partial = page.eval_on_selector("#js-partial", "el => el.hidden === true")
-                check(f"{label}: no false 'stopped partway' banner", partial, failures)
+                warned = page.eval_on_selector("#data-warning", "el => el.hidden === false")
+                text = page.inner_text("#data-warning")
+                check("unknown values: warning shown", warned, failures)
+                check("unknown values: names the unknown Status", "Fremskutt" in text, failures,
+                      text.replace("\n", " ")[:110])
+                check("unknown values: names the Ordning with no owner",
+                      "Ny ordning" in text, failures)
+                check("unknown values: the board still renders",
+                      page.locator("#tbl tbody tr").count() > 0, failures)
+                check("unknown values: the odd status is marked unknown, not dressed up",
+                      page.locator(".badge.unknown").count() > 0, failures)
+                check("unknown values: no fatal error banner",
+                      page.eval_on_selector("#data-error", "el => el.hidden === true"), failures)
+                # The KPI row must follow the data, not the régimes it shipped with.
+                kpis = page.eval_on_selector_all(".kpi .label", "els => els.map(e => e.textContent)")
+                check("unknown values: KPI row picked up the new Ordning",
+                      "Ny ordning" in kpis, failures, str(kpis))
                 page.close()
-
-            # An unrecognised value must warn WITHOUT blanking the board: a day
-            # list that disappears over one typo is worse than one that renders
-            # and says which values it did not know.
-            odd = (good.replace('"Status": "I rute"', '"Status": "Fremskutt"', 1)
-                       .replace('"Ordning": "VGS TT-kort"', '"Ordning": "Ny ordning"', 1))
-            folder = root / "unknown-values"
-            folder.mkdir()
-            shutil.copy(HTML, folder / "oversikt.html")
-            (folder / "data.js").write_text(odd, encoding="utf-8")
-            page = browser.new_page(viewport={"width": 1280, "height": 800})
-            page.goto((folder / "oversikt.html").as_uri())
-            page.wait_for_timeout(400)
-            warned = page.eval_on_selector("#data-warning", "el => el.hidden === false")
-            text = page.inner_text("#data-warning")
-            check("unknown values: warning shown", warned, failures)
-            check("unknown values: names the unknown Status", "Fremskutt" in text, failures,
-                  text.replace("\n", " ")[:110])
-            check("unknown values: names the Ordning with no owner",
-                  "Ny ordning" in text, failures)
-            check("unknown values: the board still renders",
-                  page.locator("#tbl tbody tr").count() > 0, failures)
-            check("unknown values: the odd status is marked unknown, not dressed up",
-                  page.locator(".badge.unknown").count() > 0, failures)
-            check("unknown values: no fatal error banner",
-                  page.eval_on_selector("#data-error", "el => el.hidden === true"), failures)
-            # The KPI row must follow the data, not the régimes it shipped with.
-            kpis = page.eval_on_selector_all(".kpi .label", "els => els.map(e => e.textContent)")
-            check("unknown values: KPI row picked up the new Ordning",
-                  "Ny ordning" in kpis, failures, str(kpis))
-            page.close()
-            browser.close()
+                browser.close()
+                label_failures(failures, mark, engine, engines)
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    add_engines_arg(ap)
+    args = ap.parse_args()
     if not HTML.exists() or not DATA.exists():
         print("✗ build first: python3 examples/17-multi-regime-day-board/"
               "build_day_board.py")
@@ -688,9 +706,9 @@ def main() -> int:
     print("─" * 66)
     run_brand(failures)
     run_static(failures)
-    run_no_js(failures, shots)
-    run_with_js(failures, shots)
-    run_bad_data(failures)
+    run_no_js(failures, shots, args.engines)
+    run_with_js(failures, shots, args.engines)
+    run_bad_data(failures, args.engines)
 
     print("─" * 66)
     if failures:

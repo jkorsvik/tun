@@ -58,3 +58,7 @@ work/
 # uv lockfile. This repo is stdlib-only by design (AGENTS.md rule 5) and needs no
 # resolved environment, so a lockfile here would imply one that does not exist.
 uv.lock
+
+# Per-engine screenshots (--engines); chromium keeps the committed name
+*.firefox.png
+*.webkit.png

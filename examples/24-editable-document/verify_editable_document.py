@@ -48,7 +48,6 @@ HTML = HERE / "editable-document.html"
 sys.path.insert(0, str(REPO / "tools"))
 import verify_standalone_core as core  # noqa: E402
 
-ENGINES = ("chromium", "firefox", "webkit")
 FILL_TOTAL = 5
 TYPED = "Økonomiavdelingen"
 
@@ -220,7 +219,7 @@ def _checks(browser, watch, errors, engine, html, workdir, failures) -> None:
           failures, engine)
 
 
-def verify(html: pathlib.Path, engines=ENGINES) -> list[str]:
+def verify(html: pathlib.Path, engines=core.ENGINES) -> list[str]:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -281,11 +280,12 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mutation-check", action="store_true")
     ap.add_argument("--html", type=pathlib.Path, default=HTML)
+    core.add_engines_arg(ap, default=core.ENGINES)
     args = ap.parse_args()
     if args.mutation_check:
         return mutation_check()
     print(f"verifying edit mode: {args.html.name}")
-    failures = verify(args.html.resolve())
+    failures = verify(args.html.resolve(), args.engines)
     print()
     if failures:
         print(f"✗ FAIL: {len(failures)} check(s)")
