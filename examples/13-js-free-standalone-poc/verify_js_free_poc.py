@@ -47,10 +47,14 @@ Checks, with JavaScript ON:
 """
 from __future__ import annotations
 
+import argparse
 import pathlib
 import sys
 
 from playwright.sync_api import sync_playwright
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
+from verify_standalone_core import add_engines_arg, label_failures  # noqa: E402
 
 HERE = pathlib.Path(__file__).parent
 FILE = HERE / "js-free-standalone-poc.html"
@@ -62,181 +66,193 @@ def check(label: str, cond: bool, failures: list[str]) -> None:
         failures.append(label)
 
 
-def run_no_js(failures: list[str]) -> None:
+def run_no_js(failures: list[str], engines: tuple[str, ...]) -> None:
     print("\n-- JavaScript DISABLED (java_script_enabled=False) --")
     with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": 390, "height": 844}, java_script_enabled=False)
-        page.goto(FILE.as_uri())
+        for engine in engines:
+            print(f"  · {engine}")
+            mark = len(failures)
+            browser = getattr(pw, engine).launch()
+            page = browser.new_page(viewport={"width": 390, "height": 844}, java_script_enabled=False)
+            page.goto(FILE.as_uri())
 
-        # 1. hamburger menu opens via a real click, no JS. CSS transitions
-        # animate the transform over 0.18s (see STYLE) — give it time to
-        # settle before reading the computed value, otherwise the read can
-        # land mid-transition (or, right after the synchronous click, at
-        # frame 0 of the animation).
-        page.click("#menu-toggle")
-        page.wait_for_timeout(300)
-        box = page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")
-        check("nav-menu panel is on-screen after click (left >= -5px)", box >= -5, failures)
+            # 1. hamburger menu opens via a real click, no JS. CSS transitions
+            # animate the transform over 0.18s (see STYLE) — give it time to
+            # settle before reading the computed value, otherwise the read can
+            # land mid-transition (or, right after the synchronous click, at
+            # frame 0 of the animation).
+            page.click("#menu-toggle")
+            page.wait_for_timeout(300)
+            box = page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")
+            check("nav-menu panel is on-screen after click (left >= -5px)", box >= -5, failures)
 
-        # 2. page switching via the radio group (NOT :target — see the scope
-        # limit in this file's docstring, and row 24). Click the label INSIDE
-        # the now-open nav-menu specifically; the home page also carries
-        # inline references, and it is off-canvas/behind the menu at this
-        # point and not a fair target for a real click.
-        page.locator("#nav-menu label[for='nav-charts']").click()
-        page.wait_for_timeout(100)
-        charts_visible = page.eval_on_selector(
-            "#page-charts", "el => getComputedStyle(el).display !== 'none'"
-        )
-        home_hidden = page.eval_on_selector(
-            "#page-home", "el => getComputedStyle(el).display === 'none'"
-        )
-        check("clicking a page label shows #page-charts (radio + :checked, no JS)", charts_visible, failures)
-        check("switching pages hides #page-home (no JS)", home_hidden, failures)
-        page.click("#menu-toggle")  # close menu again
-        page.wait_for_timeout(300)
+            # 2. page switching via the radio group (NOT :target — see the scope
+            # limit in this file's docstring, and row 24). Click the label INSIDE
+            # the now-open nav-menu specifically; the home page also carries
+            # inline references, and it is off-canvas/behind the menu at this
+            # point and not a fair target for a real click.
+            page.locator("#nav-menu label[for='nav-charts']").click()
+            page.wait_for_timeout(100)
+            charts_visible = page.eval_on_selector(
+                "#page-charts", "el => getComputedStyle(el).display !== 'none'"
+            )
+            home_hidden = page.eval_on_selector(
+                "#page-home", "el => getComputedStyle(el).display === 'none'"
+            )
+            check("clicking a page label shows #page-charts (radio + :checked, no JS)", charts_visible, failures)
+            check("switching pages hides #page-home (no JS)", home_hidden, failures)
+            page.click("#menu-toggle")  # close menu again
+            page.wait_for_timeout(300)
 
-        # Confirm the auto-close enhancement genuinely depends on JS: with
-        # JS off, choosing a page must NOT close the menu on its own (the
-        # reader closes it manually — this is the documented, accepted
-        # difference in behaviour between the two modes, not a bug).
-        page.click("#menu-toggle")
-        page.wait_for_timeout(150)
-        page.locator("#nav-menu label[for='nav-principles']").click()
-        page.wait_for_timeout(250)
-        menu_left_after_nav = page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")
-        check(
-            "menu stays open after choosing a page without JS (manual close still required)",
-            menu_left_after_nav >= -5,
-            failures,
-        )
-        page.click("#menu-toggle")
-        page.wait_for_timeout(300)
-
-
-        # 3. theme toggle changes colour via a real click, no JS
-        bg_before = page.eval_on_selector("#app-root", "el => getComputedStyle(el).backgroundColor")
-        page.click("#theme-toggle")
-        page.wait_for_timeout(100)
-        bg_after = page.eval_on_selector("#app-root", "el => getComputedStyle(el).backgroundColor")
-        check("theme toggle changes background colour (CSS :checked, no JS)", bg_before != bg_after, failures)
-        page.click("#theme-toggle")  # back to light
-
-        # 4. bar chart: CSS version visible, canvas stays hidden
-        css_bars_visible = page.eval_on_selector(
-            "#bar-chart-css", "el => getComputedStyle(el).display !== 'none'"
-        )
-        canvas_hidden = page.eval_on_selector("#bar-chart-canvas", "el => el.hidden")
-        check("bar chart: CSS fallback visible without JS", css_bars_visible, failures)
-        check("bar chart: canvas stays hidden without JS", canvas_hidden, failures)
-
-        # 5. scatter: fallback message visible
-        scatter_msg_visible = page.eval_on_selector(
-            "#scatter-fallback", "el => getComputedStyle(el).display !== 'none'"
-        )
-        scatter_text = page.inner_text("#scatter-fallback").strip()
-        check("scatter chart: fallback message visible without JS", scatter_msg_visible, failures)
-        check(
-            "scatter fallback text includes the JS-required sentence",
-            "Krever JavaScript som ikke er støttet i denne visningen." in scatter_text,
-            failures,
-        )
-
-        # 6. fullscreen button stays hidden
-        fs_hidden = page.eval_on_selector("#fs-btn", "el => el.hidden")
-        check("fullscreen button stays hidden without JS", fs_hidden, failures)
-
-        # 7. "Begrenset forhåndsvisning" banners: global one visible, and
-        # the bar-chart one visible alongside its CSS fallback (both are
-        # driven by the *absence* of a JS success signal, not by JS itself).
-        global_notice_visible = page.eval_on_selector(
-            "#preview-notice-global", "el => getComputedStyle(el).display !== 'none'"
-        )
-        bar_notice_visible = page.eval_on_selector(
-            "#bar-chart-notice", "el => getComputedStyle(el).display !== 'none'"
-        )
-        check("global 'Begrenset forhåndsvisning' banner visible without JS", global_notice_visible, failures)
-        check("bar chart 'Begrenset forhåndsvisning' banner visible without JS", bar_notice_visible, failures)
-
-        # 8. mobile topbar: title wraps onto (at most) two lines and does not
-        # collide with the info/theme icon cluster — the whole reason the
-        # short mobile title text and the narrower reserved icon gutter exist.
-        mobile_page = browser.new_page(viewport={"width": 360, "height": 640}, java_script_enabled=False)
-        mobile_page.goto(FILE.as_uri())
-        title_box = mobile_page.eval_on_selector(".title-short", "el => el.getBoundingClientRect()")
-        info_box = mobile_page.eval_on_selector("#info-toggle-label", "el => el.getBoundingClientRect()")
-        header_box = mobile_page.eval_on_selector("#topbar", "el => el.getBoundingClientRect()")
-        check("mobile title wraps to at most two lines", title_box["height"] < 40, failures)
-        check("mobile title does not overlap the icon cluster", title_box["right"] < info_box["left"], failures)
-        check("mobile header height matches --topbar-h (no gap/overlap below it)", header_box["height"] == 74, failures)
-        mobile_page.close()
-
-        browser.close()
+            # Confirm the auto-close enhancement genuinely depends on JS: with
+            # JS off, choosing a page must NOT close the menu on its own (the
+            # reader closes it manually — this is the documented, accepted
+            # difference in behaviour between the two modes, not a bug).
+            page.click("#menu-toggle")
+            page.wait_for_timeout(150)
+            page.locator("#nav-menu label[for='nav-principles']").click()
+            page.wait_for_timeout(250)
+            menu_left_after_nav = page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")
+            check(
+                "menu stays open after choosing a page without JS (manual close still required)",
+                menu_left_after_nav >= -5,
+                failures,
+            )
+            page.click("#menu-toggle")
+            page.wait_for_timeout(300)
 
 
-def run_with_js(failures: list[str]) -> None:
+            # 3. theme toggle changes colour via a real click, no JS
+            bg_before = page.eval_on_selector("#app-root", "el => getComputedStyle(el).backgroundColor")
+            page.click("#theme-toggle")
+            page.wait_for_timeout(100)
+            bg_after = page.eval_on_selector("#app-root", "el => getComputedStyle(el).backgroundColor")
+            check("theme toggle changes background colour (CSS :checked, no JS)", bg_before != bg_after, failures)
+            page.click("#theme-toggle")  # back to light
+
+            # 4. bar chart: CSS version visible, canvas stays hidden
+            css_bars_visible = page.eval_on_selector(
+                "#bar-chart-css", "el => getComputedStyle(el).display !== 'none'"
+            )
+            canvas_hidden = page.eval_on_selector("#bar-chart-canvas", "el => el.hidden")
+            check("bar chart: CSS fallback visible without JS", css_bars_visible, failures)
+            check("bar chart: canvas stays hidden without JS", canvas_hidden, failures)
+
+            # 5. scatter: fallback message visible
+            scatter_msg_visible = page.eval_on_selector(
+                "#scatter-fallback", "el => getComputedStyle(el).display !== 'none'"
+            )
+            scatter_text = page.inner_text("#scatter-fallback").strip()
+            check("scatter chart: fallback message visible without JS", scatter_msg_visible, failures)
+            check(
+                "scatter fallback text includes the JS-required sentence",
+                "Krever JavaScript som ikke er støttet i denne visningen." in scatter_text,
+                failures,
+            )
+
+            # 6. fullscreen button stays hidden
+            fs_hidden = page.eval_on_selector("#fs-btn", "el => el.hidden")
+            check("fullscreen button stays hidden without JS", fs_hidden, failures)
+
+            # 7. "Begrenset forhåndsvisning" banners: global one visible, and
+            # the bar-chart one visible alongside its CSS fallback (both are
+            # driven by the *absence* of a JS success signal, not by JS itself).
+            global_notice_visible = page.eval_on_selector(
+                "#preview-notice-global", "el => getComputedStyle(el).display !== 'none'"
+            )
+            bar_notice_visible = page.eval_on_selector(
+                "#bar-chart-notice", "el => getComputedStyle(el).display !== 'none'"
+            )
+            check("global 'Begrenset forhåndsvisning' banner visible without JS", global_notice_visible, failures)
+            check("bar chart 'Begrenset forhåndsvisning' banner visible without JS", bar_notice_visible, failures)
+
+            # 8. mobile topbar: title wraps onto (at most) two lines and does not
+            # collide with the info/theme icon cluster — the whole reason the
+            # short mobile title text and the narrower reserved icon gutter exist.
+            mobile_page = browser.new_page(viewport={"width": 360, "height": 640}, java_script_enabled=False)
+            mobile_page.goto(FILE.as_uri())
+            title_box = mobile_page.eval_on_selector(".title-short", "el => el.getBoundingClientRect()")
+            info_box = mobile_page.eval_on_selector("#info-toggle-label", "el => el.getBoundingClientRect()")
+            header_box = mobile_page.eval_on_selector("#topbar", "el => el.getBoundingClientRect()")
+            check("mobile title wraps to at most two lines", title_box["height"] < 40, failures)
+            check("mobile title does not overlap the icon cluster", title_box["right"] < info_box["left"], failures)
+            check("mobile header height matches --topbar-h (no gap/overlap below it)", header_box["height"] == 74, failures)
+            mobile_page.close()
+
+            browser.close()
+            label_failures(failures, mark, engine, engines)
+
+
+def run_with_js(failures: list[str], engines: tuple[str, ...]) -> None:
     print("\n-- JavaScript ENABLED (default) --")
     with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": 1200, "height": 900})
-        errors: list[str] = []
-        page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
-        page.on("pageerror", lambda e: errors.append(str(e)))
-        page.goto(FILE.as_uri())
-        page.click("#menu-toggle")
-        page.wait_for_timeout(150)
-        page.locator("#nav-menu label[for='nav-charts']").click()
-        page.wait_for_timeout(300)
+        for engine in engines:
+            print(f"  · {engine}")
+            mark = len(failures)
+            browser = getattr(pw, engine).launch()
+            page = browser.new_page(viewport={"width": 1200, "height": 900})
+            errors: list[str] = []
+            page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+            page.on("pageerror", lambda e: errors.append(str(e)))
+            page.goto(FILE.as_uri())
+            page.click("#menu-toggle")
+            page.wait_for_timeout(150)
+            page.locator("#nav-menu label[for='nav-charts']").click()
+            page.wait_for_timeout(300)
 
-        bar_canvas_visible = page.eval_on_selector("#bar-chart-canvas", "el => !el.hidden")
-        bar_css_hidden = page.eval_on_selector("#bar-chart-css", "el => el.hidden === true")
-        check("bar chart: canvas visible once JS drew it", bar_canvas_visible, failures)
-        check("bar chart: CSS version hidden only after canvas succeeded", bar_css_hidden, failures)
+            bar_canvas_visible = page.eval_on_selector("#bar-chart-canvas", "el => !el.hidden")
+            bar_css_hidden = page.eval_on_selector("#bar-chart-css", "el => el.hidden === true")
+            check("bar chart: canvas visible once JS drew it", bar_canvas_visible, failures)
+            check("bar chart: CSS version hidden only after canvas succeeded", bar_css_hidden, failures)
 
-        scatter_canvas_visible = page.eval_on_selector("#scatter-canvas", "el => !el.hidden")
-        scatter_fallback_hidden = page.eval_on_selector("#scatter-fallback", "el => el.hidden === true")
-        check("scatter chart: canvas visible with JS", scatter_canvas_visible, failures)
-        check("scatter chart: fallback message hidden once canvas drew", scatter_fallback_hidden, failures)
+            scatter_canvas_visible = page.eval_on_selector("#scatter-canvas", "el => !el.hidden")
+            scatter_fallback_hidden = page.eval_on_selector("#scatter-fallback", "el => el.hidden === true")
+            check("scatter chart: canvas visible with JS", scatter_canvas_visible, failures)
+            check("scatter chart: fallback message hidden once canvas drew", scatter_fallback_hidden, failures)
 
-        fs_visible = page.eval_on_selector("#fs-btn", "el => !el.hidden")
-        check("fullscreen button revealed when API exists + JS runs", fs_visible, failures)
+            fs_visible = page.eval_on_selector("#fs-btn", "el => !el.hidden")
+            check("fullscreen button revealed when API exists + JS runs", fs_visible, failures)
 
-        # "Begrenset forhåndsvisning" banners must disappear once JS proves
-        # itself — otherwise a fully-working page would wrongly tell the
-        # reader it's degraded.
-        global_notice_hidden = page.eval_on_selector(
-            "#preview-notice-global", "el => getComputedStyle(el).display === 'none'"
-        )
-        bar_notice_hidden = page.eval_on_selector("#bar-chart-notice", "el => el.hidden === true")
-        check("global 'Begrenset forhåndsvisning' banner hidden once JS succeeds", global_notice_hidden, failures)
-        check("bar chart 'Begrenset forhåndsvisning' banner hidden once canvas drew", bar_notice_hidden, failures)
+            # "Begrenset forhåndsvisning" banners must disappear once JS proves
+            # itself — otherwise a fully-working page would wrongly tell the
+            # reader it's degraded.
+            global_notice_hidden = page.eval_on_selector(
+                "#preview-notice-global", "el => getComputedStyle(el).display === 'none'"
+            )
+            bar_notice_hidden = page.eval_on_selector("#bar-chart-notice", "el => el.hidden === true")
+            check("global 'Begrenset forhåndsvisning' banner hidden once JS succeeds", global_notice_hidden, failures)
+            check("bar chart 'Begrenset forhåndsvisning' banner hidden once canvas drew", bar_notice_hidden, failures)
 
-        # optional JS enhancement: clicking a page link inside the open
-        # menu also closes it (menu remains fully USABLE without this —
-        # see build_js_free_poc.py comment — this only proves the extra
-        # convenience layer itself does what it claims when JS is present)
-        page.click("#menu-toggle")
-        page.wait_for_timeout(150)
-        page.locator("#nav-menu label[for='nav-principles']").click()
-        page.wait_for_timeout(250)
-        menu_left = page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")
-        check("menu auto-closes after choosing a page (JS enhancement)", menu_left < -5, failures)
+            # optional JS enhancement: clicking a page link inside the open
+            # menu also closes it (menu remains fully USABLE without this —
+            # see build_js_free_poc.py comment — this only proves the extra
+            # convenience layer itself does what it claims when JS is present)
+            page.click("#menu-toggle")
+            page.wait_for_timeout(150)
+            page.locator("#nav-menu label[for='nav-principles']").click()
+            page.wait_for_timeout(250)
+            menu_left = page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")
+            check("menu auto-closes after choosing a page (JS enhancement)", menu_left < -5, failures)
 
-        check("no console errors with JS enabled", len(errors) == 0, failures)
-        if errors:
-            print(f"    first error: {errors[0][:160]}")
+            check("no console errors with JS enabled", len(errors) == 0, failures)
+            if errors:
+                print(f"    first error: {errors[0][:160]}")
 
-        browser.close()
+            browser.close()
+            label_failures(failures, mark, engine, engines)
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    add_engines_arg(ap)
+    args = ap.parse_args()
     if not FILE.exists():
         print(f"✗ not found: {FILE} — run build_js_free_poc.py first")
         return 2
     failures: list[str] = []
-    run_no_js(failures)
-    run_with_js(failures)
+    run_no_js(failures, args.engines)
+    run_with_js(failures, args.engines)
     print("\n" + "─" * 60)
     if failures:
         print(f"✗ FAIL — {len(failures)} check(s) failed:")

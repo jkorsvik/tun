@@ -14,7 +14,7 @@ stays readable, with no script, in Chromium, Firefox and WebKit, from a file:// 
   4. Each lens lights its own groups and dims the rest, and opens its own panel.
   5. Verten + SharePoint: the SharePoint line shows, no other host line does, and the
      word SharePoint on the ground is lit.
-  6. The Killbox panel names all four detours it turns into one file.
+  6. The Omveier panel names all four detours it turns into one file.
   7. Playback: at 1.5 s step 1 is lit and step 2 is dim; at 4.5 s the reverse, and the
      caption shown matches the step.
   8. Reduced motion: no packet shows, no animation runs, and playback shows all four
@@ -41,7 +41,6 @@ sys.path.insert(0, str(HERE))
 import verify_standalone_core as core  # noqa: E402
 from build_idea_picture import HOSTS, LENSES  # noqa: E402
 
-ENGINES = ("chromium", "firefox", "webkit")
 SEEK = "t => document.getAnimations().forEach(a => { a.pause(); a.currentTime = t; })"
 OPACITY = "sel => [...document.querySelectorAll(sel)].map(e => +getComputedStyle(e).opacity)"
 DIM = .16
@@ -117,7 +116,7 @@ def _checks(page, engine, failures) -> None:
 
     still.click("label[for=lv-kill]")
     kill_text = " ".join(still.text_content(".lv-p-kill").split())
-    check("killbox panel names the four detours it replaces",
+    check("detours panel names the four detours it replaces",
           all(w in kill_text for w in ("PPTX", "Excel", "Word", "Power BI", "én fil")),
           failures, engine)
 
@@ -141,7 +140,7 @@ def _checks(page, engine, failures) -> None:
               failures, engine)
 
 
-def verify(html: pathlib.Path) -> list[str]:
+def verify(html: pathlib.Path, engines=core.ENGINES) -> list[str]:
     from playwright.sync_api import sync_playwright
     failures: list[str] = []
     text = html.read_text(encoding="utf-8")
@@ -155,7 +154,7 @@ def verify(html: pathlib.Path) -> list[str]:
         ok, msg = fn(text)
         check(f"core check {name}" + ("" if ok else f" ({msg})"), ok, failures, "static")
     with sync_playwright() as pw:
-        for engine in ENGINES:
+        for engine in engines:
             run_engine(pw, engine, html, failures)
     return failures
 
@@ -200,7 +199,9 @@ def mutation_check() -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[1])
     ap.add_argument("--mutation-check", action="store_true")
-    if ap.parse_args().mutation_check:
+    core.add_engines_arg(ap, default=core.ENGINES)
+    args = ap.parse_args()
+    if args.mutation_check:
         return mutation_check()
     try:
         import playwright  # noqa: F401
@@ -208,7 +209,7 @@ def main() -> int:
         print("✗ FAIL — playwright not installed. Install with: uv sync --extra verify && "
               "uv run playwright install chromium firefox webkit", file=sys.stderr)
         return 1
-    failures = verify(HTML)
+    failures = verify(HTML, args.engines)
     print()
     if failures:
         print(f"✗ FAIL — {len(failures)} check(s) failed")

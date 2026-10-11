@@ -12,6 +12,7 @@ generert, selvstendig fil — bevisst uten branding.
 ```bash
 python3 examples/07-topbar-pattern-demo/build_topbar_demo.py
 python3 tools/verify_standalone_core.py examples/07-topbar-pattern-demo/topbar-pattern-demo.html
+python3 tools/verify_app_shell.py examples/07-topbar-pattern-demo/topbar-pattern-demo.html
 python3 examples/07-topbar-pattern-demo/verify_topbar_demo.py
 ```
 

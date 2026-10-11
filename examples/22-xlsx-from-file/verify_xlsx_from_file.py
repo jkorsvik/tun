@@ -36,11 +36,14 @@ Chromium checks expecting FAILURE, restores the original file, and reports what 
 """
 from __future__ import annotations
 
+import argparse
 import pathlib
 import re
 import sys
 
 HERE = pathlib.Path(__file__).parent
+sys.path.insert(0, str(HERE.resolve().parents[1] / "tools"))
+from verify_standalone_core import ENGINES, add_engines_arg  # noqa: E402
 HTML = HERE / "xlsx-from-file.html"
 XLSX = HERE / "demo-workbook.xlsx"
 
@@ -201,7 +204,12 @@ def mutation_check() -> int:
 
 
 def main() -> int:
-    if "--mutation-check" in sys.argv:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--mutation-check", action="store_true")
+    add_engines_arg(ap, default=ENGINES)
+    args = ap.parse_args()
+    if args.mutation_check:
         return mutation_check()
 
     try:
@@ -222,7 +230,7 @@ def main() -> int:
         return 2
 
     with sync_playwright() as pw:
-        engines = [("chromium", pw.chromium), ("firefox", pw.firefox), ("webkit", pw.webkit)]
+        engines = [(name, getattr(pw, name)) for name in args.engines]
         failures, timings = run_all_engines(pw, engines)
 
     print("\n" + "─" * 60)
@@ -236,7 +244,7 @@ def main() -> int:
             print(f"    • {f}")
         return 1
 
-    print("\n✓ PASS — all three engines parsed demo-workbook.xlsx correctly, "
+    print(f"\n✓ PASS — {', '.join(args.engines)} parsed demo-workbook.xlsx correctly, "
           "zero console errors, screenshots written for human review.")
     return 0
 
