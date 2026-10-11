@@ -24,6 +24,7 @@ JavaScript-drevne eksemplene, ikke en erstatning. Bakgrunnen står i
 ```bash
 python3 examples/13-js-free-standalone-poc/build_js_free_poc.py
 python3 tools/verify_standalone_core.py examples/13-js-free-standalone-poc/js-free-standalone-poc.html
+python3 tools/verify_app_shell.py examples/13-js-free-standalone-poc/js-free-standalone-poc.html
 python3 examples/13-js-free-standalone-poc/verify_js_free_poc.py
 ```
 
