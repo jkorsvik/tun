@@ -7,7 +7,8 @@
 Stdlib only, no network, no browser. The browser half (live href, JavaScript off,
 error count, verify_dashboard on both builds) is tests/test_feedback_link_browser.py.
 
-  A. tools/tun_feedback.py — append, list, issue, issue --send (through a spy `gh`)
+  A. tools/tun_feedback.py — append, list, issue, issue --send (through a spy `gh`),
+     and a packaged copy with no checkout of its own
   B. tools/feedback_link.py and the --feedback-to flag on both builders
 
 Every case runs the real scripts as subprocesses against a temp log and temp output.
@@ -62,15 +63,26 @@ def spy_gh(bin_dir: pathlib.Path, record: pathlib.Path) -> None:
     """A `gh` that records its argv and the body file, then succeeds. Spy-shim, no network."""
     script = bin_dir / "gh_spy.py"
     script.write_text(
-        "import json, sys\n"
+        "import json, os, sys\n"
         "a = sys.argv[1:]\n"
         "body = open(a[a.index('--body-file') + 1], encoding='utf-8').read()\n"
-        f"open({str(record)!r}, 'w', encoding='utf-8').write(json.dumps({{'argv': a, 'body': body}}))\n",
+        f"open({str(record)!r}, 'w', encoding='utf-8').write(json.dumps({{'argv': a, 'body': body, "
+        "'cwd': os.getcwd(), 'gh_env': {k: v for k, v in os.environ.items() if k.startswith('GH_')}}))\n"
+        "sys.exit(int(os.environ.get('GH_SPY_RC', '0')))\n",
         encoding="utf-8")
     sh = bin_dir / "gh"
     sh.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{script}" "$@"\n', encoding="utf-8")
     sh.chmod(0o755)
     (bin_dir / "gh.bat").write_text(f'@"{sys.executable}" "{script}" %*\r\n', encoding="utf-8")
+
+
+def printed(stdout: str) -> tuple[str, str, str, str]:
+    """(target, title, body, fallback link) exactly as `issue` printed them."""
+    target = stdout.split("TARGET\n", 1)[-1].split("\n", 1)[0]
+    title = stdout.split("TITLE\n", 1)[-1].split("\n", 1)[0]
+    body, _, rest = stdout.split("BODY\n", 1)[-1].partition("\nWithout gh, open this link")
+    link = rest.split(":\n", 1)[-1].split("\n", 1)[0]
+    return target, title, body, link
 
 
 def part_a(tmp: pathlib.Path) -> None:
@@ -79,7 +91,9 @@ def part_a(tmp: pathlib.Path) -> None:
     log = home / ".raiwork" / "tun-feedback" / "feedback.jsonl"
     # A fake home, so "a path under home is stored as ~/..." is tested wherever the
     # checkout lives. HOME on POSIX, USERPROFILE on Windows.
-    env = {**os.environ, "TUN_FEEDBACK_LOG": str(log), "HOME": str(home), "USERPROFILE": str(home)}
+    # TUN_FEEDBACK_REPO pins the target, so this checkout's own origin never decides a result.
+    env = {**os.environ, "TUN_FEEDBACK_LOG": str(log), "HOME": str(home), "USERPROFILE": str(home),
+           "TUN_FEEDBACK_REPO": "forge.example/acme/tun"}
     artefact = home / "dash" / "salg.html"
     artefact.parent.mkdir(parents=True)
     shutil.copy(EXAMPLE, artefact)
@@ -99,7 +113,7 @@ def part_a(tmp: pathlib.Path) -> None:
     check("append writes exactly one line", len(lines) == 1, str(len(lines)))
     rec = json.loads(lines[0]) if lines else {}
     check("record has exactly the documented fields",
-          sorted(rec) == ["artefact", "environment", "expected", "happened", "severity", "skill", "time"],
+          sorted(rec) == ["artefact", "environment", "expected", "happened", "kind", "severity", "skill", "time"],
           str(sorted(rec)))
     check("environment has exactly os, browser, tun_version",
           sorted(rec.get("environment", {})) == ["browser", "os", "tun_version"])
@@ -121,14 +135,25 @@ def part_a(tmp: pathlib.Path) -> None:
     r = run([helper, "list"], env)
     check("list shows both records", "2 record(s)" in r.stdout and "andre" in r.stdout, r.stdout)
 
+    check("a report defaults to kind bug", rec.get("kind") == "bug", str(rec.get("kind")))
     r = run([helper, "issue", "1"], env)
-    title = r.stdout.split("TITLE\n", 1)[-1].split("\n", 1)[0]
-    body = r.stdout.split("BODY\n", 1)[-1]
-    check("issue title names the skill and the complaint",
-          title == "feedback(tun-verify): Grafen var tom | helt", title)
+    target, title, body, link = printed(r.stdout)
+    check("issue names the target, its source and who can read it, before the text",
+          target.startswith("https://forge.example/acme/tun  (from TUN_FEEDBACK_REPO")
+          and "Anyone who can read" in target
+          and r.stdout.index("TARGET") < r.stdout.index("TITLE"), target)
+    check("issue title names the kind, the skill and the complaint",
+          title == "bug(tun-verify): Grafen var tom | helt", title)
     check("issue body carries happened and expected",
           "Grafen var tom | helt" in body and "Søyler per region" in body)
     check("a | in a table cell is escaped", "| Browser | Edge \\| 141 |" in body, body[-300:])
+    check("the public issue leaves out the artefact's title and path",
+          "Salg per region" not in r.stdout and "salg.html" not in r.stdout and "built file" in body,
+          body[-400:])
+    q = urllib.parse.parse_qs(urllib.parse.urlsplit(link).query)
+    check("the fallback link is a prefilled new issue on the same target",
+          link.startswith("https://forge.example/acme/tun/issues/new?")
+          and q.get("title") == [title] and q.get("body") == [body], link[:90])
     other = tmp / "other.jsonl"
     r = run([helper, "append", "--skill", "tun-new", "--happened", "x", "--log", str(other)], env)
     check("--log works after the subcommand", r.returncode == 0 and other.is_file(), r.stderr[-160:])
@@ -139,13 +164,33 @@ def part_a(tmp: pathlib.Path) -> None:
     r = run([helper, "issue", "9"], env)
     check("an out-of-range record is refused", r.returncode != 0 and "1..2" in r.stderr, r.stderr)
     r = run([helper, "issue"], env)
-    check("issue defaults to the last record", "feedback(tun-publish): andre" in r.stdout)
+    check("issue defaults to the last record", "bug(tun-publish): andre" in r.stdout)
+
+    r = run([helper, "append", "--skill", "tun-new", "--kind", "idea", "--happened", "Et kart",
+             "--expected", "se fylkene", "--log", str(tmp / "idea.jsonl")], env)
+    idea = json.loads((tmp / "idea.jsonl").read_text(encoding="utf-8")) if r.returncode == 0 else {}
+    check("an idea is recorded as kind idea, with no made-up severity",
+          idea.get("kind") == "idea" and idea.get("severity") is None, str(idea)[:160])
+    r = run([helper, "issue", "--log", str(tmp / "idea.jsonl")], env)
+    _, t, b, _ = printed(r.stdout)
+    check("an idea is filed as an idea", t == "idea(tun-new): Et kart" and "**The idea**" in b
+          and "| Severity | not stated |" in b, t + " / " + b[:80])
+    r = run([helper, "append", "--skill", "tun-new", "--kind", "rant", "--happened", "x"], env)
+    check("an unknown kind is refused", r.returncode != 0)
+    r = run([helper, "issue", "1", "--repo", "forge.example/acme/other"], env)
+    check("--repo beats TUN_FEEDBACK_REPO", printed(r.stdout)[0].startswith("https://forge.example/acme/other "))
+    r = run([helper, "issue", "1"], {**env, "TUN_FEEDBACK_REPO": "forge.example/acme/tun2"})
+    check("TUN_FEEDBACK_REPO moves the target", printed(r.stdout)[0].startswith("https://forge.example/acme/tun2 "))
+    r = run([helper, "issue", "1", "--repo", "acme/tun"], env)
+    check("a target without a host is refused", r.returncode != 0 and "HOST/OWNER/NAME" in r.stderr, r.stderr)
 
     bin_dir = tmp / "bin"
     bin_dir.mkdir()
     spy = tmp / "gh-call.json"
     spy_gh(bin_dir, spy)
-    env_gh = {**env, "PATH": str(bin_dir) + os.pathsep + env.get("PATH", "")}
+    # GH_REPO and GH_HOST would redirect gh; --send must not let them.
+    env_gh = {**env, "PATH": str(bin_dir) + os.pathsep + env.get("PATH", ""),
+              "GH_REPO": "evil/elsewhere", "GH_HOST": "evil.example"}
     r = run([helper, "issue", "1"], env_gh)
     check("issue without --send never calls gh", r.returncode == 0 and not spy.exists())
     r = run([helper, "issue", "1", "--send"], env_gh)
@@ -155,6 +200,71 @@ def part_a(tmp: pathlib.Path) -> None:
     check("--send files the exact title it printed",
           "--title" in argv and argv[argv.index("--title") + 1] == title)
     check("--send files the exact body it printed", call.get("body", "").strip() == body.strip())
+    check("--send names the target with --repo, host included",
+          "--repo" in argv and argv[argv.index("--repo") + 1] == "forge.example/acme/tun", str(argv))
+    check("--send runs outside any checkout, with GH_REPO and GH_HOST removed",
+          not (pathlib.Path(call.get("cwd", ROOT)) / ".git").exists()
+          and pathlib.Path(call.get("cwd", ROOT)).resolve() != ROOT.resolve()
+          and not call.get("gh_env"), str({k: call.get(k) for k in ("cwd", "gh_env")}))
+    r = run([helper, "issue", "1", "--send"], {**env_gh, "GH_SPY_RC": "1"})
+    check("a failing gh is reported, pointing at the link", r.returncode == 1 and "link above" in r.stderr,
+          r.stderr[-160:])
+    empty_bin = tmp / "nobin"
+    empty_bin.mkdir()
+    r = run([helper, "issue", "1", "--send"], {**env, "PATH": str(empty_bin)})
+    check("no gh: refused, pointing at the link", r.returncode != 0 and "link above" in r.stderr, r.stderr[-160:])
+
+    # A packaged copy (the RAIWork plugin) has no checkout of its own. Put one inside an
+    # unrelated git repository, as a dotfiles repo in ~ would be, and check that it
+    # neither reports that repository's version nor needs a checkout to file.
+    outer = tmp / "outer"
+    pkg = outer / "plugins" / "engine"
+    shutil.copytree(TOOLS, pkg / "tools", ignore=shutil.ignore_patterns("__pycache__"))
+    # Without the GIT_* scrub, inside the pre-commit hook GIT_DIR and GIT_INDEX_FILE point
+    # at this repository, and `git -C outer commit` commits here (it did, once).
+    genv = {**{k: v for k, v in env.items() if not k.startswith("GIT_") and k != "TUN_FEEDBACK_REPO"},
+            "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1"}
+    for g in (["init", "-q"], ["-c", "user.email=t@example.org", "-c", "user.name=t", "commit", "-q",
+                               "--allow-empty", "-m", "outer"], ["tag", "outer-v9"],
+              ["remote", "add", "origin", "https://forge.example/evil/outer.git"]):
+        subprocess.run(["git", "-C", str(outer), *g], check=True, env=genv, capture_output=True)
+    copied = str(pkg / "tools" / "tun_feedback.py")
+    plog = tmp / "pkg.jsonl"
+    r = run([copied, "append", "--skill", "tun-new", "--happened", "x", "--log", str(plog)], genv)
+    v = json.loads(plog.read_text(encoding="utf-8"))["environment"]["tun_version"] if plog.exists() else None
+    check("a packaged copy inside another repo does not take that repo's version", v == "unknown", str(v))
+    (pkg / "VERSION").write_text("plugin 9.9.9 @ abc1234\n", encoding="utf-8")
+    r = run([copied, "append", "--skill", "tun-new", "--happened", "y", "--log", str(plog)], genv)
+    v = json.loads(plog.read_text(encoding="utf-8").splitlines()[-1])["environment"]["tun_version"]
+    check("a packaged copy reports the VERSION its packager wrote", v == "plugin 9.9.9 @ abc1234", v)
+    spy.unlink()
+    r = run([copied, "issue", "--send", "--log", str(plog)], {**genv, "PATH": env_gh["PATH"]})
+    check("a copy that names no target refuses, and never borrows the outer repo's origin",
+          r.returncode != 0 and "names no repository" in r.stderr and not spy.exists()
+          and "evil" not in r.stdout + r.stderr, (r.stdout + r.stderr)[-200:])
+    (pkg / "FEEDBACK_REPO").write_text("forge.example/acme/packaged\n", encoding="utf-8")
+    r = run([copied, "issue", "--send", "--log", str(plog)], {**genv, "PATH": env_gh["PATH"]})
+    call = json.loads(spy.read_text(encoding="utf-8")) if spy.exists() else {}
+    check("a packaged copy files on the FEEDBACK_REPO its packager wrote, no checkout needed",
+          r.returncode == 0 and "forge.example/acme/packaged" in call.get("argv", [])
+          and "(from FEEDBACK_REPO." in r.stdout, r.stderr[-160:])
+    r = run([copied, "issue", "--log", str(plog)], {**genv, "TUN_FEEDBACK_REPO": "forge.example/acme/env"})
+    check("TUN_FEEDBACK_REPO beats FEEDBACK_REPO", printed(r.stdout)[0].startswith("https://forge.example/acme/env "))
+
+    # A clone of its own files on its own origin, in each URL form git hands out.
+    clone = tmp / "clone"
+    shutil.copytree(TOOLS, clone / "tools", ignore=shutil.ignore_patterns("__pycache__"))
+    subprocess.run(["git", "-C", str(clone), "init", "-q"], check=True, env=genv, capture_output=True)
+    # example.org: a git URL's user@host reads as an e-mail address, and the export scan
+    # allows only the reserved example domains there.
+    for url in ("git@example.org:acme/clone.git", "https://user@example.org/acme/clone.git",
+                "ssh://git@example.org/acme/clone"):
+        subprocess.run(["git", "-C", str(clone), "remote", "remove", "origin"], env=genv, capture_output=True)
+        subprocess.run(["git", "-C", str(clone), "remote", "add", "origin", url], check=True, env=genv)
+        r = run([str(clone / "tools" / "tun_feedback.py"), "issue", "--log", str(plog)], genv)
+        check(f"a clone files on its own origin ({url.split(':')[0]})",
+              printed(r.stdout)[0].startswith("https://example.org/acme/clone  (from origin remote"),
+              (r.stdout + r.stderr)[:160])
 
 
 def build_rows(out: pathlib.Path, *extra: str, tool: pathlib.Path = TOOLS) -> subprocess.CompletedProcess:
