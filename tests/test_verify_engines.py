@@ -101,6 +101,17 @@ for given, want in ((["a.html"], ["a.html", "--engines", "all"]),
     got = list(given)
     documented.set_flag(got, "--engines", "all")
     chk(f"set_flag {given}", got, want)
+root = pathlib.Path("/repo")
+log = "\n".join(["  · chromium", "  ✓ fine", "  · webkit",
+                 'Traceback (most recent call last):',
+                 '  File "/repo/examples/13/verify_x.py", line 232, in run_with_js',
+                 '  File "/venv/lib/python3.12/site-packages/playwright/_impl/x.py", line 9, in f',
+                 *[f"  call log {i}" for i in range(14)]])
+detail = documented.failure_detail(log, root).split("\n      ")
+chk("failure names the engine that was running last", detail[0], "· webkit")
+chk("failure keeps this repo's frame and drops the library's",
+    [d for d in detail if d.startswith("File")], ['File "/repo/examples/13/verify_x.py", line 232, in run_with_js'])
+chk("failure still ends with the last twelve lines", detail[-12:], [f"  call log {i}" for i in range(2, 14)])
 chk("joins continuations, reads only fenced lines", documented.fenced_lines(fence),
     ["python3 tools/verify_x.py a.html --out o"])
 
