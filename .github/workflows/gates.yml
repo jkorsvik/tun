@@ -1,0 +1,43 @@
+# Every gate, on every pull request: the hook's own checks, the four it runs only when
+# their inputs are staged, the rest of tests/, and every verify command the examples
+# document, in Chromium, Firefox and WebKit. The hook protects only a clone that ran
+# `python3 setup.py --hooks`; this protects the repository, forks included.
+#
+# GitHub-hosted runners only. Where Actions runners are disabled (docs/06), the job is
+# skipped instead of queueing for a runner that never comes, and the hook stays the gate.
+name: gates
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    if: github.server_url == 'https://github.com'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884  # v10.3.0
+      - name: Browsers (Chromium, Firefox, WebKit)
+        run: uv run --extra verify playwright install --with-deps chromium firefox webkit
+      - name: Tree gates
+        run: python3 tools/check_tree.py
+      - name: Every test file
+        run: |
+          n=0
+          failed=""
+          for t in tests/test_*.py; do
+            n=$((n + 1))
+            echo "::group::$t"
+            uv run --extra verify python "$t" || failed="$failed $t"
+            echo "::endgroup::"
+          done
+          echo "ran $n test file(s)"
+          [ "$n" -gt 0 ] || { echo "no test files found: the gate checked nothing"; exit 1; }
+          [ -z "$failed" ] || { echo "failed:$failed"; exit 1; }
+      - name: Documented verify commands, every engine
+        run: uv run --extra verify python tools/verify_documented.py --engines all

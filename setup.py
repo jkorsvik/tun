@@ -377,8 +377,8 @@ def check_repo() -> None:
 
 
 # ---------------------------------------------------------------- git hooks
-# The pre-commit hook may be the only automatic gate a clone has (a forge can have
-# hosted runners disabled, and CI never runs on an unpushed commit), which makes
+# The pre-commit hook stops a mistake before the commit. CI (.github/workflows/gates.yml)
+# runs the same gates on every pull request, but never on an unpushed commit, which makes
 # "is it installed" a question worth reporting.
 #
 # Installed by pointing core.hooksPath at the tracked tools/hooks directory, rather than
@@ -539,8 +539,8 @@ def main() -> int:
     ap.add_argument("--check", action="store_true", help="check only, change nothing")
     ap.add_argument("--hooks", action="store_true",
                     help="install the git pre-commit hook (sets core.hooksPath to "
-                         "tools/hooks) and exit. This repo has no CI, so the hook is the "
-                         "only automatic gate — see docs/08 on org-disabled runners.")
+                         "tools/hooks) and exit. It stops a mistake before the commit; "
+                         "CI checks the pull request only after the push (docs/06).")
     ap.add_argument("--link", action="store_true",
                     help="symlink the skills instead of copying them — for editing the "
                          "skills themselves. Edits then change this repo's working tree.")

@@ -276,7 +276,7 @@ directly — the guide is as editable as everything else here.
 |---|---|
 | `python3 setup.py` | install the skills, check everything, run a real smoke test |
 | `python3 setup.py --check` | check only, change nothing — reports skills that fell behind |
-| `python3 setup.py --hooks` | turn on the pre-commit gate (this repo has no CI; see docs/06) |
+| `python3 setup.py --hooks` | turn on the pre-commit gate (it runs before each commit; CI checks the pull request; see docs/06) |
 | `raiwork mcp list` | see which systems RAIWork is connected to |
 | `raiwork mcp auth ms365` | sign in to SharePoint/OneDrive |
 | `python3 probe/tenant-probe.py` | re-verify what SharePoint does with HTML files |
