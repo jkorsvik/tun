@@ -29,7 +29,7 @@ of them can be proven by a local headless render, which is exactly why they are 
 text checks and not render assertions.
 
 Run standalone:
-    python3 tools/verify_standalone_core.py <path-to.html>
+    python3 tools/verify_standalone_core.py <path-to.html> [--engines chromium,firefox,webkit]
 
 Or import the check functions from another verifier (see tools/verify_dashboard.py for
 the pattern) to add specialisation-specific checks on top without duplicating these.
@@ -40,6 +40,7 @@ or other artefact needs whatever its own specialisation defines, if anything.
 """
 from __future__ import annotations
 
+import argparse
 import pathlib
 import re
 import sys
@@ -54,6 +55,46 @@ REMOTE_SUBRESOURCE = re.compile(
 )
 
 PLACEHOLDER = re.compile(r"\{\{[A-Z0-9_]+\}\}")
+
+# A shared file opens in whatever browser the reader has: Chrome and Edge are chromium,
+# Safari is webkit, Firefox is its own engine. Every verify tool takes --engines from
+# here. The default stays chromium, so a laptop with one browser installed can still
+# verify; CI passes all three.
+ENGINES = ("chromium", "firefox", "webkit")
+DEFAULT_ENGINES = ("chromium",)
+
+
+def engines_arg(value: str) -> tuple[str, ...]:
+    """argparse type for --engines: a comma-separated subset of ENGINES, or 'all'."""
+    if value == "all":
+        return ENGINES
+    names = tuple(dict.fromkeys(n.strip() for n in value.split(",") if n.strip()))
+    unknown = [n for n in names if n not in ENGINES]
+    if not names or unknown:
+        raise argparse.ArgumentTypeError(
+            f"choose from {','.join(ENGINES)} or all, got {value!r}")
+    return names
+
+
+def add_engines_arg(ap: argparse.ArgumentParser,
+                    default: tuple[str, ...] = DEFAULT_ENGINES) -> None:
+    ap.add_argument("--engines", type=engines_arg, default=default, metavar="LIST",
+                    help=f"comma-separated subset of {','.join(ENGINES)}, or all "
+                         f"(default: {','.join(default)})")
+
+
+def shot_path(path: pathlib.Path, suffix: str, engine: str) -> pathlib.Path:
+    """Screenshot name per engine. chromium keeps the name the docs already use."""
+    stem = path.stem if engine == "chromium" else f"{path.stem}.{engine}"
+    return path.with_name(stem + suffix)
+
+
+def label_failures(failures: list[str], mark: int, engine: str,
+                   engines: tuple[str, ...]) -> None:
+    """Prefix the failures one engine added (from index mark) with its name, so a
+    three-engine run says which browser broke. One engine: leave the text alone."""
+    if len(engines) > 1:
+        failures[mark:] = [f"{engine}: {f}" for f in failures[mark:]]
 
 
 def check_self_contained(html: str) -> tuple[bool, str]:
@@ -321,10 +362,12 @@ def check_no_scroll_persistent_positioning(html: str) -> tuple[bool, str]:
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        print(__doc__)
-        return 2
-    path = pathlib.Path(sys.argv[1]).resolve()
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("path")
+    add_engines_arg(ap)
+    args = ap.parse_args()
+    path = pathlib.Path(args.path).resolve()
     if not path.exists():
         print(f"✗ not found: {path}")
         return 2
@@ -384,27 +427,31 @@ def main() -> int:
               "could not run")
         return _report(failures, warnings)
 
-    shot = path.with_name(path.stem + ".verify-core.png")
     with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": 1200, "height": 900})
-        errors: list[str] = []
-        page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
-        page.on("pageerror", lambda e: errors.append(str(e)))
-        page.goto(path.as_uri())
-        page.wait_for_timeout(800)
+        for engine in args.engines:
+            print(f"  · {engine}")
+            mark = len(failures)
+            shot = shot_path(path, ".verify-core.png", engine)
+            browser = getattr(pw, engine).launch()
+            page = browser.new_page(viewport={"width": 1200, "height": 900})
+            errors: list[str] = []
+            page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+            page.on("pageerror", lambda e: errors.append(str(e)))
+            page.goto(path.as_uri())
+            page.wait_for_timeout(800)
 
-        if errors:
-            failures.append(f"{len(errors)} console error(s): {errors[0][:160]}")
-            print(f"  ✗ console            {len(errors)} error(s): {errors[0][:80]}")
-        else:
-            print("  ✓ console            clean")
+            if errors:
+                failures.append(f"{len(errors)} console error(s): {errors[0][:160]}")
+                print(f"  ✗ console            {len(errors)} error(s): {errors[0][:80]}")
+            else:
+                print("  ✓ console            clean")
 
-        page.screenshot(path=str(shot), full_page=True)
-        print(f"  ✓ screenshot         {shot.name}")
-        browser.close()
+            page.screenshot(path=str(shot), full_page=True)
+            print(f"  ✓ screenshot         {shot.name}")
+            browser.close()
+            label_failures(failures, mark, engine, args.engines)
 
-    return _report(failures, warnings, shot)
+    return _report(failures, warnings, shot_path(path, ".verify-core.png", args.engines[0]))
 
 
 def _report(failures, warnings, shot=None) -> int:

@@ -235,8 +235,7 @@ and travels; the dashboard-specific vocabulary (dimension/measure/filter,
 
 **Decision on "where does this layer live" (resolves the open question below):** it stays
 in this repo, as the authoritative source. External repos do not get a submodule, a
-package registry entry, or write access. With no CI runner available (see
-`docs/06-way-of-working.md`), automated publishing would need a manual step regardless. Instead they **vendor**: copy
+package registry entry, or write access. Instead they **vendor**: copy
 the specific generic-layer files, verbatim, into their own repo under a clearly marked
 `vendor/tun/` folder, with a `VERSION.txt` naming the source commit
 and date. An external consumer already uses this convention to vendor its own engine, so

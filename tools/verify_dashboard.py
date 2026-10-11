@@ -26,30 +26,36 @@ Per docs/08-generic-artifact-model.md, the checks below split into two layers:
     8. JS actually executed (charts/KPIs present in the DOM, not just markup)
     9. interactivity works (a filter change re-renders)
 
-    python3 tools/verify_dashboard.py dashboards/salg.html
+    python3 tools/verify_dashboard.py dashboards/salg.html [--engines chromium,firefox,webkit]
 
 Exit 0 = safe to publish. Non-zero = do not publish.
 """
 from __future__ import annotations
 
+import argparse
 import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from verify_standalone_core import (  # noqa: E402
+    add_engines_arg,
     check_no_leftover_placeholders,
     check_no_stray_script_text,
     check_provenance,
     check_self_contained,
     check_size,
+    label_failures,
+    shot_path,
 )
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        print(__doc__)
-        return 2
-    path = pathlib.Path(sys.argv[1]).resolve()
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("path")
+    add_engines_arg(ap)
+    args = ap.parse_args()
+    path = pathlib.Path(args.path).resolve()
     if not path.exists():
         print(f"✗ not found: {path}")
         return 2
@@ -126,115 +132,119 @@ def main() -> int:
               "could not run")
         return _report(failures, warnings)
 
-    shot = path.with_name(path.stem + ".verify.png")
     with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": 1440, "height": 1000})
-        errors: list[str] = []
-        page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
-        page.on("pageerror", lambda e: errors.append(str(e)))
+        for engine in args.engines:
+            print(f"  · {engine}")
+            mark = len(failures)
+            shot = shot_path(path, ".verify.png", engine)
+            browser = getattr(pw, engine).launch()
+            page = browser.new_page(viewport={"width": 1440, "height": 1000})
+            errors: list[str] = []
+            page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+            page.on("pageerror", lambda e: errors.append(str(e)))
 
-        page.goto(path.as_uri())
-        page.wait_for_timeout(1200)
+            page.goto(path.as_uri())
+            page.wait_for_timeout(1200)
 
-        if errors:
-            failures.append(f"{len(errors)} console error(s): {errors[0][:160]}")
-            print(f"  ✗ console            {len(errors)} error(s): {errors[0][:80]}")
-        else:
-            print("  ✓ console            clean")
+            if errors:
+                failures.append(f"{len(errors)} console error(s): {errors[0][:160]}")
+                print(f"  ✗ console            {len(errors)} error(s): {errors[0][:80]}")
+            else:
+                print("  ✓ console            clean")
 
-        kpis = page.locator(".kpi").count()
-        bars = page.locator(".bar").count()
-        rows = page.locator("#tbl tbody tr").count()
-        dots = page.locator(".dot").count()
+            kpis = page.locator(".kpi").count()
+            bars = page.locator(".bar").count()
+            rows = page.locator("#tbl tbody tr").count()
+            dots = page.locator(".dot").count()
 
-        if kpis == 0:
-            failures.append("no KPI cards rendered — JS did not execute")
-            print("  ✗ JS executed        0 KPI cards")
-        else:
-            print(f"  ✓ JS executed        {kpis} KPI cards")
+            if kpis == 0:
+                failures.append("no KPI cards rendered — JS did not execute")
+                print("  ✗ JS executed        0 KPI cards")
+            else:
+                print(f"  ✓ JS executed        {kpis} KPI cards")
 
-        if bars == 0 and dots == 0:
-            failures.append("no chart marks rendered — charts are empty")
-            print("  ✗ charts             0 marks rendered")
-        else:
-            print(f"  ✓ charts             {bars} bars, {dots} line points")
+            if bars == 0 and dots == 0:
+                failures.append("no chart marks rendered — charts are empty")
+                print("  ✗ charts             0 marks rendered")
+            else:
+                print(f"  ✓ charts             {bars} bars, {dots} line points")
 
-        if rows == 0:
-            failures.append("detail table rendered zero rows")
-            print("  ✗ table              0 rows")
-        else:
-            print(f"  ✓ table              {rows} rows")
+            if rows == 0:
+                failures.append("detail table rendered zero rows")
+                print("  ✗ table              0 rows")
+            else:
+                print(f"  ✓ table              {rows} rows")
 
-        # interactivity: drive a real filter and confirm the numbers moved.
-        # Two dashboard shapes: <select> controls (rows template) and .chip toggles
-        # (cube template). A gate that only knows one of them passes vacuously.
-        selects = page.locator("#controls select")
-        chips = page.locator(".chips .chip")
-        if selects.count():
-            before = page.locator("#tbl tbody tr").count()
-            options = selects.first.locator("option")
-            if options.count() > 1:
-                selects.first.select_option(index=1)
-                page.wait_for_timeout(500)
-                after = page.locator("#tbl tbody tr").count()
-                if after == before and before > 0:
-                    warnings.append("filter change did not alter the row count "
-                                    "(may be legitimate for uniform data)")
-                    print(f"  ⚠ interactivity      filter changed nothing ({before} rows)")
+            # interactivity: drive a real filter and confirm the numbers moved.
+            # Two dashboard shapes: <select> controls (rows template) and .chip toggles
+            # (cube template). A gate that only knows one of them passes vacuously.
+            selects = page.locator("#controls select")
+            chips = page.locator(".chips .chip")
+            if selects.count():
+                before = page.locator("#tbl tbody tr").count()
+                options = selects.first.locator("option")
+                if options.count() > 1:
+                    selects.first.select_option(index=1)
+                    page.wait_for_timeout(500)
+                    after = page.locator("#tbl tbody tr").count()
+                    if after == before and before > 0:
+                        warnings.append("filter change did not alter the row count "
+                                        "(may be legitimate for uniform data)")
+                        print(f"  ⚠ interactivity      filter changed nothing ({before} rows)")
+                    else:
+                        print(f"  ✓ interactivity      filter re-rendered ({before} → {after} rows)")
+                    # Reset before the human-review screenshot. Without this the screenshot
+                    # a person is told to look at before publishing shows the filtered state
+                    # left over from this test, not the page the recipient actually opens —
+                    # exactly the state a reviewer has no reason to discount and every reason
+                    # to mistake for the real default.
+                    reset = page.locator("#reset")
+                    if reset.count():
+                        reset.click()
+                        page.wait_for_timeout(300)
+                        restored = page.locator("#tbl tbody tr").count()
+                        if restored != before:
+                            failures.append(
+                                f"reset did not restore the unfiltered row count "
+                                f"({before} before filtering, {restored} after reset)"
+                            )
+                            print(f"  ✗ reset              did not restore row count ({before} → {restored})")
+                        else:
+                            print(f"  ✓ reset              restores the unfiltered view")
                 else:
-                    print(f"  ✓ interactivity      filter re-rendered ({before} → {after} rows)")
-                # Reset before the human-review screenshot. Without this the screenshot
-                # a person is told to look at before publishing shows the filtered state
-                # left over from this test, not the page the recipient actually opens —
-                # exactly the state a reviewer has no reason to discount and every reason
-                # to mistake for the real default.
-                reset = page.locator("#reset")
-                if reset.count():
-                    reset.click()
-                    page.wait_for_timeout(300)
-                    restored = page.locator("#tbl tbody tr").count()
-                    if restored != before:
-                        failures.append(
-                            f"reset did not restore the unfiltered row count "
-                            f"({before} before filtering, {restored} after reset)"
-                        )
-                        print(f"  ✗ reset              did not restore row count ({before} → {restored})")
-                    else:
-                        print(f"  ✓ reset              restores the unfiltered view")
+                    warnings.append("filter has only one option")
+                    print("  ⚠ interactivity      filter has a single option")
+            elif chips.count():
+                # cube template: compare the headline KPI before and after one toggle
+                kpi = page.locator(".kpi .v").first
+                before = kpi.inner_text()
+                chips.first.click()
+                page.wait_for_timeout(300)
+                after = kpi.inner_text()
+                if after == before:
+                    failures.append(f"chip filter changed nothing — KPI stayed at {before!r}")
+                    print(f"  ✗ interactivity      chip filter changed nothing ({before})")
+                else:
+                    print(f"  ✓ interactivity      chip filter re-rendered ({before} → {after})")
+                    reset = page.locator("#reset")
+                    if reset.count():
+                        reset.click()
+                        page.wait_for_timeout(300)
+                        if kpi.inner_text() != before:
+                            failures.append("reset did not restore the unfiltered total")
+                            print("  ✗ reset              did not restore the unfiltered total")
+                        else:
+                            print("  ✓ reset              restores the unfiltered total")
             else:
-                warnings.append("filter has only one option")
-                print("  ⚠ interactivity      filter has a single option")
-        elif chips.count():
-            # cube template: compare the headline KPI before and after one toggle
-            kpi = page.locator(".kpi .v").first
-            before = kpi.inner_text()
-            chips.first.click()
-            page.wait_for_timeout(300)
-            after = kpi.inner_text()
-            if after == before:
-                failures.append(f"chip filter changed nothing — KPI stayed at {before!r}")
-                print(f"  ✗ interactivity      chip filter changed nothing ({before})")
-            else:
-                print(f"  ✓ interactivity      chip filter re-rendered ({before} → {after})")
-                reset = page.locator("#reset")
-                if reset.count():
-                    reset.click()
-                    page.wait_for_timeout(300)
-                    if kpi.inner_text() != before:
-                        failures.append("reset did not restore the unfiltered total")
-                        print("  ✗ reset              did not restore the unfiltered total")
-                    else:
-                        print("  ✓ reset              restores the unfiltered total")
-        else:
-            warnings.append("no filter controls present")
-            print("  ⚠ interactivity      no filters to test")
+                warnings.append("no filter controls present")
+                print("  ⚠ interactivity      no filters to test")
 
-        page.screenshot(path=str(shot), full_page=True)
-        print(f"  ✓ screenshot         {shot.name}")
-        browser.close()
+            page.screenshot(path=str(shot), full_page=True)
+            print(f"  ✓ screenshot         {shot.name}")
+            browser.close()
+            label_failures(failures, mark, engine, args.engines)
 
-    return _report(failures, warnings, shot)
+    return _report(failures, warnings, shot_path(path, ".verify.png", args.engines[0]))
 
 
 def _report(failures, warnings, shot=None) -> int:
