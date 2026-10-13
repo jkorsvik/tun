@@ -3,7 +3,7 @@
 # source_line: the nb line keeps its dash and its English words, as it always had.
 
 [nb]
-html_lang = no
+html_lang = nb
 boot = dekoder datasett…
 measure_label = Mål
 reset = Nullstill filtre

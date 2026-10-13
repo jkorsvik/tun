@@ -25,9 +25,9 @@ repeating the old one next to the correction.
 - **Print:** `single-file-dashboard.html` has `@media print` rules (hides the drop bar and
   filter controls, resets header colours). `cube-dashboard.html` has none. Not consistent
   between the two templates.
-- **`lang` attribute is inconsistent:** `single-file-dashboard.html` uses `lang="nb"`;
-  `cube-dashboard.html` uses `lang="no"`. Found while writing this document, not
-  previously reported. Should be reconciled — see open items.
+- **`lang` attribute:** every template now writes `lang="nb"` for Norwegian
+  (`templates/i18n/*.strings`, key `html_lang`). `cube-dashboard.html` wrote `lang="no"`
+  until 2026-10-13; `tests/test_i18n.py` records the change as a deliberate nb pair.
 - **Touch targets: now measured, still not met.** `tools/verify_viewports.py` checks
   every interactive element against 44×44px on the four touch viewports. Nothing in
   `tools/build_dashboard.py` or the templates' CSS guarantees it, and the first run
@@ -338,8 +338,8 @@ pattern or one of several.
 
 Unchanged from the original requirements: bokmål, nynorsk and English must all be supportable; date format
 always follows Norwegian convention (dd.mm.åååå), independent of body-text language, in
-every language version. The `lang="nb"` vs `lang="no"` inconsistency found in §1 should be
-reconciled as part of implementing this, not left as-is.
+every language version. The `lang="nb"` vs `lang="no"` inconsistency found in §1 was
+reconciled on 2026-10-13: all templates use `nb`.
 
 ## 10. Security
 
@@ -410,7 +410,7 @@ lives.
       nothing about PAIRED output changes here. Whether the build tooling should offer the
       §3b pattern, the no-JS pattern, or a per-dashboard choice between the two, needs
       deciding before this item is wired in, not after.
-- [ ] Reconcile `lang="nb"` vs `lang="no"` between the two templates (§1/§9).
+- [x] Reconcile `lang="nb"` vs `lang="no"` between the two templates (§1/§9). Done 2026-10-13.
 - [ ] Add `@media print` rules to `cube-dashboard.html` to match `single-file-dashboard.html`
       (§8), or decide the gap is acceptable. §8 now has a tested reference pattern to copy
       from (`examples/15-chart-library-comparison-poc/`), not just a stated preference.

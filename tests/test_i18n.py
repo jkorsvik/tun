@@ -151,6 +151,7 @@ CASES = {
 # The fourth (2026-10-12) is how the dashboard treats an empty measure value, the fifth
 # (2026-10-12) the sideways bar chart for long names, and the sixth (2026-10-13) the chart
 # redraw when a frame gets its size without a resize event. Each is described at its pairs.
+# The seventh (2026-10-13) is the cube's lang attribute, at its pair.
 DELIBERATE_NB_CHANGES = [
     (b"Selvstendig dashboard bygget av RAIWork", "Selvstendig dashboard laget med T\u00fan".encode()),
     (b"Tallene er bygget inn i denne filen. Be RAIWork om <code>tun-data</code> for \\u00e5 oppdatere.",
@@ -274,6 +275,9 @@ DELIBERATE_NB_CHANGES = [
      b'/* Redraw the charts, not the table, when a chart card changes width.\n   Watch the cards themselves, not only window "resize": a host can give the frame its\n   size without ever firing resize (measured in an Atlassian Artifacts embed inside a\n   Confluence page, docs/29). The charts would then keep the width they were drawn at\n   while the frame was still 0 x 0. Only a change of width redraws, so the height change a\n   redraw causes cannot loop. */\nlet resizeFrame = 0;\nconst queueChartRedraw = () => {\n  cancelAnimationFrame(resizeFrame);\n  resizeFrame = requestAnimationFrame(() => renderCharts(visibleRows()));\n};\naddEventListener("resize", queueChartRedraw);\nif (typeof ResizeObserver === "function") {\n  const seenW = new WeakMap();\n  const chartObserver = new ResizeObserver(entries => {\n    const widthChanged = entries.some(e => {\n      const w = Math.round(e.contentRect.width), was = seenW.get(e.target);\n      seenW.set(e.target, w);\n      return was !== undefined && w !== was;\n    });\n    if (widthChanged) queueChartRedraw();\n  });\n  ["chart1", "chart2"].forEach(id => chartObserver.observe($(id)));\n}\n'),
     (b'    addEventListener("resize", () => { cancelAnimationFrame(frame);\n      frame = requestAnimationFrame(() => { if (measureCharts()) render(); }); });\n',
      b'    const redraw = () => { cancelAnimationFrame(frame);\n      frame = requestAnimationFrame(() => { if (measureCharts()) render(); }); };\n    addEventListener("resize", redraw);\n    /* A host can size the frame without firing resize (measured in an Atlassian Artifacts\n       embed, docs/29), so also watch the chart containers. measureCharts() returns false\n       when no width changed, which stops the loop a redraw\'s own reflow would start. */\n    if (typeof ResizeObserver === "function") {\n      const ro = new ResizeObserver(redraw);\n      ["charts", "trend"].forEach(id => { const el = document.getElementById(id); if (el) ro.observe(el); });\n    }\n'),
+    # Seventh (2026-10-13): the cube said lang="no" while every other template says "nb"
+    # (docs/11). Both are valid BCP 47; one project should use one.
+    (b'<html lang="no">', b'<html lang="nb">'),
 ]
 
 BASELINE = {
@@ -282,14 +286,14 @@ BASELINE = {
     "dash-paired/paired/dash.html": "6ae89033549fa546d0e1178b7ec17b1b17477e976d9328d23679be332411e620",
     "dash-paired/paired/data.js": "57971987b2a191b18dc9d3980ccaad1419cb3a8d92145a9aef497bfaa72a678c",
     "dash-feedback/dash-feedback.html": "59b314f11d4bbeeaa85bc63ac691986a85dc85c46060548d101aef4437eb2926",
-    "cube/cube.html": "6d745b147591913cbcd707d4ff646b4100273bb445273b5b04d532456f8bf98c",
-    "cube-feedback/cube-feedback.html": "a3745655c26367a8c6ec96b286288621173bbdbcee24d8846cc73eabf002b3d7",
+    "cube/cube.html": "b6d8a25b1741b2148227853b02bd55e0725328fb4bb3b43558258c5527c97bc9",
+    "cube-feedback/cube-feedback.html": "149164c75093580f1d9cde8d211dd21d2ee67d84c9d219ae7bcf7e2fb7e70207",
     "process/process.html": "8991832b0e2c158e37ed365f8985df8be19a5f36338967e3b773ced2b3e12d04",
     "fx-dash/fx-dash.html": "48fdb94bfdb6ad75570dba34bb73f8821648bbdcb3afa7c5be19604d74bb0b9a",
     "fx-dash-paired/fxp/dash.html": "febc9ad24319d41cf1dbbb2426af15f8263b02a099cc21f7235a4eb38e953e92",
     "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
     "fx-dash-notime/fx-dash-notime.html": "01622a697c8b0f1c3b48a2d32a5cf37efee647b41c34b41edc8021d7294bef0a",
-    "fx-cube/fx-cube.html": "815d3d87953fb0e39db16baaadd006fe67add4c87d1f01ef63ee61795574273f",
+    "fx-cube/fx-cube.html": "5c6a9390ad6fb8d55160ccaac9719c11b55dfe31af47d2cdb224fdfe8e49f7b2",
     "fx-process/fx-process.html": "07f1519b3f2922cc891bdbc2f6a4493b4db91ee77a6d82b3acb0e29ae8643875",
 }
 
@@ -443,9 +447,9 @@ def main() -> int:
 # Pinned rather than rebuilt from git: a flattened export has no history to build from.
 ADV_BASELINE = {
     "slot-dash/slot-dash.html": "582a36cdcb3449d65a4fbf863c68e61d7500ebedbc6339dc7dfa08757382ac15",
-    "slot-cube/slot-cube.html": "ddbf1da9ed5e081264f755860b1b4945520268c8cd192b9c7fe35be33c2437ca",
+    "slot-cube/slot-cube.html": "f09ea5b27174dbd30aebd107554e5ddc0979479bd9dc23d72fdfafa0391874da",
     "tok-dash/tok-dash.html": "4b44b01eca03c1687981e82df36a8bbd48824dfd0800ff7bdbbd7d36da846e8c",
-    "tok-cube/tok-cube.html": "fb6cc63a6cffae8c9c7e51d28378b0437860c5f8dea94d2367ce8f645b22655b",
+    "tok-cube/tok-cube.html": "97841300e28c35b35fb6b5e123f11c8de2e623cd39c2d9e6a4fbfd9f6781fc8d",
     "tok-process/tok-process.html": "ee57864c446946682980cc9be99ed9bb4025a741292cab188fe3305c7fbf1951",
 }
 
