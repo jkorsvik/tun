@@ -174,6 +174,42 @@ def palette_path(prefer_plugin: bool = False,
     return NEUTRAL_PALETTE, "core:neutral"
 
 
+def provenance_label(source: str) -> str:
+    """The palette source as an artefact may record it: `source` without the user's path.
+
+    `palette_path()` labels an override with the path exactly as given, which is what a
+    person checking which file was used wants on their own screen. An artefact is shared,
+    though, and a brand plugin sets TUN_PALETTE to an absolute path under the user's home
+    directory (a relative one resolves against the repo). Copied into a provenance block,
+    that path puts the OS user name in every file the user hands out.
+
+    So a path inside the repo is shown relative to it, which says nothing about the
+    person, and a path outside it keeps only its file name and parent directory
+    (`TUN_PALETTE=…/tun-eksempel/palette.css`), which is usually the plugin. The parent is
+    dropped when it is part of the home path itself, because for a palette saved
+    directly in home the parent directory is the user name.
+    """
+    for prefix in ("TUN_PALETTE=", "spec:"):
+        if not source.startswith(prefix):
+            continue
+        given = pathlib.Path(source[len(prefix):])
+        # Lexical, not resolve(): the label describes what was given, and a symlink in
+        # the repo path must not turn an in-repo palette into an outside one.
+        full = pathlib.Path(os.path.normpath(given if given.is_absolute() else REPO / given))
+        try:
+            return prefix + full.relative_to(REPO).as_posix()
+        except ValueError:
+            pass
+        try:
+            home_parts = set(pathlib.Path.home().parts)
+        except RuntimeError:  # no home directory can be determined
+            home_parts = set()
+        parent = full.parent.name
+        shown = f"{parent}/{full.name}" if parent and parent not in home_parts else full.name
+        return f"{prefix}…/{shown}"
+    return source
+
+
 def missing_slots(css: str) -> list[str]:
     """Which required slots this CSS fails to define.
 

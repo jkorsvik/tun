@@ -1,0 +1,13 @@
+{
+  "schema": "tun.tenant-facts/v1",
+  "atlassian": {
+    "site": "eksempel-as.atlassian.example",
+    "artifacts": {
+      "enabled": true,
+      "classification_ceiling": "Internal, non-sensitive only (fictional rule for the fictional Eksempel AS). A real plugin states its own organisation's rule here.",
+      "ask_if_unsure": "the platform team",
+      "source": "Fictional. A real plugin names the internal announcement or policy the rule comes from.",
+      "measured": "docs/29-atlassian-artifacts.md"
+    }
+  }
+}

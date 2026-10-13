@@ -89,7 +89,8 @@ dashboard that quietly shows a tenth of the business.
 
 ## Step 3 — Rebuild in place
 
-Same output path, same column arguments as the original build:
+Same output path, same column arguments as the original build, including
+`--kpis` or `--measure-kind` when the original had them (its KPI cards show which):
 
 ```bash
 python3 tools/build_dashboard.py \
@@ -124,6 +125,12 @@ main defence against a broken extract sailing through every automated check.
 
 Copy over the published copy (`tun-publish`), same path. Then tell the user what
 the new "as of" date is, because that is the only thing that visibly changed.
+
+**Published in Atlassian Artifacts?** Then a refresh is a new version on the same
+artifact: follow `tun-publish`, *Destination C*, steps 2 to 7, and pass the artifact's
+`id` (the path segment after `/artifacts/` in its link) to `publishArtifact`. The link,
+the shares and any Confluence embed stay as they are. The no-tooling routes above do not
+apply there: an artifact is one file, so a swapped `data.js` never reaches it.
 
 ## Adding a new data source
 

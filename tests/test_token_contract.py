@@ -222,7 +222,7 @@ if HAVE_PLUGINS:
     discovered_ids = {p.get("id") for p in found}
     chk("eksempel and tun are both discovered", {"eksempel", "tun"}.issubset(discovered_ids), True)
     chk("the manifest is actually parsed, not just located",
-        found[0].get("provides"), ["tokens", "assets"])
+        found[0].get("provides"), ["tokens", "assets", "tenant_facts"])
     chk("private is carried through", found[0].get("private"), True)
 else:
     chk("no plugins discovered on a core-only tree", found, [])
@@ -317,6 +317,35 @@ for p in tok.discover_plugins():
                 svg_problems(path.read_text(encoding="utf-8")), [])
             assets_checked += 1
 print(f"  ({assets_checked} asset file(s) checked)")
+
+# tenant_facts (docs/22, capability 5): declaring it and shipping the file go together, and
+# the file must parse. A skill reads it (tun-publish, destination C), so a malformed or missing
+# file would silently remove a classification ceiling from a publish decision.
+facts_checked = 0
+for p in tok.discover_plugins():
+    pid, declared = p.get("id"), "tenant_facts" in (p.get("provides") or [])
+    rel_facts = p.get("tenant_facts")
+    chk(f"{pid}: 'tenant_facts' in provides exactly when a tenant_facts file is named",
+        declared, rel_facts is not None)
+    if not (declared and isinstance(rel_facts, str)):
+        continue
+    fpath = (p["_dir"] / rel_facts).resolve()
+    chk(f"{pid}: tenant facts stay inside the plugin", p["_dir"].resolve() in fpath.parents, True)
+    try:
+        facts = json.loads(fpath.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        chk(f"{pid}: tenant facts parse as JSON", repr(e), "parsed")
+        continue
+    chk(f"{pid}: tenant facts carry the schema tag", facts.get("schema"), "tun.tenant-facts/v1")
+    art = (facts.get("atlassian") or {}).get("artifacts")
+    if art is not None:
+        chk(f"{pid}: atlassian.artifacts states a classification ceiling",
+            isinstance(art.get("classification_ceiling"), str) and len(art["classification_ceiling"]) > 20,
+            True)
+    facts_checked += 1
+print(f"  ({facts_checked} tenant-facts file(s) checked)")
+if HAVE_PLUGINS:
+    chk("at least one installed plugin's tenant facts were checked", facts_checked >= 1, True)
 if HAVE_PLUGINS:
     # Refuse a vacuous pass: the tun plugin ships three assets, so zero checked means the
     # loop above never ran, not that everything is fine.

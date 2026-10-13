@@ -48,6 +48,7 @@ constraints measured so that nobody has to rediscover them.
 | [Working with real sources](25-working-with-real-sources.md) | Ask the owner, copy structure not rows, verify every quote, prove the numbers on the page |
 | [Git hygiene](24-git-hygiene.md) | What to do when a repo has touched real data, learned the hard way |
 | [Where it can live](26-hosting.md) | Each host, what runs there, and how to serve a page yourself |
+| [Atlassian Artifacts](29-atlassian-artifacts.md) | Publishing over the MCP server, what the viewer and a Confluence embed allow, measured |
 
 ## Design and craft
 

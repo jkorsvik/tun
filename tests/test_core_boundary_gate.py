@@ -132,6 +132,10 @@ CASES = [
     ("local:org", _j("qorp", "corpse"), False),
     ("local:host", _j("intra.qorp", ".example"), True),
     ("local:host", "example.com", False),
+    ("atlassian-site", _j("acme-corp", ".atlassian", ".net/wiki"), True),
+    ("atlassian-site", _j("https://", "example", ".atlassian", ".net"), False),
+    ("atlassian-site", _j("ari:cloud:confluence:", "1234abcd-0000-4000-8000-", "00000000abcd", ":space/1"), True),
+    ("atlassian-site", "ari:cloud:identity::user/<accountId>", False),
 ]
 for name, text, want in CASES:
     rx = re.compile(gate.CATEGORIES[name][0])

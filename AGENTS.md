@@ -205,6 +205,8 @@ python3 tests/test_verify_gate_browser.py    # 16 assertions + a mutation contro
 python3 tests/test_findings_index.py         # every findings-index row resolves, 3 mutation controls
 python3 tests/test_process_diagram.py        # spec rules, layout faults injected, example up to date
 python3 tests/test_tun_feedback.py           # feedback log helper + --feedback-to on both builders
+python3 tests/test_builder_null_measures.py  # empty measure values, the verify hint; mutate_*.py deletes each fix
+python3 tests/test_dashboard_kpis_and_labels.py  # --kpis/--measure-kind, long bar labels, 3 engines
 ```
 
 `test_skill_links.py` covers `setup.py`, which decides whether to replace or preserve a

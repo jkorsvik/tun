@@ -1503,7 +1503,7 @@ def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAUL
         "BUILT_BY": BUILT_BY,
         "SPEC_NAME": esc(spec_name),
         "COUNTS": counts,
-        "PALETTE": esc(token_source),
+        "PALETTE": esc(tun_tokens.provenance_label(token_source)),
         "TOKEN_CSS": strip_css_comments(token_css),
         "SVG": render_svg(spec, lay),
         "CHIPS": render_chips(spec),
