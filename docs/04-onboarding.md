@@ -6,7 +6,7 @@ verified against a real enterprise tenant, and turned into something anyone can 
 asking.
 
 This guide gets you from zero to a published dashboard. It assumes nothing is set up on
-your machine yet. Every command below is one line and copy-pasteable, and there is no
+your machine yet. Every command below is one line and copy-pasteable, apart from the clone URL in Step 2, and there is no
 build step anywhere in the workflow — the dashboard is just a file.
 
 Estimated time: **about an hour**, most of it installation waiting.
@@ -28,6 +28,10 @@ including the safety checks — every time.
 ---
 
 ## Step 1 — Install RAIWork
+
+**Not using RAIWork?** Skip this step. Steps 2 and 3 work the same with Claude Code,
+Codex, Gemini CLI, GitHub Copilot, VS Code or OpenCode: in Step 3 you add `--tool`. The
+[README](../README.md#try-it) lists which value each tool needs.
 
 **⚠️ This step differs by platform, and if you're on Windows ask a teammate to walk you
 through it rather than following a command blind.** Everything *after* this step is
@@ -70,8 +74,11 @@ open -a RAIWork       # launch
 
 ## Step 2 — Get this repo
 
+Put the clone URL of this repository in place of `<clone-url>`. On GitHub it is under
+the green **Code** button.
+
 ```bash
-git clone <your-forge>/<owner>/tun.git
+git clone <clone-url> tun
 ```
 
 ---
@@ -82,6 +89,13 @@ This tells RAIWork about the dashboard skills. One command:
 
 ```bash
 cd tun && python3 setup.py
+```
+
+With another AI tool, name it instead (one or both):
+
+```bash
+python3 setup.py --tool claude    # Claude Code
+python3 setup.py --tool agents    # Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode
 ```
 
 It copies the skills into RAIWork and checks the one tool the checks need (a headless

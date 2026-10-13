@@ -92,6 +92,10 @@ def data_file_is_allowed(rel: str) -> bool:
     parts = rel.split("/")
     if len(parts) == 3 and parts[0] == "plugins" and parts[2] in ("manifest.json", "tenant-facts.json"):
         return True
+    # The same holds for the manifest of a plugin's RAIWork Marketplace bundle, which the
+    # Marketplace requires at the bundle root under exactly this name.
+    if len(parts) == 5 and parts[0] == "plugins" and parts[2:] == ["raiwork", "bundle", "manifest.json"]:
+        return True
     # A generator beside the data means the data is reproducible, so it is synthetic by
     # construction. This is how examples/03 keeps a 207 MB extract out of git.
     return False
