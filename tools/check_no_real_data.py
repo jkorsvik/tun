@@ -84,12 +84,13 @@ ALLOWED_DATA: dict[str, str] = {
 def data_file_is_allowed(rel: str) -> bool:
     if rel in ALLOWED_DATA:
         return True
-    # A plugin manifest is configuration, not data, and it is named by the contract
-    # (docs/22-plugin-contract.md) rather than chosen per plugin. Recognising the shape means
-    # a new plugin does not have to be allowlisted to be legal, which is the same reasoning
-    # that makes templates/ a scope rule rather than a debt entry.
+    # A plugin manifest and a plugin's tenant facts are configuration, not data, and both are
+    # named by the contract's layout (docs/22-plugin-contract.md) rather than chosen per
+    # plugin. Recognising the shape means a new plugin does not have to be allowlisted to be
+    # legal, which is the same reasoning that makes templates/ a scope rule rather than a debt
+    # entry. Only those two names, and only at the plugin's root.
     parts = rel.split("/")
-    if len(parts) == 3 and parts[0] == "plugins" and parts[2] == "manifest.json":
+    if len(parts) == 3 and parts[0] == "plugins" and parts[2] in ("manifest.json", "tenant-facts.json"):
         return True
     # A generator beside the data means the data is reproducible, so it is synthetic by
     # construction. This is how examples/03 keeps a 207 MB extract out of git.

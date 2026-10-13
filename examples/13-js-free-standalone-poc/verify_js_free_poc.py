@@ -60,6 +60,31 @@ HERE = pathlib.Path(__file__).parent
 FILE = HERE / "js-free-standalone-poc.html"
 
 
+def open_menu(page) -> None:
+    """Open the slide-in menu and wait until it has stopped moving.
+
+    The menu slides in with a 0.18 s transform. A fixed 150 ms wait raced it: on a slow
+    runner WebKit found the label inside it "not stable" and the click timed out. Wait for
+    the state instead: two equal reads of the menu's left edge, 50 ms apart, at the open
+    position the checks below expect. Polled from here with eval_on_selector, which works
+    with JavaScript off; page.wait_for_function runs in the page and never resolves then.
+    The click that follows passes force=True: WebKit's own stability probe could stay stuck
+    for the whole 30 s timeout after a click that began mid-transition. force skips only
+    that probe. The click still lands on the label's coordinates, so a covered label still
+    fails the page-switch check that follows.
+    """
+    page.click("#menu-toggle")
+    left = lambda: page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")  # noqa: E731
+    before = left()
+    for _ in range(60):  # 3 s
+        page.wait_for_timeout(50)
+        now = left()
+        if now == before and now >= -5:
+            return
+        before = now
+    raise TimeoutError(f"the menu did not settle open (left edge at {before})")
+
+
 def check(label: str, cond: bool, failures: list[str]) -> None:
     print(f"  {'✓' if cond else '✗'} {label}")
     if not cond:
@@ -108,9 +133,8 @@ def run_no_js(failures: list[str], engines: tuple[str, ...]) -> None:
             # JS off, choosing a page must NOT close the menu on its own (the
             # reader closes it manually — this is the documented, accepted
             # difference in behaviour between the two modes, not a bug).
-            page.click("#menu-toggle")
-            page.wait_for_timeout(150)
-            page.locator("#nav-menu label[for='nav-principles']").click()
+            open_menu(page)
+            page.locator("#nav-menu label[for='nav-principles']").click(force=True)  # open_menu() checked it settled; see there
             page.wait_for_timeout(250)
             menu_left_after_nav = page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")
             check(
@@ -195,9 +219,8 @@ def run_with_js(failures: list[str], engines: tuple[str, ...]) -> None:
             page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
             page.on("pageerror", lambda e: errors.append(str(e)))
             page.goto(FILE.as_uri())
-            page.click("#menu-toggle")
-            page.wait_for_timeout(150)
-            page.locator("#nav-menu label[for='nav-charts']").click()
+            open_menu(page)
+            page.locator("#nav-menu label[for='nav-charts']").click(force=True)  # open_menu() checked it settled; see there
             page.wait_for_timeout(300)
 
             bar_canvas_visible = page.eval_on_selector("#bar-chart-canvas", "el => !el.hidden")
@@ -227,9 +250,8 @@ def run_with_js(failures: list[str], engines: tuple[str, ...]) -> None:
             # menu also closes it (menu remains fully USABLE without this —
             # see build_js_free_poc.py comment — this only proves the extra
             # convenience layer itself does what it claims when JS is present)
-            page.click("#menu-toggle")
-            page.wait_for_timeout(150)
-            page.locator("#nav-menu label[for='nav-principles']").click()
+            open_menu(page)
+            page.locator("#nav-menu label[for='nav-principles']").click(force=True)  # open_menu() checked it settled; see there
             page.wait_for_timeout(250)
             menu_left = page.eval_on_selector("#nav-menu", "el => el.getBoundingClientRect().left")
             check("menu auto-closes after choosing a page (JS enhancement)", menu_left < -5, failures)

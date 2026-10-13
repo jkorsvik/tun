@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import html
 import json
 import pathlib
 import re
@@ -57,6 +58,59 @@ SIZE_FAIL_MB = 50
 # A role is what the block wants; pass one with --requested-by.
 NOT_STATED = "not stated"
 
+# The KPI cards a caller can pick with --kpis: the label in the strings table, and the
+# JavaScript for the value. It runs inside renderKpis(), where total, dims and avg exist.
+KPI_CARDS = {
+    "total": ("kpi_label_total", "fmt(total)"),
+    "distinct": ("kpi_label_distinct", "fmt(dims)"),
+    # The total over the number of time values that have a value: "per quarter".
+    "per_period": ("kpi_label_per_period", "fmt((p => p ? total / p : 0)"
+                   "(uniq(valued(rows, META.measure), META.timeColumn).length))"),
+    "mean": ("kpi_label_mean", "fmt(avg)"),
+    "rows": ("kpi_label_rows", "fmt(rows.length)"),
+}
+# The cards each --measure-kind shows. per_period is dropped when there is no --time.
+# A rate (kroner per person) has no mean per row: that number means nothing.
+MEASURE_KINDS = {
+    "amount": ("total", "per_period", "distinct", "mean"),
+    "rate": ("total", "per_period", "distinct"),
+}
+
+
+def kpi_cards(args, t: dict[str, str]) -> str:
+    """The body of the `cards` array in renderKpis(), one card per line.
+
+    With neither --kpis nor --measure-kind it is the four cards the template always had,
+    with their old labels, so a build without the new flags is byte for byte what it was.
+    Exits with a message when a card is unknown, needs --time, or misleads for a rate."""
+    if not args.kpis and not args.measure_kind:
+        return ("    { label: `" + t["kpi_total"] + " ${META.measure}`, value: fmt(total) },\n"
+                '    { label: "' + t["kpi_rows"] + '", value: fmt(rows.length) },\n'
+                "    { label: `" + t["kpi_unique"] + " ${META.dimension}`, value: fmt(dims) },\n"
+                '    { label: "' + t["kpi_avg"] + '", value: fmt(avg) }')
+    if args.kpis:
+        kinds = [k.strip() for k in args.kpis.split(",") if k.strip()]
+        if not kinds:
+            sys.exit(f"error: --kpis names no card. Choose from: {', '.join(KPI_CARDS)}")
+        for k in kinds:
+            if k not in KPI_CARDS:
+                sys.exit(f"error: --kpis: unknown card {k!r}. Choose from: {', '.join(KPI_CARDS)}")
+        if "per_period" in kinds and not args.time:
+            sys.exit("error: --kpis per_period needs --time.")
+        if "mean" in kinds and args.measure_kind == "rate":
+            sys.exit("error: --kpis mean is the mean per row, which misleads for "
+                     "--measure-kind rate. Drop it, or use per_period.")
+    else:
+        kinds = [k for k in MEASURE_KINDS[args.measure_kind] if k != "per_period" or args.time]
+    lines = []
+    for k in kinds:
+        key, value = KPI_CARDS[k]
+        label = i18n.fill(t[key], measure=args.measure, dimension=args.dimension, time=args.time)
+        # The label lands in innerHTML, inside a script: escape it for both.
+        label = json.dumps(html.escape(label, quote=False), ensure_ascii=False).replace("</", "<\\/")
+        lines.append(f"    {{ label: {label}, value: {value} }}")
+    return ",\n".join(lines)
+
 
 def load_rows(path: pathlib.Path) -> list[dict]:
     suffix = path.suffix.lower()
@@ -84,7 +138,8 @@ def coerce_numbers(rows: list[dict]) -> list[dict]:
 
     Handles Norwegian formatting: '1 234,56' and '1.234,56' both become 1234.56.
     A column is only converted if EVERY non-empty value in it parses — otherwise
-    we would silently corrupt an ID column that happens to look numeric.
+    we would silently corrupt an ID column that happens to look numeric. An empty
+    value in a converted column becomes None, never 0: a 0 would move the average.
     """
     if not rows:
         return rows
@@ -99,11 +154,16 @@ def coerce_numbers(rows: list[dict]) -> list[dict]:
             numeric_cols.append(col)
     for row in rows:
         for col in numeric_cols:
-            if row.get(col) not in (None, ""):
-                row[col] = _parse_num(row[col])
-            elif col in row:
-                row[col] = 0
+            if col in row:
+                row[col] = _parse_num(row[col]) if row[col] not in (None, "") else None
     return rows
+
+
+def is_numeric_column(rows: list[dict], col: str) -> bool:
+    """True if the column has at least one value and every non-empty value is a number."""
+    values = [r.get(col) for r in rows if r.get(col) not in (None, "")]
+    return bool(values) and all(isinstance(v, (int, float)) and not isinstance(v, bool)
+                                for v in values)
 
 
 def _parse_num(value):
@@ -136,6 +196,14 @@ def main() -> None:
     ap.add_argument("--measure", required=True, help="numeric column to sum")
     ap.add_argument("--time", default="", help="ordered column for the line chart")
     ap.add_argument("--filters", default="", help="comma-separated filter columns")
+    ap.add_argument("--kpis", default="", metavar="CARDS",
+                    help="comma-separated KPI cards, in order: " + ", ".join(KPI_CARDS) + ". "
+                         "per_period is the total over the number of --time values.")
+    ap.add_argument("--measure-kind", choices=tuple(MEASURE_KINDS), default="",
+                    help="amount = a sum or a count; rate = a value per person or per unit "
+                         "that still adds up across rows (the charts sum it). A rate drops the "
+                         "mean per row, which means nothing for it. Without this flag or "
+                         "--kpis, the four cards are the ones this builder always made.")
     ap.add_argument("--source", default="", help="human description of where data came from")
     ap.add_argument("--requested-by", default="",
                     help="a role, e.g. \"Salgsavdelingen\". Not a person's name.")
@@ -161,15 +229,19 @@ def main() -> None:
     if args.time and args.time not in cols:
         sys.exit(f"error: --time {args.time!r} not found. Available: {', '.join(cols)}")
 
-    if not isinstance(rows[0].get(args.measure), (int, float)):
+    # Decided on the non-empty values: a query result often has NULL in the first row.
+    if not is_numeric_column(rows, args.measure):
         sys.exit(f"error: --measure {args.measure!r} is not numeric — charts would be empty. "
                  f"Check the column, or pick a numeric one from: "
-                 f"{', '.join(c for c in cols if isinstance(rows[0].get(c), (int, float))) or '(none found)'}")
+                 f"{', '.join(c for c in cols if is_numeric_column(rows, c)) or '(none found)'}")
+    no_value = sum(1 for r in rows if r.get(args.measure) in (None, ""))
 
     filters = [c.strip() for c in args.filters.split(",") if c.strip()]
     missing = [c for c in filters if c not in cols]
     if missing:
         sys.exit(f"error: filter column(s) not found: {', '.join(missing)}")
+
+    cards_js = kpi_cards(args, t)
 
     now = dt.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z")
     extracted = dt.datetime.fromtimestamp(args.data.stat().st_mtime).astimezone() \
@@ -221,6 +293,8 @@ def main() -> None:
                                   dimension=args.dimension),
         "CHART2_TITLE": (i18n.fill(t["chart2_title"], measure=args.measure, time=args.time)
                          if args.time else t["chart2_default"]),
+        # Holds column names, so it goes in late, like the feedback block below.
+        "KPI_CARDS": cards_js,
         # Last on purpose: the block holds reader-facing text (the title), and no
         # later replacement should get a chance to rewrite a token inside it.
         "FEEDBACK_BLOCK": feedback,
@@ -248,6 +322,10 @@ def main() -> None:
     size_mb = args.out.stat().st_size / 1_048_576
     print(f"built {args.out}  ({size_mb:.2f} MB, {len(rows):,} rows)".replace(",", " "))
     print(f"  palette: {token_source}")
+    if no_value:
+        counts = f"{no_value:,} of {len(rows):,}".replace(",", " ")
+        print(f"  note: {counts} rows have no {args.measure!r} value. They show empty in the "
+              f"table and are left out of the charts and the average.")
     if data_path is not None:
         d_mb = data_path.stat().st_size / 1_048_576
         print(f"  + {data_path.name}  ({d_mb:.2f} MB)  <- keep these two together")
@@ -262,7 +340,27 @@ def main() -> None:
     if size_mb > SIZE_WARN_MB:
         print(f"  ⚠ {size_mb:.1f} MB is above the {SIZE_WARN_MB} MB comfort budget — "
               f"consider pre-aggregating.", file=sys.stderr)
-    print("  next: python3 tools/verify_dashboard.py " + str(args.out))
+    print("  next: python3 " + _shell_arg(_verifier_path()) + " " + _shell_arg(args.out.as_posix()))
+
+
+def _verifier_path() -> str:
+    """The verifier next to this file, as the caller can type it from where they stand.
+
+    Relative to the working directory when it is below it (`tools/verify_dashboard.py` in
+    the repo), absolute otherwise. A fixed `tools/...` was wrong in the installed plugin,
+    where the engine lives in skills/tun-new/engine/tools/.
+    """
+    verifier = pathlib.Path(__file__).resolve().parent / "verify_dashboard.py"
+    try:
+        return verifier.relative_to(pathlib.Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return verifier.as_posix()
+
+
+def _shell_arg(arg: str) -> str:
+    """Double-quote an argument with a space: a OneDrive path on Windows has one, and
+    double quotes work in cmd, PowerShell, bash and zsh alike."""
+    return f'"{arg}"' if " " in arg else arg
 
 
 if __name__ == "__main__":

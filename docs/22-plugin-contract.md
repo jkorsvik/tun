@@ -4,11 +4,11 @@ Status: contract proposal, derived from the one real case.
 
 | capability | state |
 |---|---|
-| `tokens` | **implemented** in `tools/tun_tokens.py`: discovery, single-provider rule, slot validation, load order. Asserted by `tests/test_token_contract.py` (70 assertions, with the asset checks below). |
+| `tokens` | **implemented** in `tools/tun_tokens.py`: discovery, single-provider rule, slot validation, load order. Asserted by `tests/test_token_contract.py` (76 assertions, with the asset and tenant-facts checks below). |
 | `assets` | partial: a plugin maps its artwork by name in `manifest.json`, and `tests/test_token_contract.py` checks every mapped file is a self-contained SVG. No build code resolves an asset by name yet |
 | `templates` | **specified, not built** |
 | `verifiers` | **specified, not built** |
-| `tenant_facts` | **specified, not built** |
+| `tenant_facts` | partial: a plugin names a `tenant_facts` JSON file in `manifest.json` and lists `tenant_facts` in `provides`; `tests/test_token_contract.py` checks the two agree and the file parses. The only reader is a skill (`tun-publish`, destination C, key `atlassian.artifacts`), not build code |
 
 Everything marked "not built" is a description of an intended shape, not a guarantee. An
 earlier version of this document stated the slot validation as fact while no code performed
@@ -164,6 +164,24 @@ disallowed background. Plugin verifiers may add failures; they may not remove co
 `docs/01-tenant-constraints.md` mixes two kinds of statement: how Microsoft 365 behaves, which
 is core knowledge, and how one tenant is configured, which is not. Tenant facts are structured
 data supplied by a plugin, so the distinction stops depending on how a row was worded.
+
+The first real case is a host's classification ceiling. Whether an organisation allows a file in
+Atlassian Artifacts is a fact about that organisation, not about Artifacts, so core's
+`docs/29-atlassian-artifacts.md` describes the host and a plugin supplies the ceiling:
+
+```json
+{
+  "schema": "tun.tenant-facts/v1",
+  "atlassian": {
+    "site": "<the organisation's site>",
+    "artifacts": {"enabled": true, "classification_ceiling": "<the rule, quoted>",
+                  "ask_if_unsure": "<who decides>", "source": "<where the rule was stated>"}
+  }
+}
+```
+
+With no plugin installed, the skill asks the user instead, so core still ships a correct
+publish without one.
 
 ## The two questions `docs/21` left open
 

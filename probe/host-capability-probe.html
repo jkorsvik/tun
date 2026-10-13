@@ -1,0 +1,83 @@
+<!doctype html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<!--
+  Tún artefact-host capability probe.
+  Purpose : measure what a host that serves one HTML file allows, by running the checks inside
+            the host and printing the results on screen. Read the results from a screenshot.
+  Data    : none. Safe to publish anywhere.
+  Made with   : Tún, tun.community
+  Usage   : docs/29-atlassian-artifacts.md, "Re-running the probe".
+  Each check prints ok / no plus the reason. Every Content-Security-Policy violation the
+  page triggers is listed separately with its directive, so a "no" names its cause.
+-->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tun host capability probe</title>
+<style>
+body{font:0.875rem/1.5 system-ui,sans-serif;margin:1rem 1.5rem;color:#222}
+h1{font-size:1.125rem;margin:0 0 .5rem}
+table{border-collapse:collapse;width:100%;max-width:60rem}
+td,th{border:1px solid #bbb;padding:.125rem .5rem;text-align:left;vertical-align:top}
+td:first-child{white-space:nowrap}
+.ok{color:#006b4f;font-weight:700}.no{color:#b3261e;font-weight:700}
+#state{font-weight:700}
+</style></head>
+<body><script>document.documentElement.className+=" js"</script>
+<h1>Tun host capability probe, PROBE_VERSION 5</h1>
+<p>State: <span id="state">If you read this, scripts did not run.</span></p>
+<h1>CSP violations (listed first, so a framed viewer shows them without scrolling)</h1>
+<table id="v"><tr><th>Directive</th><th>Blocked</th></tr></table>
+<h1 style="margin-top:1rem">Checks</h1>
+<table id="t"><tr><th>Check</th><th>Result</th></tr></table>
+<script>
+(function(){
+  var t=document.getElementById("t"), v=document.getElementById("v"), pending=0, seen={};
+  function row(k,val,good){var r=t.insertRow();r.insertCell().textContent=k;var c=r.insertCell();c.textContent=val;if(good!==undefined)c.className=good?"ok":"no"}
+  function done(){pending--;}
+  document.addEventListener("securitypolicyviolation",function(e){
+    var key=e.violatedDirective+" "+(e.blockedURI||"").slice(0,40); if(seen[key])return; seen[key]=1;
+    var r=v.insertRow();r.insertCell().textContent=e.violatedDirective;r.insertCell().textContent=(e.blockedURI||"(inline)").slice(0,60)});
+  function async(name,fn){pending++;var to=setTimeout(function(){row(name,"no answer in 3 s",false);done()},3000);
+    try{fn(function(ok,msg){clearTimeout(to);row(name,msg,ok);done()})}catch(e){clearTimeout(to);row(name,"threw "+e.name+": "+String(e.message).slice(0,60),false);done()}}
+  document.getElementById("state").textContent="Script ran. Waiting for async checks...";
+
+  row("origin",location.origin); row("URL scheme",location.protocol);
+  row("isSecureContext",String(isSecureContext),isSecureContext);
+  row("framed (top !== self)",String(top!==self));
+  row("viewport at script time",innerWidth+" x "+innerHeight);
+  var resizes=0; addEventListener("resize",function(){resizes++});
+  ["localStorage","sessionStorage"].forEach(function(s){try{window[s].setItem("p","1");row(s,"works",true)}catch(e){row(s,"blocked: "+e.name,false)}});
+  async("indexedDB.open",function(cb){var q=indexedDB.open("p");q.onsuccess=function(){cb(true,"works")};q.onerror=function(){cb(false,"error: "+(q.error&&q.error.name))}});
+  row("fullscreenEnabled",String(!!document.fullscreenEnabled),!!document.fullscreenEnabled);
+  row("prefers dark",String(matchMedia("(prefers-color-scheme: dark)").matches));
+
+  // inline event-handler attribute (templates do not use them, but many hand-written pages do)
+  var b=document.createElement("button");b.setAttribute("onclick","window.__inl=1");document.body.appendChild(b);b.click();b.remove();
+  row("inline on* handler",window.__inl?"runs":"blocked",!!window.__inl);
+  // eval
+  try{row("eval / new Function",(new Function("return 2"))()===2?"works":"?",true)}catch(e){row("eval / new Function","blocked: "+e.name,false)}
+
+  async("fetch https://example.com (no-cors)",function(cb){fetch("https://example.com/",{mode:"no-cors"}).then(function(){cb(true,"reached network")},function(e){cb(false,"blocked: "+e.name)})});
+  async("fetch data: URL",function(cb){fetch("data:text/plain,tun").then(function(r){return r.text()}).then(function(x){cb(x==="tun","works")},function(e){cb(false,"blocked: "+e.name)})});
+  async("fetch blob: URL",function(cb){var u=URL.createObjectURL(new Blob(["tun"]));fetch(u).then(function(r){return r.text()}).then(function(x){cb(x==="tun","works")},function(e){cb(false,"blocked: "+e.name)})});
+  async("Worker from Blob (works on file://)",function(cb){var w=new Worker(URL.createObjectURL(new Blob(["onmessage=function(e){postMessage(e.data*2)}"],{type:"text/javascript"})));w.onmessage=function(e){cb(e.data===42,"round-trip "+e.data)};w.onerror=function(e){e.preventDefault&&e.preventDefault();cb(false,"error event")};w.postMessage(21)});
+  async("import() of blob: module",function(cb){var u=URL.createObjectURL(new Blob(["export default 7"],{type:"text/javascript"}));import(u).then(function(m){cb(m.default===7,"works")},function(e){cb(false,"blocked: "+e.name)})});
+  async("script src=./data.js (paired mode)",function(cb){var s=document.createElement("script");s.src="./data.js";s.onload=function(){cb(true,"loaded")};s.onerror=function(){cb(false,"failed to load")};document.head.appendChild(s)});
+  async("script src=blob: (dynamic)",function(cb){var s=document.createElement("script");s.src=URL.createObjectURL(new Blob(["window.__bs=1"],{type:"text/javascript"}));s.onload=function(){cb(!!window.__bs,"runs")};s.onerror=function(){cb(false,"blocked")};document.head.appendChild(s)});
+  async("img data: URL",function(cb){var i=new Image();i.onload=function(){cb(true,"loads")};i.onerror=function(){cb(false,"blocked")};i.src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"});
+  async("DecompressionStream gzip (cube)",function(cb){var cs=new CompressionStream("gzip"),w=cs.writable.getWriter();w.write(new TextEncoder().encode("tun"));w.close();
+    new Response(cs.readable).arrayBuffer().then(function(z){var ds=new DecompressionStream("gzip"),w2=ds.writable.getWriter();w2.write(z);w2.close();return new Response(ds.readable).text()}).then(function(x){cb(x==="tun","round-trip ok")},function(e){cb(false,"failed: "+e.name)})});
+  async("Blob download link (a.download)",function(cb){var a=document.createElement("a");cb("download" in a,"download attribute "+(("download" in a)?"supported":"missing")+" (not clicked)")});
+
+  setTimeout(function(){
+    row("viewport after 3.5 s",innerWidth+" x "+innerHeight+", resize events: "+resizes,innerWidth>0);
+    document.getElementById("state").textContent="Done. "+(t.rows.length-1)+" checks, "+(v.rows.length-1)+" CSP violation(s).";
+  },3500);
+})();
+</script></body></html>
