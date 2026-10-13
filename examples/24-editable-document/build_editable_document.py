@@ -52,7 +52,8 @@ def build() -> pathlib.Path:
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     css = re.sub(r"\n\s*\n+", "\n", css)
     html = TEMPLATE.read_text(encoding="utf-8")
-    for key, value in (("TOKEN_CSS", css.strip()), ("TOKEN_SOURCE", source),
+    for key, value in (("TOKEN_CSS", css.strip()),
+                       ("TOKEN_SOURCE", tun_tokens.provenance_label(source)),
                        ("BUILT", build_date())):
         token = "{{" + key + "}}"
         if html.count(token) != 1:

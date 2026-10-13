@@ -212,6 +212,12 @@ def build_categories(denylist: pathlib.Path | None = None) -> dict[str, tuple[st
                         "brand palette variable names leaking into core CSS"),
         "brand-hex": (brand_hex_pattern(), "ratcheted",
                       "brand colour values a plugin owns, hardcoded in core"),
+        "atlassian-site": (
+            r"\b(?!example\.)[a-z0-9][a-z0-9-]*\.atlassian\.net\b"
+            r"|\bari:cloud:[a-z-]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
+            "forbidden",
+            "one organisation's Atlassian Cloud site, or an ARI carrying its site id. Core finds the "
+            "site at run time (getAccessibleAtlassianResources); a plugin's tenant facts may name it"),
     }
     by_label: dict[str, list[str]] = {}
     for label, rx in load_local_denylist(denylist):

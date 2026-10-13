@@ -8,7 +8,8 @@
   "license": "Same as core",
   "provides": [
     "tokens",
-    "assets"
+    "assets",
+    "tenant_facts"
   ],
   "tokens": {
     "palette": "tokens/palette.css"
@@ -17,5 +18,6 @@
     "examples/logo-poc",
     "examples/branded-topbar"
   ],
-  "notes": "Eksempel AS is a fictional organisation; its colours and wordmark were invented for this plugin. private: true is kept to demonstrate the flag, which is load-bearing, not advisory: a real brand plugin carries trademark artwork and brand colours, must never be published, and a packaging step must refuse to include it. See docs/21-plugin-architecture.md and docs/22-plugin-contract.md."
+  "notes": "Eksempel AS is a fictional organisation; its colours and wordmark were invented for this plugin. private: true is kept to demonstrate the flag, which is load-bearing, not advisory: a real brand plugin carries trademark artwork and brand colours, must never be published, and a packaging step must refuse to include it. See docs/21-plugin-architecture.md and docs/22-plugin-contract.md.",
+  "tenant_facts": "tenant-facts.json"
 }

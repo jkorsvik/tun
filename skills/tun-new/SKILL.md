@@ -73,6 +73,15 @@ Propose it as a sentence and let them correct it:
 Avoid a high-cardinality dimension (an ID column) — the bar chart becomes noise.
 Avoid making the measure a column that is really an identifier.
 
+**Is the measure an amount or a rate?** An amount (kroner, a count) adds up, and its
+mean per row means something. A rate is a value per person or per unit (kroner per
+person): add `--measure-kind rate`, and the KPI cards become the sum, the mean per
+`--time` value and the number of `--dimension` values, with no mean per row. A rate
+that does not add up across rows (a share, an interest rate) is the wrong fit for this
+builder, because the charts sum the measure. `--kpis total,distinct` picks the cards and
+their order directly (`--help` lists them). Either flag gives the cards labels a reader
+understands; with neither, the four cards are the ones this builder always made.
+
 ## Step 3b — Pick a mode
 
 Two options. Ask which fits, in one sentence:

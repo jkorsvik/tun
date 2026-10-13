@@ -198,6 +198,13 @@ chk("a data file smuggled into a plugin is still refused",
     gate.data_file_is_allowed("plugins/eksempel/export.csv"), False)
 chk("a nested manifest-shaped path is not allowed",
     gate.data_file_is_allowed("plugins/eksempel/examples/manifest.json"), False)
+chk("a plugin's tenant facts are allowed by shape, not by allowlisting",
+    (gate.data_file_is_allowed("plugins/anything/tenant-facts.json"),
+     "plugins/anything/tenant-facts.json" in gate.ALLOWED_DATA), (True, False))
+chk("a nested tenant-facts-shaped path is not allowed",
+    gate.data_file_is_allowed("plugins/anything/examples/tenant-facts.json"), False)
+chk("another JSON name at a plugin's root is still refused",
+    gate.data_file_is_allowed("plugins/anything/customers.json"), False)
 # The Claude Code manifests are allowed by exact path, and nothing else in that directory is.
 for _rel in (".claude-plugin/plugin.json", ".claude-plugin/marketplace.json"):
     chk(f"allowed by exact path, not by shape: {_rel}",

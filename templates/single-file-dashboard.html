@@ -223,13 +223,22 @@ const META = {
 /* ---------- tiny helpers ---------------------------------------------------- */
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => META.numberFormat.format(n);
-const sum = (rows, col) => rows.reduce((a, r) => a + (Number(r[col]) || 0), 0);
+// A measure value as a number, or null when the cell is empty or not a number. Null is
+// left out of every aggregate: summing it as 0 moves the average and draws a bar or a
+// point that the data does not have.
+const val = (v) => {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+const valued = (rows, col) => rows.filter(r => val(r[col]) !== null);
+const sum = (rows, col) => rows.reduce((a, r) => a + (val(r[col]) ?? 0), 0);
 const uniq = (rows, col) => [...new Set(rows.map(r => r[col]))]
   .filter(v => v !== undefined && v !== null && v !== "").sort();
 
 function groupSum(rows, key, measure) {
   const m = new Map();
-  for (const r of rows) m.set(r[key], (m.get(r[key]) || 0) + (Number(r[measure]) || 0));
+  for (const r of valued(rows, measure)) m.set(r[key], (m.get(r[key]) || 0) + val(r[measure]));
   return [...m.entries()].map(([k, v]) => ({ key: k, value: v }));
 }
 
@@ -274,6 +283,9 @@ function barChart(svgId, data, opts) {
   const ns = "http://www.w3.org/2000/svg";
   const el = (t, a) => { const n = document.createElementNS(ns, t);
     for (const k in a) n.setAttribute(k, a[k]); return n; };
+  // Under an upright bar a name is cut after 16 characters and drawn at an angle. When
+  // a name is longer than that, lay the bars out sideways: each name gets the card's width.
+  if (data.some(d => String(d.key).length > 16)) return sideBars(svg, W, H, data, max, el);
 
   // y gridlines + labels
   for (let i = 0; i <= 4; i++) {
@@ -296,6 +308,49 @@ function barChart(svgId, data, opts) {
       transform: `rotate(-35 ${m.l + i * bw + bw / 2} ${m.t + ih + 16})` });
     lbl.textContent = String(d.key).length > 16 ? String(d.key).slice(0, 15) + "…" : d.key;
     svg.appendChild(lbl);
+  });
+}
+
+function sideBars(svg, W, H, data, max, el) {
+  const width = t => t.getComputedTextLength() || t.textContent.length * 6.5;
+  const labels = data.map(d => {
+    const t = el("text", { class: "axis-label", "text-anchor": "end" });
+    t.textContent = d.key; svg.appendChild(t); return t;
+  });
+  // The name column is as wide as the longest name, up to 45 % of the chart. A name
+  // that is wider still (on a phone) is cut, and keeps its full text as a tooltip.
+  const lw = Math.min(Math.round(W * 0.45), Math.max(...labels.map(width)));
+  labels.forEach((t, i) => {
+    const full = String(data[i].key);
+    if (width(t) <= lw) return;
+    for (let n = full.length - 1; n > 1 && width(t) > lw; n--) t.textContent = full.slice(0, n) + "…";
+    const title = el("title", {}); title.textContent = full; t.appendChild(title);
+  });
+
+  const m = { t: 8, r: 32, b: 28, l: lw + 16 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, rowH = ih / data.length;
+  const bh = Math.min(rowH * 0.7, 28);
+  // Up to four steps on the value axis, fewer when the numbers would touch (a phone).
+  const probe = el("text", { class: "axis-label" }); probe.textContent = fmt(max);
+  svg.appendChild(probe);
+  const steps = Math.max(1, Math.min(4, Math.floor(iw / (width(probe) + 16))));
+  probe.remove();
+  for (let i = 0; i <= steps; i++) {
+    const x = m.l + iw * i / steps;
+    svg.appendChild(el("line", { class: "gridline", x1: x, x2: x, y1: m.t, y2: m.t + ih }));
+    const t = el("text", { class: "axis-label", x, y: m.t + ih + 18, "text-anchor": "middle" });
+    t.textContent = fmt(max * i / steps); svg.appendChild(t);
+  }
+  svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l, y1: m.t, y2: m.t + ih }));
+
+  data.forEach((d, i) => {
+    const mid = m.t + i * rowH + rowH / 2;
+    const rect = el("rect", { class: "bar", x: m.l, y: mid - bh / 2, rx: 2, height: bh,
+      width: Math.max((d.value / max) * iw, 1) });
+    rect.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
+    rect.addEventListener("mouseleave", hideTip);
+    svg.appendChild(rect);
+    labels[i].setAttribute("x", m.l - 8); labels[i].setAttribute("y", mid + 4);
   });
 }
 
@@ -341,12 +396,10 @@ function lineChart(svgId, data) {
 function renderKpis(rows) {
   const total = sum(rows, META.measure);
   const dims = uniq(rows, META.dimension).length;
-  const avg = rows.length ? total / rows.length : 0;
+  const n = valued(rows, META.measure).length;
+  const avg = n ? total / n : 0;
   const cards = [
-    { label: `{{T:kpi_total}} ${META.measure}`, value: fmt(total) },
-    { label: "{{T:kpi_rows}}", value: fmt(rows.length) },
-    { label: `{{T:kpi_unique}} ${META.dimension}`, value: fmt(dims) },
-    { label: "{{T:kpi_avg}}", value: fmt(avg) }
+{{KPI_CARDS}}
   ];
   $("kpis").innerHTML = cards.map(c =>
     `<div class="kpi"><div class="label">${c.label}</div><div class="value">${c.value}</div></div>`).join("");
@@ -355,7 +408,9 @@ function renderKpis(rows) {
 /* ---------- table --------------------------------------------------------- */
 function renderTable(rows) {
   const cols = rows.length ? Object.keys(rows[0]) : [];
-  const isNum = c => rows.length && typeof rows[0][c] === "number";
+  // Numeric if any row has a number there: rows[0] may be empty.
+  const numCols = new Set(cols.filter(c => rows.some(r => typeof r[c] === "number")));
+  const isNum = c => numCols.has(c);
   $("tbl").querySelector("thead").innerHTML = "<tr>" + cols.map(c =>
     `<th class="${isNum(c) ? "num" : ""}" data-col="${c}">${c}${
       sortState.col === c ? (sortState.dir < 0 ? " ▾" : " ▴") : ""}</th>`).join("") + "</tr>";
@@ -441,11 +496,11 @@ function parseCSV(text){
     return o;
   });
   // a column becomes numeric only if EVERY non-empty value parses (same rule as the builder,
-  // so an ID column that looks numeric survives as text)
+  // so an ID column that looks numeric survives as text). Empty stays null, never 0.
   for (const col of head){
     const vals = rows.map(r => r[col]).filter(v => v !== "" && v != null);
     if (vals.length && vals.every(v => parseNum(v) !== null))
-      rows.forEach(r => r[col] = r[col] === "" ? 0 : parseNum(r[col]));
+      rows.forEach(r => r[col] = r[col] === "" ? null : parseNum(r[col]));
   }
   return rows;
 }
@@ -533,12 +588,30 @@ function render() {
   renderTable(rows);
 }
 
-/* Redraw the charts, not the table, when the card changes width. */
+/* Redraw the charts, not the table, when a chart card changes width.
+   Watch the cards themselves, not only window "resize": a host can give the frame its
+   size without ever firing resize (measured in an Atlassian Artifacts embed inside a
+   Confluence page, docs/29). The charts would then keep the width they were drawn at
+   while the frame was still 0 x 0. Only a change of width redraws, so the height change a
+   redraw causes cannot loop. */
 let resizeFrame = 0;
-addEventListener("resize", () => {
+const queueChartRedraw = () => {
   cancelAnimationFrame(resizeFrame);
   resizeFrame = requestAnimationFrame(() => renderCharts(visibleRows()));
-});
+};
+addEventListener("resize", queueChartRedraw);
+if (typeof ResizeObserver === "function") {
+  const seenW = new WeakMap();
+  const chartObserver = new ResizeObserver(entries => {
+    const widthChanged = entries.some(e => {
+      const w = Math.round(e.contentRect.width), was = seenW.get(e.target);
+      seenW.set(e.target, w);
+      return was !== undefined && w !== was;
+    });
+    if (widthChanged) queueChartRedraw();
+  });
+  ["chart1", "chart2"].forEach(id => chartObserver.observe($(id)));
+}
 
 (function footNote(){
   const el = document.getElementById("footnote"); if (!el) return;

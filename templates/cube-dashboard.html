@@ -309,8 +309,16 @@ function render(){
     render();
     if (measureCharts()) render();
     let frame = 0;
-    addEventListener("resize", () => { cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => { if (measureCharts()) render(); }); });
+    const redraw = () => { cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => { if (measureCharts()) render(); }); };
+    addEventListener("resize", redraw);
+    /* A host can size the frame without firing resize (measured in an Atlassian Artifacts
+       embed, docs/29), so also watch the chart containers. measureCharts() returns false
+       when no width changed, which stops the loop a redraw's own reflow would start. */
+    if (typeof ResizeObserver === "function") {
+      const ro = new ResizeObserver(redraw);
+      ["charts", "trend"].forEach(id => { const el = document.getElementById(id); if (el) ro.observe(el); });
+    }
     window.__READY__ = true;
   } catch (e) {
     const b = document.getElementById("boot");
