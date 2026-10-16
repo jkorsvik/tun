@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slik behandler kommunen en byggesøknad</title>
+<!--
+  Slik behandler kommunen en byggesøknad
+  PROVENANCE  (do not delete — this is how output gets traced back)
+    Source data : Eksempeldata (syntetisk), oppdiktet prosess med fem roller
+    Built       : 2026-10-16 15:02 CEST
+    Requested by: Prosjekteier
+    Built by    : tools/build_process_diagram.py
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Artefact    : process diagram (17 steps, 20 connections, 5 lanes, 3 flagged)
+    Spec        : fem-roller.process.txt
+    Palette     : spec:plugins/tun/tokens/palette.css
+  This is a self-contained artefact: no server, no CDN dependency, no licence required
+  to view. It works offline and from a OneDrive/SharePoint-synced folder.
+
+  Two layers. The floor is plain HTML and a static SVG: with JavaScript off, every panel
+  (the drawing, the step cards, the roles, the improvement points, the text version)
+  shows one after the other, and print shows them all. The script at the end only adds
+  tabs, a detail panel, highlighting, a role filter and zoom on top of that floor.
+
+  ⚠ SECURITY: all content below is readable by anyone who can open this file. If
+     different viewers must see different content, this file must not exist as a single
+     shared copy — split by audience/folder before generating it (see tun AGENTS.md
+     rule 1: the security boundary is the folder, not anything inside the file).
+-->
+<style>
+:root{
+  --tun-ink:              #0d2b21;
+  --tun-secondary:        #28473c;
+  --tun-accent:           #3f8f3f;
+  --tun-paper:            #f7f7f5;
+  --tun-ink-darkest:      #071812;
+  --tun-accent-tint:      #a4c8a3;
+}
+:root{
+  --palette-ink:             var(--tun-ink);
+  --palette-surface:         var(--tun-paper);
+  --palette-primary:         var(--tun-secondary);
+  --palette-primary-dark:    var(--tun-ink);
+  --palette-primary-darkest: var(--tun-ink-darkest);
+  --palette-accent:          var(--tun-accent);
+  --palette-accent-light:    var(--tun-accent-tint);
+  --palette-on-dark:         var(--tun-paper);
+}
+:root{
+  --status-negative:          #C9372C;
+  --status-negative-bg:       #fbeded;
+  --status-positive:          #1F7A5C;
+  --status-positive-bg-25:    #d7ece3;
+  --status-positive-bg-12:    #eaf5f0;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --brand-dark: var(--palette-primary-dark);
+  --series-2:   var(--palette-accent);
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-bg:var(--palette-surface);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--panel);color:var(--ink);line-height:1.5;font-size:1rem;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* No width cap: a wide screen gives the drawing all its width. Text keeps its own measure. */
+main{max-width:none;margin:0 auto;padding:1.5rem 2rem 3rem}
+h1{margin:0 0 .5rem;font-size:1.875rem;line-height:1.25;color:var(--brand-dark);
+  overflow-wrap:break-word}
+h2{margin:2.5rem 0 1rem;font-size:1.375rem;line-height:1.3;color:var(--brand-dark)}
+h3{margin:0;font-size:1.0625rem;line-height:1.35}
+h4{margin:1rem 0 .25rem;font-size:.875rem;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted)}
+.lede{margin:0 0 .5rem;max-width:70ch;font-size:1.0625rem}
+.meta{margin:0;color:var(--muted);font-size:.875rem}
+
+/* Role colours. Every one is a token, so the palette decides how a role looks. */
+/* Ordered so neighbouring lanes differ most under both the neutral and the Tún palette. */
+.c0{--role:var(--palette-primary-dark)}
+.c1{--role:var(--palette-accent)}
+.c2{--role:var(--status-neutral)}
+.c3{--role:var(--palette-primary)}
+.c4{--role:var(--status-positive)}
+.c5{--role:var(--palette-primary-darkest)}
+
+/* Tabs: hidden without the script, so the floor is the stacked page. */
+.tabs{display:none}
+html.js .tabs{display:flex;flex-wrap:wrap;gap:.25rem;margin:1.5rem 0 0;padding:.25rem;
+  border-radius:.75rem;background:var(--bg);border:1px solid var(--line);width:max-content;max-width:100%}
+.tabs button{font:inherit;font-size:.9375rem;font-weight:600;padding:.5rem 1rem;border:0;
+  border-radius:.5rem;background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--brand-dark);color:var(--palette-on-dark)}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]:hover{color:var(--palette-on-dark)}
+.tabs button:focus-visible,.toolbar button:focus-visible,.chip:focus-visible,
+.show-in-flow:focus-visible,.detail-close:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.panel{margin:0}
+.panel:focus-visible{outline:3px solid var(--brand);outline-offset:4px;border-radius:.5rem}
+html.js .panel-h{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+  white-space:nowrap;margin:0}
+html.js .panel{padding-top:1.25rem}
+
+/* Flyt: toolbar, drawing and the detail panel beside it. */
+.toolbar{display:none}
+html.js .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:0 0 .75rem}
+.toolbar .group{display:flex;gap:.25rem;align-items:center}
+.toolbar .group[hidden]{display:none}
+.toolbar button{font:inherit;font-size:.875rem;padding:.375rem .75rem;border-radius:.5rem;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;min-width:2.25rem}
+.toolbar button:hover{border-color:var(--brand)}
+.toolbar button[aria-pressed="true"]{background:var(--brand-dark);color:var(--palette-on-dark);
+  border-color:var(--brand-dark)}
+.zoom-level{font-size:.875rem;color:var(--muted);min-width:4.5rem;text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:.375rem}
+.chip{font:inherit;font-size:.875rem;display:inline-flex;align-items:center;gap:.375rem;
+  padding:.25rem .75rem;border-radius:999px;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.dot{display:inline-block;width:.75rem;height:.75rem;border-radius:50%;background:var(--role,var(--muted));
+  flex:none}
+.flow{position:relative}
+.figure-wrap{position:relative}
+.figure{margin:0;overflow:auto;border:1px solid var(--line);border-radius:.75rem;background:var(--bg)}
+/* Responsive without the script: the drawing fills the frame, grows to at most 1.5 times
+   its natural size on a wide screen, and never shrinks below the size where its smallest
+   text is 12 px (the sizes per drawing follow). Narrower than that, the frame scrolls.
+   The page carries two drawings of the same flow: lanes as columns (pd-tb), and lanes as
+   rows with the flow running right (pd-lr). One shows (class "on"); without the script and
+   in print that is the columns. */
+.pd{display:block;width:100%;height:auto;margin:0 auto}
+.pd-tb{max-width:2271px;min-width:1299px}
+.pd-lr{max-width:5685px;min-width:3249px}
+.pd:not(.on){display:none}
+html.fit .pd{min-width:0;max-width:none}
+/* Panning (the drawing is wider than the frame): the frame stops at the window height, so
+   both scrollbars are in reach, and the lane names stay on top of it while it scrolls. */
+html.js .pan .figure{max-height:calc(100vh - 2rem)}
+.lane-strip{display:none}
+html.js .pan .lane-strip:not([hidden]){display:block;position:absolute;z-index:1;top:1px;left:1px;
+  right:1px;height:2.25rem;overflow:hidden;pointer-events:none;background:var(--bg);
+  border-bottom:1px solid var(--line);border-radius:.75rem .75rem 0 0}
+.lane-strip span{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;white-space:nowrap;font-size:.875rem;font-weight:700;color:var(--ink);
+  background:var(--panel);border-top:4px solid var(--role,var(--line))}
+/* Rows pan sideways, so the lane names stand in a column on the left instead. */
+html.js .pan.rows .lane-strip:not([hidden]){right:auto;bottom:1px;width:9rem;height:auto;
+  border-bottom:0;border-right:1px solid var(--line);border-radius:.75rem 0 0 .75rem}
+.rows .lane-strip span{left:0;right:0;bottom:auto;padding:0 .5rem;white-space:normal;text-align:center;
+  border-top:0;border-left:4px solid var(--role,var(--line))}
+/* The detail panel lies over the drawing beside the step, so opening it never narrows it. */
+.detail{position:absolute;z-index:2;top:0;right:1rem;width:min(24rem,calc(100% - 2rem));
+  max-height:calc(100vh - 2rem);overflow:auto;border:2px solid var(--brand);border-radius:.75rem;
+  background:var(--bg);padding:1rem 1.25rem}
+.detail[hidden]{display:none}
+.detail-top{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin:0 0 .5rem}
+.detail-top p{margin:0;font-size:.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.detail-close{font:inherit;font-size:.875rem;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink);border-radius:.5rem;padding:.25rem .625rem;cursor:pointer}
+.detail .card{border:0;padding:0;box-shadow:none;background:none}
+.legend{margin:.75rem 0 0;color:var(--muted);font-size:.875rem;max-width:90ch}
+
+/* Cards: steps, roles, improvement points. */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(21rem,1fr));gap:1rem;
+  margin:0;padding:0;list-style:none}
+.card{background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--role,var(--line));
+  border-radius:.75rem;padding:1rem 1.25rem}
+.card-head{display:flex;align-items:center;gap:.625rem}
+.card-kind{margin:.25rem 0 .5rem;font-size:.875rem;color:var(--muted)}
+.num,.badge{flex:none;display:inline-grid;place-items:center;min-width:1.75rem;height:1.75rem;
+  padding:0 .375rem;border-radius:999px;font-size:.875rem;font-weight:700}
+.num{background:var(--panel);color:var(--ink);border:1px solid var(--role,var(--line))}
+/* Fills behind ink text keep the pale-red tint; red TEXT sits on white (--bad-bg). */
+.badge{background:var(--status-negative-bg);color:var(--ink);border:2px solid var(--bad)}
+.facts{margin:0;display:grid;gap:.625rem}
+.facts dt{color:var(--muted);font-size:.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.facts dd{margin:0;overflow-wrap:anywhere}
+.card{overflow-wrap:anywhere}
+.card-flag{margin:.75rem 0 0;padding:.625rem .75rem;border-radius:.5rem;background:var(--status-negative-bg)}
+.card-flag p{margin:.125rem 0}
+.card-actions{margin:.75rem 0 0}
+.show-in-flow{display:none}
+html.js .show-in-flow{display:inline-flex;font:inherit;font-size:.875rem;padding:.375rem .75rem;
+  border-radius:.5rem;border:1px solid var(--brand);background:var(--bg);color:var(--brand);cursor:pointer}
+html.js .show-in-flow:hover{background:var(--panel)}
+.role-card ul{margin:0;padding-left:1.25rem}
+.role-card .role-steps{list-style:none;padding-left:0}
+.role-card li{margin:.125rem 0}
+.none{margin:0;color:var(--muted)}
+.flag-card{border-left-color:var(--bad)}
+.textalt{max-width:90ch}
+.textalt h3{margin:1.25rem 0 .25rem}
+.textalt ol{padding-left:1.5rem;margin:0}
+.textalt li{margin:0 0 .5rem}
+.textalt .branches{margin:.25rem 0 0;padding-left:1.5rem}
+.flag-note{margin:.25rem 0 0;color:var(--bad)}
+footer{max-width:90ch;margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--muted);font-size:.875rem}
+
+/* The drawing. Every colour comes from the token contract (tools/tun_tokens.py). */
+.pd feDropShadow{flood-color:var(--palette-ink)}
+.pd .lane-band{fill:var(--role);fill-opacity:.045}
+.pd .lane-head{fill:var(--role);fill-opacity:.13}
+.pd .lane-stripe{fill:var(--role)}
+.pd .lane-name{fill:var(--ink)}
+.pd .node-shape{fill:var(--bg);stroke:var(--role);stroke-width:1.5}
+.pd .node-decision .node-shape{fill:var(--panel)}
+.pd .node-start .node-shape,.pd .node-end .node-shape{fill:var(--brand-dark);stroke:var(--brand-dark)}
+.pd .node-label{fill:var(--ink)}
+.pd .node-start .node-label,.pd .node-end .node-label{fill:var(--palette-on-dark);font-weight:600}
+.pd .step-no circle{fill:var(--role);fill-opacity:.16;stroke:var(--role);stroke-width:1}
+.pd .step-no text{fill:var(--ink)}
+.pd .node-start .step-no circle,.pd .node-end .step-no circle{fill:var(--bg);fill-opacity:1}
+.pd .flagged .node-shape{fill:var(--status-negative-bg);stroke:var(--bad);stroke-width:2}
+.pd .flag-badge circle{fill:var(--status-negative-bg);stroke:var(--bad);stroke-width:2}
+.pd .flag-badge text{fill:var(--ink)}
+.pd .edge-line{fill:none;stroke:var(--muted);stroke-width:1.75;stroke-linejoin:round}
+.pd .edge[data-loop] .edge-line{stroke-dasharray:6 4}
+.pd .edge-arrow{fill:var(--muted)}
+.pd .pill{fill:var(--bg);stroke:var(--muted);stroke-opacity:.5;stroke-width:1}
+.pd .edge-label text{fill:var(--ink)}
+html.js .pd .node{cursor:pointer}
+.pd .node:focus{outline:none}
+.pd .node:focus-visible .node-shape,.pd .node.selected .node-shape{stroke:var(--brand);stroke-width:3}
+.pd .edge.hl .edge-line{stroke:var(--brand);stroke-width:2.5}
+.pd .edge.hl .edge-arrow{fill:var(--brand)}
+.pd.focusing .node:not(.hl),.pd.focusing .edge:not(.hl),.pd.focusing .flag-badge:not(.hl){opacity:.22}
+.pd.lane-filter .node:not(.in-lane),.pd.lane-filter .edge:not(.in-lane),.pd.lane-filter .flag-badge:not(.in-lane){opacity:.18}
+.pd.lane-filter .lane:not(.in-lane) .lane-band{fill-opacity:0}
+.pd .node,.pd .edge,.pd .flag-badge{transition:opacity .15s}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  /* Paper is read close up: a smaller scale fits three cards across a page. */
+  html{font-size:12px}
+  body{background:var(--bg)}
+  main{padding:0;max-width:none}
+  /* Print shows every panel, whatever tab was open. */
+  html.js .tabs,.toolbar,html.js .toolbar,.detail,html.js .show-in-flow,.show-in-flow{display:none}
+  .panel[hidden]{display:block}
+  html.js .panel-h{position:static;width:auto;height:auto;overflow:visible;clip-path:none;
+    white-space:normal;margin:1.5rem 0 .75rem}
+  html.js .panel{padding-top:0}
+  .panel + .panel{break-before:page}
+  .figure,html.js .pan .figure{overflow:visible;max-height:none;border:0;break-inside:avoid}
+  /* Paper is portrait: print the columns, whichever drawing was on screen. */
+  html .pd.pd-tb{display:block}
+  html .pd.pd-lr{display:none}
+  html.js .pan .lane-strip:not([hidden]){display:none}
+  /* The drawing fits under the title on the first page: never wider than the page,
+     never taller than what is left of it. */
+  html .pd{width:auto;height:auto;min-width:0;max-width:100%;max-height:215mm;margin:0 auto}
+  .pd,.pd *,.card,.badge,.card-flag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cards{grid-template-columns:1fr 1fr 1fr;gap:.5rem}
+  .card{padding:.625rem .75rem}
+  .card{break-inside:avoid}
+  .pd.focusing .node,.pd.focusing .edge,.pd.lane-filter .node,.pd.lane-filter .edge,
+  .pd.focusing .flag-badge,.pd.lane-filter .flag-badge{opacity:1}
+}
+@media (max-width:40rem){
+  main{padding:1rem}
+  h1{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.className+=" js"</script>
+<main>
+<header>
+<h1>Slik behandler kommunen en byggesøknad</h1>
+<p class="lede">Fra søknad til ferdigattest. Fem roller, to sløyfer tilbake og fire beslutninger.</p>
+<p class="meta">17 steg · 5 roller · 3 forbedringspunkter</p>
+</header>
+
+<div class="tabs" role="tablist" aria-label="Visninger">
+<button type="button" role="tab" id="tab-flyt" aria-controls="panel-flyt" aria-selected="true">Flyt</button>
+<button type="button" role="tab" id="tab-steg" aria-controls="panel-steg" aria-selected="false" tabindex="-1">Steg</button>
+<button type="button" role="tab" id="tab-roller" aria-controls="panel-roller" aria-selected="false" tabindex="-1">Roller</button>
+<button type="button" role="tab" id="tab-forbedring" aria-controls="panel-forbedring" aria-selected="false" tabindex="-1">Forbedringspunkter</button>
+<button type="button" role="tab" id="tab-tekst" aria-controls="panel-tekst" aria-selected="false" tabindex="-1">Tekstversjon</button>
+</div>
+
+<section class="panel" id="panel-flyt" aria-labelledby="flyt-h">
+<h2 class="panel-h" id="flyt-h">Flyt</h2>
+<div class="toolbar">
+<div class="group" role="group" aria-label="Størrelse">
+<button type="button" id="zoom-out" aria-label="Zoom ut">−</button>
+<span class="zoom-level" id="zoom-level" aria-live="polite">100 %</span>
+<button type="button" id="zoom-in" aria-label="Zoom inn">+</button>
+<button type="button" id="zoom-reset">100 %</button>
+<button type="button" id="fit" aria-pressed="false">Tilpass til bredden</button>
+</div>
+<div class="group orient" id="orient" role="group" aria-label="Retning på flyten">
+<button type="button" data-orient="auto" aria-pressed="true">Auto</button>
+<button type="button" data-orient="tb" aria-pressed="false">Loddrett</button>
+<button type="button" data-orient="lr" aria-pressed="false">Vannrett</button>
+</div>
+<div class="chips" role="group" aria-label="Fremhev en rolle"><button type="button" class="chip" data-lane="" aria-pressed="true">Alle roller</button><button type="button" class="chip c0" data-lane="0" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Søker</button><button type="button" class="chip c1" data-lane="1" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Saksbehandler</button><button type="button" class="chip c2" data-lane="2" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Fagkyndig</button><button type="button" class="chip c3" data-lane="3" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Leder</button><button type="button" class="chip c4" data-lane="4" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Arkiv</button></div>
+</div>
+<div class="flow">
+<div class="figure-wrap">
+<div class="lane-strip" id="lane-strip" aria-hidden="true" hidden></div>
+<figure class="figure">
+<svg xmlns="http://www.w3.org/2000/svg" class="pd pd-tb on" data-orient="tb" width="1514.6" height="1934" viewBox="0 0 1514.6 1934" role="img" aria-labelledby="pd-title pd-desc" font-size="14">
+<title id="pd-title">Slik behandler kommunen en byggesøknad</title>
+<desc id="pd-desc">Prosessdiagram med 17 steg i 5 roller. Den samme flyten står som tekst i fanen Tekstversjon.</desc>
+<defs><filter id="pd-shadow" x="-10%" y="-20%" width="120%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-opacity="0.22"/></filter></defs>
+<g class="lanes">
+<g class="lane c0" data-lane="0"><rect class="lane-band" x="16" y="56" width="300" height="1862"/><rect class="lane-head" x="18" y="16" width="296" height="32" rx="8"/><rect class="lane-stripe" x="18" y="16" width="296" height="4" rx="2"/><text class="lane-name" x="166" y="38.5" text-anchor="middle" font-weight="700"><tspan x="166" dy="0">Søker</tspan></text></g>
+<g class="lane c1" data-lane="1"><rect class="lane-band" x="316" y="56" width="288" height="1862"/><rect class="lane-head" x="318" y="16" width="284" height="32" rx="8"/><rect class="lane-stripe" x="318" y="16" width="284" height="4" rx="2"/><text class="lane-name" x="460" y="38.5" text-anchor="middle" font-weight="700"><tspan x="460" dy="0">Saksbehandler</tspan></text></g>
+<g class="lane c2" data-lane="2"><rect class="lane-band" x="604" y="56" width="288" height="1862"/><rect class="lane-head" x="606" y="16" width="284" height="32" rx="8"/><rect class="lane-stripe" x="606" y="16" width="284" height="4" rx="2"/><text class="lane-name" x="748" y="38.5" text-anchor="middle" font-weight="700"><tspan x="748" dy="0">Fagkyndig</tspan></text></g>
+<g class="lane c3" data-lane="3"><rect class="lane-band" x="892" y="56" width="330.6" height="1862"/><rect class="lane-head" x="894" y="16" width="326.6" height="32" rx="8"/><rect class="lane-stripe" x="894" y="16" width="326.6" height="4" rx="2"/><text class="lane-name" x="1057.3" y="38.5" text-anchor="middle" font-weight="700"><tspan x="1057.3" dy="0">Leder</tspan></text></g>
+<g class="lane c4" data-lane="4"><rect class="lane-band" x="1222.6" y="56" width="276" height="1862"/><rect class="lane-head" x="1224.6" y="16" width="272" height="32" rx="8"/><rect class="lane-stripe" x="1224.6" y="16" width="272" height="4" rx="2"/><text class="lane-name" x="1360.6" y="38.5" text-anchor="middle" font-weight="700"><tspan x="1360.6" dy="0">Arkiv</tspan></text></g>
+</g>
+<g class="edges">
+<g class="edge" data-from="sok" data-to="mottar"><path class="edge-line" d="M154 170 L154 192 Q154 198 160 198 L448 198 Q454 198 454 204 L454 226"/><path class="edge-arrow" d="M454 226 L450 216 L458 216 Z"/></g>
+<g class="edge" data-from="mottar" data-to="komplett"><path class="edge-line" d="M454 284 L454 340"/><path class="edge-arrow" d="M454 340 L450 330 L458 330 Z"/></g>
+<g class="edge" data-from="komplett" data-to="vurderer"><path class="edge-line" d="M477.3 398 L477.3 466"/><path class="edge-arrow" d="M477.3 466 L473.3 456 L481.3 456 Z"/><g class="edge-label"><rect class="pill" x="481.3" y="401" width="30.4" height="20" rx="10"/><text x="496.5" y="415.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="komplett" data-to="mangler"><path class="edge-line" d="M430.7 398 L430.7 432 Q430.7 438 424.7 438 L168 438 Q162 438 162 444 L162 466"/><path class="edge-arrow" d="M162 466 L158 456 L166 456 Z"/><g class="edge-label"><rect class="pill" x="434.7" y="401" width="38.6" height="20" rx="10"/><text x="454" y="415.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="mangler" data-to="mottar" data-loop="1"><path class="edge-line" d="M260 495 L286 495 Q292 495 292 489 L292 261 Q292 255 298 255 L348 255"/><path class="edge-arrow" d="M348 255 L338 259 L338 251 Z"/></g>
+<g class="edge" data-from="vurderer" data-to="befaring"><path class="edge-line" d="M454 524 L454 546 Q454 552 460 552 L736 552 Q742 552 742 558 L742 592"/><path class="edge-arrow" d="M742 592 L738 582 L746 582 Z"/></g>
+<g class="edge" data-from="befaring" data-to="tegninger"><path class="edge-line" d="M742 650 L742 706"/><path class="edge-arrow" d="M742 706 L738 696 L746 696 Z"/></g>
+<g class="edge" data-from="tegninger" data-to="dispensasjon"><path class="edge-line" d="M765.3 764 L765.3 822 Q765.3 828 759.3 828 L468 828 Q462 828 462 834 L462 856"/><path class="edge-arrow" d="M462 856 L458 846 L466 846 Z"/><g class="edge-label"><rect class="pill" x="769.3" y="767" width="30.4" height="20" rx="10"/><text x="784.5" y="781.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="tegninger" data-to="justerer"><path class="edge-line" d="M718.7 764 L718.7 810 Q718.7 816 712.7 816 L160 816 Q154 816 154 822 L154 856"/><path class="edge-arrow" d="M154 856 L150 846 L158 846 Z"/><g class="edge-label"><rect class="pill" x="722.7" y="767" width="38.6" height="20" rx="10"/><text x="742" y="781.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="justerer" data-to="befaring" data-loop="1"><path class="edge-line" d="M260 885 L286 885 Q292 885 292 879 L292 570 Q292 564 298 564 L874 564 Q880 564 880 570 L880 615 Q880 621 874 621 L848 621"/><path class="edge-arrow" d="M848 621 L858 617 L858 625 Z"/></g>
+<g class="edge" data-from="dispensasjon" data-to="uttalelse"><path class="edge-line" d="M477.3 914 L477.3 948 Q477.3 954 483.3 954 L736 954 Q742 954 742 960 L742 982"/><path class="edge-arrow" d="M742 982 L738 972 L746 972 Z"/><g class="edge-label"><rect class="pill" x="481.3" y="917" width="30.4" height="20" rx="10"/><text x="496.5" y="931.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="dispensasjon" data-to="utkast"><path class="edge-line" d="M430.7 914 L430.7 1108"/><path class="edge-arrow" d="M430.7 1108 L426.7 1098 L434.7 1098 Z"/><g class="edge-label"><rect class="pill" x="434.7" y="917" width="38.6" height="20" rx="10"/><text x="454" y="931.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="uttalelse" data-to="utkast"><path class="edge-line" d="M742 1040 L742 1062 Q742 1068 736 1068 L458.7 1068 Q452.7 1068 452.7 1074 L452.7 1108"/><path class="edge-arrow" d="M452.7 1108 L448.7 1098 L456.7 1098 Z"/></g>
+<g class="edge" data-from="utkast" data-to="godkjenner"><path class="edge-line" d="M454 1166 L454 1188 Q454 1194 460 1194 L1024 1194 Q1030 1194 1030 1200 L1030 1222"/><path class="edge-arrow" d="M1030 1222 L1026 1212 L1034 1212 Z"/></g>
+<g class="edge" data-from="godkjenner" data-to="signerer"><path class="edge-line" d="M1030 1280 L1030 1336"/><path class="edge-arrow" d="M1030 1336 L1026 1326 L1034 1326 Z"/></g>
+<g class="edge" data-from="signerer" data-to="sender"><path class="edge-line" d="M1030 1394 L1030 1428 Q1030 1434 1024 1434 L468 1434 Q462 1434 462 1440 L462 1462"/><path class="edge-arrow" d="M462 1462 L458 1452 L466 1452 Z"/><g class="edge-label"><rect class="pill" x="1034" y="1397" width="30.4" height="20" rx="10"/><text x="1049.2" y="1411.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="signerer" data-to="utkast" data-loop="1"><path class="edge-line" d="M1136 1365 L1192.6 1365 Q1198.6 1365 1198.6 1359 L1198.6 1086 Q1198.6 1080 1192.6 1080 L598 1080 Q592 1080 592 1086 L592 1131 Q592 1137 586 1137 L560 1137"/><path class="edge-arrow" d="M560 1137 L570 1133 L570 1141 Z"/><g class="edge-label"><rect class="pill" x="1140" y="1368" width="38.6" height="20" rx="10"/><text x="1159.3" y="1382.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="sender" data-to="journal"><path class="edge-line" d="M454 1520 L454 1542 Q454 1548 460 1548 L1354.6 1548 Q1360.6 1548 1360.6 1554 L1360.6 1576"/><path class="edge-arrow" d="M1360.6 1576 L1356.6 1566 L1364.6 1566 Z"/></g>
+<g class="edge" data-from="journal" data-to="tilsyn"><path class="edge-line" d="M1360.6 1634 L1360.6 1690"/><path class="edge-arrow" d="M1360.6 1690 L1356.6 1680 L1364.6 1680 Z"/></g>
+<g class="edge" data-from="tilsyn" data-to="attest"><path class="edge-line" d="M1360.6 1748 L1360.6 1770 Q1360.6 1776 1354.6 1776 L160 1776 Q154 1776 154 1782 L154 1804"/><path class="edge-arrow" d="M154 1804 L150 1794 L158 1794 Z"/></g>
+</g>
+<g class="nodes">
+<g class="node node-start c0" data-node="sok" data-lane="0" transform="translate(48 112)"><title>1. Sender byggesøknad</title><rect class="node-shape" width="212" height="58" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="27" cy="29" r="11"/><text x="27" y="33.9" text-anchor="middle" font-size="14" font-weight="700">1 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Sender byggesøknad</tspan></text></g>
+<g class="node node-step c1" data-node="mottar" data-lane="1" transform="translate(348 226)"><title>2. Registrerer søknaden</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">2 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Registrerer </tspan><tspan x="118" dy="18">søknaden</tspan></text></g>
+<g class="node node-decision c1" data-node="komplett" data-lane="1" transform="translate(348 340)"><title>3. Er søknaden komplett?</title><polygon class="node-shape" points="18,0 194,0 212,29 194,58 18,58 0,29" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="31" cy="29" r="11"/><text x="31" y="33.9" text-anchor="middle" font-size="14" font-weight="700">3 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Er søknaden </tspan><tspan x="118" dy="18">komplett?</tspan></text></g>
+<g class="node node-step c0" data-node="mangler" data-lane="0" transform="translate(48 466)"><title>4. Sender manglende vedlegg</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">4 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Sender manglende </tspan><tspan x="118" dy="18">vedlegg</tspan></text></g>
+<g class="node node-step c1" data-node="vurderer" data-lane="1" transform="translate(348 466)"><title>5. Vurderer søknaden mot planen</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">5 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Vurderer søknaden </tspan><tspan x="118" dy="18">mot planen</tspan></text></g>
+<g class="node node-step c2" data-node="befaring" data-lane="2" transform="translate(636 592)"><title>6. Gjør befaring på tomten</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">6 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Gjør befaring på </tspan><tspan x="118" dy="18">tomten</tspan></text></g>
+<g class="node node-decision c2" data-node="tegninger" data-lane="2" transform="translate(636 706)"><title>7. Er tegningene i orden?</title><polygon class="node-shape" points="18,0 194,0 212,29 194,58 18,58 0,29" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="31" cy="29" r="11"/><text x="31" y="33.9" text-anchor="middle" font-size="14" font-weight="700">7 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Er tegningene i </tspan><tspan x="118" dy="18">orden?</tspan></text></g>
+<g class="node node-step c0 flagged" data-node="justerer" data-lane="0" transform="translate(48 856)"><title>8. Justerer tegningene (Forbedringspunkt 1: Søkeren får ikke vite hva som må endres)</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">8 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Justerer tegningene</tspan></text></g><g class="flag-badge" data-node="justerer" data-lane="0" aria-hidden="true" transform="translate(48 856)"><circle cx="212" cy="0" r="11"/><text x="212" y="4.9" text-anchor="middle" font-size="14" font-weight="700">1</text></g>
+<g class="node node-decision c1" data-node="dispensasjon" data-lane="1" transform="translate(348 856)"><title>9. Trengs dispensasjon?</title><polygon class="node-shape" points="18,0 194,0 212,29 194,58 18,58 0,29" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="31" cy="29" r="11"/><text x="31" y="33.9" text-anchor="middle" font-size="14" font-weight="700">9 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Trengs </tspan><tspan x="118" dy="18">dispensasjon?</tspan></text></g>
+<g class="node node-step c2" data-node="uttalelse" data-lane="2" transform="translate(636 982)"><title>10. Skriver faglig uttalelse</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">10 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Skriver faglig </tspan><tspan x="118" dy="18">uttalelse</tspan></text></g>
+<g class="node node-step c1 flagged" data-node="utkast" data-lane="1" transform="translate(348 1108)"><title>11. Skriver utkast til vedtak (Forbedringspunkt 2: Utkastet skrives fra bunnen hver gang)</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">11 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Skriver utkast til </tspan><tspan x="118" dy="18">vedtak</tspan></text></g><g class="flag-badge" data-node="utkast" data-lane="1" aria-hidden="true" transform="translate(348 1108)"><circle cx="212" cy="0" r="11"/><text x="212" y="4.9" text-anchor="middle" font-size="14" font-weight="700">2</text></g>
+<g class="node node-step c3" data-node="godkjenner" data-lane="3" transform="translate(924 1222)"><title>12. Leser utkast og uttalelse</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">12 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Leser utkast og </tspan><tspan x="118" dy="18">uttalelse</tspan></text></g>
+<g class="node node-decision c3 flagged" data-node="signerer" data-lane="3" transform="translate(924 1336)"><title>13. Signerer vedtaket? (Forbedringspunkt 3: Vedtak venter ofte en uke på signatur)</title><polygon class="node-shape" points="18,0 194,0 212,29 194,58 18,58 0,29" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="31" cy="29" r="11"/><text x="31" y="33.9" text-anchor="middle" font-size="14" font-weight="700">13 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Signerer </tspan><tspan x="118" dy="18">vedtaket?</tspan></text></g><g class="flag-badge" data-node="signerer" data-lane="3" aria-hidden="true" transform="translate(924 1336)"><circle cx="194" cy="0" r="11"/><text x="194" y="4.9" text-anchor="middle" font-size="14" font-weight="700">3</text></g>
+<g class="node node-step c1" data-node="sender" data-lane="1" transform="translate(348 1462)"><title>14. Sender vedtaket</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">14 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Sender vedtaket</tspan></text></g>
+<g class="node node-step c4" data-node="journal" data-lane="4" transform="translate(1254.6 1576)"><title>15. Journalfører vedtaket</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">15 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Journalfører </tspan><tspan x="118" dy="18">vedtaket</tspan></text></g>
+<g class="node node-step c4" data-node="tilsyn" data-lane="4" transform="translate(1254.6 1690)"><title>16. Planlegger tilsyn etter byggestart</title><rect class="node-shape" width="212" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="29" r="11"/><text x="23" y="33.9" text-anchor="middle" font-size="14" font-weight="700">16 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Planlegger tilsyn </tspan><tspan x="118" dy="18">etter byggestart</tspan></text></g>
+<g class="node node-end c0" data-node="attest" data-lane="0" transform="translate(48 1804)"><title>17. Får ferdigattest</title><rect class="node-shape" width="212" height="58" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="27" cy="29" r="11"/><text x="27" y="33.9" text-anchor="middle" font-size="14" font-weight="700">17 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Får ferdigattest</tspan></text></g>
+</g>
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" class="pd pd-lr" data-orient="lr" width="3790.2" height="928" viewBox="0 0 3790.2 928" role="img" aria-labelledby="pd-lr-title pd-lr-desc" font-size="14">
+<title id="pd-lr-title">Slik behandler kommunen en byggesøknad</title>
+<desc id="pd-lr-desc">Prosessdiagram med 17 steg i 5 roller. Den samme flyten står som tekst i fanen Tekstversjon.</desc>
+<defs><filter id="pd-lr-shadow" x="-10%" y="-20%" width="120%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-opacity="0.22"/></filter></defs>
+<g class="lanes">
+<g class="lane c0" data-lane="0"><rect class="lane-band" x="166" y="16" width="3608.2" height="184"/><rect class="lane-head" x="16" y="18" width="142" height="180" rx="8"/><rect class="lane-stripe" x="16" y="18" width="4" height="180" rx="2"/><text class="lane-name" x="89" y="112.5" text-anchor="middle" font-weight="700"><tspan x="89" dy="0">Søker</tspan></text></g>
+<g class="lane c1" data-lane="1"><rect class="lane-band" x="166" y="200" width="3608.2" height="178"/><rect class="lane-head" x="16" y="202" width="142" height="174" rx="8"/><rect class="lane-stripe" x="16" y="202" width="4" height="174" rx="2"/><text class="lane-name" x="89" y="293.5" text-anchor="middle" font-weight="700"><tspan x="89" dy="0">Saksbehandler</tspan></text></g>
+<g class="lane c2" data-lane="2"><rect class="lane-band" x="166" y="378" width="3608.2" height="178"/><rect class="lane-head" x="16" y="380" width="142" height="174" rx="8"/><rect class="lane-stripe" x="16" y="380" width="4" height="174" rx="2"/><text class="lane-name" x="89" y="471.5" text-anchor="middle" font-weight="700"><tspan x="89" dy="0">Fagkyndig</tspan></text></g>
+<g class="lane c3" data-lane="3"><rect class="lane-band" x="166" y="556" width="3608.2" height="196"/><rect class="lane-head" x="16" y="558" width="142" height="192" rx="8"/><rect class="lane-stripe" x="16" y="558" width="4" height="192" rx="2"/><text class="lane-name" x="89" y="658.5" text-anchor="middle" font-weight="700"><tspan x="89" dy="0">Leder</tspan></text></g>
+<g class="lane c4" data-lane="4"><rect class="lane-band" x="166" y="752" width="3608.2" height="160"/><rect class="lane-head" x="16" y="754" width="142" height="156" rx="8"/><rect class="lane-stripe" x="16" y="754" width="4" height="156" rx="2"/><text class="lane-name" x="89" y="836.5" text-anchor="middle" font-weight="700"><tspan x="89" dy="0">Arkiv</tspan></text></g>
+</g>
+<g class="edges">
+<g class="edge" data-from="sok" data-to="mottar"><path class="edge-line" d="M392 96 L414 96 Q420 96 420 102 L420 277 Q420 283 426 283 L448 283"/><path class="edge-arrow" d="M448 283 L438 287 L438 279 Z"/></g>
+<g class="edge" data-from="mottar" data-to="komplett"><path class="edge-line" d="M618 283 L674 283"/><path class="edge-arrow" d="M674 283 L664 287 L664 279 Z"/></g>
+<g class="edge" data-from="komplett" data-to="vurderer"><path class="edge-line" d="M844 297 L930.6 297"/><path class="edge-arrow" d="M930.6 297 L920.6 301 L920.6 293 Z"/><g class="edge-label"><rect class="pill" x="847" y="301" width="30.4" height="20" rx="10"/><text x="862.2" y="315.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="komplett" data-to="mangler"><path class="edge-line" d="M844 269 L896.6 269 Q902.6 269 902.6 263 L902.6 110 Q902.6 104 908.6 104 L930.6 104"/><path class="edge-arrow" d="M930.6 104 L920.6 108 L920.6 100 Z"/><g class="edge-label"><rect class="pill" x="847" y="273" width="38.6" height="20" rx="10"/><text x="866.3" y="287.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="mangler" data-to="mottar" data-loop="1"><path class="edge-line" d="M1015.6 144 L1015.6 170 Q1015.6 176 1009.6 176 L539 176 Q533 176 533 182 L533 232"/><path class="edge-arrow" d="M533 232 L529 222 L537 222 Z"/></g>
+<g class="edge" data-from="vurderer" data-to="befaring"><path class="edge-line" d="M1100.6 283 L1122.6 283 Q1128.6 283 1128.6 289 L1128.6 455 Q1128.6 461 1134.6 461 L1168.6 461"/><path class="edge-arrow" d="M1168.6 461 L1158.6 465 L1158.6 457 Z"/></g>
+<g class="edge" data-from="befaring" data-to="tegninger"><path class="edge-line" d="M1338.6 461 L1394.6 461"/><path class="edge-arrow" d="M1394.6 461 L1384.6 465 L1384.6 457 Z"/></g>
+<g class="edge" data-from="tegninger" data-to="dispensasjon"><path class="edge-line" d="M1564.6 475 L1641.2 475 Q1647.2 475 1647.2 469 L1647.2 297 Q1647.2 291 1653.2 291 L1675.2 291"/><path class="edge-arrow" d="M1675.2 291 L1665.2 295 L1665.2 287 Z"/><g class="edge-label"><rect class="pill" x="1567.6" y="479" width="30.4" height="20" rx="10"/><text x="1582.8" y="493.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="tegninger" data-to="justerer"><path class="edge-line" d="M1564.6 447 L1629.2 447 Q1635.2 447 1635.2 441 L1635.2 102 Q1635.2 96 1641.2 96 L1675.2 96"/><path class="edge-arrow" d="M1675.2 96 L1665.2 100 L1665.2 92 Z"/><g class="edge-label"><rect class="pill" x="1567.6" y="451" width="38.6" height="20" rx="10"/><text x="1586.9" y="465.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="justerer" data-to="befaring" data-loop="1"><path class="edge-line" d="M1760.2 144 L1760.2 170 Q1760.2 176 1754.2 176 L1146.6 176 Q1140.6 176 1140.6 182 L1140.6 538 Q1140.6 544 1146.6 544 L1247.6 544 Q1253.6 544 1253.6 538 L1253.6 512"/><path class="edge-arrow" d="M1253.6 512 L1257.6 522 L1249.6 522 Z"/></g>
+<g class="edge" data-from="dispensasjon" data-to="uttalelse"><path class="edge-line" d="M1845.2 297 L1897.8 297 Q1903.8 297 1903.8 303 L1903.8 455 Q1903.8 461 1909.8 461 L1931.8 461"/><path class="edge-arrow" d="M1931.8 461 L1921.8 465 L1921.8 457 Z"/><g class="edge-label"><rect class="pill" x="1848.2" y="301" width="30.4" height="20" rx="10"/><text x="1863.4" y="315.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="dispensasjon" data-to="utkast"><path class="edge-line" d="M1845.2 269 L2169.8 269"/><path class="edge-arrow" d="M2169.8 269 L2159.8 273 L2159.8 265 Z"/><g class="edge-label"><rect class="pill" x="1848.2" y="273" width="38.6" height="20" rx="10"/><text x="1867.5" y="287.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="uttalelse" data-to="utkast"><path class="edge-line" d="M2101.8 461 L2123.8 461 Q2129.8 461 2129.8 455 L2129.8 311 Q2129.8 305 2135.8 305 L2169.8 305"/><path class="edge-arrow" d="M2169.8 305 L2159.8 309 L2159.8 301 Z"/></g>
+<g class="edge" data-from="utkast" data-to="godkjenner"><path class="edge-line" d="M2339.8 283 L2361.8 283 Q2367.8 283 2367.8 289 L2367.8 630 Q2367.8 636 2373.8 636 L2395.8 636"/><path class="edge-arrow" d="M2395.8 636 L2385.8 640 L2385.8 632 Z"/></g>
+<g class="edge" data-from="godkjenner" data-to="signerer"><path class="edge-line" d="M2565.8 636 L2621.8 636"/><path class="edge-arrow" d="M2621.8 636 L2611.8 640 L2611.8 632 Z"/></g>
+<g class="edge" data-from="signerer" data-to="sender"><path class="edge-line" d="M2791.8 636 L2836.2 636 Q2842.2 636 2842.2 630 L2842.2 297 Q2842.2 291 2848.2 291 L2870.2 291"/><path class="edge-arrow" d="M2870.2 291 L2860.2 295 L2860.2 287 Z"/><g class="edge-label"><rect class="pill" x="2794.8" y="640" width="30.4" height="20" rx="10"/><text x="2810" y="654.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="signerer" data-to="utkast" data-loop="1"><path class="edge-line" d="M2706.8 684 L2706.8 722 Q2706.8 728 2700.8 728 L2147.8 728 Q2141.8 728 2141.8 722 L2141.8 372 Q2141.8 366 2147.8 366 L2248.8 366 Q2254.8 366 2254.8 360 L2254.8 334"/><path class="edge-arrow" d="M2254.8 334 L2258.8 344 L2250.8 344 Z"/><g class="edge-label"><rect class="pill" x="2709.8" y="688" width="38.6" height="20" rx="10"/><text x="2729.1" y="702.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="sender" data-to="journal"><path class="edge-line" d="M3040.2 283 L3062.2 283 Q3068.2 283 3068.2 289 L3068.2 826 Q3068.2 832 3074.2 832 L3096.2 832"/><path class="edge-arrow" d="M3096.2 832 L3086.2 836 L3086.2 828 Z"/></g>
+<g class="edge" data-from="journal" data-to="tilsyn"><path class="edge-line" d="M3266.2 832 L3322.2 832"/><path class="edge-arrow" d="M3322.2 832 L3312.2 836 L3312.2 828 Z"/></g>
+<g class="edge" data-from="tilsyn" data-to="attest"><path class="edge-line" d="M3492.2 832 L3514.2 832 Q3520.2 832 3520.2 826 L3520.2 102 Q3520.2 96 3526.2 96 L3548.2 96"/><path class="edge-arrow" d="M3548.2 96 L3538.2 100 L3538.2 92 Z"/></g>
+</g>
+<g class="nodes">
+<g class="node node-start c0" data-node="sok" data-lane="0" transform="translate(222 48)"><title>1. Sender byggesøknad</title><rect class="node-shape" width="170" height="96" rx="24" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="27" cy="48" r="11"/><text x="27" y="52.9" text-anchor="middle" font-size="14" font-weight="700">1 </text></g><text class="node-label" x="97" y="43.5" text-anchor="middle"><tspan x="97" dy="0">Sender </tspan><tspan x="97" dy="18">byggesøknad</tspan></text></g>
+<g class="node node-step c1" data-node="mottar" data-lane="1" transform="translate(448 232)"><title>2. Registrerer søknaden</title><rect class="node-shape" width="170" height="102" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">2 </text></g><text class="node-label" x="97" y="46.5" text-anchor="middle"><tspan x="97" dy="0">Registrerer </tspan><tspan x="97" dy="18">søknaden</tspan></text></g>
+<g class="node node-decision c1" data-node="komplett" data-lane="1" transform="translate(674 232)"><title>3. Er søknaden komplett?</title><polygon class="node-shape" points="0,18 85,0 170,18 170,84 85,102 0,84" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">3 </text></g><text class="node-label" x="97" y="46.5" text-anchor="middle"><tspan x="97" dy="0">Er søknaden </tspan><tspan x="97" dy="18">komplett?</tspan></text></g>
+<g class="node node-step c0" data-node="mangler" data-lane="0" transform="translate(930.6 48)"><title>4. Sender manglende vedlegg</title><rect class="node-shape" width="170" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">4 </text></g><text class="node-label" x="97" y="34.5" text-anchor="middle"><tspan x="97" dy="0">Sender </tspan><tspan x="97" dy="18">manglende </tspan><tspan x="97" dy="18">vedlegg</tspan></text></g>
+<g class="node node-step c1" data-node="vurderer" data-lane="1" transform="translate(930.6 232)"><title>5. Vurderer søknaden mot planen</title><rect class="node-shape" width="170" height="102" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">5 </text></g><text class="node-label" x="97" y="37.5" text-anchor="middle"><tspan x="97" dy="0">Vurderer </tspan><tspan x="97" dy="18">søknaden mot </tspan><tspan x="97" dy="18">planen</tspan></text></g>
+<g class="node node-step c2" data-node="befaring" data-lane="2" transform="translate(1168.6 410)"><title>6. Gjør befaring på tomten</title><rect class="node-shape" width="170" height="102" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">6 </text></g><text class="node-label" x="97" y="46.5" text-anchor="middle"><tspan x="97" dy="0">Gjør befaring </tspan><tspan x="97" dy="18">på tomten</tspan></text></g>
+<g class="node node-decision c2" data-node="tegninger" data-lane="2" transform="translate(1394.6 410)"><title>7. Er tegningene i orden?</title><polygon class="node-shape" points="0,18 85,0 170,18 170,84 85,102 0,84" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">7 </text></g><text class="node-label" x="97" y="46.5" text-anchor="middle"><tspan x="97" dy="0">Er tegningene </tspan><tspan x="97" dy="18">i orden?</tspan></text></g>
+<g class="node node-step c0 flagged" data-node="justerer" data-lane="0" transform="translate(1675.2 48)"><title>8. Justerer tegningene (Forbedringspunkt 1: Søkeren får ikke vite hva som må endres)</title><rect class="node-shape" width="170" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">8 </text></g><text class="node-label" x="97" y="43.5" text-anchor="middle"><tspan x="97" dy="0">Justerer </tspan><tspan x="97" dy="18">tegningene</tspan></text></g><g class="flag-badge" data-node="justerer" data-lane="0" aria-hidden="true" transform="translate(1675.2 48)"><circle cx="170" cy="0" r="11"/><text x="170" y="4.9" text-anchor="middle" font-size="14" font-weight="700">1</text></g>
+<g class="node node-decision c1" data-node="dispensasjon" data-lane="1" transform="translate(1675.2 232)"><title>9. Trengs dispensasjon?</title><polygon class="node-shape" points="0,18 85,0 170,18 170,84 85,102 0,84" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">9 </text></g><text class="node-label" x="97" y="46.5" text-anchor="middle"><tspan x="97" dy="0">Trengs </tspan><tspan x="97" dy="18">dispensasjon?</tspan></text></g>
+<g class="node node-step c2" data-node="uttalelse" data-lane="2" transform="translate(1931.8 410)"><title>10. Skriver faglig uttalelse</title><rect class="node-shape" width="170" height="102" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">10 </text></g><text class="node-label" x="97" y="37.5" text-anchor="middle"><tspan x="97" dy="0">Skriver </tspan><tspan x="97" dy="18">faglig </tspan><tspan x="97" dy="18">uttalelse</tspan></text></g>
+<g class="node node-step c1 flagged" data-node="utkast" data-lane="1" transform="translate(2169.8 232)"><title>11. Skriver utkast til vedtak (Forbedringspunkt 2: Utkastet skrives fra bunnen hver gang)</title><rect class="node-shape" width="170" height="102" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">11 </text></g><text class="node-label" x="97" y="37.5" text-anchor="middle"><tspan x="97" dy="0">Skriver </tspan><tspan x="97" dy="18">utkast til </tspan><tspan x="97" dy="18">vedtak</tspan></text></g><g class="flag-badge" data-node="utkast" data-lane="1" aria-hidden="true" transform="translate(2169.8 232)"><circle cx="170" cy="0" r="11"/><text x="170" y="4.9" text-anchor="middle" font-size="14" font-weight="700">2</text></g>
+<g class="node node-step c3" data-node="godkjenner" data-lane="3" transform="translate(2395.8 588)"><title>12. Leser utkast og uttalelse</title><rect class="node-shape" width="170" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">12 </text></g><text class="node-label" x="97" y="43.5" text-anchor="middle"><tspan x="97" dy="0">Leser utkast </tspan><tspan x="97" dy="18">og uttalelse</tspan></text></g>
+<g class="node node-decision c3 flagged" data-node="signerer" data-lane="3" transform="translate(2621.8 588)"><title>13. Signerer vedtaket? (Forbedringspunkt 3: Vedtak venter ofte en uke på signatur)</title><polygon class="node-shape" points="0,18 85,0 170,18 170,78 85,96 0,78" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">13 </text></g><text class="node-label" x="97" y="43.5" text-anchor="middle"><tspan x="97" dy="0">Signerer </tspan><tspan x="97" dy="18">vedtaket?</tspan></text></g><g class="flag-badge" data-node="signerer" data-lane="3" aria-hidden="true" transform="translate(2621.8 588)"><circle cx="170" cy="18" r="11"/><text x="170" y="22.9" text-anchor="middle" font-size="14" font-weight="700">3</text></g>
+<g class="node node-step c1" data-node="sender" data-lane="1" transform="translate(2870.2 232)"><title>14. Sender vedtaket</title><rect class="node-shape" width="170" height="102" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="51" r="11"/><text x="23" y="55.9" text-anchor="middle" font-size="14" font-weight="700">14 </text></g><text class="node-label" x="97" y="46.5" text-anchor="middle"><tspan x="97" dy="0">Sender </tspan><tspan x="97" dy="18">vedtaket</tspan></text></g>
+<g class="node node-step c4" data-node="journal" data-lane="4" transform="translate(3096.2 784)"><title>15. Journalfører vedtaket</title><rect class="node-shape" width="170" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">15 </text></g><text class="node-label" x="97" y="43.5" text-anchor="middle"><tspan x="97" dy="0">Journalfører </tspan><tspan x="97" dy="18">vedtaket</tspan></text></g>
+<g class="node node-step c4" data-node="tilsyn" data-lane="4" transform="translate(3322.2 784)"><title>16. Planlegger tilsyn etter byggestart</title><rect class="node-shape" width="170" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">16 </text></g><text class="node-label" x="97" y="34.5" text-anchor="middle"><tspan x="97" dy="0">Planlegger </tspan><tspan x="97" dy="18">tilsyn etter </tspan><tspan x="97" dy="18">byggestart</tspan></text></g>
+<g class="node node-end c0" data-node="attest" data-lane="0" transform="translate(3548.2 48)"><title>17. Får ferdigattest</title><rect class="node-shape" width="170" height="96" rx="24" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="27" cy="48" r="11"/><text x="27" y="52.9" text-anchor="middle" font-size="14" font-weight="700">17 </text></g><text class="node-label" x="97" y="43.5" text-anchor="middle"><tspan x="97" dy="0">Får </tspan><tspan x="97" dy="18">ferdigattest</tspan></text></g>
+</g>
+</svg>
+</figure>
+</div>
+<aside class="detail" id="detail" aria-labelledby="detail-h" hidden>
+<div class="detail-top"><p id="detail-h">Valgt steg</p>
+<button type="button" class="detail-close" id="detail-close">Lukk</button></div>
+<div id="detail-body"></div>
+</aside>
+</div>
+<p class="legend">Hvert bånd er én rolle. Avrundet boks: start eller slutt. Rektangel: et steg.
+Sekskant: en beslutning, med svaret i en boble ved hver pil. Stiplet linje: tilbake til et
+tidligere steg. Rød kant og rødt merke med tall: et forbedringspunkt. Tallet inne i hver boks er
+stegets nummer, det samme som i fanen Steg.</p>
+</section>
+
+<section class="panel" id="panel-steg" aria-labelledby="steg-h">
+<h2 class="panel-h" id="steg-h">Steg</h2>
+<div class="cards">
+<article class="card step-card c0" id="step-sok" data-node="sok"><header class="card-head"><span class="num">1</span><h3>Sender byggesøknad</h3></header><p class="card-kind">Start</p><dl class="facts"><div><dt>Rolle</dt><dd>Søker</dd></div><div><dt>Hva skjer</dt><dd>Søkeren fyller ut skjemaet og legger ved tegninger.</dd></div><div><dt>Videre til</dt><dd>2. «Registrerer søknaden» (Saksbehandler)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="sok">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-mottar" data-node="mottar"><header class="card-head"><span class="num">2</span><h3>Registrerer søknaden</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Saksbehandler</dd></div><div><dt>Kommer fra</dt><dd>1. «Sender byggesøknad» (Søker)<br>4. «Sender manglende vedlegg» (Søker)</dd></div><div><dt>Videre til</dt><dd>3. «Er søknaden komplett?» (Saksbehandler)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="mottar">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-komplett" data-node="komplett"><header class="card-head"><span class="num">3</span><h3>Er søknaden komplett?</h3></header><p class="card-kind">Beslutning</p><dl class="facts"><div><dt>Rolle</dt><dd>Saksbehandler</dd></div><div><dt>Kommer fra</dt><dd>2. «Registrerer søknaden» (Saksbehandler)</dd></div><div><dt>Videre til</dt><dd>5. «Vurderer søknaden mot planen» (Saksbehandler) [ja]<br>4. «Sender manglende vedlegg» (Søker) [nei]</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="komplett">Vis i flyten</button></p></article>
+<article class="card step-card c0" id="step-mangler" data-node="mangler"><header class="card-head"><span class="num">4</span><h3>Sender manglende vedlegg</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Søker</dd></div><div><dt>Kommer fra</dt><dd>3. «Er søknaden komplett?» (Saksbehandler) [nei]</dd></div><div><dt>Videre til</dt><dd>2. «Registrerer søknaden» (Saksbehandler)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="mangler">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-vurderer" data-node="vurderer"><header class="card-head"><span class="num">5</span><h3>Vurderer søknaden mot planen</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Saksbehandler</dd></div><div><dt>Kommer fra</dt><dd>3. «Er søknaden komplett?» (Saksbehandler) [ja]</dd></div><div><dt>Videre til</dt><dd>6. «Gjør befaring på tomten» (Fagkyndig)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="vurderer">Vis i flyten</button></p></article>
+<article class="card step-card c2" id="step-befaring" data-node="befaring"><header class="card-head"><span class="num">6</span><h3>Gjør befaring på tomten</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Fagkyndig</dd></div><div><dt>Kommer fra</dt><dd>5. «Vurderer søknaden mot planen» (Saksbehandler)<br>8. «Justerer tegningene» (Søker)</dd></div><div><dt>Videre til</dt><dd>7. «Er tegningene i orden?» (Fagkyndig)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="befaring">Vis i flyten</button></p></article>
+<article class="card step-card c2" id="step-tegninger" data-node="tegninger"><header class="card-head"><span class="num">7</span><h3>Er tegningene i orden?</h3></header><p class="card-kind">Beslutning</p><dl class="facts"><div><dt>Rolle</dt><dd>Fagkyndig</dd></div><div><dt>Kommer fra</dt><dd>6. «Gjør befaring på tomten» (Fagkyndig)</dd></div><div><dt>Videre til</dt><dd>9. «Trengs dispensasjon?» (Saksbehandler) [ja]<br>8. «Justerer tegningene» (Søker) [nei]</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="tegninger">Vis i flyten</button></p></article>
+<article class="card step-card c0" id="step-justerer" data-node="justerer"><header class="card-head"><span class="num">8</span><h3>Justerer tegningene</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Søker</dd></div><div><dt>Kommer fra</dt><dd>7. «Er tegningene i orden?» (Fagkyndig) [nei]</dd></div><div><dt>Videre til</dt><dd>6. «Gjør befaring på tomten» (Fagkyndig)</dd></div></dl><div class="card-flag"><p><span class="badge">1</span> <strong>Forbedringspunkt 1:</strong> Søkeren får ikke vite hva som må endres</p><p><strong>Problem:</strong> Tilbakemeldingen er en lang e-post uten punktliste.</p><p><strong>Forslag:</strong> Send en kort liste med det som må endres.</p></div><p class="card-actions"><button type="button" class="show-in-flow" data-node="justerer">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-dispensasjon" data-node="dispensasjon"><header class="card-head"><span class="num">9</span><h3>Trengs dispensasjon?</h3></header><p class="card-kind">Beslutning</p><dl class="facts"><div><dt>Rolle</dt><dd>Saksbehandler</dd></div><div><dt>Kommer fra</dt><dd>7. «Er tegningene i orden?» (Fagkyndig) [ja]</dd></div><div><dt>Videre til</dt><dd>10. «Skriver faglig uttalelse» (Fagkyndig) [ja]<br>11. «Skriver utkast til vedtak» (Saksbehandler) [nei]</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="dispensasjon">Vis i flyten</button></p></article>
+<article class="card step-card c2" id="step-uttalelse" data-node="uttalelse"><header class="card-head"><span class="num">10</span><h3>Skriver faglig uttalelse</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Fagkyndig</dd></div><div><dt>Kommer fra</dt><dd>9. «Trengs dispensasjon?» (Saksbehandler) [ja]</dd></div><div><dt>Videre til</dt><dd>11. «Skriver utkast til vedtak» (Saksbehandler)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="uttalelse">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-utkast" data-node="utkast"><header class="card-head"><span class="num">11</span><h3>Skriver utkast til vedtak</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Saksbehandler</dd></div><div><dt>Kommer fra</dt><dd>9. «Trengs dispensasjon?» (Saksbehandler) [nei]<br>10. «Skriver faglig uttalelse» (Fagkyndig)<br>13. «Signerer vedtaket?» (Leder) [nei]</dd></div><div><dt>Videre til</dt><dd>12. «Leser utkast og uttalelse» (Leder)</dd></div></dl><div class="card-flag"><p><span class="badge">2</span> <strong>Forbedringspunkt 2:</strong> Utkastet skrives fra bunnen hver gang</p></div><p class="card-actions"><button type="button" class="show-in-flow" data-node="utkast">Vis i flyten</button></p></article>
+<article class="card step-card c3" id="step-godkjenner" data-node="godkjenner"><header class="card-head"><span class="num">12</span><h3>Leser utkast og uttalelse</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Leder</dd></div><div><dt>Kommer fra</dt><dd>11. «Skriver utkast til vedtak» (Saksbehandler)</dd></div><div><dt>Videre til</dt><dd>13. «Signerer vedtaket?» (Leder)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="godkjenner">Vis i flyten</button></p></article>
+<article class="card step-card c3" id="step-signerer" data-node="signerer"><header class="card-head"><span class="num">13</span><h3>Signerer vedtaket?</h3></header><p class="card-kind">Beslutning</p><dl class="facts"><div><dt>Rolle</dt><dd>Leder</dd></div><div><dt>Kommer fra</dt><dd>12. «Leser utkast og uttalelse» (Leder)</dd></div><div><dt>Videre til</dt><dd>14. «Sender vedtaket» (Saksbehandler) [ja]<br>11. «Skriver utkast til vedtak» (Saksbehandler) [nei]</dd></div></dl><div class="card-flag"><p><span class="badge">3</span> <strong>Forbedringspunkt 3:</strong> Vedtak venter ofte en uke på signatur</p></div><p class="card-actions"><button type="button" class="show-in-flow" data-node="signerer">Vis i flyten</button></p></article>
+<article class="card step-card c1" id="step-sender" data-node="sender"><header class="card-head"><span class="num">14</span><h3>Sender vedtaket</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Saksbehandler</dd></div><div><dt>Kommer fra</dt><dd>13. «Signerer vedtaket?» (Leder) [ja]</dd></div><div><dt>Videre til</dt><dd>15. «Journalfører vedtaket» (Arkiv)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="sender">Vis i flyten</button></p></article>
+<article class="card step-card c4" id="step-journal" data-node="journal"><header class="card-head"><span class="num">15</span><h3>Journalfører vedtaket</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Arkiv</dd></div><div><dt>Kommer fra</dt><dd>14. «Sender vedtaket» (Saksbehandler)</dd></div><div><dt>Videre til</dt><dd>16. «Planlegger tilsyn etter byggestart» (Arkiv)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="journal">Vis i flyten</button></p></article>
+<article class="card step-card c4" id="step-tilsyn" data-node="tilsyn"><header class="card-head"><span class="num">16</span><h3>Planlegger tilsyn etter byggestart</h3></header><p class="card-kind">Steg</p><dl class="facts"><div><dt>Rolle</dt><dd>Arkiv</dd></div><div><dt>Kommer fra</dt><dd>15. «Journalfører vedtaket» (Arkiv)</dd></div><div><dt>Videre til</dt><dd>17. «Får ferdigattest» (Søker)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="tilsyn">Vis i flyten</button></p></article>
+<article class="card step-card c0" id="step-attest" data-node="attest"><header class="card-head"><span class="num">17</span><h3>Får ferdigattest</h3></header><p class="card-kind">Slutt</p><dl class="facts"><div><dt>Rolle</dt><dd>Søker</dd></div><div><dt>Kommer fra</dt><dd>16. «Planlegger tilsyn etter byggestart» (Arkiv)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="attest">Vis i flyten</button></p></article>
+</div>
+</section>
+
+<section class="panel" id="panel-roller" aria-labelledby="roller-h">
+<h2 class="panel-h" id="roller-h">Roller</h2>
+<div class="cards">
+<section class="card role-card c0" data-lane="0"><header class="card-head"><span class="dot" aria-hidden="true"></span><h3>Søker</h3></header><p class="card-kind">4 steg · 3 inn · 3 ut</p><h4>Steg</h4><ul class="role-steps"><li data-step="sok">1. «Sender byggesøknad»</li><li data-step="mangler">4. «Sender manglende vedlegg»</li><li data-step="justerer">8. «Justerer tegningene»</li><li data-step="attest">17. «Får ferdigattest»</li></ul><h4>Overleveringer inn</h4><ul><li data-from="komplett" data-to="mangler">3. «Er søknaden komplett?» (Saksbehandler) → 4. «Sender manglende vedlegg» (Søker) [nei]</li><li data-from="tegninger" data-to="justerer">7. «Er tegningene i orden?» (Fagkyndig) → 8. «Justerer tegningene» (Søker) [nei]</li><li data-from="tilsyn" data-to="attest">16. «Planlegger tilsyn etter byggestart» (Arkiv) → 17. «Får ferdigattest» (Søker)</li></ul><h4>Overleveringer ut</h4><ul><li data-from="sok" data-to="mottar">1. «Sender byggesøknad» (Søker) → 2. «Registrerer søknaden» (Saksbehandler)</li><li data-from="mangler" data-to="mottar">4. «Sender manglende vedlegg» (Søker) → 2. «Registrerer søknaden» (Saksbehandler)</li><li data-from="justerer" data-to="befaring">8. «Justerer tegningene» (Søker) → 6. «Gjør befaring på tomten» (Fagkyndig)</li></ul></section>
+<section class="card role-card c1" data-lane="1"><header class="card-head"><span class="dot" aria-hidden="true"></span><h3>Saksbehandler</h3></header><p class="card-kind">6 steg · 6 inn · 5 ut</p><h4>Steg</h4><ul class="role-steps"><li data-step="mottar">2. «Registrerer søknaden»</li><li data-step="komplett">3. «Er søknaden komplett?»</li><li data-step="vurderer">5. «Vurderer søknaden mot planen»</li><li data-step="dispensasjon">9. «Trengs dispensasjon?»</li><li data-step="utkast">11. «Skriver utkast til vedtak»</li><li data-step="sender">14. «Sender vedtaket»</li></ul><h4>Overleveringer inn</h4><ul><li data-from="sok" data-to="mottar">1. «Sender byggesøknad» (Søker) → 2. «Registrerer søknaden» (Saksbehandler)</li><li data-from="mangler" data-to="mottar">4. «Sender manglende vedlegg» (Søker) → 2. «Registrerer søknaden» (Saksbehandler)</li><li data-from="tegninger" data-to="dispensasjon">7. «Er tegningene i orden?» (Fagkyndig) → 9. «Trengs dispensasjon?» (Saksbehandler) [ja]</li><li data-from="uttalelse" data-to="utkast">10. «Skriver faglig uttalelse» (Fagkyndig) → 11. «Skriver utkast til vedtak» (Saksbehandler)</li><li data-from="signerer" data-to="sender">13. «Signerer vedtaket?» (Leder) → 14. «Sender vedtaket» (Saksbehandler) [ja]</li><li data-from="signerer" data-to="utkast">13. «Signerer vedtaket?» (Leder) → 11. «Skriver utkast til vedtak» (Saksbehandler) [nei]</li></ul><h4>Overleveringer ut</h4><ul><li data-from="komplett" data-to="mangler">3. «Er søknaden komplett?» (Saksbehandler) → 4. «Sender manglende vedlegg» (Søker) [nei]</li><li data-from="vurderer" data-to="befaring">5. «Vurderer søknaden mot planen» (Saksbehandler) → 6. «Gjør befaring på tomten» (Fagkyndig)</li><li data-from="dispensasjon" data-to="uttalelse">9. «Trengs dispensasjon?» (Saksbehandler) → 10. «Skriver faglig uttalelse» (Fagkyndig) [ja]</li><li data-from="utkast" data-to="godkjenner">11. «Skriver utkast til vedtak» (Saksbehandler) → 12. «Leser utkast og uttalelse» (Leder)</li><li data-from="sender" data-to="journal">14. «Sender vedtaket» (Saksbehandler) → 15. «Journalfører vedtaket» (Arkiv)</li></ul></section>
+<section class="card role-card c2" data-lane="2"><header class="card-head"><span class="dot" aria-hidden="true"></span><h3>Fagkyndig</h3></header><p class="card-kind">3 steg · 3 inn · 3 ut</p><h4>Steg</h4><ul class="role-steps"><li data-step="befaring">6. «Gjør befaring på tomten»</li><li data-step="tegninger">7. «Er tegningene i orden?»</li><li data-step="uttalelse">10. «Skriver faglig uttalelse»</li></ul><h4>Overleveringer inn</h4><ul><li data-from="vurderer" data-to="befaring">5. «Vurderer søknaden mot planen» (Saksbehandler) → 6. «Gjør befaring på tomten» (Fagkyndig)</li><li data-from="justerer" data-to="befaring">8. «Justerer tegningene» (Søker) → 6. «Gjør befaring på tomten» (Fagkyndig)</li><li data-from="dispensasjon" data-to="uttalelse">9. «Trengs dispensasjon?» (Saksbehandler) → 10. «Skriver faglig uttalelse» (Fagkyndig) [ja]</li></ul><h4>Overleveringer ut</h4><ul><li data-from="tegninger" data-to="dispensasjon">7. «Er tegningene i orden?» (Fagkyndig) → 9. «Trengs dispensasjon?» (Saksbehandler) [ja]</li><li data-from="tegninger" data-to="justerer">7. «Er tegningene i orden?» (Fagkyndig) → 8. «Justerer tegningene» (Søker) [nei]</li><li data-from="uttalelse" data-to="utkast">10. «Skriver faglig uttalelse» (Fagkyndig) → 11. «Skriver utkast til vedtak» (Saksbehandler)</li></ul></section>
+<section class="card role-card c3" data-lane="3"><header class="card-head"><span class="dot" aria-hidden="true"></span><h3>Leder</h3></header><p class="card-kind">2 steg · 1 inn · 2 ut</p><h4>Steg</h4><ul class="role-steps"><li data-step="godkjenner">12. «Leser utkast og uttalelse»</li><li data-step="signerer">13. «Signerer vedtaket?»</li></ul><h4>Overleveringer inn</h4><ul><li data-from="utkast" data-to="godkjenner">11. «Skriver utkast til vedtak» (Saksbehandler) → 12. «Leser utkast og uttalelse» (Leder)</li></ul><h4>Overleveringer ut</h4><ul><li data-from="signerer" data-to="sender">13. «Signerer vedtaket?» (Leder) → 14. «Sender vedtaket» (Saksbehandler) [ja]</li><li data-from="signerer" data-to="utkast">13. «Signerer vedtaket?» (Leder) → 11. «Skriver utkast til vedtak» (Saksbehandler) [nei]</li></ul></section>
+<section class="card role-card c4" data-lane="4"><header class="card-head"><span class="dot" aria-hidden="true"></span><h3>Arkiv</h3></header><p class="card-kind">2 steg · 1 inn · 1 ut</p><h4>Steg</h4><ul class="role-steps"><li data-step="journal">15. «Journalfører vedtaket»</li><li data-step="tilsyn">16. «Planlegger tilsyn etter byggestart»</li></ul><h4>Overleveringer inn</h4><ul><li data-from="sender" data-to="journal">14. «Sender vedtaket» (Saksbehandler) → 15. «Journalfører vedtaket» (Arkiv)</li></ul><h4>Overleveringer ut</h4><ul><li data-from="tilsyn" data-to="attest">16. «Planlegger tilsyn etter byggestart» (Arkiv) → 17. «Får ferdigattest» (Søker)</li></ul></section>
+</div>
+</section>
+
+<section class="panel" id="panel-forbedring" aria-labelledby="forbedring-h">
+<h2 class="panel-h" id="forbedring-h">Forbedringspunkter</h2>
+<ol class="cards flag-list">
+<li class="card flag-card" data-flag="1" data-node="justerer"><header class="card-head"><span class="badge">1</span><h3>Søkeren får ikke vite hva som må endres</h3></header><dl class="facts"><div><dt>Steg</dt><dd>8. «Justerer tegningene» (Søker)</dd></div><div><dt>Problem</dt><dd>Tilbakemeldingen er en lang e-post uten punktliste.</dd></div><div><dt>Forslag</dt><dd>Send en kort liste med det som må endres.</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="justerer">Vis i flyten</button></p></li>
+<li class="card flag-card" data-flag="2" data-node="utkast"><header class="card-head"><span class="badge">2</span><h3>Utkastet skrives fra bunnen hver gang</h3></header><dl class="facts"><div><dt>Steg</dt><dd>11. «Skriver utkast til vedtak» (Saksbehandler)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="utkast">Vis i flyten</button></p></li>
+<li class="card flag-card" data-flag="3" data-node="signerer"><header class="card-head"><span class="badge">3</span><h3>Vedtak venter ofte en uke på signatur</h3></header><dl class="facts"><div><dt>Steg</dt><dd>13. «Signerer vedtaket?» (Leder)</dd></div></dl><p class="card-actions"><button type="button" class="show-in-flow" data-node="signerer">Vis i flyten</button></p></li>
+</ol>
+</section>
+
+<section class="panel textalt" id="panel-tekst" aria-labelledby="tekst-h">
+<h2 class="panel-h" id="tekst-h">Tekstversjon</h2>
+<p>Den samme flyten som i diagrammet, rolle for rolle, i den rekkefølgen stegene skjer.</p>
+<h3>Søker</h3>
+<ol class="lane-steps">
+<li data-node="sok"><strong>Start 1:</strong> Sender byggesøknad. Videre til <span data-from="sok" data-to="mottar">«Registrerer søknaden» (Saksbehandler)</span>.</li>
+<li data-node="mangler"><strong>Steg 4:</strong> Sender manglende vedlegg. Videre til <span data-from="mangler" data-to="mottar">«Registrerer søknaden» (Saksbehandler)</span>.</li>
+<li data-node="justerer"><strong>Steg 8:</strong> Justerer tegningene. Videre til <span data-from="justerer" data-to="befaring">«Gjør befaring på tomten» (Fagkyndig)</span>.
+  <p class="flag-note">Forbedringspunkt 1: Søkeren får ikke vite hva som må endres</p></li>
+<li data-node="attest"><strong>Slutt 17:</strong> Får ferdigattest.</li>
+</ol>
+<h3>Saksbehandler</h3>
+<ol class="lane-steps">
+<li data-node="mottar"><strong>Steg 2:</strong> Registrerer søknaden. Videre til <span data-from="mottar" data-to="komplett">«Er søknaden komplett?» (Saksbehandler)</span>.</li>
+<li data-node="komplett"><strong>Beslutning 3:</strong> Er søknaden komplett?
+  <ul class="branches"><li data-from="komplett" data-to="vurderer">Hvis «ja»: videre til «Vurderer søknaden mot planen» (Saksbehandler).</li><li data-from="komplett" data-to="mangler">Hvis «nei»: videre til «Sender manglende vedlegg» (Søker).</li></ul></li>
+<li data-node="vurderer"><strong>Steg 5:</strong> Vurderer søknaden mot planen. Videre til <span data-from="vurderer" data-to="befaring">«Gjør befaring på tomten» (Fagkyndig)</span>.</li>
+<li data-node="dispensasjon"><strong>Beslutning 9:</strong> Trengs dispensasjon?
+  <ul class="branches"><li data-from="dispensasjon" data-to="uttalelse">Hvis «ja»: videre til «Skriver faglig uttalelse» (Fagkyndig).</li><li data-from="dispensasjon" data-to="utkast">Hvis «nei»: videre til «Skriver utkast til vedtak» (Saksbehandler).</li></ul></li>
+<li data-node="utkast"><strong>Steg 11:</strong> Skriver utkast til vedtak. Videre til <span data-from="utkast" data-to="godkjenner">«Leser utkast og uttalelse» (Leder)</span>.
+  <p class="flag-note">Forbedringspunkt 2: Utkastet skrives fra bunnen hver gang</p></li>
+<li data-node="sender"><strong>Steg 14:</strong> Sender vedtaket. Videre til <span data-from="sender" data-to="journal">«Journalfører vedtaket» (Arkiv)</span>.</li>
+</ol>
+<h3>Fagkyndig</h3>
+<ol class="lane-steps">
+<li data-node="befaring"><strong>Steg 6:</strong> Gjør befaring på tomten. Videre til <span data-from="befaring" data-to="tegninger">«Er tegningene i orden?» (Fagkyndig)</span>.</li>
+<li data-node="tegninger"><strong>Beslutning 7:</strong> Er tegningene i orden?
+  <ul class="branches"><li data-from="tegninger" data-to="dispensasjon">Hvis «ja»: videre til «Trengs dispensasjon?» (Saksbehandler).</li><li data-from="tegninger" data-to="justerer">Hvis «nei»: videre til «Justerer tegningene» (Søker).</li></ul></li>
+<li data-node="uttalelse"><strong>Steg 10:</strong> Skriver faglig uttalelse. Videre til <span data-from="uttalelse" data-to="utkast">«Skriver utkast til vedtak» (Saksbehandler)</span>.</li>
+</ol>
+<h3>Leder</h3>
+<ol class="lane-steps">
+<li data-node="godkjenner"><strong>Steg 12:</strong> Leser utkast og uttalelse. Videre til <span data-from="godkjenner" data-to="signerer">«Signerer vedtaket?» (Leder)</span>.</li>
+<li data-node="signerer"><strong>Beslutning 13:</strong> Signerer vedtaket?
+  <ul class="branches"><li data-from="signerer" data-to="sender">Hvis «ja»: videre til «Sender vedtaket» (Saksbehandler).</li><li data-from="signerer" data-to="utkast">Hvis «nei»: videre til «Skriver utkast til vedtak» (Saksbehandler).</li></ul>
+  <p class="flag-note">Forbedringspunkt 3: Vedtak venter ofte en uke på signatur</p></li>
+</ol>
+<h3>Arkiv</h3>
+<ol class="lane-steps">
+<li data-node="journal"><strong>Steg 15:</strong> Journalfører vedtaket. Videre til <span data-from="journal" data-to="tilsyn">«Planlegger tilsyn etter byggestart» (Arkiv)</span>.</li>
+<li data-node="tilsyn"><strong>Steg 16:</strong> Planlegger tilsyn etter byggestart. Videre til <span data-from="tilsyn" data-to="attest">«Får ferdigattest» (Søker)</span>.</li>
+</ol>
+</section>
+
+<footer>
+<p>Kilde: Eksempeldata (syntetisk), oppdiktet prosess med fem roller. Bestilt av: Prosjekteier. Laget 2026-10-16 15:02 CEST.
+Én selvstendig fil: ingen server, ingen nettverk, ingen lisens.</p>
+</footer>
+</main>
+<script>
+/* The interaction layer. Everything above renders without it.
+   tools/verify_process_diagram.py --mutation-check edits copies of this file by exact
+   lines of this script and of the print CSS; if you change one, run it, and it names
+   the anchor that moved. */
+(function () {
+  "use strict";
+  var doc = document;
+  var root = doc.documentElement;
+  var each = function (list, fn) { Array.prototype.forEach.call(list, fn); };
+
+  /* Tabs: a WAI-ARIA tablist. Arrow keys move and select, Home and End jump. Panels get
+     their tabpanel role here, so without the script they are plain stacked sections. */
+  var tabs = Array.prototype.slice.call(doc.querySelectorAll(".tabs [role=tab]"));
+  var panels = tabs.map(function (t) { return doc.getElementById(t.getAttribute("aria-controls")); });
+  panels.forEach(function (p, i) {
+    p.setAttribute("role", "tabpanel");
+    p.setAttribute("aria-labelledby", tabs[i].id);
+    p.setAttribute("tabindex", "0");
+  });
+  var onFlowShown = null;   /* set below: a hidden frame measures as zero wide */
+  function selectTab(i, focus) {
+    tabs.forEach(function (t, k) {
+      var on = k === i;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+      panels[k].hidden = !on;
+    });
+    if (i === 0 && onFlowShown) onFlowShown();
+    if (focus) tabs[i].focus();
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener("click", function () { selectTab(i, false); });
+    t.addEventListener("keydown", function (ev) {
+      var n = tabs.length, j = null;
+      if (ev.key === "ArrowRight") j = (i + 1) % n;
+      else if (ev.key === "ArrowLeft") j = (i - 1 + n) % n;
+      else if (ev.key === "Home") j = 0;
+      else if (ev.key === "End") j = n - 1;
+      if (j !== null) { ev.preventDefault(); selectTab(j, true); }
+    });
+  });
+  /* On a phone the step cards are the readable view; the drawing is one tab away. */
+  selectTab(window.matchMedia && window.matchMedia("(max-width: 40rem)").matches ? 1 : 0, false);
+
+  var svgs = Array.prototype.slice.call(doc.querySelectorAll("svg.pd"));
+  if (!svgs.length) return;
+  var svg = svgs.filter(function (s) { return s.classList.contains("on"); })[0] || svgs[0];
+  /* Each drawing's natural size and the range the CSS lets it take, read before any zoom. */
+  var range = svgs.map(function (s) {
+    var cs = getComputedStyle(s);
+    return {w: parseFloat(s.getAttribute("width")), h: parseFloat(s.getAttribute("height")),
+            min: parseFloat(cs.minWidth) || 0, max: parseFloat(cs.maxWidth) || Infinity};
+  });
+
+  /* Zoom and fit. Until the reader zooms, the CSS sizes the drawing (scale null): it fits
+     the frame down to the size where its smallest text is 12 px, and pans below that. */
+  var natW = parseFloat(svg.getAttribute("width"));
+  var natH = parseFloat(svg.getAttribute("height"));
+  var scale = null, fit = false;
+  var fitBtn = doc.getElementById("fit"), level = doc.getElementById("zoom-level");
+  var figure = svg.parentNode, wrap = figure.parentNode, strip = doc.getElementById("lane-strip");
+  function shown() { return svg.getBoundingClientRect().width / natW; }
+  function applyZoom() {
+    var manual = !fit && scale !== null;
+    /* Rows start at a scale that fits the window's height too (startScale). */
+    var rowsW = !manual && !fit && svg.getAttribute("data-orient") === "lr" ?
+      natW * startScale(svgs.indexOf(svg)) : 0;
+    root.classList.toggle("fit", fit);
+    svg.style.width = manual ? (natW * scale) + "px" : rowsW ? rowsW + "px" : "";
+    svg.style.height = manual ? (natH * scale) + "px" : "";
+    svg.style.minWidth = svg.style.maxWidth = manual ? "none" : "";
+    fitBtn.setAttribute("aria-pressed", fit ? "true" : "false");
+    refresh();
+  }
+  function zoomBy(step) {
+    var from = fit || scale === null ? shown() : scale;
+    fit = false;
+    scale = Math.min(2, Math.max(0.5, Math.round((from + step) * 100) / 100));
+    applyZoom();
+  }
+  /* Which way the flow runs. Auto takes, of the drawings that fit the frame without
+     panning, the one that needs the least scrolling down; when none fits, the columns.
+     So a wide, short window gets rows and a tall or narrow one gets columns. */
+  var mode = "auto", orientBtns = Array.prototype.slice.call(doc.querySelectorAll("#orient button"));
+  if (svgs.length < 2) doc.getElementById("orient").hidden = true;
+  /* The scale a drawing starts at: the frame's width, within its CSS range; for rows also
+     no taller than the window below the frame's top, so every lane is in view. 0 when
+     that would put text under 12 px: the drawing does not fit. */
+  function startScale(i) {
+    var r = range[i], k = Math.min(figure.clientWidth, r.max) / r.w;
+    if (svgs[i].getAttribute("data-orient") === "lr") {
+      var top = figure.getBoundingClientRect().top + window.pageYOffset;
+      k = Math.min(k, (window.innerHeight - top - 8) / r.h);
+    }
+    return k * r.w >= r.min - 1 ? k : 0;
+  }
+  function pick() {
+    var forced = svgs.filter(function (s) { return s.getAttribute("data-orient") === mode; })[0];
+    if (forced) return forced;
+    var best = null, bestH = Infinity;
+    svgs.forEach(function (s, i) {
+      var k = startScale(i);
+      if (k && range[i].h * k < bestH - 1) { best = s; bestH = range[i].h * k; }
+    });
+    return best || svgs[0];
+  }
+  function orient() {
+    var next = pick();
+    if (next !== svg) {
+      svg.style.width = svg.style.height = svg.style.minWidth = svg.style.maxWidth = "";
+      svg.classList.remove("on");
+      next.classList.add("on");
+      svg = next;
+      natW = parseFloat(svg.getAttribute("width"));
+      natH = parseFloat(svg.getAttribute("height"));
+      buildStrip();
+    }
+    applyZoom();
+  }
+  orientBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      mode = b.getAttribute("data-orient");
+      orientBtns.forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+      orient();
+    });
+  });
+  /* Lane names over the frame while it pans: a copy of each lane header, kept over its
+     lane as the frame scrolls, shown once the drawing's own headers have scrolled away. */
+  var heads = [];
+  function buildStrip() {
+    heads = Array.prototype.slice.call(svg.querySelectorAll("g.lane"));
+    while (strip.firstChild) strip.removeChild(strip.firstChild);
+    heads.forEach(function (g) {
+      var span = doc.createElement("span");
+      span.className = (g.getAttribute("class").match(/\bc\d+\b/) || [""])[0];
+      span.textContent = Array.prototype.map.call(g.querySelectorAll(".lane-name tspan"),
+        function (t) { return t.textContent; }).join(" ");
+      strip.appendChild(span);
+    });
+  }
+  buildStrip();
+  function placeStrip() {
+    var f = figure.getBoundingClientRect(), s = svg.getBoundingClientRect(), k = s.width / natW;
+    var rows = svg.getAttribute("data-orient") === "lr";
+    var first = heads.length && heads[0].querySelector(".lane-head").getBoundingClientRect();
+    strip.hidden = !first || (rows ? first.right > f.left + 1 : first.bottom > f.top + 1);
+    wrap.classList.toggle("rows", rows);
+    heads.forEach(function (g, i) {
+      var r = g.querySelector(".lane-head"), st = strip.children[i].style;
+      var at = parseFloat(r.getAttribute(rows ? "y" : "x")) * k;
+      var len = parseFloat(r.getAttribute(rows ? "height" : "width")) * k;
+      st.left = rows ? "" : (s.left - f.left - 1 + at) + "px";
+      st.width = rows ? "" : len + "px";
+      st.top = rows ? (s.top - f.top - 1 + at) + "px" : "";
+      st.height = rows ? len + "px" : "";
+    });
+  }
+  function refresh() {
+    level.textContent = fit ? "Tilpasset" : Math.round(shown() * 100) + " %";
+    wrap.classList.toggle("pan", figure.scrollWidth > figure.clientWidth + 1);
+    placeStrip();
+  }
+  figure.addEventListener("scroll", placeStrip);
+  onFlowShown = orient;
+  window.addEventListener("resize", orient);
+  doc.getElementById("zoom-in").addEventListener("click", function () { zoomBy(0.25); });
+  doc.getElementById("zoom-out").addEventListener("click", function () { zoomBy(-0.25); });
+  doc.getElementById("zoom-reset").addEventListener("click", function () { fit = false; scale = 1; applyZoom(); });
+  fitBtn.addEventListener("click", function () { fit = !fit; applyZoom(); });
+  orient();
+
+  /* Highlight: hover or focus a step to see its connections; the rest dims. */
+  /* Both drawings take part, so switching keeps what is lit, filtered and selected. */
+  var nodes = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.node"));
+  var badges = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.flag-badge"));
+  /* The steps become buttons below, so the picture is a group of them, not one image. */
+  svgs.forEach(function (s) { s.setAttribute("role", "group"); });
+  var edges = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.edge"));
+  var lanes = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.lane"));
+  var laneOf = {};
+  nodes.forEach(function (n) { laneOf[n.getAttribute("data-node")] = n.getAttribute("data-lane"); });
+  function nodeById(id) {
+    return nodes.filter(function (n) { return n.getAttribute("data-node") === id && svg.contains(n); })[0] || null;
+  }
+  function highlight(id) {
+    svgs.forEach(function (s) { s.classList.toggle("focusing", !!id); });
+    nodes.concat(badges).forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });
+    edges.forEach(function (e) {
+      e.classList.toggle("hl", !!id && (e.getAttribute("data-from") === id || e.getAttribute("data-to") === id));
+    });
+  }
+
+  /* Detail panel: a copy of the step's card from the Steg panel, so there is one source. */
+  var detail = doc.getElementById("detail"), body = doc.getElementById("detail-body");
+  var selected = null;
+  function openDetail(id) {
+    var card = doc.getElementById("step-" + id);
+    if (!card) return;
+    var copy = card.cloneNode(true);
+    copy.removeAttribute("id");
+    each(copy.querySelectorAll("[id]"), function (el) { el.removeAttribute("id"); });
+    each(copy.querySelectorAll(".card-actions"), function (el) { el.parentNode.removeChild(el); });
+    while (body.firstChild) body.removeChild(body.firstChild);
+    body.appendChild(copy);
+    detail.hidden = false;
+    placeDetail(nodeById(id));
+    detail.setAttribute("data-node", id);
+    selected = id;
+    nodes.forEach(function (n) {
+      var on = n.getAttribute("data-node") === id;
+      n.classList.toggle("selected", on);
+      n.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  /* Beside the step, on the half of the drawing the step is not on. */
+  function placeDetail(n) {
+    if (!n) return;
+    var flow = detail.parentNode.getBoundingClientRect(), r = n.getBoundingClientRect();
+    var right = r.left + r.width / 2 < flow.left + flow.width / 2;
+    detail.style.top = Math.max(0, r.top - flow.top) + "px";
+    detail.style.right = right ? "1rem" : "auto";
+    detail.style.left = right ? "auto" : "1rem";
+  }
+  function closeDetail() {
+    var back = selected && nodeById(selected);
+    detail.hidden = true;
+    detail.removeAttribute("data-node");
+    selected = null;
+    nodes.forEach(function (n) { n.classList.remove("selected"); n.setAttribute("aria-pressed", "false"); });
+    if (back) back.focus();
+  }
+  doc.getElementById("detail-close").addEventListener("click", closeDetail);
+  detail.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeDetail(); });
+
+  nodes.forEach(function (n) {
+    var id = n.getAttribute("data-node");
+    var title = n.querySelector("title");
+    n.setAttribute("tabindex", "0");
+    n.setAttribute("role", "button");
+    n.setAttribute("aria-pressed", "false");
+    n.setAttribute("aria-controls", "detail");
+    if (title) n.setAttribute("aria-label", title.textContent);
+    n.addEventListener("mouseenter", function () { highlight(id); });
+    n.addEventListener("mouseleave", function () { highlight(null); });
+    n.addEventListener("focus", function () { highlight(id); });
+    n.addEventListener("blur", function () { highlight(null); });
+    n.addEventListener("click", function () { openDetail(id); });
+    n.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openDetail(id); }
+      else if (ev.key === "Escape" && selected) closeDetail();
+    });
+  });
+
+  /* Role filter: one lane stays, the rest dims. */
+  var chips = Array.prototype.slice.call(doc.querySelectorAll(".chip"));
+  chips.forEach(function (c) {
+    c.addEventListener("click", function () {
+      var lane = c.getAttribute("data-lane");
+      chips.forEach(function (o) { o.setAttribute("aria-pressed", o === c ? "true" : "false"); });
+      svgs.forEach(function (s) { s.classList.toggle("lane-filter", lane !== ""); });
+      nodes.concat(badges).forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });
+      lanes.forEach(function (l) { l.classList.toggle("in-lane", l.getAttribute("data-lane") === lane); });
+      edges.forEach(function (e) {
+        e.classList.toggle("in-lane", laneOf[e.getAttribute("data-from")] === lane ||
+                                      laneOf[e.getAttribute("data-to")] === lane);
+      });
+    });
+  });
+
+  /* "Vis i flyten": switch to Flyt, open the step, put focus on it. */
+  each(doc.querySelectorAll(".show-in-flow"), function (b) {
+    b.addEventListener("click", function () {
+      var id = b.getAttribute("data-node"), n = nodeById(id);
+      if (!n) return;
+      selectTab(0, false);
+      n.scrollIntoView({block: "center", inline: "center"});
+      openDetail(id);   /* after the scroll, so the panel lands beside the step */
+      n.focus({preventScroll: true});
+    });
+  });
+})();
+</script>
+</body>
+</html>

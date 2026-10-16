@@ -16,7 +16,7 @@
   Slik blir et Tún-dashboard til
   PROVENANCE  (do not delete — this is how output gets traced back)
     Source data : Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data)
-    Built       : 2026-10-10 13:09 CEST
+    Built       : 2026-10-16 15:01 CEST
     Requested by: Teamet bak Tún
     Built by    : tools/build_process_diagram.py
     Repo        : tun
@@ -83,7 +83,8 @@
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--panel);color:var(--ink);line-height:1.5;font-size:1rem;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-main{max-width:96rem;margin:0 auto;padding:1.5rem 2rem 3rem}
+/* No width cap: a wide screen gives the drawing all its width. Text keeps its own measure. */
+main{max-width:none;margin:0 auto;padding:1.5rem 2rem 3rem}
 h1{margin:0 0 .5rem;font-size:1.875rem;line-height:1.25;color:var(--brand-dark);
   overflow-wrap:break-word}
 h2{margin:2.5rem 0 1rem;font-size:1.375rem;line-height:1.3;color:var(--brand-dark)}
@@ -123,6 +124,7 @@ html.js .panel{padding-top:1.25rem}
 .toolbar{display:none}
 html.js .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:0 0 .75rem}
 .toolbar .group{display:flex;gap:.25rem;align-items:center}
+.toolbar .group[hidden]{display:none}
 .toolbar button{font:inherit;font-size:.875rem;padding:.375rem .75rem;border-radius:.5rem;
   border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;min-width:2.25rem}
 .toolbar button:hover{border-color:var(--brand)}
@@ -136,12 +138,38 @@ html.js .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;m
 .chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .dot{display:inline-block;width:.75rem;height:.75rem;border-radius:50%;background:var(--role,var(--muted));
   flex:none}
-.flow{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap}
-.figure{margin:0;flex:1 1 40rem;min-width:0;overflow:auto;border:1px solid var(--line);
-  border-radius:.75rem;background:var(--bg)}
-.pd{display:block;max-width:none}
-html.fit .pd{width:100%;height:auto}
-.detail{flex:0 1 24rem;min-width:18rem;border:1px solid var(--line);border-radius:.75rem;
+.flow{position:relative}
+.figure-wrap{position:relative}
+.figure{margin:0;overflow:auto;border:1px solid var(--line);border-radius:.75rem;background:var(--bg)}
+/* Responsive without the script: the drawing fills the frame, grows to at most 1.5 times
+   its natural size on a wide screen, and never shrinks below the size where its smallest
+   text is 12 px (the sizes per drawing follow). Narrower than that, the frame scrolls.
+   The page carries two drawings of the same flow: lanes as columns (pd-tb), and lanes as
+   rows with the flow running right (pd-lr). One shows (class "on"); without the script and
+   in print that is the columns. */
+.pd{display:block;width:100%;height:auto;margin:0 auto}
+.pd-tb{max-width:1598px;min-width:914px}
+.pd-lr{max-width:5433px;min-width:3105px}
+.pd:not(.on){display:none}
+html.fit .pd{min-width:0;max-width:none}
+/* Panning (the drawing is wider than the frame): the frame stops at the window height, so
+   both scrollbars are in reach, and the lane names stay on top of it while it scrolls. */
+html.js .pan .figure{max-height:calc(100vh - 2rem)}
+.lane-strip{display:none}
+html.js .pan .lane-strip:not([hidden]){display:block;position:absolute;z-index:1;top:1px;left:1px;
+  right:1px;height:2.25rem;overflow:hidden;pointer-events:none;background:var(--bg);
+  border-bottom:1px solid var(--line);border-radius:.75rem .75rem 0 0}
+.lane-strip span{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;white-space:nowrap;font-size:.875rem;font-weight:700;color:var(--ink);
+  background:var(--panel);border-top:4px solid var(--role,var(--line))}
+/* Rows pan sideways, so the lane names stand in a column on the left instead. */
+html.js .pan.rows .lane-strip:not([hidden]){right:auto;bottom:1px;width:9rem;height:auto;
+  border-bottom:0;border-right:1px solid var(--line);border-radius:.75rem 0 0 .75rem}
+.rows .lane-strip span{left:0;right:0;bottom:auto;padding:0 .5rem;white-space:normal;text-align:center;
+  border-top:0;border-left:4px solid var(--role,var(--line))}
+/* The detail panel lies over the drawing beside the step, so opening it never narrows it. */
+.detail{position:absolute;z-index:2;top:0;right:1rem;width:min(24rem,calc(100% - 2rem));
+  max-height:calc(100vh - 2rem);overflow:auto;border:2px solid var(--brand);border-radius:.75rem;
   background:var(--bg);padding:1rem 1.25rem}
 .detail[hidden]{display:none}
 .detail-top{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin:0 0 .5rem}
@@ -185,7 +213,7 @@ html.js .show-in-flow:hover{background:var(--panel)}
 .textalt li{margin:0 0 .5rem}
 .textalt .branches{margin:.25rem 0 0;padding-left:1.5rem}
 .flag-note{margin:.25rem 0 0;color:var(--bad)}
-footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
+footer{max-width:90ch;margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
   color:var(--muted);font-size:.875rem}
 
 /* The drawing. Every colour comes from the token contract (tools/tun_tokens.py). */
@@ -233,10 +261,14 @@ html.js .pd .node{cursor:pointer}
     white-space:normal;margin:1.5rem 0 .75rem}
   html.js .panel{padding-top:0}
   .panel + .panel{break-before:page}
-  .figure{overflow:visible;border:0;break-inside:avoid}
+  .figure,html.js .pan .figure{overflow:visible;max-height:none;border:0;break-inside:avoid}
+  /* Paper is portrait: print the columns, whichever drawing was on screen. */
+  html .pd.pd-tb{display:block}
+  html .pd.pd-lr{display:none}
+  html.js .pan .lane-strip:not([hidden]){display:none}
   /* The drawing fits under the title on the first page: never wider than the page,
      never taller than what is left of it. */
-  html .pd{width:auto;height:auto;max-width:100%;max-height:215mm;margin:0 auto}
+  html .pd{width:auto;height:auto;min-width:0;max-width:100%;max-height:215mm;margin:0 auto}
   .pd,.pd *,.card,.badge,.card-flag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .cards{grid-template-columns:1fr 1fr 1fr;gap:.5rem}
   .card{padding:.625rem .75rem}
@@ -277,49 +309,95 @@ html.js .pd .node{cursor:pointer}
 <button type="button" id="zoom-reset">100 %</button>
 <button type="button" id="fit" aria-pressed="false">Tilpass til bredden</button>
 </div>
+<div class="group orient" id="orient" role="group" aria-label="Retning på flyten">
+<button type="button" data-orient="auto" aria-pressed="true">Auto</button>
+<button type="button" data-orient="tb" aria-pressed="false">Loddrett</button>
+<button type="button" data-orient="lr" aria-pressed="false">Vannrett</button>
+</div>
 <div class="chips" role="group" aria-label="Fremhev en rolle"><button type="button" class="chip" data-lane="" aria-pressed="true">Alle roller</button><button type="button" class="chip c0" data-lane="0" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Bestiller</button><button type="button" class="chip c1" data-lane="1" aria-pressed="false"><span class="dot" aria-hidden="true"></span>RAIWork med Tún</button><button type="button" class="chip c2" data-lane="2" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Dataeier</button></div>
 </div>
 <div class="flow">
+<div class="figure-wrap">
+<div class="lane-strip" id="lane-strip" aria-hidden="true" hidden></div>
 <figure class="figure">
-<svg xmlns="http://www.w3.org/2000/svg" class="pd" width="1087" height="1610" viewBox="0 0 1087 1610" role="img" aria-labelledby="pd-title pd-desc" font-size="14">
+<svg xmlns="http://www.w3.org/2000/svg" class="pd pd-tb on" data-orient="tb" width="1065.4" height="1616" viewBox="0 0 1065.4 1616" role="img" aria-labelledby="pd-title pd-desc" font-size="14">
 <title id="pd-title">Slik blir et Tún-dashboard til</title>
 <desc id="pd-desc">Prosessdiagram med 11 steg i 3 roller. Den samme flyten står som tekst i fanen Tekstversjon.</desc>
 <defs><filter id="pd-shadow" x="-10%" y="-20%" width="120%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-opacity="0.22"/></filter></defs>
 <g class="lanes">
-<g class="lane c0" data-lane="0"><rect class="lane-band" x="16" y="56" width="322" height="1538"/><rect class="lane-head" x="18" y="16" width="318" height="32" rx="8"/><rect class="lane-stripe" x="18" y="16" width="318" height="4" rx="2"/><text class="lane-name" x="177" y="38.5" text-anchor="middle" font-weight="700"><tspan x="177" dy="0">Bestiller</tspan></text></g>
-<g class="lane c1" data-lane="1"><rect class="lane-band" x="338" y="56" width="329" height="1538"/><rect class="lane-head" x="340" y="16" width="325" height="32" rx="8"/><rect class="lane-stripe" x="340" y="16" width="325" height="4" rx="2"/><text class="lane-name" x="502.5" y="38.5" text-anchor="middle" font-weight="700"><tspan x="502.5" dy="0">RAIWork med Tún</tspan></text></g>
-<g class="lane c2" data-lane="2"><rect class="lane-band" x="667" y="56" width="404" height="1538"/><rect class="lane-head" x="669" y="16" width="400" height="32" rx="8"/><rect class="lane-stripe" x="669" y="16" width="400" height="4" rx="2"/><text class="lane-name" x="869" y="38.5" text-anchor="middle" font-weight="700"><tspan x="869" dy="0">Dataeier</tspan></text></g>
+<g class="lane c0" data-lane="0"><rect class="lane-band" x="16" y="56" width="310.4" height="1544"/><rect class="lane-head" x="18" y="16" width="306.4" height="32" rx="8"/><rect class="lane-stripe" x="18" y="16" width="306.4" height="4" rx="2"/><text class="lane-name" x="171.2" y="38.5" text-anchor="middle" font-weight="700"><tspan x="171.2" dy="0">Bestiller</tspan></text></g>
+<g class="lane c1" data-lane="1"><rect class="lane-band" x="326.4" y="56" width="318.6" height="1544"/><rect class="lane-head" x="328.4" y="16" width="314.6" height="32" rx="8"/><rect class="lane-stripe" x="328.4" y="16" width="314.6" height="4" rx="2"/><text class="lane-name" x="485.7" y="38.5" text-anchor="middle" font-weight="700"><tspan x="485.7" dy="0">RAIWork med Tún</tspan></text></g>
+<g class="lane c2" data-lane="2"><rect class="lane-band" x="645" y="56" width="404.4" height="1544"/><rect class="lane-head" x="647" y="16" width="400.4" height="32" rx="8"/><rect class="lane-stripe" x="647" y="16" width="400.4" height="4" rx="2"/><text class="lane-name" x="847.2" y="38.5" text-anchor="middle" font-weight="700"><tspan x="847.2" dy="0">Dataeier</tspan></text></g>
 </g>
 <g class="edges">
-<g class="edge" data-from="ask" data-to="describe"><path class="edge-line" d="M164 188 L164 244"/><path class="edge-arrow" d="M164 244 L160 234 L168 234 Z"/></g>
-<g class="edge" data-from="describe" data-to="model"><path class="edge-line" d="M164 320 L164 342 Q164 348 170 348 L480 348 Q486 348 486 354 L486 376"/><path class="edge-arrow" d="M486 376 L482 366 L490 366 Z"/></g>
-<g class="edge" data-from="model" data-to="approve"><path class="edge-line" d="M486 452 L486 474 Q486 480 492 480 L809 480 Q815 480 815 486 L815 508"/><path class="edge-arrow" d="M815 508 L811 498 L819 498 Z"/></g>
-<g class="edge" data-from="approve" data-to="build"><path class="edge-line" d="M815 584 L815 616 Q815 622 809 622 L500 622 Q494 622 494 628 L494 650"/><path class="edge-arrow" d="M494 650 L490 640 L498 640 Z"/><g class="edge-label"><rect class="pill" x="819" y="587" width="26" height="18" rx="9"/><text x="832" y="600" text-anchor="middle" font-size="12">ja</text></g></g>
-<g class="edge" data-from="approve" data-to="describe" data-loop="1"><path class="edge-line" d="M927 546 L1041 546 Q1047 546 1047 540 L1047 222 Q1047 216 1041 216 L332 216 Q326 216 326 222 L326 276 Q326 282 320 282 L276 282"/><path class="edge-arrow" d="M276 282 L286 278 L286 286 Z"/><g class="edge-label"><rect class="pill" x="931" y="549" width="96" height="18" rx="9"/><text x="979" y="562" text-anchor="middle" font-size="12">nei, del opp</text></g></g>
-<g class="edge" data-from="build" data-to="verified"><path class="edge-line" d="M486 726 L486 782"/><path class="edge-arrow" d="M486 782 L482 772 L490 772 Z"/></g>
-<g class="edge" data-from="verified" data-to="publish"><path class="edge-line" d="M486 858 L486 924"/><path class="edge-arrow" d="M486 924 L482 914 L490 914 Z"/><g class="edge-label"><rect class="pill" x="490" y="861" width="26" height="18" rx="9"/><text x="503" y="874" text-anchor="middle" font-size="12">ja</text></g></g>
-<g class="edge" data-from="verified" data-to="build" data-loop="1"><path class="edge-line" d="M598 820 L649 820 Q655 820 655 814 L655 694 Q655 688 649 688 L598 688"/><path class="edge-arrow" d="M598 688 L608 684 L608 692 Z"/><g class="edge-label"><rect class="pill" x="602" y="823" width="33" height="18" rx="9"/><text x="618.5" y="836" text-anchor="middle" font-size="12">nei</text></g></g>
-<g class="edge" data-from="publish" data-to="use"><path class="edge-line" d="M486 1000 L486 1022 Q486 1028 480 1028 L178 1028 Q172 1028 172 1034 L172 1056"/><path class="edge-arrow" d="M172 1056 L168 1046 L176 1046 Z"/></g>
-<g class="edge" data-from="use" data-to="feedback"><path class="edge-line" d="M164 1132 L164 1188"/><path class="edge-arrow" d="M164 1188 L160 1178 L168 1178 Z"/></g>
-<g class="edge" data-from="feedback" data-to="change"><path class="edge-line" d="M164 1264 L164 1320"/><path class="edge-arrow" d="M164 1320 L160 1310 L168 1310 Z"/></g>
-<g class="edge" data-from="change" data-to="model" data-loop="1"><path class="edge-line" d="M276 1358 L320 1358 Q326 1358 326 1352 L326 420 Q326 414 332 414 L374 414"/><path class="edge-arrow" d="M374 414 L364 418 L364 410 Z"/><g class="edge-label"><rect class="pill" x="280" y="1361" width="26" height="18" rx="9"/><text x="293" y="1374" text-anchor="middle" font-size="12">ja</text></g></g>
-<g class="edge" data-from="change" data-to="done"><path class="edge-line" d="M164 1396 L164 1462"/><path class="edge-arrow" d="M164 1462 L160 1452 L168 1452 Z"/><g class="edge-label"><rect class="pill" x="168" y="1399" width="33" height="18" rx="9"/><text x="184.5" y="1412" text-anchor="middle" font-size="12">nei</text></g></g>
+<g class="edge" data-from="ask" data-to="describe"><path class="edge-line" d="M154 188 L154 244"/><path class="edge-arrow" d="M154 244 L150 234 L158 234 Z"/></g>
+<g class="edge" data-from="describe" data-to="model"><path class="edge-line" d="M154 320 L154 342 Q154 348 160 348 L458.4 348 Q464.4 348 464.4 354 L464.4 376"/><path class="edge-arrow" d="M464.4 376 L460.4 366 L468.4 366 Z"/></g>
+<g class="edge" data-from="model" data-to="approve"><path class="edge-line" d="M464.4 452 L464.4 474 Q464.4 480 470.4 480 L777 480 Q783 480 783 486 L783 508"/><path class="edge-arrow" d="M783 508 L779 498 L787 498 Z"/></g>
+<g class="edge" data-from="approve" data-to="build"><path class="edge-line" d="M783 584 L783 618 Q783 624 777 624 L478.4 624 Q472.4 624 472.4 630 L472.4 652"/><path class="edge-arrow" d="M472.4 652 L468.4 642 L476.4 642 Z"/><g class="edge-label"><rect class="pill" x="787" y="587" width="30.4" height="20" rx="10"/><text x="802.2" y="601.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="approve" data-to="describe" data-loop="1"><path class="edge-line" d="M889 546 L1019.4 546 Q1025.4 546 1025.4 540 L1025.4 222 Q1025.4 216 1019.4 216 L320.4 216 Q314.4 216 314.4 222 L314.4 276 Q314.4 282 308.4 282 L260 282"/><path class="edge-arrow" d="M260 282 L270 278 L270 286 Z"/><g class="edge-label"><rect class="pill" x="893" y="549" width="112.4" height="20" rx="10"/><text x="949.2" y="563.9" text-anchor="middle" font-size="14">nei, del opp</text></g></g>
+<g class="edge" data-from="build" data-to="verified"><path class="edge-line" d="M464.4 728 L464.4 784"/><path class="edge-arrow" d="M464.4 784 L460.4 774 L468.4 774 Z"/></g>
+<g class="edge" data-from="verified" data-to="publish"><path class="edge-line" d="M464.4 860 L464.4 928"/><path class="edge-arrow" d="M464.4 928 L460.4 918 L468.4 918 Z"/><g class="edge-label"><rect class="pill" x="468.4" y="863" width="30.4" height="20" rx="10"/><text x="483.6" y="877.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="verified" data-to="build" data-loop="1"><path class="edge-line" d="M570.4 822 L627 822 Q633 822 633 816 L633 696 Q633 690 627 690 L570.4 690"/><path class="edge-arrow" d="M570.4 690 L580.4 686 L580.4 694 Z"/><g class="edge-label"><rect class="pill" x="574.4" y="825" width="38.6" height="20" rx="10"/><text x="593.7" y="839.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="publish" data-to="use"><path class="edge-line" d="M464.4 1004 L464.4 1026 Q464.4 1032 458.4 1032 L168 1032 Q162 1032 162 1038 L162 1060"/><path class="edge-arrow" d="M162 1060 L158 1050 L166 1050 Z"/></g>
+<g class="edge" data-from="use" data-to="feedback"><path class="edge-line" d="M154 1136 L154 1192"/><path class="edge-arrow" d="M154 1192 L150 1182 L158 1182 Z"/></g>
+<g class="edge" data-from="feedback" data-to="change"><path class="edge-line" d="M154 1268 L154 1324"/><path class="edge-arrow" d="M154 1324 L150 1314 L158 1314 Z"/></g>
+<g class="edge" data-from="change" data-to="model" data-loop="1"><path class="edge-line" d="M260 1362 L308.4 1362 Q314.4 1362 314.4 1356 L314.4 420 Q314.4 414 320.4 414 L358.4 414"/><path class="edge-arrow" d="M358.4 414 L348.4 418 L348.4 410 Z"/><g class="edge-label"><rect class="pill" x="264" y="1365" width="30.4" height="20" rx="10"/><text x="279.2" y="1379.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="change" data-to="done"><path class="edge-line" d="M154 1400 L154 1468"/><path class="edge-arrow" d="M154 1468 L150 1458 L158 1458 Z"/><g class="edge-label"><rect class="pill" x="158" y="1403" width="38.6" height="20" rx="10"/><text x="177.3" y="1417.9" text-anchor="middle" font-size="14">nei</text></g></g>
 </g>
 <g class="nodes">
-<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(52 112)"><title>1. Trenger tall å dele</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">1 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Trenger tall å dele</tspan></text></g>
-<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(52 244)"><title>2. Beskriver spørsmålet og hvem som skal se svaret</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">2 </text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Beskriver spørsmålet </tspan><tspan x="123" dy="18">og hvem som skal se </tspan><tspan x="123" dy="18">svaret</tspan></text></g>
-<g class="node node-step c1 flagged" data-node="model" data-lane="1" transform="translate(374 376)"><title>3. Modellerer dataene (Forbedringspunkt 1: Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.)</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">3 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Modellerer dataene</tspan></text></g><g class="flag-badge" data-node="model" data-lane="1" aria-hidden="true" transform="translate(374 376)"><circle cx="224" cy="0" r="10"/><text x="224" y="4.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g>
-<g class="node node-decision c2 flagged" data-node="approve" data-lane="2" transform="translate(703 508)"><title>4. Godkjent for denne målgruppen? (Forbedringspunkt 2: Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.)</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">4 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Godkjent for denne </tspan><tspan x="123" dy="18">målgruppen?</tspan></text></g><g class="flag-badge" data-node="approve" data-lane="2" aria-hidden="true" transform="translate(703 508)"><circle cx="206" cy="0" r="10"/><text x="206" y="4.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g>
-<g class="node node-step c1" data-node="build" data-lane="1" transform="translate(374 650)"><title>5. Bygger én HTML-fil</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">5 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Bygger én HTML-fil</tspan></text></g>
-<g class="node node-decision c1" data-node="verified" data-lane="1" transform="translate(374 782)"><title>6. Består tun-verify?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">6 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Består tun-verify?</tspan></text></g>
-<g class="node node-step c1" data-node="publish" data-lane="1" transform="translate(374 924)"><title>7. Publiserer i delt mappe</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">7 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Publiserer i delt </tspan><tspan x="123" dy="18">mappe</tspan></text></g>
-<g class="node node-step c0" data-node="use" data-lane="0" transform="translate(52 1056)"><title>8. Åpner filen og bruker tallene</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">8 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Åpner filen og bruker </tspan><tspan x="123" dy="18">tallene</tspan></text></g>
-<g class="node node-step c0" data-node="feedback" data-lane="0" transform="translate(52 1188)"><title>9. Gir tilbakemelding</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">9 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Gir tilbakemelding</tspan></text></g>
-<g class="node node-decision c0" data-node="change" data-lane="0" transform="translate(52 1320)"><title>10. Må noe endres?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">10 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Må noe endres?</tspan></text></g>
-<g class="node node-end c0" data-node="done" data-lane="0" transform="translate(52 1462)"><title>11. Ferdig, til neste gang</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">11 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Ferdig, til neste </tspan><tspan x="123" dy="18">gang</tspan></text></g>
+<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(48 112)"><title>1. Trenger tall å dele</title><rect class="node-shape" width="212" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="27" cy="38" r="11"/><text x="27" y="42.9" text-anchor="middle" font-size="14" font-weight="700">1 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Trenger tall å </tspan><tspan x="118" dy="18">dele</tspan></text></g>
+<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(48 244)"><title>2. Beskriver spørsmålet og hvem som skal se svaret</title><rect class="node-shape" width="212" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="38" r="11"/><text x="23" y="42.9" text-anchor="middle" font-size="14" font-weight="700">2 </text></g><text class="node-label" x="118" y="24.5" text-anchor="middle"><tspan x="118" dy="0">Beskriver </tspan><tspan x="118" dy="18">spørsmålet og hvem </tspan><tspan x="118" dy="18">som skal se svaret</tspan></text></g>
+<g class="node node-step c1 flagged" data-node="model" data-lane="1" transform="translate(358.4 376)"><title>3. Modellerer dataene (Forbedringspunkt 1: Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.)</title><rect class="node-shape" width="212" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="38" r="11"/><text x="23" y="42.9" text-anchor="middle" font-size="14" font-weight="700">3 </text></g><text class="node-label" x="118" y="42.5" text-anchor="middle"><tspan x="118" dy="0">Modellerer dataene</tspan></text></g><g class="flag-badge" data-node="model" data-lane="1" aria-hidden="true" transform="translate(358.4 376)"><circle cx="212" cy="0" r="11"/><text x="212" y="4.9" text-anchor="middle" font-size="14" font-weight="700">1</text></g>
+<g class="node node-decision c2 flagged" data-node="approve" data-lane="2" transform="translate(677 508)"><title>4. Godkjent for denne målgruppen? (Forbedringspunkt 2: Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.)</title><polygon class="node-shape" points="18,0 194,0 212,38 194,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="31" cy="38" r="11"/><text x="31" y="42.9" text-anchor="middle" font-size="14" font-weight="700">4 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Godkjent for </tspan><tspan x="118" dy="18">denne målgruppen?</tspan></text></g><g class="flag-badge" data-node="approve" data-lane="2" aria-hidden="true" transform="translate(677 508)"><circle cx="194" cy="0" r="11"/><text x="194" y="4.9" text-anchor="middle" font-size="14" font-weight="700">2</text></g>
+<g class="node node-step c1" data-node="build" data-lane="1" transform="translate(358.4 652)"><title>5. Bygger én HTML-fil</title><rect class="node-shape" width="212" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="38" r="11"/><text x="23" y="42.9" text-anchor="middle" font-size="14" font-weight="700">5 </text></g><text class="node-label" x="118" y="42.5" text-anchor="middle"><tspan x="118" dy="0">Bygger én HTML-fil</tspan></text></g>
+<g class="node node-decision c1" data-node="verified" data-lane="1" transform="translate(358.4 784)"><title>6. Består tun-verify?</title><polygon class="node-shape" points="18,0 194,0 212,38 194,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="31" cy="38" r="11"/><text x="31" y="42.9" text-anchor="middle" font-size="14" font-weight="700">6 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Består tun- </tspan><tspan x="118" dy="18">verify?</tspan></text></g>
+<g class="node node-step c1" data-node="publish" data-lane="1" transform="translate(358.4 928)"><title>7. Publiserer i delt mappe</title><rect class="node-shape" width="212" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="38" r="11"/><text x="23" y="42.9" text-anchor="middle" font-size="14" font-weight="700">7 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Publiserer i delt </tspan><tspan x="118" dy="18">mappe</tspan></text></g>
+<g class="node node-step c0" data-node="use" data-lane="0" transform="translate(48 1060)"><title>8. Åpner filen og bruker tallene</title><rect class="node-shape" width="212" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="38" r="11"/><text x="23" y="42.9" text-anchor="middle" font-size="14" font-weight="700">8 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Åpner filen og </tspan><tspan x="118" dy="18">bruker tallene</tspan></text></g>
+<g class="node node-step c0" data-node="feedback" data-lane="0" transform="translate(48 1192)"><title>9. Gir tilbakemelding</title><rect class="node-shape" width="212" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="23" cy="38" r="11"/><text x="23" y="42.9" text-anchor="middle" font-size="14" font-weight="700">9 </text></g><text class="node-label" x="118" y="42.5" text-anchor="middle"><tspan x="118" dy="0">Gir tilbakemelding</tspan></text></g>
+<g class="node node-decision c0" data-node="change" data-lane="0" transform="translate(48 1324)"><title>10. Må noe endres?</title><polygon class="node-shape" points="18,0 194,0 212,38 194,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="31" cy="38" r="11"/><text x="31" y="42.9" text-anchor="middle" font-size="14" font-weight="700">10 </text></g><text class="node-label" x="118" y="42.5" text-anchor="middle"><tspan x="118" dy="0">Må noe endres?</tspan></text></g>
+<g class="node node-end c0" data-node="done" data-lane="0" transform="translate(48 1468)"><title>11. Ferdig, til neste gang</title><rect class="node-shape" width="212" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="27" cy="38" r="11"/><text x="27" y="42.9" text-anchor="middle" font-size="14" font-weight="700">11 </text></g><text class="node-label" x="118" y="33.5" text-anchor="middle"><tspan x="118" dy="0">Ferdig, til neste </tspan><tspan x="118" dy="18">gang</tspan></text></g>
+</g>
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" class="pd pd-lr" data-orient="lr" width="3622.2" height="596" viewBox="0 0 3622.2 596" role="img" aria-labelledby="pd-lr-title pd-lr-desc" font-size="14">
+<title id="pd-lr-title">Slik blir et Tún-dashboard til</title>
+<desc id="pd-lr-desc">Prosessdiagram med 11 steg i 3 roller. Den samme flyten står som tekst i fanen Tekstversjon.</desc>
+<defs><filter id="pd-lr-shadow" x="-10%" y="-20%" width="120%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-opacity="0.22"/></filter></defs>
+<g class="lanes">
+<g class="lane c0" data-lane="0"><rect class="lane-band" x="166" y="16" width="3440.2" height="184"/><rect class="lane-head" x="16" y="18" width="142" height="180" rx="8"/><rect class="lane-stripe" x="16" y="18" width="4" height="180" rx="2"/><text class="lane-name" x="89" y="112.5" text-anchor="middle" font-weight="700"><tspan x="89" dy="0">Bestiller</tspan></text></g>
+<g class="lane c1" data-lane="1"><rect class="lane-band" x="166" y="200" width="3440.2" height="184"/><rect class="lane-head" x="16" y="202" width="142" height="180" rx="8"/><rect class="lane-stripe" x="16" y="202" width="4" height="180" rx="2"/><text class="lane-name" x="89" y="287.5" text-anchor="middle" font-weight="700"><tspan x="89" dy="0">RAIWork med</tspan><tspan x="89" dy="18">Tún</tspan></text></g>
+<g class="lane c2" data-lane="2"><rect class="lane-band" x="166" y="384" width="3440.2" height="196"/><rect class="lane-head" x="16" y="386" width="142" height="192" rx="8"/><rect class="lane-stripe" x="16" y="386" width="4" height="192" rx="2"/><text class="lane-name" x="89" y="486.5" text-anchor="middle" font-weight="700"><tspan x="89" dy="0">Dataeier</tspan></text></g>
+</g>
+<g class="edges">
+<g class="edge" data-from="ask" data-to="describe"><path class="edge-line" d="M466.8 96 L522.8 96"/><path class="edge-arrow" d="M522.8 96 L512.8 100 L512.8 92 Z"/></g>
+<g class="edge" data-from="describe" data-to="model"><path class="edge-line" d="M767.6 96 L789.6 96 Q795.6 96 795.6 102 L795.6 274 Q795.6 280 801.6 280 L823.6 280"/><path class="edge-arrow" d="M823.6 280 L813.6 284 L813.6 276 Z"/></g>
+<g class="edge" data-from="model" data-to="approve"><path class="edge-line" d="M1068.4 280 L1090.4 280 Q1096.4 280 1096.4 286 L1096.4 458 Q1096.4 464 1102.4 464 L1124.4 464"/><path class="edge-arrow" d="M1124.4 464 L1114.4 468 L1114.4 460 Z"/></g>
+<g class="edge" data-from="approve" data-to="build"><path class="edge-line" d="M1369.2 464 L1413.6 464 Q1419.6 464 1419.6 458 L1419.6 294 Q1419.6 288 1425.6 288 L1447.6 288"/><path class="edge-arrow" d="M1447.6 288 L1437.6 292 L1437.6 284 Z"/><g class="edge-label"><rect class="pill" x="1372.2" y="468" width="30.4" height="20" rx="10"/><text x="1387.4" y="482.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="approve" data-to="describe" data-loop="1"><path class="edge-line" d="M1246.8 512 L1246.8 550 Q1246.8 556 1240.8 556 L500.8 556 Q494.8 556 494.8 550 L494.8 194 Q494.8 188 500.8 188 L639.2 188 Q645.2 188 645.2 182 L645.2 144"/><path class="edge-arrow" d="M645.2 144 L649.2 154 L641.2 154 Z"/><g class="edge-label"><rect class="pill" x="1249.8" y="516" width="112.4" height="20" rx="10"/><text x="1306" y="530.9" text-anchor="middle" font-size="14">nei, del opp</text></g></g>
+<g class="edge" data-from="build" data-to="verified"><path class="edge-line" d="M1692.4 280 L1748.4 280"/><path class="edge-arrow" d="M1748.4 280 L1738.4 284 L1738.4 276 Z"/></g>
+<g class="edge" data-from="verified" data-to="publish"><path class="edge-line" d="M1993.2 280 L2071.6 280"/><path class="edge-arrow" d="M2071.6 280 L2061.6 284 L2061.6 276 Z"/><g class="edge-label"><rect class="pill" x="1996.2" y="284" width="30.4" height="20" rx="10"/><text x="2011.4" y="298.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="verified" data-to="build" data-loop="1"><path class="edge-line" d="M1870.8 328 L1870.8 366 Q1870.8 372 1864.8 372 L1576 372 Q1570 372 1570 366 L1570 328"/><path class="edge-arrow" d="M1570 328 L1574 338 L1566 338 Z"/><g class="edge-label"><rect class="pill" x="1873.8" y="332" width="38.6" height="20" rx="10"/><text x="1893.1" y="346.9" text-anchor="middle" font-size="14">nei</text></g></g>
+<g class="edge" data-from="publish" data-to="use"><path class="edge-line" d="M2316.4 280 L2338.4 280 Q2344.4 280 2344.4 274 L2344.4 110 Q2344.4 104 2350.4 104 L2372.4 104"/><path class="edge-arrow" d="M2372.4 104 L2362.4 108 L2362.4 100 Z"/></g>
+<g class="edge" data-from="use" data-to="feedback"><path class="edge-line" d="M2617.2 96 L2673.2 96"/><path class="edge-arrow" d="M2673.2 96 L2663.2 100 L2663.2 92 Z"/></g>
+<g class="edge" data-from="feedback" data-to="change"><path class="edge-line" d="M2918 96 L2974 96"/><path class="edge-arrow" d="M2974 96 L2964 100 L2964 92 Z"/></g>
+<g class="edge" data-from="change" data-to="model" data-loop="1"><path class="edge-line" d="M3096.4 144 L3096.4 182 Q3096.4 188 3090.4 188 L952 188 Q946 188 946 194 L946 232"/><path class="edge-arrow" d="M946 232 L942 222 L950 222 Z"/><g class="edge-label"><rect class="pill" x="3099.4" y="148" width="30.4" height="20" rx="10"/><text x="3114.6" y="162.9" text-anchor="middle" font-size="14">ja</text></g></g>
+<g class="edge" data-from="change" data-to="done"><path class="edge-line" d="M3218.8 96 L3305.4 96"/><path class="edge-arrow" d="M3305.4 96 L3295.4 100 L3295.4 92 Z"/><g class="edge-label"><rect class="pill" x="3221.8" y="100" width="38.6" height="20" rx="10"/><text x="3241.1" y="114.9" text-anchor="middle" font-size="14">nei</text></g></g>
+</g>
+<g class="nodes">
+<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(222 48)"><title>1. Trenger tall å dele</title><rect class="node-shape" width="244.8" height="96" rx="24" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="27" cy="48" r="11"/><text x="27" y="52.9" text-anchor="middle" font-size="14" font-weight="700">1 </text></g><text class="node-label" x="134.4" y="52.5" text-anchor="middle"><tspan x="134.4" dy="0">Trenger tall å dele</tspan></text></g>
+<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(522.8 48)"><title>2. Beskriver spørsmålet og hvem som skal se svaret</title><rect class="node-shape" width="244.8" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">2 </text></g><text class="node-label" x="134.4" y="43.5" text-anchor="middle"><tspan x="134.4" dy="0">Beskriver spørsmålet og </tspan><tspan x="134.4" dy="18">hvem som skal se svaret</tspan></text></g>
+<g class="node node-step c1 flagged" data-node="model" data-lane="1" transform="translate(823.6 232)"><title>3. Modellerer dataene (Forbedringspunkt 1: Kolonnene må ofte gjettes. Et eksempel på svaret bestilleren vil ha sparer en hel runde.)</title><rect class="node-shape" width="244.8" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">3 </text></g><text class="node-label" x="134.4" y="52.5" text-anchor="middle"><tspan x="134.4" dy="0">Modellerer dataene</tspan></text></g><g class="flag-badge" data-node="model" data-lane="1" aria-hidden="true" transform="translate(823.6 232)"><circle cx="244.8" cy="0" r="11"/><text x="244.8" y="4.9" text-anchor="middle" font-size="14" font-weight="700">1</text></g>
+<g class="node node-decision c2 flagged" data-node="approve" data-lane="2" transform="translate(1124.4 416)"><title>4. Godkjent for denne målgruppen? (Forbedringspunkt 2: Godkjenningen skjer på e-post og blir borte. Den bør stå i provenance-blokken i filen.)</title><polygon class="node-shape" points="0,18 122.4,0 244.8,18 244.8,78 122.4,96 0,78" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">4 </text></g><text class="node-label" x="134.4" y="43.5" text-anchor="middle"><tspan x="134.4" dy="0">Godkjent for denne </tspan><tspan x="134.4" dy="18">målgruppen?</tspan></text></g><g class="flag-badge" data-node="approve" data-lane="2" aria-hidden="true" transform="translate(1124.4 416)"><circle cx="244.8" cy="18" r="11"/><text x="244.8" y="22.9" text-anchor="middle" font-size="14" font-weight="700">2</text></g>
+<g class="node node-step c1" data-node="build" data-lane="1" transform="translate(1447.6 232)"><title>5. Bygger én HTML-fil</title><rect class="node-shape" width="244.8" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">5 </text></g><text class="node-label" x="134.4" y="52.5" text-anchor="middle"><tspan x="134.4" dy="0">Bygger én HTML-fil</tspan></text></g>
+<g class="node node-decision c1" data-node="verified" data-lane="1" transform="translate(1748.4 232)"><title>6. Består tun-verify?</title><polygon class="node-shape" points="0,18 122.4,0 244.8,18 244.8,78 122.4,96 0,78" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">6 </text></g><text class="node-label" x="134.4" y="52.5" text-anchor="middle"><tspan x="134.4" dy="0">Består tun-verify?</tspan></text></g>
+<g class="node node-step c1" data-node="publish" data-lane="1" transform="translate(2071.6 232)"><title>7. Publiserer i delt mappe</title><rect class="node-shape" width="244.8" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">7 </text></g><text class="node-label" x="134.4" y="52.5" text-anchor="middle"><tspan x="134.4" dy="0">Publiserer i delt mappe</tspan></text></g>
+<g class="node node-step c0" data-node="use" data-lane="0" transform="translate(2372.4 48)"><title>8. Åpner filen og bruker tallene</title><rect class="node-shape" width="244.8" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">8 </text></g><text class="node-label" x="134.4" y="43.5" text-anchor="middle"><tspan x="134.4" dy="0">Åpner filen og bruker </tspan><tspan x="134.4" dy="18">tallene</tspan></text></g>
+<g class="node node-step c0" data-node="feedback" data-lane="0" transform="translate(2673.2 48)"><title>9. Gir tilbakemelding</title><rect class="node-shape" width="244.8" height="96" rx="6" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">9 </text></g><text class="node-label" x="134.4" y="52.5" text-anchor="middle"><tspan x="134.4" dy="0">Gir tilbakemelding</tspan></text></g>
+<g class="node node-decision c0" data-node="change" data-lane="0" transform="translate(2974 48)"><title>10. Må noe endres?</title><polygon class="node-shape" points="0,18 122.4,0 244.8,18 244.8,78 122.4,96 0,78" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="23" cy="48" r="11"/><text x="23" y="52.9" text-anchor="middle" font-size="14" font-weight="700">10 </text></g><text class="node-label" x="134.4" y="52.5" text-anchor="middle"><tspan x="134.4" dy="0">Må noe endres?</tspan></text></g>
+<g class="node node-end c0" data-node="done" data-lane="0" transform="translate(3305.4 48)"><title>11. Ferdig, til neste gang</title><rect class="node-shape" width="244.8" height="96" rx="24" filter="url(#pd-lr-shadow)"/><g class="step-no"><circle cx="27" cy="48" r="11"/><text x="27" y="52.9" text-anchor="middle" font-size="14" font-weight="700">11 </text></g><text class="node-label" x="134.4" y="52.5" text-anchor="middle"><tspan x="134.4" dy="0">Ferdig, til neste gang</tspan></text></g>
 </g>
 </svg>
 </figure>
+</div>
 <aside class="detail" id="detail" aria-labelledby="detail-h" hidden>
 <div class="detail-top"><p id="detail-h">Valgt steg</p>
 <button type="button" class="detail-close" id="detail-close">Lukk</button></div>
@@ -397,7 +475,7 @@ stegets nummer, det samme som i fanen Steg.</p>
 </section>
 
 <footer>
-<p>Kilde: Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data). Bestilt av: Teamet bak Tún. Laget 2026-10-10 13:09 CEST.
+<p>Kilde: Tún sin egen arbeidsflyt, slik skills/tun-new, tun-verify, tun-publish og tun-feedback beskriver den (eksempel, ingen ekte data). Bestilt av: Teamet bak Tún. Laget 2026-10-16 15:01 CEST.
 Én selvstendig fil: ingen server, ingen nettverk, ingen lisens.</p>
 </footer>
 </main>
@@ -421,6 +499,7 @@ stegets nummer, det samme som i fanen Steg.</p>
     p.setAttribute("aria-labelledby", tabs[i].id);
     p.setAttribute("tabindex", "0");
   });
+  var onFlowShown = null;   /* set below: a hidden frame measures as zero wide */
   function selectTab(i, focus) {
     tabs.forEach(function (t, k) {
       var on = k === i;
@@ -428,6 +507,7 @@ stegets nummer, det samme som i fanen Steg.</p>
       t.tabIndex = on ? 0 : -1;
       panels[k].hidden = !on;
     });
+    if (i === 0 && onFlowShown) onFlowShown();
     if (focus) tabs[i].focus();
   }
   tabs.forEach(function (t, i) {
@@ -441,47 +521,151 @@ stegets nummer, det samme som i fanen Steg.</p>
       if (j !== null) { ev.preventDefault(); selectTab(j, true); }
     });
   });
-  selectTab(0, false);
+  /* On a phone the step cards are the readable view; the drawing is one tab away. */
+  selectTab(window.matchMedia && window.matchMedia("(max-width: 40rem)").matches ? 1 : 0, false);
 
-  var svg = doc.querySelector("svg.pd");
-  if (!svg) return;
+  var svgs = Array.prototype.slice.call(doc.querySelectorAll("svg.pd"));
+  if (!svgs.length) return;
+  var svg = svgs.filter(function (s) { return s.classList.contains("on"); })[0] || svgs[0];
+  /* Each drawing's natural size and the range the CSS lets it take, read before any zoom. */
+  var range = svgs.map(function (s) {
+    var cs = getComputedStyle(s);
+    return {w: parseFloat(s.getAttribute("width")), h: parseFloat(s.getAttribute("height")),
+            min: parseFloat(cs.minWidth) || 0, max: parseFloat(cs.maxWidth) || Infinity};
+  });
 
-  /* Zoom and fit. The drawing is laid out at natural size, where no text is under 12 px. */
+  /* Zoom and fit. Until the reader zooms, the CSS sizes the drawing (scale null): it fits
+     the frame down to the size where its smallest text is 12 px, and pans below that. */
   var natW = parseFloat(svg.getAttribute("width"));
   var natH = parseFloat(svg.getAttribute("height"));
-  var scale = 1, fit = false;
+  var scale = null, fit = false;
   var fitBtn = doc.getElementById("fit"), level = doc.getElementById("zoom-level");
+  var figure = svg.parentNode, wrap = figure.parentNode, strip = doc.getElementById("lane-strip");
+  function shown() { return svg.getBoundingClientRect().width / natW; }
   function applyZoom() {
+    var manual = !fit && scale !== null;
+    /* Rows start at a scale that fits the window's height too (startScale). */
+    var rowsW = !manual && !fit && svg.getAttribute("data-orient") === "lr" ?
+      natW * startScale(svgs.indexOf(svg)) : 0;
     root.classList.toggle("fit", fit);
-    svg.style.width = fit ? "" : (natW * scale) + "px";
-    svg.style.height = fit ? "" : (natH * scale) + "px";
+    svg.style.width = manual ? (natW * scale) + "px" : rowsW ? rowsW + "px" : "";
+    svg.style.height = manual ? (natH * scale) + "px" : "";
+    svg.style.minWidth = svg.style.maxWidth = manual ? "none" : "";
     fitBtn.setAttribute("aria-pressed", fit ? "true" : "false");
-    level.textContent = fit ? "Tilpasset" : Math.round(scale * 100) + " %";
+    refresh();
   }
   function zoomBy(step) {
+    var from = fit || scale === null ? shown() : scale;
     fit = false;
-    scale = Math.min(2, Math.max(0.5, Math.round((scale + step) * 100) / 100));
+    scale = Math.min(2, Math.max(0.5, Math.round((from + step) * 100) / 100));
     applyZoom();
   }
+  /* Which way the flow runs. Auto takes, of the drawings that fit the frame without
+     panning, the one that needs the least scrolling down; when none fits, the columns.
+     So a wide, short window gets rows and a tall or narrow one gets columns. */
+  var mode = "auto", orientBtns = Array.prototype.slice.call(doc.querySelectorAll("#orient button"));
+  if (svgs.length < 2) doc.getElementById("orient").hidden = true;
+  /* The scale a drawing starts at: the frame's width, within its CSS range; for rows also
+     no taller than the window below the frame's top, so every lane is in view. 0 when
+     that would put text under 12 px: the drawing does not fit. */
+  function startScale(i) {
+    var r = range[i], k = Math.min(figure.clientWidth, r.max) / r.w;
+    if (svgs[i].getAttribute("data-orient") === "lr") {
+      var top = figure.getBoundingClientRect().top + window.pageYOffset;
+      k = Math.min(k, (window.innerHeight - top - 8) / r.h);
+    }
+    return k * r.w >= r.min - 1 ? k : 0;
+  }
+  function pick() {
+    var forced = svgs.filter(function (s) { return s.getAttribute("data-orient") === mode; })[0];
+    if (forced) return forced;
+    var best = null, bestH = Infinity;
+    svgs.forEach(function (s, i) {
+      var k = startScale(i);
+      if (k && range[i].h * k < bestH - 1) { best = s; bestH = range[i].h * k; }
+    });
+    return best || svgs[0];
+  }
+  function orient() {
+    var next = pick();
+    if (next !== svg) {
+      svg.style.width = svg.style.height = svg.style.minWidth = svg.style.maxWidth = "";
+      svg.classList.remove("on");
+      next.classList.add("on");
+      svg = next;
+      natW = parseFloat(svg.getAttribute("width"));
+      natH = parseFloat(svg.getAttribute("height"));
+      buildStrip();
+    }
+    applyZoom();
+  }
+  orientBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      mode = b.getAttribute("data-orient");
+      orientBtns.forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+      orient();
+    });
+  });
+  /* Lane names over the frame while it pans: a copy of each lane header, kept over its
+     lane as the frame scrolls, shown once the drawing's own headers have scrolled away. */
+  var heads = [];
+  function buildStrip() {
+    heads = Array.prototype.slice.call(svg.querySelectorAll("g.lane"));
+    while (strip.firstChild) strip.removeChild(strip.firstChild);
+    heads.forEach(function (g) {
+      var span = doc.createElement("span");
+      span.className = (g.getAttribute("class").match(/\bc\d+\b/) || [""])[0];
+      span.textContent = Array.prototype.map.call(g.querySelectorAll(".lane-name tspan"),
+        function (t) { return t.textContent; }).join(" ");
+      strip.appendChild(span);
+    });
+  }
+  buildStrip();
+  function placeStrip() {
+    var f = figure.getBoundingClientRect(), s = svg.getBoundingClientRect(), k = s.width / natW;
+    var rows = svg.getAttribute("data-orient") === "lr";
+    var first = heads.length && heads[0].querySelector(".lane-head").getBoundingClientRect();
+    strip.hidden = !first || (rows ? first.right > f.left + 1 : first.bottom > f.top + 1);
+    wrap.classList.toggle("rows", rows);
+    heads.forEach(function (g, i) {
+      var r = g.querySelector(".lane-head"), st = strip.children[i].style;
+      var at = parseFloat(r.getAttribute(rows ? "y" : "x")) * k;
+      var len = parseFloat(r.getAttribute(rows ? "height" : "width")) * k;
+      st.left = rows ? "" : (s.left - f.left - 1 + at) + "px";
+      st.width = rows ? "" : len + "px";
+      st.top = rows ? (s.top - f.top - 1 + at) + "px" : "";
+      st.height = rows ? len + "px" : "";
+    });
+  }
+  function refresh() {
+    level.textContent = fit ? "Tilpasset" : Math.round(shown() * 100) + " %";
+    wrap.classList.toggle("pan", figure.scrollWidth > figure.clientWidth + 1);
+    placeStrip();
+  }
+  figure.addEventListener("scroll", placeStrip);
+  onFlowShown = orient;
+  window.addEventListener("resize", orient);
   doc.getElementById("zoom-in").addEventListener("click", function () { zoomBy(0.25); });
   doc.getElementById("zoom-out").addEventListener("click", function () { zoomBy(-0.25); });
   doc.getElementById("zoom-reset").addEventListener("click", function () { fit = false; scale = 1; applyZoom(); });
   fitBtn.addEventListener("click", function () { fit = !fit; applyZoom(); });
+  orient();
 
   /* Highlight: hover or focus a step to see its connections; the rest dims. */
-  var nodes = Array.prototype.slice.call(svg.querySelectorAll("g.node"));
-  var badges = Array.prototype.slice.call(svg.querySelectorAll("g.flag-badge"));
+  /* Both drawings take part, so switching keeps what is lit, filtered and selected. */
+  var nodes = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.node"));
+  var badges = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.flag-badge"));
   /* The steps become buttons below, so the picture is a group of them, not one image. */
-  svg.setAttribute("role", "group");
-  var edges = Array.prototype.slice.call(svg.querySelectorAll("g.edge"));
-  var lanes = Array.prototype.slice.call(svg.querySelectorAll("g.lane"));
+  svgs.forEach(function (s) { s.setAttribute("role", "group"); });
+  var edges = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.edge"));
+  var lanes = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.lane"));
   var laneOf = {};
   nodes.forEach(function (n) { laneOf[n.getAttribute("data-node")] = n.getAttribute("data-lane"); });
   function nodeById(id) {
-    return nodes.filter(function (n) { return n.getAttribute("data-node") === id; })[0] || null;
+    return nodes.filter(function (n) { return n.getAttribute("data-node") === id && svg.contains(n); })[0] || null;
   }
   function highlight(id) {
-    svg.classList.toggle("focusing", !!id);
+    svgs.forEach(function (s) { s.classList.toggle("focusing", !!id); });
     nodes.concat(badges).forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });
     edges.forEach(function (e) {
       e.classList.toggle("hl", !!id && (e.getAttribute("data-from") === id || e.getAttribute("data-to") === id));
@@ -501,6 +685,7 @@ stegets nummer, det samme som i fanen Steg.</p>
     while (body.firstChild) body.removeChild(body.firstChild);
     body.appendChild(copy);
     detail.hidden = false;
+    placeDetail(nodeById(id));
     detail.setAttribute("data-node", id);
     selected = id;
     nodes.forEach(function (n) {
@@ -508,6 +693,15 @@ stegets nummer, det samme som i fanen Steg.</p>
       n.classList.toggle("selected", on);
       n.setAttribute("aria-pressed", on ? "true" : "false");
     });
+  }
+  /* Beside the step, on the half of the drawing the step is not on. */
+  function placeDetail(n) {
+    if (!n) return;
+    var flow = detail.parentNode.getBoundingClientRect(), r = n.getBoundingClientRect();
+    var right = r.left + r.width / 2 < flow.left + flow.width / 2;
+    detail.style.top = Math.max(0, r.top - flow.top) + "px";
+    detail.style.right = right ? "1rem" : "auto";
+    detail.style.left = right ? "auto" : "1rem";
   }
   function closeDetail() {
     var back = selected && nodeById(selected);
@@ -545,7 +739,7 @@ stegets nummer, det samme som i fanen Steg.</p>
     c.addEventListener("click", function () {
       var lane = c.getAttribute("data-lane");
       chips.forEach(function (o) { o.setAttribute("aria-pressed", o === c ? "true" : "false"); });
-      svg.classList.toggle("lane-filter", lane !== "");
+      svgs.forEach(function (s) { s.classList.toggle("lane-filter", lane !== ""); });
       nodes.concat(badges).forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });
       lanes.forEach(function (l) { l.classList.toggle("in-lane", l.getAttribute("data-lane") === lane); });
       edges.forEach(function (e) {
@@ -561,8 +755,8 @@ stegets nummer, det samme som i fanen Steg.</p>
       var id = b.getAttribute("data-node"), n = nodeById(id);
       if (!n) return;
       selectTab(0, false);
-      openDetail(id);
       n.scrollIntoView({block: "center", inline: "center"});
+      openDetail(id);   /* after the scroll, so the panel lands beside the step */
       n.focus({preventScroll: true});
     });
   });

@@ -43,7 +43,8 @@
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--panel);color:var(--ink);line-height:1.5;font-size:1rem;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-main{max-width:96rem;margin:0 auto;padding:1.5rem 2rem 3rem}
+/* No width cap: a wide screen gives the drawing all its width. Text keeps its own measure. */
+main{max-width:none;margin:0 auto;padding:1.5rem 2rem 3rem}
 h1{margin:0 0 .5rem;font-size:1.875rem;line-height:1.25;color:var(--brand-dark);
   overflow-wrap:break-word}
 h2{margin:2.5rem 0 1rem;font-size:1.375rem;line-height:1.3;color:var(--brand-dark)}
@@ -83,6 +84,7 @@ html.js .panel{padding-top:1.25rem}
 .toolbar{display:none}
 html.js .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:0 0 .75rem}
 .toolbar .group{display:flex;gap:.25rem;align-items:center}
+.toolbar .group[hidden]{display:none}
 .toolbar button{font:inherit;font-size:.875rem;padding:.375rem .75rem;border-radius:.5rem;
   border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;min-width:2.25rem}
 .toolbar button:hover{border-color:var(--brand)}
@@ -96,12 +98,37 @@ html.js .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;m
 .chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .dot{display:inline-block;width:.75rem;height:.75rem;border-radius:50%;background:var(--role,var(--muted));
   flex:none}
-.flow{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap}
-.figure{margin:0;flex:1 1 40rem;min-width:0;overflow:auto;border:1px solid var(--line);
-  border-radius:.75rem;background:var(--bg)}
-.pd{display:block;max-width:none}
-html.fit .pd{width:100%;height:auto}
-.detail{flex:0 1 24rem;min-width:18rem;border:1px solid var(--line);border-radius:.75rem;
+.flow{position:relative}
+.figure-wrap{position:relative}
+.figure{margin:0;overflow:auto;border:1px solid var(--line);border-radius:.75rem;background:var(--bg)}
+/* Responsive without the script: the drawing fills the frame, grows to at most 1.5 times
+   its natural size on a wide screen, and never shrinks below the size where its smallest
+   text is 12 px (the sizes per drawing follow). Narrower than that, the frame scrolls.
+   The page carries two drawings of the same flow: lanes as columns (pd-tb), and lanes as
+   rows with the flow running right (pd-lr). One shows (class "on"); without the script and
+   in print that is the columns. */
+.pd{display:block;width:100%;height:auto;margin:0 auto}
+{{PD_SIZES}}
+.pd:not(.on){display:none}
+html.fit .pd{min-width:0;max-width:none}
+/* Panning (the drawing is wider than the frame): the frame stops at the window height, so
+   both scrollbars are in reach, and the lane names stay on top of it while it scrolls. */
+html.js .pan .figure{max-height:calc(100vh - 2rem)}
+.lane-strip{display:none}
+html.js .pan .lane-strip:not([hidden]){display:block;position:absolute;z-index:1;top:1px;left:1px;
+  right:1px;height:2.25rem;overflow:hidden;pointer-events:none;background:var(--bg);
+  border-bottom:1px solid var(--line);border-radius:.75rem .75rem 0 0}
+.lane-strip span{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;white-space:nowrap;font-size:.875rem;font-weight:700;color:var(--ink);
+  background:var(--panel);border-top:4px solid var(--role,var(--line))}
+/* Rows pan sideways, so the lane names stand in a column on the left instead. */
+html.js .pan.rows .lane-strip:not([hidden]){right:auto;bottom:1px;width:9rem;height:auto;
+  border-bottom:0;border-right:1px solid var(--line);border-radius:.75rem 0 0 .75rem}
+.rows .lane-strip span{left:0;right:0;bottom:auto;padding:0 .5rem;white-space:normal;text-align:center;
+  border-top:0;border-left:4px solid var(--role,var(--line))}
+/* The detail panel lies over the drawing beside the step, so opening it never narrows it. */
+.detail{position:absolute;z-index:2;top:0;right:1rem;width:min(24rem,calc(100% - 2rem));
+  max-height:calc(100vh - 2rem);overflow:auto;border:2px solid var(--brand);border-radius:.75rem;
   background:var(--bg);padding:1rem 1.25rem}
 .detail[hidden]{display:none}
 .detail-top{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin:0 0 .5rem}
@@ -145,7 +172,7 @@ html.js .show-in-flow:hover{background:var(--panel)}
 .textalt li{margin:0 0 .5rem}
 .textalt .branches{margin:.25rem 0 0;padding-left:1.5rem}
 .flag-note{margin:.25rem 0 0;color:var(--bad)}
-footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
+footer{max-width:90ch;margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
   color:var(--muted);font-size:.875rem}
 
 /* The drawing. Every colour comes from the token contract (tools/tun_tokens.py). */
@@ -193,10 +220,14 @@ html.js .pd .node{cursor:pointer}
     white-space:normal;margin:1.5rem 0 .75rem}
   html.js .panel{padding-top:0}
   .panel + .panel{break-before:page}
-  .figure{overflow:visible;border:0;break-inside:avoid}
+  .figure,html.js .pan .figure{overflow:visible;max-height:none;border:0;break-inside:avoid}
+  /* Paper is portrait: print the columns, whichever drawing was on screen. */
+  html .pd.pd-tb{display:block}
+  html .pd.pd-lr{display:none}
+  html.js .pan .lane-strip:not([hidden]){display:none}
   /* The drawing fits under the title on the first page: never wider than the page,
      never taller than what is left of it. */
-  html .pd{width:auto;height:auto;max-width:100%;max-height:215mm;margin:0 auto}
+  html .pd{width:auto;height:auto;min-width:0;max-width:100%;max-height:215mm;margin:0 auto}
   .pd,.pd *,.card,.badge,.card-flag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .cards{grid-template-columns:1fr 1fr 1fr;gap:.5rem}
   .card{padding:.625rem .75rem}
@@ -237,12 +268,20 @@ html.js .pd .node{cursor:pointer}
 <button type="button" id="zoom-reset">{{T:pct_100}}</button>
 <button type="button" id="fit" aria-pressed="false">{{T:fit}}</button>
 </div>
+<div class="group orient" id="orient" role="group" aria-label="{{T:orient_label}}">
+<button type="button" data-orient="auto" aria-pressed="true">{{T:orient_auto}}</button>
+<button type="button" data-orient="tb" aria-pressed="false">{{T:orient_tb}}</button>
+<button type="button" data-orient="lr" aria-pressed="false">{{T:orient_lr}}</button>
+</div>
 <div class="chips" role="group" aria-label="{{T:highlight_role}}">{{CHIPS}}</div>
 </div>
 <div class="flow">
+<div class="figure-wrap">
+<div class="lane-strip" id="lane-strip" aria-hidden="true" hidden></div>
 <figure class="figure">
 {{SVG}}
 </figure>
+</div>
 <aside class="detail" id="detail" aria-labelledby="detail-h" hidden>
 <div class="detail-top"><p id="detail-h">{{T:selected_step}}</p>
 <button type="button" class="detail-close" id="detail-close">{{T:close}}</button></div>
@@ -301,6 +340,7 @@ html.js .pd .node{cursor:pointer}
     p.setAttribute("aria-labelledby", tabs[i].id);
     p.setAttribute("tabindex", "0");
   });
+  var onFlowShown = null;   /* set below: a hidden frame measures as zero wide */
   function selectTab(i, focus) {
     tabs.forEach(function (t, k) {
       var on = k === i;
@@ -308,6 +348,7 @@ html.js .pd .node{cursor:pointer}
       t.tabIndex = on ? 0 : -1;
       panels[k].hidden = !on;
     });
+    if (i === 0 && onFlowShown) onFlowShown();
     if (focus) tabs[i].focus();
   }
   tabs.forEach(function (t, i) {
@@ -321,47 +362,151 @@ html.js .pd .node{cursor:pointer}
       if (j !== null) { ev.preventDefault(); selectTab(j, true); }
     });
   });
-  selectTab(0, false);
+  /* On a phone the step cards are the readable view; the drawing is one tab away. */
+  selectTab(window.matchMedia && window.matchMedia("(max-width: 40rem)").matches ? 1 : 0, false);
 
-  var svg = doc.querySelector("svg.pd");
-  if (!svg) return;
+  var svgs = Array.prototype.slice.call(doc.querySelectorAll("svg.pd"));
+  if (!svgs.length) return;
+  var svg = svgs.filter(function (s) { return s.classList.contains("on"); })[0] || svgs[0];
+  /* Each drawing's natural size and the range the CSS lets it take, read before any zoom. */
+  var range = svgs.map(function (s) {
+    var cs = getComputedStyle(s);
+    return {w: parseFloat(s.getAttribute("width")), h: parseFloat(s.getAttribute("height")),
+            min: parseFloat(cs.minWidth) || 0, max: parseFloat(cs.maxWidth) || Infinity};
+  });
 
-  /* Zoom and fit. The drawing is laid out at natural size, where no text is under 12 px. */
+  /* Zoom and fit. Until the reader zooms, the CSS sizes the drawing (scale null): it fits
+     the frame down to the size where its smallest text is 12 px, and pans below that. */
   var natW = parseFloat(svg.getAttribute("width"));
   var natH = parseFloat(svg.getAttribute("height"));
-  var scale = 1, fit = false;
+  var scale = null, fit = false;
   var fitBtn = doc.getElementById("fit"), level = doc.getElementById("zoom-level");
+  var figure = svg.parentNode, wrap = figure.parentNode, strip = doc.getElementById("lane-strip");
+  function shown() { return svg.getBoundingClientRect().width / natW; }
   function applyZoom() {
+    var manual = !fit && scale !== null;
+    /* Rows start at a scale that fits the window's height too (startScale). */
+    var rowsW = !manual && !fit && svg.getAttribute("data-orient") === "lr" ?
+      natW * startScale(svgs.indexOf(svg)) : 0;
     root.classList.toggle("fit", fit);
-    svg.style.width = fit ? "" : (natW * scale) + "px";
-    svg.style.height = fit ? "" : (natH * scale) + "px";
+    svg.style.width = manual ? (natW * scale) + "px" : rowsW ? rowsW + "px" : "";
+    svg.style.height = manual ? (natH * scale) + "px" : "";
+    svg.style.minWidth = svg.style.maxWidth = manual ? "none" : "";
     fitBtn.setAttribute("aria-pressed", fit ? "true" : "false");
-    level.textContent = fit ? "{{T:fitted}}" : Math.round(scale * 100) + "{{T:pct_suffix}}";
+    refresh();
   }
   function zoomBy(step) {
+    var from = fit || scale === null ? shown() : scale;
     fit = false;
-    scale = Math.min(2, Math.max(0.5, Math.round((scale + step) * 100) / 100));
+    scale = Math.min(2, Math.max(0.5, Math.round((from + step) * 100) / 100));
     applyZoom();
   }
+  /* Which way the flow runs. Auto takes, of the drawings that fit the frame without
+     panning, the one that needs the least scrolling down; when none fits, the columns.
+     So a wide, short window gets rows and a tall or narrow one gets columns. */
+  var mode = "auto", orientBtns = Array.prototype.slice.call(doc.querySelectorAll("#orient button"));
+  if (svgs.length < 2) doc.getElementById("orient").hidden = true;
+  /* The scale a drawing starts at: the frame's width, within its CSS range; for rows also
+     no taller than the window below the frame's top, so every lane is in view. 0 when
+     that would put text under 12 px: the drawing does not fit. */
+  function startScale(i) {
+    var r = range[i], k = Math.min(figure.clientWidth, r.max) / r.w;
+    if (svgs[i].getAttribute("data-orient") === "lr") {
+      var top = figure.getBoundingClientRect().top + window.pageYOffset;
+      k = Math.min(k, (window.innerHeight - top - 8) / r.h);
+    }
+    return k * r.w >= r.min - 1 ? k : 0;
+  }
+  function pick() {
+    var forced = svgs.filter(function (s) { return s.getAttribute("data-orient") === mode; })[0];
+    if (forced) return forced;
+    var best = null, bestH = Infinity;
+    svgs.forEach(function (s, i) {
+      var k = startScale(i);
+      if (k && range[i].h * k < bestH - 1) { best = s; bestH = range[i].h * k; }
+    });
+    return best || svgs[0];
+  }
+  function orient() {
+    var next = pick();
+    if (next !== svg) {
+      svg.style.width = svg.style.height = svg.style.minWidth = svg.style.maxWidth = "";
+      svg.classList.remove("on");
+      next.classList.add("on");
+      svg = next;
+      natW = parseFloat(svg.getAttribute("width"));
+      natH = parseFloat(svg.getAttribute("height"));
+      buildStrip();
+    }
+    applyZoom();
+  }
+  orientBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      mode = b.getAttribute("data-orient");
+      orientBtns.forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+      orient();
+    });
+  });
+  /* Lane names over the frame while it pans: a copy of each lane header, kept over its
+     lane as the frame scrolls, shown once the drawing's own headers have scrolled away. */
+  var heads = [];
+  function buildStrip() {
+    heads = Array.prototype.slice.call(svg.querySelectorAll("g.lane"));
+    while (strip.firstChild) strip.removeChild(strip.firstChild);
+    heads.forEach(function (g) {
+      var span = doc.createElement("span");
+      span.className = (g.getAttribute("class").match(/\bc\d+\b/) || [""])[0];
+      span.textContent = Array.prototype.map.call(g.querySelectorAll(".lane-name tspan"),
+        function (t) { return t.textContent; }).join(" ");
+      strip.appendChild(span);
+    });
+  }
+  buildStrip();
+  function placeStrip() {
+    var f = figure.getBoundingClientRect(), s = svg.getBoundingClientRect(), k = s.width / natW;
+    var rows = svg.getAttribute("data-orient") === "lr";
+    var first = heads.length && heads[0].querySelector(".lane-head").getBoundingClientRect();
+    strip.hidden = !first || (rows ? first.right > f.left + 1 : first.bottom > f.top + 1);
+    wrap.classList.toggle("rows", rows);
+    heads.forEach(function (g, i) {
+      var r = g.querySelector(".lane-head"), st = strip.children[i].style;
+      var at = parseFloat(r.getAttribute(rows ? "y" : "x")) * k;
+      var len = parseFloat(r.getAttribute(rows ? "height" : "width")) * k;
+      st.left = rows ? "" : (s.left - f.left - 1 + at) + "px";
+      st.width = rows ? "" : len + "px";
+      st.top = rows ? (s.top - f.top - 1 + at) + "px" : "";
+      st.height = rows ? len + "px" : "";
+    });
+  }
+  function refresh() {
+    level.textContent = fit ? "{{T:fitted}}" : Math.round(shown() * 100) + "{{T:pct_suffix}}";
+    wrap.classList.toggle("pan", figure.scrollWidth > figure.clientWidth + 1);
+    placeStrip();
+  }
+  figure.addEventListener("scroll", placeStrip);
+  onFlowShown = orient;
+  window.addEventListener("resize", orient);
   doc.getElementById("zoom-in").addEventListener("click", function () { zoomBy(0.25); });
   doc.getElementById("zoom-out").addEventListener("click", function () { zoomBy(-0.25); });
   doc.getElementById("zoom-reset").addEventListener("click", function () { fit = false; scale = 1; applyZoom(); });
   fitBtn.addEventListener("click", function () { fit = !fit; applyZoom(); });
+  orient();
 
   /* Highlight: hover or focus a step to see its connections; the rest dims. */
-  var nodes = Array.prototype.slice.call(svg.querySelectorAll("g.node"));
-  var badges = Array.prototype.slice.call(svg.querySelectorAll("g.flag-badge"));
+  /* Both drawings take part, so switching keeps what is lit, filtered and selected. */
+  var nodes = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.node"));
+  var badges = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.flag-badge"));
   /* The steps become buttons below, so the picture is a group of them, not one image. */
-  svg.setAttribute("role", "group");
-  var edges = Array.prototype.slice.call(svg.querySelectorAll("g.edge"));
-  var lanes = Array.prototype.slice.call(svg.querySelectorAll("g.lane"));
+  svgs.forEach(function (s) { s.setAttribute("role", "group"); });
+  var edges = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.edge"));
+  var lanes = Array.prototype.slice.call(doc.querySelectorAll("svg.pd g.lane"));
   var laneOf = {};
   nodes.forEach(function (n) { laneOf[n.getAttribute("data-node")] = n.getAttribute("data-lane"); });
   function nodeById(id) {
-    return nodes.filter(function (n) { return n.getAttribute("data-node") === id; })[0] || null;
+    return nodes.filter(function (n) { return n.getAttribute("data-node") === id && svg.contains(n); })[0] || null;
   }
   function highlight(id) {
-    svg.classList.toggle("focusing", !!id);
+    svgs.forEach(function (s) { s.classList.toggle("focusing", !!id); });
     nodes.concat(badges).forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });
     edges.forEach(function (e) {
       e.classList.toggle("hl", !!id && (e.getAttribute("data-from") === id || e.getAttribute("data-to") === id));
@@ -381,6 +526,7 @@ html.js .pd .node{cursor:pointer}
     while (body.firstChild) body.removeChild(body.firstChild);
     body.appendChild(copy);
     detail.hidden = false;
+    placeDetail(nodeById(id));
     detail.setAttribute("data-node", id);
     selected = id;
     nodes.forEach(function (n) {
@@ -388,6 +534,15 @@ html.js .pd .node{cursor:pointer}
       n.classList.toggle("selected", on);
       n.setAttribute("aria-pressed", on ? "true" : "false");
     });
+  }
+  /* Beside the step, on the half of the drawing the step is not on. */
+  function placeDetail(n) {
+    if (!n) return;
+    var flow = detail.parentNode.getBoundingClientRect(), r = n.getBoundingClientRect();
+    var right = r.left + r.width / 2 < flow.left + flow.width / 2;
+    detail.style.top = Math.max(0, r.top - flow.top) + "px";
+    detail.style.right = right ? "1rem" : "auto";
+    detail.style.left = right ? "auto" : "1rem";
   }
   function closeDetail() {
     var back = selected && nodeById(selected);
@@ -425,7 +580,7 @@ html.js .pd .node{cursor:pointer}
     c.addEventListener("click", function () {
       var lane = c.getAttribute("data-lane");
       chips.forEach(function (o) { o.setAttribute("aria-pressed", o === c ? "true" : "false"); });
-      svg.classList.toggle("lane-filter", lane !== "");
+      svgs.forEach(function (s) { s.classList.toggle("lane-filter", lane !== ""); });
       nodes.concat(badges).forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });
       lanes.forEach(function (l) { l.classList.toggle("in-lane", l.getAttribute("data-lane") === lane); });
       edges.forEach(function (e) {
@@ -441,8 +596,8 @@ html.js .pd .node{cursor:pointer}
       var id = b.getAttribute("data-node"), n = nodeById(id);
       if (!n) return;
       selectTab(0, false);
-      openDetail(id);
       n.scrollIntoView({block: "center", inline: "center"});
+      openDetail(id);   /* after the scroll, so the panel lands beside the step */
       n.focus({preventScroll: true});
     });
   });

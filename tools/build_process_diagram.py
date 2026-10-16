@@ -67,12 +67,25 @@ loop back. Each (lane, layer) cell holds at most one step, so boxes cannot overl
 construction. Connections leave from the bottom of a box and arrive at the top. They are
 routed at right angles through the gaps between layers ("channels") and between lanes
 ("gutters"), each on its own track; a candidate route is rejected if it crosses a box,
-runs along another connection, or crosses a branch label. If a gap runs out of tracks it
-gets one more and routing starts again. Same spec in, same file out.
+runs along another connection, or crosses a branch label. A route has no repeated point
+and no bend that does not turn: a "bend" that sits on another line's track would hide
+that crossing from the cost. If a gap runs out of tracks it gets one more and routing
+starts again. Same spec in, same file out.
 
 Why top to bottom: most processes are a long chain across a few roles. Drawn left to
 right, an 11-step chain was 3058 px wide, which is about 4 px text on a printed page.
 Top to bottom the same chain is a little over 1000 px tall and prints readably.
+
+The same layout runs a second time with the flow to the right and lanes as rows
+(Orient LR): the engine is the same, in the same abstract axes, and only the box sizes,
+the pill direction and the lane header differ. The page carries both drawings and shows
+the one that fits the window with the least scrolling; columns are the floor without the
+script and in print. Both number the steps the same, so the cards and the text version
+are one list for both.
+
+Why the smallest text is 14 units: the page fits the drawing to the window, down to
+FIT_FLOOR (12/14) of natural size, where that text is 12 px. With 12-unit text the floor
+would be 1:1 and nothing could fit. Narrower than the floor, the page pans.
 
 check_layout() re-checks every one of those properties on the finished geometry, and the
 build refuses to write a file that fails it. tools/verify_process_diagram.py checks the
@@ -83,6 +96,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import html
+import math
 import os
 import pathlib
 import re
@@ -130,25 +144,27 @@ MAX_LABEL = 90       # a step label; detail belongs in improve: or the text arou
 MAX_EDGE_LABEL = 24  # a branch answer: "ja", "nei", "trenger endring"
 MAX_LANE = 40
 
-# Geometry, in SVG user units. The SVG is drawn at natural size, so one unit is one CSS px.
-# No text is smaller than 12 px at natural size.
-BOX_W = 224           # box width, across the lane
+# Geometry, in SVG user units. At natural size one unit is one CSS px.
+# No text is smaller than 14 units, so the page may shrink the drawing to FIT_FLOOR (12/14)
+# to fit the window and still show no text under MIN_TEXT_PX. Below that it scrolls.
+BOX_W = 212           # box width, across the lane
 FONT = 14             # step labels and lane names
-LABEL_FONT = 12       # branch labels, step numbers, badges
+LABEL_FONT = 14       # branch labels, step numbers, badges: as big as FONT, see FIT_FLOOR
 LINE_H = 18
 CHAR_W = 7.9          # a deliberately wide average for a 14-unit system sans-serif
 CHAR_W_BOLD = 8.4
-LABEL_CHAR_W = 7.0
+LABEL_CHAR_W = 8.2
 HEX = 18              # how far a decision's side points stick out
-NUM_R = 10            # radius of the step number disc inside each box
-BADGE_R = 10          # radius of the improvement badge on a box corner
-LANE_PAD = 24         # space beside a box inside its lane; the last branch pill may use it
+NUM_R = 11            # radius of the step number disc inside each box
+BADGE_R = 11          # radius of the improvement badge on a box corner
+LANE_PAD = 20         # space beside a box inside its lane; the last branch pill may use it
 HEAD_PAD = 12         # lane name padding inside its header
 PORT_MARGIN = 28      # ports stay this far from a box's ends, on the flat part of the outline
 PORT_MIN = 22         # minimum gap between two lines leaving one box
-SIDE_GAP = 24         # gap between two loop ports on a box's right side: one pill plus air
-PILL_H = 18           # a branch label's pill
-PILL_PAD = 6
+SIDE_GAP = 26         # gap between two loop ports on a box's right side: one pill plus air
+PILL_H = 20           # a branch label's pill
+PILL_PAD = 7
+BASELINE = 0.35       # a centred line's baseline sits this many ems below the centre
 TRACK = 12            # spacing between parallel lines
 MIN_ZONE = 16         # minimum last stretch into a box, room for the arrowhead
 MARGIN = 16
@@ -156,6 +172,14 @@ MIN_SEP = 3           # closer than this, two parallel lines read as one
 PORT_CLEAR = 8        # least gap between a box's in-ports and the out-ports of the box above
 CORNER = 6            # radius of a line's rounded bend
 ARROW_L, ARROW_W = 10, 8
+MIN_TEXT_PX = 12      # the smallest text a reader is shown, in CSS px, at any window width
+FIT_FLOOR = MIN_TEXT_PX / min(FONT, LABEL_FONT)   # how far the page may shrink the drawing
+FIT_CEILING = 1.5     # how far it may grow to fill a wide screen: 14 units become 21 px
+# Rows (the flow left to right). A box is narrower, so labels wrap sooner and the boxes
+# grow downwards, which a wide screen has room for.
+BOX_W_LR = 160
+PORT_MARGIN_LR = 26   # ports keep clear of a decision's slant and a start's round corner
+HEAD_W_LR = 150       # the lane-name column on the left, with its gap
 # Routing costs. A crossing outweighs any detour the drawing can offer, so the router only
 # accepts one when every crossing-free route is blocked.
 CROSS_COST = 1000
@@ -425,26 +449,34 @@ def _validate(spec: Spec, lane_lines: list[int]) -> None:
 # only place that turns a point into screen x = v, y = u. Keeping the axes abstract is what
 # lets the router read as "channels between layers, gutters between lanes" without a
 # screen direction baked into every comparison.
+def pieces(word: str) -> list[str]:
+    """A word in the pieces a line may end after: "før/etter" is "før/" and "etter"."""
+    return re.findall(r"[^/-]+[/-]*|[/-]+", word)
+
+
+def longest_piece(text: str) -> int:
+    """The longest run of characters a line can never break: the box must hold it."""
+    return max((len(p) for w in text.split() for p in pieces(w)), default=0)
+
+
 def wrap(text: str, width: float, char_w: float) -> list[str]:
-    """Greedy word wrap by an estimated character width. A word longer than a line is
-    split with a hyphen: Norwegian compounds are real and must not run out of the box."""
+    """Greedy wrap by an estimated character width. A line breaks at a space, or just after
+    a "/" or "-" the text already has, never inside a word: "inventorie-d" reads as a
+    typo, and a hyphen added to a file name changes it. A piece longer than a line keeps
+    its own line; plan_layout() makes the boxes wide enough for it."""
     per_line = max(4, int(width // char_w))
     lines: list[str] = []
     cur = ""
     for word in text.split():
-        while len(word) > per_line:
-            if cur:
+        for i, piece in enumerate(pieces(word)):
+            sep = "" if i else " "
+            if not cur:
+                cur = piece
+            elif len(cur) + len(sep) + len(piece) <= per_line:
+                cur += sep + piece
+            else:
                 lines.append(cur)
-                cur = ""
-            lines.append(word[:per_line - 1] + "-")
-            word = word[per_line - 1:]
-        if not cur:
-            cur = word
-        elif len(cur) + 1 + len(word) <= per_line:
-            cur += " " + word
-        else:
-            lines.append(cur)
-            cur = word
+                cur = piece
     if cur:
         lines.append(cur)
     return lines
@@ -456,20 +488,94 @@ def inset(kind: str) -> float:
     return HEX if kind == "decision" else (14 if kind in ("start", "end") else 10)
 
 
-def text_span(kind: str) -> tuple[float, float]:
-    """(left, right) of the label area inside a box, in box-local units."""
+def text_span(kind: str, box_w: float = BOX_W) -> tuple[float, float]:
+    """(left, right) of the label area inside a box box_w wide, in box-local units."""
     left = inset(kind) + 2 * NUM_R + 10
-    right = BOX_W - inset(kind) - 8
+    right = box_w - inset(kind) - 8
     return left, right
 
 
-def text_width(kind: str) -> float:
-    left, right = text_span(kind)
+def text_width(kind: str, box_w: float = BOX_W) -> float:
+    left, right = text_span(kind, box_w)
     return right - left
 
 
 def pill_width(label: str) -> float:
     return len(label) * LABEL_CHAR_W + 2 * PILL_PAD
+
+
+@dataclass(frozen=True)
+class Orient:
+    """Which way the flow runs on screen. The engine works in (u, v) either way, u along
+    the flow and v across the lanes; this holds the few things that depend on the screen.
+    "tb": the flow runs down and lanes are columns (x = v, y = u). "lr": the flow runs to
+    the right and lanes are rows (x = u, y = v). A box's labels wrap to its width on
+    screen. A branch label's pill is always horizontal on screen, so along the flow it is
+    PILL_H long in "tb" and as long as its text in "lr"."""
+    name: str
+    box_w: float          # a box's width on screen
+    port_margin: float    # ports stay this far from the ends of a box's flow edge
+    head_w: float = 0     # "lr": width of the lane-name column
+
+    def pill_along(self, label: str) -> float:
+        return PILL_H if self.name == "tb" else pill_width(label)
+
+    def pill_across(self, label: str) -> float:
+        return pill_width(label) if self.name == "tb" else PILL_H
+
+    def screen(self, u: float, v: float) -> tuple:
+        return (v, u) if self.name == "tb" else (u, v)
+
+    def text_kind(self, kind: str) -> str:
+        """The kind whose insets a label follows. A decision's points stick out across the
+        flow: sideways in columns, so its text keeps clear of them; up and down in rows,
+        where its sides are straight, so its text is as wide as a step's."""
+        return "step" if self.name == "lr" and kind == "decision" else kind
+
+
+TB = Orient("tb", BOX_W, PORT_MARGIN)
+LR = Orient("lr", BOX_W_LR, PORT_MARGIN_LR, HEAD_W_LR)
+
+# The rows drawing is for wide, short screens. Its boxes are as wide as a 3440 x 1440
+# window lets them be with every text at 12 px: wider boxes mean shorter labels and a
+# shorter drawing, but every px of box width costs one px per layer of drawing width.
+ROWS_FIT_W = 3374     # the frame in a 3440 px window (page padding and border)
+ROWS_FIT_H = 1220     # what a 1440 px high window leaves below the page header
+ROWS_BOX_MAX = 280
+ROWS_BOX_STEP = 10
+ROWS_BOX_READ = 240   # when no width fits that window: rows are opened by hand, so read well
+
+
+def box_width_for(spec: Spec, o: "Orient") -> float:
+    """o.box_w, or wider if a label holds a piece no line can break (see wrap())."""
+    return max([o.box_w] + [longest_piece(n.label) * CHAR_W
+                            + (o.box_w - text_width(o.text_kind(n.kind), o.box_w)) + 1
+                            for n in spec.nodes])
+
+
+def rows_orient(spec: Spec) -> Orient:
+    """The rows orientation for this spec: the widest box, from ROWS_BOX_MAX down to
+    BOX_W_LR in ROWS_BOX_STEP, whose drawing fits ROWS_FIT_W x ROWS_FIT_H at the 12 px
+    floor. A layout costs seconds on a long plan, so it starts from an estimate: the
+    drawing grows by about one px per layer for each px of box width."""
+    def fits(w: int):
+        try:
+            lay = layout(spec, Orient("lr", w, PORT_MARGIN_LR, HEAD_W_LR))
+        except LayoutError:
+            return None
+        return lay.screen_w * FIT_FLOOR <= ROWS_FIT_W and lay.screen_h * FIT_FLOOR <= ROWS_FIT_H, lay
+    base = fits(int(BOX_W_LR))
+    if not base or base[1].screen_w * FIT_FLOOR > ROWS_FIT_W:
+        return Orient("lr", ROWS_BOX_READ, PORT_MARGIN_LR, HEAD_W_LR)
+    room = (ROWS_FIT_W / FIT_FLOOR - base[1].screen_w) / base[1].layers
+    w = int(min(ROWS_BOX_MAX, BOX_W_LR + room // ROWS_BOX_STEP * ROWS_BOX_STEP))
+    while w > BOX_W_LR:
+        got = fits(w)
+        if got and got[0]:
+            return Orient("lr", w, PORT_MARGIN_LR, HEAD_W_LR)
+        w -= ROWS_BOX_STEP
+    return Orient("lr", int(BOX_W_LR), PORT_MARGIN_LR, HEAD_W_LR) if base[0] else \
+        Orient("lr", ROWS_BOX_READ, PORT_MARGIN_LR, HEAD_W_LR)
 
 
 @dataclass
@@ -489,10 +595,6 @@ class Box:
     in_ports: dict = field(default_factory=dict)     # edge order -> v, on the top
     out_ports: dict = field(default_factory=dict)    # edge order -> v, on the bottom
     side_ports: dict = field(default_factory=dict)   # edge order -> u, on the right side
-
-    @property
-    def rx(self) -> float:
-        return min(self.du / 2, 24) if self.kind in ("start", "end") else 6
 
     def rect(self) -> tuple:
         return (self.u, self.v, self.u + self.du, self.v + self.dv)
@@ -529,10 +631,19 @@ class Layout:
     head_h: float
     box_h: float
     order: list = field(default_factory=list)   # node ids in reading order
+    orient: Orient = TB
 
     @property
     def layers(self) -> int:
         return 1 + max(b.layer for b in self.boxes.values())
+
+    @property
+    def screen_w(self) -> float:
+        return self.orient.screen(self.height, self.width)[0]
+
+    @property
+    def screen_h(self) -> float:
+        return self.orient.screen(self.height, self.width)[1]
 
 
 def assign_layers(spec: Spec) -> tuple[dict, set]:
@@ -597,29 +708,30 @@ def assign_layers(spec: Spec) -> tuple[dict, set]:
     return layer, back
 
 
-def even_ports(edges: list, v0: float, dv: float) -> dict:
-    span = dv - 2 * PORT_MARGIN
-    return {e.order: round(v0 + PORT_MARGIN + span * (i + 1) / (len(edges) + 1), 1)
+def even_ports(edges: list, v0: float, dv: float, margin: float = PORT_MARGIN) -> dict:
+    span = dv - 2 * margin
+    return {e.order: round(v0 + margin + span * (i + 1) / (len(edges) + 1), 1)
             for i, e in enumerate(edges)}
 
 
-def out_ports(node: Node, edges: list, v0: float, dv: float) -> dict:
+def out_ports(node: Node, edges: list, v0: float, dv: float, o: Orient = TB) -> dict:
     """Outgoing ports along the bottom of a box. A branch label's pill sits just under the
     box, to the right of its own line, so the next line must start past the pill. The
     last pill may run past the box into the lane padding, never into the gutter."""
+    m = o.port_margin
     if not any(e.label for e in edges):
-        return even_ports(edges, v0, dv)
-    gaps = [max(PORT_MIN, pill_width(e.label) + 8 if e.label else 0) for e in edges[:-1]]
+        return even_ports(edges, v0, dv, m)
+    gaps = [max(PORT_MIN, o.pill_across(e.label) + 8 if e.label else 0) for e in edges[:-1]]
     span = sum(gaps)
-    last_w = pill_width(edges[-1].label) + 4 if edges[-1].label else 0
+    last_w = o.pill_across(edges[-1].label) + 4 if edges[-1].label else 0
     start = v0 + dv / 2 - span / 2
     start = min(start, v0 + dv + LANE_PAD - 6 - last_w - span)
-    start = max(start, v0 + PORT_MARGIN)
-    if start + span > v0 + dv - PORT_MARGIN + 1e-6 or \
+    start = max(start, v0 + m)
+    if start + span > v0 + dv - m + 1e-6 or \
             start + span + last_w > v0 + dv + LANE_PAD - 6 + 1e-6:
         raise LayoutError(
             f"the outcome labels of {node.id!r} are too long to sit side by side under the "
-            f"box; shorten them (together about {int((dv - 2 * PORT_MARGIN) // LABEL_CHAR_W)}"
+            f"box; shorten them (together about {int((dv - 2 * m) // LABEL_CHAR_W)}"
             " characters fit)")
     ports, v = {}, start
     for i, e in enumerate(edges):
@@ -629,17 +741,17 @@ def out_ports(node: Node, edges: list, v0: float, dv: float) -> dict:
     return ports
 
 
-def side_ports(edges: list, u0: float, du: float) -> dict:
+def side_ports(edges: list, u0: float, du: float, gap: float = SIDE_GAP) -> dict:
     """Ports on the right side of a box for loops back, centred on mid-height and one
     pill apart, so a branch label under one line never sits on the next. Loops leaving
     sit above loops arriving: a leaving loop goes up, an arriving one mostly comes up from
     below, and in that order the two never cross at the box."""
     mid = u0 + du / 2
     n = len(edges)
-    return {e.order: round(mid + (i - (n - 1) / 2) * SIDE_GAP, 1) for i, e in enumerate(edges)}
+    return {e.order: round(mid + (i - (n - 1) / 2) * gap, 1) for i, e in enumerate(edges)}
 
 
-def clear_in_ports(boxes: dict, edges: list) -> None:
+def clear_in_ports(boxes: dict, edges: list, margin: float = PORT_MARGIN) -> None:
     """Move a box's in-ports until none sits within PORT_CLEAR of an out-port of the
     nearest box above it in the same lane. Both sets of stubs share the channel between
     the two boxes, and two stubs a couple of pixels apart can never be routed apart:
@@ -653,7 +765,7 @@ def clear_in_ports(boxes: dict, edges: list) -> None:
         if not above or not t.in_ports:
             continue
         s = max(above, key=lambda b: b.layer)
-        lo, hi = t.v + PORT_MARGIN, t.v + t.dv - PORT_MARGIN
+        lo, hi = t.v + margin, t.v + t.dv - margin
 
         def clear(v: float, own: int | None) -> bool:
             return all(abs(v - sv) >= PORT_CLEAR or sk == own for sk, sv in s.out_ports.items())
@@ -729,7 +841,7 @@ class Plan:
     fwd_in: dict         # node id -> forward connections entering its top, in port order
     side: dict           # node id -> loops on its right side, leaving above arriving
     lines: dict          # node id -> wrapped label
-    box_h: float
+    box_h: float         # a box's extent along the flow (du)
     lane_lines: list
     head_h: float
     right_pad: dict      # lane -> padding right of its boxes, room for loop pills
@@ -738,9 +850,13 @@ class Plan:
     flags: dict          # node id -> improvement point number
     reading: list        # node ids in reading order
     route_order: list    # connections in the order they are first routed
+    o: Orient = TB
+    box_dv: float = BOX_W    # a box's extent across the lanes
+    side_gap: float = SIDE_GAP
+    lane_dv: dict = field(default_factory=dict)   # per lane, when lanes differ (rows)
 
 
-def plan_layout(spec: Spec) -> Plan:
+def plan_layout(spec: Spec, o: Orient = TB) -> Plan:
     layer, back = assign_layers(spec)
     nodes = {n.id: n for n in spec.nodes}
     nlayers = max(layer.values()) + 1
@@ -773,25 +889,57 @@ def plan_layout(spec: Spec) -> Plan:
         arriving = sorted((e for e in side[k] if e.dst == k), key=lambda e: (layer[e.src], e.order))
         side[k] = leaving + arriving
 
-    lines = {n.id: wrap(n.label, text_width(n.kind), CHAR_W) for n in spec.nodes}
+    box_w = box_width_for(spec, o)
+    lines = {n.id: wrap(n.label, text_width(o.text_kind(n.kind), box_w), CHAR_W) for n in spec.nodes}
     most_side = max((len(v) for v in side.values()), default=0)
-    box_h = max(52, max(len(v) for v in lines.values()) * LINE_H + 22,
-                (most_side + 1) * SIDE_GAP)
-    lane_lines = [wrap(name, BOX_W + 2 * LANE_PAD - 2 * HEAD_PAD, CHAR_W_BOLD)
-                  for name in spec.lanes]
-    head_h = max(len(ll) for ll in lane_lines) * LINE_H + 22
+    text_h = max(len(v) for v in lines.values()) * LINE_H + 22
+    if o.name == "tb":
+        side_gap = SIDE_GAP
+        box_h = max(52, text_h, (most_side + 1) * side_gap)
+        box_dv = box_w
+        lane_lines = [wrap(name, box_w + 2 * LANE_PAD - 2 * HEAD_PAD, CHAR_W_BOLD)
+                      for name in spec.lanes]
+        head_h = max(len(ll) for ll in lane_lines) * LINE_H + 22
+    else:
+        # Loops leave along the bottom of a box here, each pill to the right of its line,
+        # so two loop ports sit a pill apart. In and out ports share a box's short side,
+        # so the box is as tall as they need: PORT_MIN apart, outcome pills stacked.
+        side_gap = max([SIDE_GAP] + [pill_width(e.label) + 10 for e in spec.edges
+                                     if e.order in back and e.label])
+        box_h = max(box_w, (most_side + 1) * side_gap)
+        # Wrap to the box as it is drawn, which loop ports may have made wider than box_w.
+        lines = {n.id: wrap(n.label, text_width(o.text_kind(n.kind), box_h), CHAR_W) for n in spec.nodes}
+        text_h = max(len(v) for v in lines.values()) * LINE_H + 22
+
+        def need(edges: list) -> float:
+            if any(e.label for e in edges):
+                return sum(max(PORT_MIN, o.pill_across(e.label) + 8 if e.label else 0)
+                           for e in edges[:-1]) + PORT_MIN
+            return (len(edges) + 1) * PORT_MIN
+        lane_lines = [wrap(name, o.head_w - 8 - 2 * HEAD_PAD, CHAR_W_BOLD) for name in spec.lanes]
+        head_h = o.head_w
+        # Lanes are the short axis here, so each is only as tall as its own boxes need:
+        # their labels, their ports, and the lane's name in its header.
+        lane_dv = {}
+        for ln in range(nlanes):
+            mine = [n for n in spec.nodes if lane_of(n.id) == ln]
+            lane_dv[ln] = max([52, len(lane_lines[ln]) * LINE_H + 8]
+                              + [len(lines[n.id]) * LINE_H + 22 + HEX for n in mine]
+                              + [2 * o.port_margin + need(d[n.id]) for n in mine
+                                 for d in (fwd_in, fwd_out) if d[n.id]])
+        box_dv = max(lane_dv.values())
 
     # A lane's right padding holds the pills of loops leaving from its boxes.
     right_pad = {ln: LANE_PAD for ln in range(nlanes)}
     for e in spec.edges:
         if e.order in back and e.label:
             ln = lane_of(e.src)
-            right_pad[ln] = max(right_pad[ln], pill_width(e.label) + 12)
+            right_pad[ln] = max(right_pad[ln], o.pill_across(e.label) + 12)
 
     out_zone = {k: MIN_ZONE for k in range(-1, nlayers)}
     for e in spec.edges:
         if e.label and e.order not in back:
-            out_zone[layer[e.src]] = max(out_zone[layer[e.src]], PILL_H + 8)
+            out_zone[layer[e.src]] = max(out_zone[layer[e.src]], o.pill_along(e.label) + 8)
 
     # Steps are numbered, and flags too, in reading order: layer, then lane.
     reading = sorted(nodes, key=lambda i: (layer[i], lane_of(i), nodes[i].order))
@@ -803,7 +951,8 @@ def plan_layout(spec: Spec) -> Plan:
     route_order = sorted(spec.edges, key=lambda e: (e.order in back,
                                                     abs(layer[e.dst] - layer[e.src]), e.order))
     return Plan(spec, layer, back, lane, nlayers, nlanes, fwd_out, fwd_in, side, lines, box_h,
-                lane_lines, head_h, right_pad, out_zone, number, flags, reading, route_order)
+                lane_lines, head_h, right_pad, out_zone, number, flags, reading, route_order,
+                o, box_dv, side_gap, lane_dv if o.name == "lr" else {})
 
 
 def initial_caps(plan: Plan) -> dict:
@@ -840,6 +989,8 @@ def route(plan: Plan, caps: dict) -> tuple:
     lane_lines, head_h, right_pad, out_zone = plan.lane_lines, plan.head_h, plan.right_pad, plan.out_zone
     number, flags, reading, route_order = plan.number, plan.flags, plan.reading, plan.route_order
     cap_ch, cap_gut, cap_loop = caps["ch"], caps["gut"], caps["loop"]
+    o = plan.o
+    dv_of = lambda ln: plan.lane_dv.get(ln, plan.box_dv)  # noqa: E731
 
     # ---- place lanes and layers for the current track capacities
     gut_left: dict[int, float] = {}
@@ -851,7 +1002,7 @@ def route(plan: Plan, caps: dict) -> tuple:
         v += (cap_gut[b] + 1) * TRACK
         if b < nlanes:
             box_left[b] = v + LANE_PAD
-            loop_left[b] = box_left[b] + BOX_W + right_pad[b]
+            loop_left[b] = box_left[b] + dv_of(b) + right_pad[b]
             v = loop_left[b] + ((cap_loop[b] + 1) * TRACK if cap_loop[b] else 0)
     width = v + MARGIN
 
@@ -878,13 +1029,14 @@ def route(plan: Plan, caps: dict) -> tuple:
     boxes: dict[str, Box] = {}
     for n in spec.nodes:
         bv, bu = box_left[n.lane], row_top[layer[n.id]]
-        b = Box(n.id, n.kind, n.lane, layer[n.id], bu, bv, box_h, BOX_W, lines[n.id],
+        box_dv = dv_of(plan.lane[n.id])
+        b = Box(n.id, n.kind, n.lane, layer[n.id], bu, bv, box_h, box_dv, lines[n.id],
                 number[n.id], flags.get(n.id))
-        b.in_ports = even_ports(fwd_in[n.id], bv, BOX_W)
-        b.out_ports = out_ports(n, fwd_out[n.id], bv, BOX_W)
-        b.side_ports = side_ports(side[n.id], bu, box_h)
+        b.in_ports = even_ports(fwd_in[n.id], bv, box_dv, o.port_margin)
+        b.out_ports = out_ports(n, fwd_out[n.id], bv, box_dv, o)
+        b.side_ports = side_ports(side[n.id], bu, box_h, plan.side_gap)
         boxes[n.id] = b
-    clear_in_ports(boxes, spec.edges)
+    clear_in_ports(boxes, spec.edges, o.port_margin)
     occupied = {(b.lane, b.layer) for b in boxes.values()}
 
     labels: dict[int, tuple] = {}
@@ -896,7 +1048,8 @@ def route(plan: Plan, caps: dict) -> tuple:
             pu, pv = s.side_ports[e.order], s.right_at(s.side_ports[e.order])
         else:
             pu, pv = s.u + s.du, s.out_ports[e.order]
-        labels[e.order] = (pu + 3, pv + 4, pu + 3 + PILL_H, pv + 4 + pill_width(e.label))
+        labels[e.order] = (pu + 3, pv + 4, pu + 3 + o.pill_along(e.label),
+                           pv + 4 + o.pill_across(e.label))
 
     placed: dict[int, list] = {}   # edge order -> its segments
 
@@ -955,7 +1108,11 @@ def route(plan: Plan, caps: dict) -> tuple:
         direct = kt > ks and all((t.lane, k) not in occupied for k in range(ks + 1, kt))
         if direct and abs(vs - vt) < 1e-6:
             yield [(us, vs), (ut, vt)]
-        if direct:
+        elif direct:
+            # A jog through the channel, only when the ports are apart. With them in line
+            # it would be the straight drop with a bend that does not turn, sitting on a
+            # track; crosses() cannot see a line cross where the other one "bends", so
+            # that fake bend hid a crossing and won (and rounded_path divided by zero).
             for i in range(cap_ch[ks]):
                 ui = track_u(ks, i)
                 yield [(us, vs), (ui, vs), (ui, vt), (ut, vt)]
@@ -997,10 +1154,10 @@ def route(plan: Plan, caps: dict) -> tuple:
     bands = [(gut_left[ln], gut_left[ln + 1] if ln + 1 < nlanes else width - MARGIN)
              for ln in range(nlanes)]
     return Layout(width, height, boxes, routes, bands, lane_lines, head_h, box_h,
-                  reading), None
+                  reading, o), None
 
 
-def layout(spec: Spec) -> Layout:
+def layout(spec: Spec, o: Orient = TB) -> Layout:
     """Place every box and route every connection.
 
     Forward connections leave a box's bottom and enter the top of a box further down,
@@ -1014,7 +1171,7 @@ def layout(spec: Spec) -> Layout:
     After everything is routed, each connection is torn up and re-routed against all the
     others, up to RIPUP_PASSES times, because the first ones routed could not see the
     rest. If a gap runs out of tracks it gets one more and everything starts again."""
-    plan = plan_layout(spec)
+    plan = plan_layout(spec, o)
     caps = initial_caps(plan)
     # Grow the scarcest pool the failed connection needed until everything routes.
     for _attempt in range(400):
@@ -1101,14 +1258,16 @@ def check_layout(lay: Layout) -> list[str]:
     purpose to prove this function notices."""
     problems: list[str] = []
     boxes = list(lay.boxes.values())
+    o = lay.orient
+    m = o.port_margin
     for i, a in enumerate(boxes):
         for b in boxes[i + 1:]:
             if rects_overlap(a.rect(), b.rect()):
                 problems.append(f"boxes overlap: {a.id} and {b.id}")
-        if len(a.lines) * LINE_H + 2 > a.du:
+        if len(a.lines) * LINE_H + 2 > o.screen(a.du, a.dv)[1]:
             problems.append(f"label of {a.id} is taller than its box")
         for ln in a.lines:
-            if len(ln) * CHAR_W > text_width(a.kind) + 1e-6:
+            if len(ln) * CHAR_W > text_width(o.text_kind(a.kind), o.screen(a.du, a.dv)[0]) + 1e-6:
                 problems.append(f"a label line of {a.id} is wider than its box: {ln!r}")
     by_route = []
     for r in lay.routes:
@@ -1120,6 +1279,15 @@ def check_layout(lay: Layout) -> list[str]:
         for (u1, v1), (u2, v2) in zip(pts, pts[1:]):
             if abs(u1 - u2) > 1e-6 and abs(v1 - v2) > 1e-6:
                 problems.append(f"{name}: a diagonal segment")
+            elif abs(u1 - u2) <= 1e-6 and abs(v1 - v2) <= 1e-6:
+                problems.append(f"{name}: a zero-length segment (a point repeated)")
+        # A middle point where the line goes straight on is a bend that does not turn.
+        # Nothing draws it, and it splits a segment where another line may cross, so
+        # crossing counts that go by segments would miss that crossing.
+        for (u1, v1), (u2, v2), (u3, v3) in zip(pts, pts[1:], pts[2:]):
+            if (abs(u1 - u2) <= 1e-6 and abs(u2 - u3) <= 1e-6) or \
+                    (abs(v1 - v2) <= 1e-6 and abs(v2 - v3) <= 1e-6):
+                problems.append(f"{name}: a bend that does not turn at ({fmt(u2)}, {fmt(v2)})")
         if any(not (0 <= u <= lay.height and 0 <= v <= lay.width) for u, v in pts):
             problems.append(f"{name}: leaves the drawing")
         s, t = lay.boxes[e.src], lay.boxes[e.dst]
@@ -1135,9 +1303,9 @@ def check_layout(lay: Layout) -> list[str]:
                 problems.append(f"{name}: does not arrive at a side of {e.dst}")
         else:
             # Ports stay on the flat part of the outline, clear of rounded or pointed ends.
-            if abs(su - (s.u + s.du)) > 1 or not s.v + PORT_MARGIN - 1 <= sv <= s.v + s.dv - PORT_MARGIN + 1:
+            if abs(su - (s.u + s.du)) > 1 or not s.v + m - 1 <= sv <= s.v + s.dv - m + 1:
                 problems.append(f"{name}: does not leave from the bottom of {e.src}")
-            if abs(tu - t.u) > 1 or not t.v + PORT_MARGIN - 1 <= tv <= t.v + t.dv - PORT_MARGIN + 1:
+            if abs(tu - t.u) > 1 or not t.v + m - 1 <= tv <= t.v + t.dv - m + 1:
                 problems.append(f"{name}: does not arrive at the top of {e.dst}")
         segs = segments(pts)
         for idx, seg in enumerate(segs):
@@ -1180,10 +1348,30 @@ def fmt(n: float) -> str:
     return f"{n:.1f}".rstrip("0").rstrip(".")
 
 
+def corners(pts: list) -> list:
+    """The points where a polyline really turns, plus both ends: repeated points and
+    points it runs straight through are dropped. check_layout() rejects a route that has
+    either, so this changes nothing in a sound drawing; it keeps the two drawing functions
+    below from dividing by a zero length if one ever gets through."""
+    out = [pts[0]]
+    for p in pts[1:]:
+        if abs(p[0] - out[-1][0]) <= 1e-6 and abs(p[1] - out[-1][1]) <= 1e-6:
+            continue
+        if len(out) >= 2:
+            (ax, ay), (bx, by) = out[-2], out[-1]
+            if (abs(ax - bx) <= 1e-6 and abs(bx - p[0]) <= 1e-6) or \
+                    (abs(ay - by) <= 1e-6 and abs(by - p[1]) <= 1e-6):
+                out[-1] = p
+                continue
+        out.append(p)
+    return out
+
+
 def rounded_path(pts: list) -> str:
     """An SVG path through screen points with every bend rounded by a quadratic curve.
     The curve's control point is the original corner, so the path still names every
     corner of the route: tools/verify_process_diagram.py rebuilds the polyline from it."""
+    pts = corners(pts)
     d = [f"M{fmt(pts[0][0])} {fmt(pts[0][1])}"]
     for (ax, ay), (cx, cy), (bx, by) in zip(pts, pts[1:], pts[2:]):
         la, lb = abs(cx - ax) + abs(cy - ay), abs(bx - cx) + abs(by - cy)
@@ -1202,7 +1390,7 @@ def arrowhead(pts: list) -> str:
     """A filled triangle whose tip is the route's last point, pointing along the last
     stretch. Drawn as its own shape rather than an SVG marker so it takes the line's
     highlight colour in every engine and prints the same."""
-    (ax, ay), (bx, by) = pts[-2], pts[-1]
+    (ax, ay), (bx, by) = corners(pts)[-2:]
     length = abs(bx - ax) + abs(by - ay)
     dx, dy = (bx - ax) / length, (by - ay) / length
     cx, cy = bx - dx * ARROW_L, by - dy * ARROW_L
@@ -1212,21 +1400,29 @@ def arrowhead(pts: list) -> str:
 
 
 def render_svg(spec: Spec, lay: Layout) -> str:
-    """The only function that maps (u, v) to the screen: x = v, y = u.
+    """The only function that maps (u, v) to the screen: lay.orient.screen() (x = v, y = u
+    for columns, x = u, y = v for rows).
 
     Output contract: every lane, connection and node is ONE line, starting with
     '<g class="lane', '<g class="edge"' or '<g class="node node-'. The text alternative
     does the same with '<li data-node='. tools/verify_process_diagram.py --mutation-check
-    edits copies by those lines, and tests/test_process_diagram.py pins the counts."""
+    edits copies by those lines, and tests/test_process_diagram.py pins the counts. The
+    columns drawing comes first in the page, so a mutation of the first such line breaks
+    the drawing that shows by default."""
+    o = lay.orient
+    tb = o.name == "tb"
+    pid = "pd" if tb else "pd-lr"            # ids, unique when the page carries both drawings
+    sw, sh = lay.screen_w, lay.screen_h
     out = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" class="pd" width="{fmt(lay.width)}" '
-        f'height="{fmt(lay.height)}" viewBox="0 0 {fmt(lay.width)} {fmt(lay.height)}" '
-        f'role="img" aria-labelledby="pd-title pd-desc" font-size="{FONT}">',
-        f'<title id="pd-title">{esc(spec.title)}</title>',
-        '<desc id="pd-desc">' + i18n.fill(
+        f'<svg xmlns="http://www.w3.org/2000/svg" class="pd pd-{o.name}{" on" if tb else ""}" '
+        f'data-orient="{o.name}" width="{fmt(sw)}" '
+        f'height="{fmt(sh)}" viewBox="0 0 {fmt(sw)} {fmt(sh)}" '
+        f'role="img" aria-labelledby="{pid}-title {pid}-desc" font-size="{FONT}">',
+        f'<title id="{pid}-title">{esc(spec.title)}</title>',
+        f'<desc id="{pid}-desc">' + i18n.fill(
             T["svg_desc"], steps=i18n.plural(T, "n_steps", len(spec.nodes)),
             lanes=i18n.plural(T, "n_lanes", len(spec.lanes))) + '</desc>',
-        '<defs><filter id="pd-shadow" x="-10%" y="-20%" width="120%" height="150%">'
+        f'<defs><filter id="{pid}-shadow" x="-10%" y="-20%" width="120%" height="150%">'
         '<feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-opacity="0.22"/>'
         '</filter></defs>',
         '<g class="lanes">',
@@ -1234,31 +1430,42 @@ def render_svg(spec: Spec, lay: Layout) -> str:
     body_top, body_h = MARGIN + lay.head_h, lay.height - 2 * MARGIN - lay.head_h
     for i, (name, (x1, x2)) in enumerate(zip(spec.lanes, lay.lane_bands)):
         ll = lay.lane_lines[i]
-        cx = (x1 + x2) / 2
         head_h = lay.head_h - 8
-        ty = MARGIN + 4 + (head_h - 4 - len(ll) * LINE_H) / 2 + 13.5
+        if tb:
+            cx = (x1 + x2) / 2
+            ty = MARGIN + 4 + (head_h - 4 - len(ll) * LINE_H) / 2 + 13.5
+            band = (x1, body_top, x2 - x1, body_h)
+            head = (x1 + 2, MARGIN, x2 - x1 - 4, head_h)
+            stripe = (x1 + 2, MARGIN, x2 - x1 - 4, 4)
+        else:
+            # The lane's name sits in a column on the left, its colour stripe on the left edge.
+            cx = MARGIN + 4 + (head_h - 4) / 2
+            ty = (x1 + x2) / 2 - len(ll) * LINE_H / 2 + 13.5
+            band = (body_top, x1, body_h, x2 - x1)
+            head = (MARGIN, x1 + 2, head_h, x2 - x1 - 4)
+            stripe = (MARGIN, x1 + 2, 4, x2 - x1 - 4)
         tspans = "".join(f'<tspan x="{fmt(cx)}" dy="{0 if j == 0 else LINE_H}">{esc(t)}</tspan>'
                          for j, t in enumerate(ll))
+        rect = lambda r: (f'x="{fmt(r[0])}" y="{fmt(r[1])}" '  # noqa: E731
+                          f'width="{fmt(r[2])}" height="{fmt(r[3])}"')
         out.append(
             f'<g class="lane {lane_class(i)}" data-lane="{i}">'
-            f'<rect class="lane-band" x="{fmt(x1)}" y="{fmt(body_top)}" '
-            f'width="{fmt(x2 - x1)}" height="{fmt(body_h)}"/>'
-            f'<rect class="lane-head" x="{fmt(x1 + 2)}" y="{MARGIN}" width="{fmt(x2 - x1 - 4)}" '
-            f'height="{fmt(head_h)}" rx="8"/>'
-            f'<rect class="lane-stripe" x="{fmt(x1 + 2)}" y="{MARGIN}" width="{fmt(x2 - x1 - 4)}" '
-            f'height="4" rx="2"/>'
+            f'<rect class="lane-band" {rect(band)}/>'
+            f'<rect class="lane-head" {rect(head)} rx="8"/>'
+            f'<rect class="lane-stripe" {rect(stripe)} rx="2"/>'
             f'<text class="lane-name" x="{fmt(cx)}" y="{fmt(ty)}" text-anchor="middle" '
             f'font-weight="700">{tspans}</text></g>')
     out.append('</g>')
     out.append('<g class="edges">')
     for r in lay.routes:
-        pts = [(v, u) for u, v in r.points]
+        pts = [o.screen(u, v) for u, v in r.points]
         label = ""
         if r.edge.label:
             u1, v1, u2, v2 = r.label_rect
-            label = (f'<g class="edge-label"><rect class="pill" x="{fmt(v1)}" y="{fmt(u1)}" '
-                     f'width="{fmt(v2 - v1)}" height="{fmt(u2 - u1)}" rx="{fmt(PILL_H / 2)}"/>'
-                     f'<text x="{fmt((v1 + v2) / 2)}" y="{fmt(u1 + 13)}" text-anchor="middle" '
+            (x1, y1), (x2, y2) = o.screen(u1, v1), o.screen(u2, v2)
+            label = (f'<g class="edge-label"><rect class="pill" x="{fmt(x1)}" y="{fmt(y1)}" '
+                     f'width="{fmt(x2 - x1)}" height="{fmt(y2 - y1)}" rx="{fmt(PILL_H / 2)}"/>'
+                     f'<text x="{fmt((x1 + x2) / 2)}" y="{fmt(y1 + PILL_H / 2 + BASELINE * LABEL_FONT)}" text-anchor="middle" '
                      f'font-size="{LABEL_FONT}">{esc(r.edge.label)}</text></g>')
         loop = ' data-loop="1"' if r.loop else ""
         out.append(
@@ -1270,15 +1477,22 @@ def render_svg(spec: Spec, lay: Layout) -> str:
     for node_id in lay.order:
         n = spec.node(node_id)
         b = lay.boxes[node_id]
-        w, h = b.dv, b.du
-        if b.kind == "decision":
+        bx0, by0 = o.screen(b.u, b.v)
+        w, h = o.screen(b.du, b.dv)
+        if b.kind == "decision" and tb:
             pts = (f"{HEX},0 {fmt(w - HEX)},0 {fmt(w)},{fmt(h / 2)} {fmt(w - HEX)},{fmt(h)} "
                    f"{HEX},{fmt(h)} 0,{fmt(h / 2)}")
-            shape = f'<polygon class="node-shape" points="{pts}" filter="url(#pd-shadow)"/>'
+        elif b.kind == "decision":
+            # The points stick out across the flow, as in columns: here that is up and down.
+            pts = (f"0,{HEX} {fmt(w / 2)},0 {fmt(w)},{HEX} {fmt(w)},{fmt(h - HEX)} "
+                   f"{fmt(w / 2)},{fmt(h)} 0,{fmt(h - HEX)}")
+        if b.kind == "decision":
+            shape = f'<polygon class="node-shape" points="{pts}" filter="url(#{pid}-shadow)"/>'
         else:
+            rx = min(h / 2, 24) if b.kind in ("start", "end") else 6
             shape = (f'<rect class="node-shape" width="{fmt(w)}" height="{fmt(h)}" '
-                     f'rx="{fmt(b.rx)}" filter="url(#pd-shadow)"/>')
-        left, right = text_span(b.kind)
+                     f'rx="{fmt(rx)}" filter="url(#{pid}-shadow)"/>')
+        left, right = text_span(o.text_kind(b.kind), w)
         tx = (left + right) / 2
         first = (h - len(b.lines) * LINE_H) / 2 + 13.5
         # A space ends every line but the last, and the step number. SVG does not draw
@@ -1287,31 +1501,39 @@ def render_svg(spec: Spec, lay: Layout) -> str:
         last = len(b.lines) - 1
         tspans = "".join(f'<tspan x="{fmt(tx)}" dy="{0 if j == 0 else LINE_H}">{esc(t)}'
                          f'{" " if j < last else ""}</tspan>' for j, t in enumerate(b.lines))
-        nx = inset(b.kind) + NUM_R + 2
+        nx = inset(o.text_kind(b.kind)) + NUM_R + 2
         number = (f'<g class="step-no"><circle cx="{fmt(nx)}" cy="{fmt(h / 2)}" r="{NUM_R}"/>'
-                  f'<text x="{fmt(nx)}" y="{fmt(h / 2 + 4.2)}" text-anchor="middle" '
+                  f'<text x="{fmt(nx)}" y="{fmt(h / 2 + BASELINE * LABEL_FONT)}" text-anchor="middle" '
                   f'font-size="{LABEL_FONT}" font-weight="700">{b.number} </text></g>')
         tip = f"{b.number}. {n.label}" + (f" ({T['flag']} {b.flag}: {n.improve.text})"
                                           if n.improve else "")
         badge = ""
         if b.flag:
-            bx = w - HEX if b.kind == "decision" else w
+            # On the top right corner of the outline.
+            bx = w - HEX if b.kind == "decision" and tb else w
+            by = HEX if b.kind == "decision" and not tb else 0
             # A sibling of the node, not a child: the node is a button, and its name already
             # says "Forbedringspunkt {flag}". A bare digit inside it would not match the name.
             badge = (f'<g class="flag-badge" data-node="{esc(node_id)}" data-lane="{b.lane}" '
-                     f'aria-hidden="true" transform="translate({fmt(b.v)} {fmt(b.u)})">'
-                     f'<circle cx="{fmt(bx)}" cy="0" r="{BADGE_R}"/>'
-                     f'<text x="{fmt(bx)}" y="4.2" text-anchor="middle" font-size="{LABEL_FONT}" '
+                     f'aria-hidden="true" transform="translate({fmt(bx0)} {fmt(by0)})">'
+                     f'<circle cx="{fmt(bx)}" cy="{fmt(by)}" r="{BADGE_R}"/>'
+                     f'<text x="{fmt(bx)}" y="{fmt(by + BASELINE * LABEL_FONT)}" text-anchor="middle" font-size="{LABEL_FONT}" '
                      f'font-weight="700">{b.flag}</text></g>')
         classes = f"node node-{b.kind} {lane_class(b.lane)}" + (" flagged" if b.flag else "")
         out.append(
             f'<g class="{classes}" data-node="{esc(node_id)}" data-lane="{b.lane}" '
-            f'transform="translate({fmt(b.v)} {fmt(b.u)})"><title>{esc(tip)}</title>{shape}'
+            f'transform="translate({fmt(bx0)} {fmt(by0)})"><title>{esc(tip)}</title>{shape}'
             f'{number}<text class="node-label" x="{fmt(tx)}" y="{fmt(first)}" '
             f'text-anchor="middle">{tspans}</text></g>{badge}')
     out.append('</g>')
     out.append('</svg>')
     return "\n".join(out)
+
+
+def size_css(*lays: Layout) -> str:
+    """Per drawing, how far the page may shrink and grow it (see FIT_FLOOR, FIT_CEILING)."""
+    return "\n".join(f".pd-{lay.orient.name}{{max-width:{fmt(math.floor(lay.screen_w * FIT_CEILING))}px;"
+                     f"min-width:{fmt(math.ceil(lay.screen_w * FIT_FLOOR))}px}}" for lay in lays)
 
 
 def lane_class(i: int) -> str:
@@ -1481,7 +1703,11 @@ def build_timestamp() -> str:
     return dt.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z").strip()
 
 
-def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAULT_LANG) -> str:
+def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAULT_LANG,
+                lr: Layout | None = None) -> str:
+    """The page. lay is the columns drawing, which shows without the script and in print;
+    lr, when given, is the rows drawing the script may switch to. Cards, roles and the text
+    version come from lay; both layouts number the steps the same way."""
     use_lang(lang)
     token_css, token_source = tun_tokens.load_token_css(("status-semantic.css", "theme-light.css"),
                                                         palette=spec.headers.get("palette"))
@@ -1505,7 +1731,8 @@ def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAUL
         "COUNTS": counts,
         "PALETTE": esc(tun_tokens.provenance_label(token_source)),
         "TOKEN_CSS": strip_css_comments(token_css),
-        "SVG": render_svg(spec, lay),
+        "SVG": render_svg(spec, lay) + ("\n" + render_svg(spec, lr) if lr else ""),
+        "PD_SIZES": size_css(*([lay, lr] if lr else [lay])),
         "CHIPS": render_chips(spec),
         "STEPS": render_steps(spec, lay),
         "ROLES": render_roles(spec, lay),
@@ -1522,14 +1749,27 @@ def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAUL
     return re.sub(r"\{\{([A-Z0-9_]+)\}\}", lambda m: subs[m.group(1)], template)
 
 
-def build(spec_path: pathlib.Path, lang: str = i18n.DEFAULT_LANG) -> tuple[Spec, Layout, str]:
+def build(spec_path: pathlib.Path, lang: str = i18n.DEFAULT_LANG,
+          notes: list | None = None) -> tuple[Spec, Layout, str]:
+    """Parse, lay out both ways, check, render. The columns drawing must succeed. The rows
+    drawing is an extra: if it cannot be drawn, the page carries columns only, and a note
+    says why (notes, when given, collects it)."""
     spec = parse_spec(spec_path.read_text(encoding="utf-8-sig"), spec_path.name)
     lay = layout(spec)
     problems = check_layout(lay)
     if problems:
         raise LayoutError(f"{spec_path.name}: the layout breaks its own rules:\n  "
                           + "\n  ".join(problems))
-    return spec, lay, render_html(spec, lay, spec_path.name, lang)
+    try:
+        lr = layout(spec, rows_orient(spec))
+        bad = check_layout(lr)
+        if bad:
+            raise LayoutError("; ".join(bad[:3]))
+    except LayoutError as exc:
+        lr = None
+        if notes is not None:
+            notes.append(f"rows drawing left out: {exc}")
+    return spec, lay, render_html(spec, lay, spec_path.name, lang, lr=lr)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1544,7 +1784,8 @@ def main(argv: list[str] | None = None) -> int:
     if not args.check and not args.out:
         ap.error("give --out <file.html>, or --check to only validate the spec")
     try:
-        spec, lay, page = build(args.spec, args.lang)
+        notes: list[str] = []
+        spec, lay, page = build(args.spec, args.lang, notes)
     except (SpecError, LayoutError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -1553,6 +1794,8 @@ def main(argv: list[str] | None = None) -> int:
                f"{len(spec.lanes)} lanes, {lay.layers} layers, "
                f"{crossings} crossing{'' if crossings == 1 else 's'}, "
                f"{fmt(lay.width)}x{fmt(lay.height)} px")
+    for note in notes:
+        print(f"note: {note}")
     if args.check:
         print(f"ok {args.spec}: {summary}")
         return 0

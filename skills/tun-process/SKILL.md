@@ -139,8 +139,10 @@ spec (steps, connections, loops, numbers, flags, no overlap, no clipping, no lin
 a box or along another, every branch label on a clear pill, no text under 12 px). It also
 drives the page like a reader: the tabs by keyboard, every panel with its content, a
 click and Enter on a step open the right detail, «Vis i flyten» lands on the right step,
-highlight, role filter and zoom work, and print shows every panel. Then it opens the file
-with JavaScript off and checks that all five sections are there. Add
+highlight, role filter and zoom work, and print shows every panel. In seven windows
+(375 px to a 3440 px ultrawide) it checks that the drawing fits where it can, pans with the lane names
+in view where it cannot, and never shows text under 12 px. Then it opens the file with
+JavaScript off and checks that all five sections are there. Add
 `--max-crossings <n>` with the count from the build summary to make it a ceiling.
 
 Then **look at `<slug>.chromium.verify.png`** and show it inline. Check that the order
@@ -164,8 +166,14 @@ Tell them:
 - One step per lane per layer. A long chain makes a tall drawing. It scrolls on screen,
   and on paper it shrinks to one page: an 11-layer flow prints at about 5 pt. The cards
   and the text version follow at a readable size, each section on a new page.
-- Many lanes make it wide. Over four lanes it scrolls sideways on a laptop, and more so
-  with the detail panel open. «Tilpass til bredden» and the zoom buttons help.
+- Many lanes make it wide. The drawing shrinks to fit the window, but only down to the
+  size where its smallest text is 12 px. On a wide screen it grows, up to 1.5 times, and on
+  a wide, short screen it turns: lanes become rows and the flow runs left to right. The
+  reader can choose with «Loddrett» and «Vannrett». Print is always columns.
+- Labels break between words, and after a "/" or "-" they already have. A single word
+  longer than a line makes every box wider, so keep file names and codes short in labels. Five lanes fit a 1440 px window. On a smaller
+  laptop the frame scrolls sideways, with the lane names kept in view. «Tilpass til
+  bredden» shows the whole width at a smaller size. On a phone the page opens on «Steg».
 - Loops back leave a box's right side. They enter the target's right side, or its left
   side when the target's lane is the next one to the right. A loop never leaves a left
   side, so a loop to a lane further left takes the long way over the top.

@@ -25,8 +25,8 @@
   ----------------------------------------------------------------------------
   PROVENANCE  (do not delete — this is how numbers get traced back)
     Source data : salgsdata.csv
-    Extracted   : 2026-10-13 11:55 CEST
-    Built       : 2026-10-13 11:57 CEST
+    Extracted   : 2026-10-16 15:00 CEST
+    Built       : 2026-10-16 15:01 CEST
     Requested by: Prosjekteier
     Built by    : Tún skill `tun-new`
     Repo        : tun
@@ -309,7 +309,7 @@
 
 <footer>
   Selvstendig dashboard laget med Tún &middot; ingen Power BI-lisens kreves &middot;
-  bygget 2026-10-13 11:57 CEST fra salgsdata.csv.<br>
+  bygget 2026-10-16 15:01 CEST fra salgsdata.csv.<br>
   <span id="footnote"></span>
 </footer>
 <div class="tooltip" id="tip"></div>
@@ -344,6 +344,10 @@ const META = {
 /* ---------- tiny helpers ---------------------------------------------------- */
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => META.numberFormat.format(n);
+// Data is text, never markup. Every value from the data (cells, column names, filter
+// values, a data.js source line) goes through esc() before it is written as HTML.
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, ch =>
+  ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[ch]);
 // A measure value as a number, or null when the cell is empty or not a number. Null is
 // left out of every aggregate: summing it as 0 moves the average and draws a bar or a
 // point that the data does not have.
@@ -536,7 +540,7 @@ function renderTable(rows) {
   const numCols = new Set(cols.filter(c => rows.some(r => typeof r[c] === "number")));
   const isNum = c => numCols.has(c);
   $("tbl").querySelector("thead").innerHTML = "<tr>" + cols.map(c =>
-    `<th class="${isNum(c) ? "num" : ""}" data-col="${c}">${c}${
+    `<th class="${isNum(c) ? "num" : ""}" data-col="${esc(c)}">${esc(c)}${
       sortState.col === c ? (sortState.dir < 0 ? " ▾" : " ▴") : ""}</th>`).join("") + "</tr>";
 
   const sorted = [...rows].sort((a, b) => {
@@ -547,7 +551,7 @@ function renderTable(rows) {
 
   $("tbl").querySelector("tbody").innerHTML = sorted.map(r => "<tr>" + cols.map(c =>
     `<td class="${isNum(c) ? "num" : ""}">${
-      typeof r[c] === "number" ? fmt(r[c]) : (r[c] ?? "")}</td>`).join("") + "</tr>").join("");
+      typeof r[c] === "number" ? fmt(r[c]) : esc(r[c])}</td>`).join("") + "</tr>").join("");
 
   $("rowcount").textContent = `(viser ${Math.min(sorted.length, 500)} av ${rows.length})`;
   $("tbl").querySelectorAll("th").forEach(th => th.onclick = () => {
@@ -560,10 +564,10 @@ function renderTable(rows) {
 /* ---------- filters ------------------------------------------------------- */
 function renderControls() {
   $("controls").innerHTML = META.filters.map(c => `<div>
-      <label for="f_${c}">${c}</label>
-      <select id="f_${c}" data-col="${c}">
+      <label for="f_${esc(c)}">${esc(c)}</label>
+      <select id="f_${esc(c)}" data-col="${esc(c)}">
         <option value="__ALL__">Alle</option>
-        ${uniq(LIVE, c).map(v => `<option value="${String(v).replace(/"/g, "&quot;")}">${v}</option>`).join("")}
+        ${uniq(LIVE, c).map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("")}
       </select></div>`).join("")
     + `<div><label>&nbsp;</label><button id="reset" type="button">Nullstill</button></div>`;
 
@@ -648,7 +652,7 @@ function loadRows(rows, label){
   document.getElementById("export").disabled = false;
   renderControls(); render();
   const el = document.getElementById("meta");
-  if (el) el.innerHTML = `${label} &middot; lest lokalt ${DATA_META.generated} &middot; ` +
+  if (el) el.innerHTML = `${esc(label)} &middot; lest lokalt ${DATA_META.generated} &middot; ` +
     `${fmt(rows.length)} rader &middot; <strong>ikke lagret ennå</strong>`;
 }
 
@@ -746,7 +750,7 @@ if (typeof ResizeObserver === "function") {
 
 /* ---------- header meta (freshness comes from the DATA, not the shell) ----- */
 (function renderMeta(){
-  const asOf = DATA_META.generated || "2026-10-13 11:55 CEST";
+  const asOf = DATA_META.generated || "2026-10-16 15:00 CEST";
   const src  = DATA_META.source || "salgsdata.csv";
   const mode = "paired";
   const rows = LIVE.length ? fmt(LIVE.length) : "0";
@@ -754,7 +758,7 @@ if (typeof ResizeObserver === "function") {
     ? '<strong>oppdateres n\u00e5r datafilen synkes</strong>'
     : '<strong>fast \u00f8yeblikksbilde</strong>';
   const el = document.getElementById("meta");
-  if (el) el.innerHTML = `${src} &middot; data per ${asOf} &middot; ${rows} rader &middot; ${note}`;
+  if (el) el.innerHTML = `${esc(src)} &middot; data per ${esc(asOf)} &middot; ${rows} rader &middot; ${note}`;
 })();
 
 /* ---------- init ---------------------------------------------------------- */

@@ -294,6 +294,24 @@ Unchanged from the original requirements, plus one concrete rule added by a real
   picture. A flow diagram in a pitch page was scaled to 0.48× at 390 px wide, and its labels
   ended up 6.25 px high. Rebuilt as flex columns, the same text stays at body size and
   wraps into cards below 640 px. Use SVG for shapes. Put the words in HTML.
+- **A diagram that must stay a drawing fits down to a text floor, then pans.** The process
+  diagram (`templates/process-diagram.html`) keeps its words in the SVG, so it cannot
+  reflow. Measured 2026-10-16 on a five-lane, 18-step process: fitted to a 1084 px window
+  its text was 8.9 px. So the CSS fits the drawing to its frame only down to the scale
+  where its smallest text is 12 px (`min-width`), and the frame scrolls below that, with
+  the lane names kept in view by a script (not `position:sticky`, see row 26). The page's
+  own `max-width` went too: capped at 96rem, it made a wide screen scroll a drawing it
+  had room for, and left an ultrawide screen mostly empty. The page has no cap now, the
+  prose keeps its own measure, and the drawing grows up to 1.5x to fill the width. Growing
+  alone cannot fill an ultrawide screen with a tall flow (a 28-step plan would need 2.2x,
+  31 px text and 6100 px of height), so the file also carries the flow as rows, left to
+  right, and shows that where it fits with less scrolling: the same plan fits one
+  3440x1440 screen at 88 %. Rows must fit the window's height as well as its width, or
+  the last lanes open below the edge (seen on a real 28-step plan below a long header:
+  1308 px of drawing, 1092 px of room). Each rows lane is only as tall as its own boxes,
+  which brought that plan to 1200 px. Every px of rows box width costs one px per
+  layer, so 15 layers on a 3440 screen allow boxes of about 170 px.
+  `tools/verify_process_diagram.py` checks this in seven windows, up to 3440x1440.
 - **`overflow: hidden` on `body` alone does not stop a page from scrolling.** Hidden panels
   with `position: absolute` still made `body` taller than the viewport. The fix was to clamp
   both: `html, body { height: 100%; overflow: hidden; }`, with the scroll on the content

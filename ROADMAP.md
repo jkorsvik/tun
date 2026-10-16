@@ -1,162 +1,163 @@
 # Roadmap
 
-**The direction belongs to the people who use this.** What follows is not a fixed plan.
-It is the state of the plumbing, plus the questions currently blocking things, so that
-users can decide what matters.
+**The direction belongs to the people who use this.** What follows is the state of the
+plumbing, the work that is ready to do, and the questions that block the rest. If their
+priorities differ from this list, **this list is wrong.** Rewrite it.
 
-If their priorities differ from this list, **this list is wrong.** Rewrite it.
+Rewritten 2026-10-16 from a measured audit of the repository, its issues and tun.community.
+Every item names its evidence, so it can be checked instead of trusted.
 
 ---
 
-## Phase 1 — Tier 1 works end to end ✅ DONE
+## Where it stands
 
-- [x] Verify empirically what SharePoint/OneDrive do with HTML (`docs/01-tenant-constraints.md`)
-- [x] Single-file dashboard template, no framework, no CDN, brand palette
-- [x] `build_dashboard.py` — stdlib only, Norwegian number parsing, size budget enforcement
-- [x] `verify_dashboard.py` — real browser render, interactivity check, screenshot
-- [x] Skills: `tun-help`, `tun-new`, `tun-data`, `tun-verify`,
-      `tun-publish`, `tun-powerbi-escape`
-- [x] `tenant-probe.py` — reproducible constraint check
-- [x] Onboarding for a first user
-- [x] Working example, verified
+Shipped and in use:
 
-## Phase 2 — First real user, first real dashboard 🔜 NEXT
+- Six artefact kinds from stdlib-only builders: bundled and paired dashboards, the dense
+  cube, process diagrams, portable slide decks (`tools/build_*.py`), with `--lang nb|en`.
+- Nine `tun-*` skills, installable into RAIWork, Claude Code and every Agent Skills tool
+  (`python3 setup.py --tool raiwork|agents|claude`).
+- Verification in a real browser, in Chromium, Firefox and WebKit (`--engines`), run on every
+  public pull request.
+- Hosts measured against the live tenant: SharePoint, OneDrive, Teams, e-mail, USB, cloud
+  folders and Atlassian Artifacts (`docs/01`, `docs/26`, `docs/29`).
+- Public since 2026-10-11 (AGPL-3.0 with the artefact exception), a Marketplace plugin
+  `tun`, and the page at tun.community.
 
-The point of this phase is to find out what the docs got wrong.
+Measured on 2026-10-16:
 
-- [ ] **A first real user installs RAIWork and ships one real dashboard** end to end, from their own
-      data, into a real SharePoint folder, shared with real colleagues
-- [ ] Fix whatever that reveals — expect the onboarding and `tun-new`'s questions
-      to need adjusting after contact with a real user
-- [ ] A use-case list: the real reports in your area that could move, **and the ones
-      that can't, with the reason.** The refusal list is the more valuable half
-- [ ] Capture the first honest reaction from a viewer who is not us. Specifically: does
-      the download step confuse them, and does the wording in `tun-publish` fix it?
+| What | Value |
+|---|---|
+| Build of the example dashboard | 0.18 s, 122 KB |
+| Largest committed artefact (cube, 4 M rows) | 0.82 MB |
+| Pre-commit hook | 28 s, of which `test_core_boundary_gate.py` is 18 s |
+| All 26 test suites, one after another | 53 s |
+| Flaky suites | `test_chart_width_after_hidden_load.py`, 1 failure in 8 runs |
+
+Not yet done: **nobody outside the project has shipped a real dashboard with it.** That is
+the one gap that decides what the rest of this list is worth.
+
+---
+
+## Now: v0.2, the polish release
+
+Known defects in what a user builds today. Each one is documented, still true in the code,
+and small. One pull request per risk; then one Marketplace release carries them.
+
+### A. The artefacts
+
+| # | Item | Evidence | Effort |
+|---|---|---|---|
+| **A0** | **The dashboard escapes data before it writes HTML.** A CSV cell `<img src=x onerror=…>` runs as script in every reader's browser (proved 2026-10-16). Cell values, column names and filter options go into `innerHTML` raw. The cube escapes and is not affected. Free-text survey answers are a real use case. **Fixed 2026-10-16 in 0.1.4**, with a test that injects markup through every path. Rebuild dashboards made with an older version | `templates/single-file-dashboard.html:426`, `:436`, `:451-452` | S |
+| A0b | The builders escape their own values: `--title` goes raw into HTML, and the dimension, time and measure column names go raw into JS strings, so a `"` in a column name stops the page | `templates/single-file-dashboard.html:6`, `:227-229` | S |
+| A1 | Touch targets in the dashboard reach 44 × 44 px (three `<select>` are 37 px, reset is 42 px) | `docs/11` §1 | S |
+| A2 | `verify_viewports.py` becomes a gate: run it from `verify_documented.py`, so CI fails on a small target | not referenced by any gate today | S |
+| A3 | The no-JavaScript fallback (canary class plus pre-rendered facts) moves into the dashboard and cube templates | `docs/11` §1 and §3c; proven in examples 07 and 10, absent from both templates | M |
+| A4 | The cube gets `@media print`, copied from the dashboard's tested rules | `docs/11` §8; no print rule in `templates/cube-dashboard.html` | S |
+| A5 | The cube builder takes `--source`, like the dashboard builder, so its provenance can name the data | `tools/build_cube_dashboard.py` argparse | S |
+| A6 | Sortable table headers work from the keyboard (`<button>` in `<th>`, `aria-sort`) | `docs/09` §1, `docs/11` §6 (WCAG 2.1.1) | M |
+| A7 | One size budget for every builder (warn > 20 MB, fail > 50 MB), not only the two dashboard builders | process and deck builders have none | S |
+| A8 | Builder flags agree: both dashboard builders accept `--dimensions` and `--measures`; the old names keep working | `--dimension` vs `--dims`, `--measure` vs `--measures` | S |
+| A9 | Shared builder code (CSV reading, provenance, size budget) in one stdlib module | duplicated in `build_dashboard.py` and `build_cube_dashboard.py` | M |
+| A10 | The rest of the `docs/28` harvest: axe-core inside the verifiers, `SOURCE_DATE_EPOCH` in every builder, a CSV download in the cube | `docs/28`, harvest list | M |
+
+### B. The first five minutes
+
+| # | Item | Evidence | Effort |
+|---|---|---|---|
+| B1 | Every user skill states its tier and governance cost in its first reply: `tun-data`, `tun-publish`, `tun-powerbi-escape`, `tun-verify`, `tun-help`, `tun-for-communicators` | AGENTS.md conventions; only `tun-new`, `tun-process` and `tun-feedback` do | S |
+| B2 | A generic onboarding with a written Windows path, not "ask a teammate" | `docs/04-onboarding.md` Step 1 | M |
+| B3 | Docs split by reader: user, contributor, and record. Records are marked as such; licensing (16, 17) and naming (18, 19) each become one doc | 33 docs, one flat folder | M |
+| B4 | A glossary for non-developers, one place for the explanations `docs/06` rule 7 asks for | harvest list | S |
+| B5 | tun.community shows real artefacts built by the engine, one link each, beside the hand-made demos | design review 2026-10-13 | M |
+| B6 | One word for one thing: artefact, provenance block, self-contained | used interchangeably across skills and docs | S |
+
+### C. The development loop
+
+| # | Item | Evidence | Effort |
+|---|---|---|---|
+| C1 | Pre-commit under 10 s: run the independent checks in parallel, and run the boundary tests only when their inputs are staged | 28 s today; one suite is 18 s | S |
+| C2 | Fix the flaky chart-width test | 1 failure in 8 runs | S |
+| C3 | One command that runs every suite in parallel and prints one verdict | 26 suites, 53 s in sequence | S |
+| C4 | The release as one checklist script: merge, tag, Marketplace plugin | several manual steps, each with its own guard | M |
+
+**Done when:** every row above is merged, `tun` 0.2.0 is on the Marketplace, and the public
+CI is green on all three engines.
+
+---
+
+## Next: real use
+
+The point of this phase is to find out what the docs got wrong. Nothing here can be done
+by writing code first.
+
+- [ ] **The first real user builds one real dashboard** from their own data, into a real SharePoint folder,
+      shared with real colleagues. Someone watches and writes down every point they get
+      stuck.
+- [ ] Fix what that shows. Expect the onboarding and `tun-new`'s questions to change.
+- [ ] `docs/use-cases.md`: the real reports that could move, **and the ones that cannot,
+      with the reason.** The refusal list is the more valuable half.
+- [ ] The first honest reaction from a reader who is not us: does the download step confuse
+      them, and does the wording in `tun-publish` fix it?
+- [ ] Port one real Power BI report with `tun-powerbi-escape`, reconciled number for number
+      against the original. Write down what the port cost and what it lost, and decide
+      whether "replaces Power BI" survives or narrows to one class of report.
 
 **Success criterion:** a colleague who has never heard of this opens a dashboard, uses a
-filter, and gets an answer — without asking how.
-
-## Phase 3 — Prove the Power BI claim
-
-- [ ] Port one real Power BI report with `tun-powerbi-escape`, including number-for-number
-      reconciliation against the original
-- [ ] Run both in parallel; let the owner decide whether to retire the original
-- [ ] Write up what the port cost in effort and what it lost — honestly
-- [ ] Decide whether the "replaces Power BI" framing survives contact with reality, or
-      needs narrowing to a specific report class
-
-## Phase 4 — Break the download ceiling (Tier 2)
-
-Blocked on a governance question, not an engineering one.
-
-- [x] ~~Test the **Teams tab** / iframe hypothesis~~ — **answered, negative.**
-      `Content-Disposition: attachment` is unconditional (HTML, `.aspx`, `.svg` all
-      tested) and in an iframe that disposition renders nothing while triggering a
-      download. No iframe can render a file from a document library, so this is not a
-      CSP or Teams problem — the route does not exist. Constraints doc rows 12–13.
-- [ ] **Decide whether in-page embedding is worth an admin chain at all.** The only
-      routes left are SPFx (code in the page bundle) or an Embed web part in HTML-snippet
-      mode (markup in the page). Both need an admin, and Baseline Security Mode is closing
-      the second. What it buys is "appears on a page without clicking a file" — a
-      convenience, not a capability. Paired mode already gives dynamism; a file already
-      reaches further, including outside the organisation.
-- [ ] If either lands: `dashboard-embed` skill + a minimal SPFx host web part
-- [ ] Confirm same-origin `fetch('/_api/...')` works from an SPFx-hosted page without an
-      app registration (expected, unverified)
-
-## Phase 5 — Break the size ceiling (Tier 3)
-
-Depends on Phase 4 for a real HTTP origin to run from.
-
-- [ ] Prove DuckDB-WASM reading Parquet from SharePoint over Range requests.
-      The enabling constraint is **already confirmed** (`206 Partial Content`) — what's
-      unproven is the end-to-end path with auth
-- [ ] Establish the practical data ceiling by measurement, not by citing blog posts
-- [ ] `dashboard-bigdata` skill
-
-Most large-data needs are already met by the dense cube in Tier 1. Parquet, SQLite and
-DuckDB earn their place first on the build side, in the job that writes the file. Phase 5
-is for the cases the cube cannot answer: row-level detail over a huge table, ad hoc queries.
-
-## Later, deliberately not now
-
-- General builders for decks and reports beyond the current templates
-- A plugin registry, and backend adapters for publishing targets
-- Shipping all of Tún's skills as one plugin that replaces `setup.py` (decided in
-  `docs/21-plugin-architecture.md`, not built)
-
-## Continuous
-
-- [ ] Re-run `probe/tenant-probe.py` quarterly, and whenever something breaks.
-      Microsoft's Baseline Security Mode is actively tightening; assume the constraints
-      doc decays
-- [ ] Keep the skills' governance statements honest — if Tier 2 stays unproven, they must
-      keep saying so
-- **Enforce what is measured before measuring more.** A new tenant probe adds rows to
-  `docs/01`. If earlier rows are still not enforced by a gate, the new rows repeat the same
-  drift. Rows 24 and 26 were gated before row 27 was probed for this reason.
-- **Ownership is settled (2026-10-11).** The code and docs are public through the
-  sanitised export, and v0.1.0 is released. No marketplace release yet. The public face is
-  tun.community.
-
-## Harvested, not yet scheduled
-
-Ideas from the working notes and presentations around this project, recorded so they are
-not lost. None is committed to. Each needs an issue before work starts.
-
-- [ ] **A default "make HTML" skill for RAIWork and Copilot**, built on the three patterns
-      (standalone, paired, connected; `docs/08`). The stated goal is for it to be as
-      ordinary to have installed as the Microsoft 365 skill.
-- [x] **Feedback from inside the artefact.** Let a reader report a fault or a wish from the
-      file itself, with a snapshot of machine, surface and console attached, so an issue
-      arrives with its evidence instead of a description of it.
-- [ ] **A glossary for non-developers**, one place for the explanations `docs/06` rule 7 asks
-      for.
-- [ ] **An analyser for HTML pages built outside this toolkit**, measuring them against the
-      same gates. First run on one page only; too early to conclude anything.
-- [ ] **Substrates beyond OneDrive and SharePoint**: a plain filesystem with hyperlinks, and
-      Google Drive, next to the backends `docs/index.md` already lists as direction.
-- [x] **A process-diagram skill that draws its own workflow.** One exists outside this
-      repository, applied to itself: request, modelling, approval, rendering, with nodes
-      flagged where the step should improve. Its purpose is teaching: help a beginner turn a
-      script into a skill, and move from a local skill to a marketplace one.
-- [x] **Spec-valid skill frontmatter** for every Agent Skills harness, with a gate
-      (`docs/28`). Four of twelve skills were invalid YAML under the reference validator.
-- [x] **Install into every harness:** `setup.py --tool agents|claude`. Tested: Gemini CLI
-      and Claude Code load every skill (`docs/28`).
-- [ ] **The rest of the `docs/28` harvest:** `compatibility` lines, `SOURCE_DATE_EPOCH` in
-      every builder, a measured `<meta>` CSP, measured `<details name>` / `popover` /
-      `:has()` rows, axe-core in the verifiers, a CSV download, text linked to the picture.
+filter, and gets an answer, without asking how.
 
 ---
 
-## Open questions
+## Later, after real use
 
-Written down so they don't get quietly forgotten. Answering any of these is worth more
-than new features.
+Chosen from what real use shows, not before. Each needs an issue before work starts.
+
+- A "make HTML" skill on the three patterns (standalone, paired, connected; `docs/08`), as
+  ordinary to have installed as the Microsoft 365 skill.
+- An analyser that measures HTML built outside Tún against the same gates.
+- More hosts: a plain filesystem with links, and Google Drive.
+- Multi-block dashboards from one catalogue and a shared purpose taxonomy, once someone
+  needs more than one view in one file.
+- A pitch deck on the slide deck builder.
+- Data labels that translate, not only page strings (`docs/12` §1).
+- Paired mode: validate the first `data.js` on load, and a cache-buster on swap (`docs/13`
+  §2 and §7).
+
+## Blocked: questions, not code
+
+Tier 2 (a dashboard inside a page) and Tier 3 (data beyond the cube) wait on people, not on
+engineering. Ask; do not build ahead of the answer.
 
 | Question | Blocks | Who can answer |
 |---|---|---|
-| Can an SPFx package get through tenant admin review? What's the lead time? | all of Tier 2, and Tier 3 with it | your SharePoint / M365 admins |
-| Does a Teams tab work as a dashboard host? | a possible no-SPFx route to in-page embedding | anyone who can add a tab and try it |
-| How do sensitivity labels / DLP behave on an `.html` file carrying business data? | whether Tier 1 is safe for labelled data | whoever owns information protection in your tenant |
-| Do Range requests survive a *sharing link*, not just a Graph `downloadUrl`? | Tier 3 architecture | measurable — extend `tenant-probe.py` |
-| Practical file-size ceiling before Outlook/SharePoint/browsers complain? | the Tier 1 size budget, currently a reasoned estimate | measurable |
-| Which reports should move first? | Phase 2 and 3 scope | the users |
-| The five questions in [the hosted route](docs/23-hosted-route-it-brief.md): who approves a single-page app registration with delegated `Files.Read`, and which host is approved for small internal tools? | the hosted route, which is Tier 2 option A and a real origin for Tier 3 | IT architecture and security |
-| Is the multi-block model (`docs/13` §10) worth its formality, or should people match data sources to HTML themselves? | the multi-block design | the people who will build with it |
-| Does a self-refreshing paired page, one that re-reads its sidecars without a reload, survive each surface? One informal session (2026-09-09) found: works through a Windows filesystem shortcut, fails in the OneDrive web app, macOS untested, and sharing the folder directly was not enough without a OneDrive shortcut. | self-refreshing paired pages | measurable; becomes a `docs/01` row only once reproduced with a written method |
+| Can an SPFx package be approved in the tenant, and how long does it take? | all of Tier 2, and Tier 3 with it | SharePoint / M365 platform team |
+| How do sensitivity labels and DLP treat an `.html` file with business data? | whether Tier 1 is safe for labelled data | Information Protection |
+| The five questions in [the hosted route](docs/23-hosted-route-it-brief.md) | Tier 2 option A, and a real origin for Tier 3 | IT architecture and security |
+| Do Range requests survive a sharing link, not only a Graph `downloadUrl`? | Tier 3 | measurable: extend `probe/tenant-probe.py` |
+| What file size makes Outlook, SharePoint or a browser complain? | the size budget, today a reasoned estimate | measurable |
+| Which reports move first? | real use | the first real user |
+| Does a self-refreshing paired page survive each surface? One informal session (2026-09-09) said: yes through a Windows shortcut, no in the OneDrive web app | self-refreshing paired pages | measurable, once a written method exists |
+
+Already answered: an iframe or Teams tab cannot render a file from a document library.
+`Content-Disposition: attachment` is unconditional (`docs/01` rows 12 and 13).
+
+## Continuous
+
+- Re-run `probe/tenant-probe.py` every quarter, and whenever something breaks. Baseline
+  Security Mode is tightening; assume `docs/01` decays.
+- Gate what is measured before measuring more. Rows 24 and 26 were gated before row 27 was
+  probed for this reason.
+- Keep the skills' governance statements honest. If Tier 2 stays unproven, they keep saying
+  so.
 
 ## Explicit non-goals
 
-Recorded so they don't creep back in:
+Recorded so they do not creep back in:
 
-- **A filter that pretends to be a security control.** Access is enforced by the folder a
-  file sits in. Different audiences get different data files, split before writing. A
-  browser-side filter is decoration, never a boundary.
+- **A filter that pretends to be a security control.** The folder a file sits in is the
+  boundary. Different audiences get different data files, split before writing.
 - **Defeating `Content-Disposition: attachment`.** It is an XSS control in a corporate
   document store. We route around it; we do not break it.
-- **A build toolchain on the Tier 1 path.** Nothing to install, no framework, no Node. The
-  moment using a dashboard requires a build step, the product has failed its main user.
-- **Becoming a BI platform.** No semantic layer, no lineage graph, no scheduler. If a
-  need genuinely requires those, the answer is Power BI and we should say so quickly.
+- **A build toolchain on the Tier 1 path.** Nothing to install, no framework, no Node.
+- **Becoming a BI platform.** No semantic layer, no lineage graph, no scheduler. If a need
+  really requires those, the answer is Power BI, and we say so quickly.
