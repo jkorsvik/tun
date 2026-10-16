@@ -1,0 +1,61 @@
+# A synthetic five-lane process, the shape that showed the responsive problem: five
+# roles, eighteen steps, loops back and two-way decisions. The case is invented.
+# Its drawing is wider than a 1084 px window can show at a readable size, and narrower
+# than a 1440 px one can, so tools/verify_process_diagram.py sees all three behaviours:
+# panning with lane names at 1084 px, fitting at 1440 px, and 1:1 on a wide screen.
+# Build:  python3 tools/build_process_diagram.py examples/23-process-diagram/fem-roller.process.txt --out examples/23-process-diagram/fem-roller.html
+title: Slik behandler kommunen en byggesøknad
+source: Eksempeldata (syntetisk), oppdiktet prosess med fem roller
+requested-by: Prosjekteier
+description: Fra søknad til ferdigattest. Fem roller, to sløyfer tilbake og fire beslutninger.
+palette: plugins/tun/tokens/palette.css
+
+lane Søker
+  start sok: Sender byggesøknad
+    beskrivelse: Søkeren fyller ut skjemaet og legger ved tegninger.
+  step mangler: Sender manglende vedlegg
+  step justerer: Justerer tegningene
+    improve: Søkeren får ikke vite hva som må endres
+      problem: Tilbakemeldingen er en lang e-post uten punktliste.
+      forslag: Send en kort liste med det som må endres.
+  end attest: Får ferdigattest
+
+lane Saksbehandler
+  step mottar: Registrerer søknaden
+  decision komplett: Er søknaden komplett?
+  step vurderer: Vurderer søknaden mot planen
+  decision dispensasjon: Trengs dispensasjon?
+  step utkast: Skriver utkast til vedtak
+    improve: Utkastet skrives fra bunnen hver gang
+  step sender: Sender vedtaket
+
+lane Fagkyndig
+  step befaring: Gjør befaring på tomten
+  decision tegninger: Er tegningene i orden?
+  step uttalelse: Skriver faglig uttalelse
+
+lane Leder
+  step godkjenner: Leser utkast og uttalelse
+  decision signerer: Signerer vedtaket?
+    improve: Vedtak venter ofte en uke på signatur
+
+lane Arkiv
+  step journal: Journalfører vedtaket
+  step tilsyn: Planlegger tilsyn etter byggestart
+
+flow
+  sok -> mottar -> komplett
+  komplett -> vurderer [ja]
+  komplett -> mangler [nei]
+  mangler -> mottar
+  vurderer -> befaring -> tegninger
+  tegninger -> dispensasjon [ja]
+  tegninger -> justerer [nei]
+  justerer -> befaring
+  dispensasjon -> uttalelse [ja]
+  dispensasjon -> utkast [nei]
+  uttalelse -> utkast
+  utkast -> godkjenner -> signerer
+  signerer -> sender [ja]
+  signerer -> utkast [nei]
+  sender -> journal -> tilsyn -> attest

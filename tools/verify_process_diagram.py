@@ -37,11 +37,26 @@ The interactive layer, in the same three engines:
   * clicking a node, or Enter on a focused one, opens the detail panel for that node
   * hovering a node highlights exactly its own connections and dims the rest
   * a role chip keeps one lane and dims the others
-  * zoom and fit change the drawing's size
+  * the drawing starts fitted to its frame (never past natural size, never so small that
+    text drops under 12 px); 100 %, zoom and fit change its size
   * "Vis i flyten" on a step card and on an improvement point switches to the flow and
     puts focus on the right node
   * print shows every panel and hides the controls
   * zero console errors, zero network requests
+
+In seven windows (375x812 to 3440x1440), in each engine, against the spec: the page never
+scrolls sideways; a phone starts on the step cards; the frame spans the window (so a
+max-width cap on the page fails) and the drawing fills it, from the 12 px floor up to
+FIT_CEILING times natural size, with no text under 12 px; where it fits readably every
+lane is in view, and where it does not it pans in a frame no taller than the window and,
+scrolled down, keeps every lane's name over its lane. One screenshot per width. The page carries the flow twice, lanes as columns
+and lanes as rows; auto must show the one that fits the frame with the least scrolling
+(the columns when none fits), and where it fits it fills at least 90 % of the frame or
+stops at FIT_CEILING, with no step cut off.
+
+The rows drawing, switched on by its button, gets every geometry check above in its own
+frame (coordinates transposed), and its lane names while it pans sideways. Print gives
+the columns, whichever drawing was on screen.
 
 With JavaScript off (Chromium): all five panels show, one after the other, with their
 content, and no control that needs the script is visible.
@@ -83,7 +98,7 @@ SETTLE_MS = 300     # the dimming has a 0.15 s transition
 # path data. getBBox is local; the CTM chain maps it to the root.
 COLLECT_JS = r"""
 () => {
-  const svg = document.querySelector('svg.pd');
+  const svg = document.querySelector('svg.pd.on');
   if (!svg) return null;
   const inv = svg.getScreenCTM().inverse();
   const box = (el) => {
@@ -108,6 +123,7 @@ COLLECT_JS = r"""
       kind: (g.getAttribute('class').match(/node-(start|step|decision|end)/) || [])[1] || null,
       flagged: g.classList.contains('flagged'),
       number: num ? num.textContent.trim() : null,
+      lines: Array.from(g.querySelectorAll('.node-label tspan')).map(t => t.textContent.trim()),
       shape: shape ? box(shape) : null,
       polygon: shape && shape.tagName === 'polygon' ? pointsOf(shape) : null,
       rx: shape && shape.tagName === 'rect' ? parseFloat(shape.getAttribute('rx') || '0') : 0,
@@ -355,6 +371,10 @@ def geometry_checks(r: Report, data: dict, spec: bpd.Spec, tag: str, max_crossin
                if overlap(shapes[a], shapes[b])]
     r.check("overlap", f"[{tag}] no two node boxes overlap ({len(shapes)} boxes)", not clashes,
             f"{clashes[:3]}")
+    cut = [n["id"] for n in nodes if n["id"] in spec_ids
+           and not breaks_only_between_words(spec.node(n["id"]).label, n.get("lines") or [])]
+    r.check("words", f"[{tag}] every label breaks between words, never inside one", not cut,
+            f"cut inside a word: {cut[:4]}")
     clipped = [n["id"] for n in nodes if not n["text"] or not n["shape"] or not text_inside(n)]
     r.check("text", f"[{tag}] every node label sits inside its outline", not clipped,
             f"outside or missing: {clipped}")
@@ -519,7 +539,7 @@ def font_checks(r: Report, page, tag: str) -> None:
 
 
 def node(page, node_id: str):
-    return page.locator(f'svg.pd g.node[data-node="{node_id}"]')
+    return page.locator(f'svg.pd.on g.node[data-node="{node_id}"]')
 
 
 def detail_of(page) -> tuple:
@@ -551,7 +571,7 @@ def opacity_of(page) -> dict:
     0.15 s dimming transition has finished."""
     page.wait_for_timeout(SETTLE_MS)
     return page.evaluate("""() => Object.fromEntries(
-        Array.from(document.querySelectorAll('svg.pd g.node, svg.pd g.edge')).map(g => [
+        Array.from(document.querySelectorAll('svg.pd.on g.node, svg.pd.on g.edge')).map(g => [
           g.classList.contains('node') ? 'n:' + g.getAttribute('data-node')
             : 'e:' + g.getAttribute('data-from') + '->' + g.getAttribute('data-to'),
           [parseFloat(getComputedStyle(g).opacity), g.classList.contains('hl')]]))""")
@@ -590,19 +610,117 @@ def filter_checks(r: Report, page, spec: bpd.Spec, tag: str) -> None:
 
 
 def zoom_checks(r: Report, page, tag: str) -> None:
-    nat = page.evaluate("() => parseFloat(document.querySelector('svg.pd').getAttribute('width'))")
-    width = lambda: page.evaluate("() => document.querySelector('svg.pd').getBoundingClientRect().width")  # noqa: E731
-    w0 = width()
-    page.click("#zoom-in")
-    w1 = width()
-    page.click("#fit")
-    w2 = width()
+    nat = page.evaluate("() => parseFloat(document.querySelector('svg.pd.on').getAttribute('width'))")
+    width = lambda: page.evaluate("() => document.querySelector('svg.pd.on').getBoundingClientRect().width")  # noqa: E731
     fig = page.evaluate("() => document.querySelector('.figure').clientWidth")
+    w0 = width()
     page.click("#zoom-reset")
+    w1 = width()
+    page.click("#zoom-in")
+    w2 = width()
+    page.click("#fit")
     w3 = width()
-    r.check("zoom", f"[{tag}] zoom in, fit and 100 % change the drawing's size",
-            abs(w0 - nat) < 1 and abs(w1 - nat * 1.25) < 1 and abs(w2 - fig) < 2 and abs(w3 - nat) < 1,
-            f"natural {nat}, start {w0}, zoomed {w1}, fit {w2} (figure {fig}), reset {w3}")
+    page.click("#zoom-reset")
+    w4 = width()
+    r.check("zoom", f"[{tag}] the drawing starts fitted, and 100 %, zoom in and fit change its size",
+            abs(w0 - expected_width(nat, fig)) < 2 and abs(w1 - nat) < 1 and abs(w2 - nat * 1.25) < 1
+            and abs(w3 - fig) < 2 and abs(w4 - nat) < 1,
+            f"natural {nat}, start {w0} (want {expected_width(nat, fig):.1f}), 100 % {w1}, "
+            f"zoomed {w2}, fit {w3} (figure {fig}), reset {w4}")
+
+
+FILL = 0.9            # where the drawing fits, it fills this much of its frame, or stops at the ceiling
+
+
+def start_scale(d: dict, frame: float, room: float) -> float:
+    """The scale auto starts a drawing at: the frame's width within its CSS range, and for
+    rows no taller than the window below the frame's top (room). 0 when that would put
+    text under the floor: it does not fit. Written from the template's startScale()."""
+    k = min(frame, d["max"]) / d["w"]
+    if d["orient"] == "lr":
+        k = min(k, room / d["h"])
+    return k if k * d["w"] >= d["min"] - 1 else 0
+
+
+def expected_orient(drawings: list, frame: float, room: float) -> str:
+    """The drawing auto must show: of those that fit, the one that needs the least
+    scrolling down; with none, the first (columns)."""
+    best, best_h = None, float("inf")
+    for d in drawings:
+        k = start_scale(d, frame, room)
+        if k and d["h"] * k < best_h - 1:
+            best, best_h = d, d["h"] * k
+    return (best or drawings[0])["orient"]
+
+
+def breaks_only_between_words(label: str, lines: list) -> bool:
+    """The lines put back together give the label, and every break is at a space or just
+    after a "/" or "-" the label has: no word is cut, and no hyphen is added."""
+    rebuilt = lines[0] if lines else ""
+    for ln in lines[1:]:
+        if rebuilt.endswith(("/", "-")) and label.startswith(rebuilt + ln):
+            rebuilt += ln
+        else:
+            rebuilt += " " + ln
+    return rebuilt == " ".join(label.split())
+
+
+def transpose(data: dict) -> dict:
+    """A rows drawing seen in its own frame (flow down, lanes across), so every geometry
+    check written for columns applies unchanged: x and y swap everywhere."""
+    def box(b):
+        return [b[1], b[0], b[3], b[2]] if b else b
+
+    def path(d):
+        toks = re.findall(r"[A-Za-z]|-?\d+(?:\.\d+)?", d or "")
+        nums = [t for t in toks if not t.isalpha()]
+        if len(nums) % 2:
+            return d
+        swapped = iter(nums[i ^ 1] for i in range(len(nums)))
+        return " ".join(t if t.isalpha() else next(swapped) for t in toks)
+    out = dict(data)
+    out["nodes"] = [dict(n, shape=box(n["shape"]), text=box(n["text"]),
+                         polygon=[[y, x] for x, y in n["polygon"]] if n["polygon"] else None)
+                    for n in data["nodes"]]
+    out["edges"] = [dict(e, d=path(e["d"]), arrow=path(e["arrow"]), label=box(e["label"]))
+                    for e in data["edges"]]
+    out["lanes"] = [dict(ln, head=box(ln["head"]), name=box(ln["name"])) for ln in data["lanes"]]
+    return out
+
+
+def rows_checks(r: Report, page, spec: bpd.Spec, tag: str, max_crossings: int | None) -> None:
+    """The rows drawing, switched on by its button: the same geometry checks as the
+    columns, in its own frame, and the lane names while it pans sideways."""
+    button = page.locator('#orient button[data-orient="lr"]')
+    if not button.is_visible():
+        r.check("rows", f"[{tag}] the page offers the rows drawing", False, "no rows button")
+        return
+    button.click()
+    page.wait_for_timeout(100)
+    data = page.evaluate(COLLECT_JS)
+    shown = page.evaluate("() => Array.from(document.querySelectorAll('svg.pd')).filter("
+                          "d => d.getClientRects().length).map(d => d.getAttribute('data-orient'))")
+    r.check("rows", f"[{tag}] «rows» shows the rows drawing, and only that", shown == ["lr"], f"{shown}")
+    if data:
+        geometry_checks(r, transpose(data), spec, tag, max_crossings)
+    pans = page.evaluate("() => document.querySelector('.figure-wrap').classList.contains('pan')")
+    if pans:
+        st = page.evaluate(STRIP_JS)
+        over = all(abs(a - h[0]) < 2 and abs(b - h[1]) < 2 for (_n, a, b, _px), h in zip(st["names"], st["heads"]))
+        r.check("rows", f"[{tag}] scrolled sideways, the lane names stay beside their lanes",
+                st["shown"] and st["rows"] and over
+                and [n for n, *_x in st["names"]] == [norm(x) for x in spec.lanes],
+                f"shown {st['shown']}, beside lanes {over}")
+        page.evaluate("() => { const f = document.querySelector('.figure'); f.scrollTop = 0; f.scrollLeft = 0; }")
+    page.click('#orient button[data-orient="auto"]')
+    page.wait_for_timeout(50)
+
+
+def expected_width(nat: float, frame: float) -> float:
+    """What the page must draw before the reader zooms: the frame's width, but never past
+    FIT_CEILING times natural size and never below the size where the smallest text is
+    MIN_FONT_PX."""
+    return max(min(frame, nat * bpd.FIT_CEILING), nat * bpd.FIT_FLOOR)
 
 
 def crosslink_checks(r: Report, page, spec: bpd.Spec, tag: str) -> None:
@@ -626,16 +744,187 @@ def crosslink_checks(r: Report, page, spec: bpd.Spec, tag: str) -> None:
     page.click("#tab-flyt")
 
 
+# In print the frame holds the whole drawing and the panning aids are gone, even when the
+# page was panning (scrolled down, lane names shown) the moment the reader printed.
+PRINT_FRAME_JS = r"""
+() => {
+  const fig = document.querySelector('.figure'), svg = document.querySelector('svg.pd-tb');
+  const strip = document.getElementById('lane-strip');
+  const rows = document.querySelector('svg.pd-lr');
+  return [fig.getBoundingClientRect().height >= svg.getBoundingClientRect().height - 1,
+          strip.getClientRects().length > 0,
+          svg.getClientRects().length > 0 && !(rows && rows.getClientRects().length > 0)];
+}
+"""
+
+
 def print_checks(r: Report, page, tag: str) -> None:
+    rows = page.locator('#orient button[data-orient="lr"]')
+    if rows.is_visible():
+        rows.click()             # print must give the columns, whichever drawing shows
+    page.evaluate(STRIP_JS)      # if the drawing pans, scroll it so the lane names show
     page.click("#tab-roller")    # leave a non-first tab open: print must still show all
     page.emulate_media(media="print")
     tops = page.evaluate(VISIBLE_JS, list(PANELS))
     controls = page.evaluate(CONTROLS_JS)
+    whole, strip, columns = page.evaluate(PRINT_FRAME_JS)
     page.emulate_media(media="screen")
     page.click("#tab-flyt")
+    if rows.is_visible():
+        page.click('#orient button[data-orient="auto"]')
+    page.evaluate("() => { const f = document.querySelector('.figure'); f.scrollTop = 0; f.scrollLeft = 0; }")
     r.check("print", f"[{tag}] print shows all {len(PANELS)} panels in order and hides the controls",
             all(t is not None for t in tops) and tops == sorted(tops) and not any(controls),
             f"panel tops {tops}, controls visible {controls}")
+    r.check("print", f"[{tag}] print shows the whole drawing, without the panning aids",
+            whole and not strip, f"frame holds the drawing {whole}, lane strip shown {strip}")
+    r.check("print", f"[{tag}] print shows the columns drawing and only that, even from rows",
+            columns, f"columns alone {columns}")
+
+
+# --------------------------------------------------------------------------- viewports
+# Windows a reader opens the file in: phone, tablet, small laptop, laptop, desktop and two
+# ultrawide screens. The drawing must use the width it is given (fit, and grow up to
+# FIT_CEILING on a wide screen), never show text under MIN_FONT_PX (so below the floor it
+# pans), and keep the lane names in view while it pans.
+VIEWPORTS = ((375, 812), (768, 1024), (1084, 900), (1440, 900), (1920, 1080), (2560, 1080),
+             (3440, 1440), (3840, 1080))
+PHONE_MAX = 640       # the template's (max-width: 40rem): a phone starts on the step cards
+WIDE_SLACK = 100      # the frame spans the window but for this much (page padding, frame
+                      # border and a Windows scrollbar): no width cap on the page
+
+LAYOUT_JS = r"""
+() => {
+  const svg = document.querySelector('svg.pd.on'), fig = svg.closest('.figure');
+  const wrap = fig.parentNode, f = fig.getBoundingClientRect(), s = svg.getBoundingClientRect();
+  const heads = Array.from(svg.querySelectorAll('g.lane .lane-head')).map(h => {
+    const b = h.getBoundingClientRect(); return [b.left, b.right]; });
+  let svgMin = Infinity;
+  svg.querySelectorAll('text').forEach(t => {
+    if (!t.getClientRects().length) return;
+    const m = t.getScreenCTM();
+    svgMin = Math.min(svgMin, parseFloat(getComputedStyle(t).fontSize) * Math.hypot(m.a, m.b));
+  });
+  const nodes = Array.from(svg.querySelectorAll('g.node')).map(g => {
+    const b = g.getBoundingClientRect(); return [b.left, b.right]; });
+  const drawings = Array.from(document.querySelectorAll('svg.pd')).map(d => {
+    const cs = getComputedStyle(d);
+    return {orient: d.getAttribute('data-orient'), w: parseFloat(d.getAttribute('width')),
+            h: parseFloat(d.getAttribute('height')), min: parseFloat(cs.minWidth) || 0,
+            max: parseFloat(cs.maxWidth) || 1e9, shown: d.getClientRects().length > 0};
+  });
+  const bands = Array.from(svg.querySelectorAll('g.lane .lane-band')).map(b => {
+    const r = b.getBoundingClientRect(); return [r.top, r.bottom]; });
+  return {
+    nodes, drawings, bands, innerH: innerHeight, figTop: f.top + scrollY,
+    orient: svg.getAttribute('data-orient'),
+    page: document.documentElement.scrollWidth, nat: parseFloat(svg.getAttribute('width')),
+    svgW: s.width, frame: fig.clientWidth, frameH: fig.getBoundingClientRect().height,
+    scrollW: fig.scrollWidth, pan: wrap.classList.contains('pan'), svgMin,
+    heads, frameL: f.left + fig.clientLeft, frameR: f.left + fig.clientLeft + fig.clientWidth,
+    flowSelected: document.getElementById('tab-flyt').getAttribute('aria-selected') === 'true',
+  };
+}
+"""
+
+STRIP_JS = r"""
+() => {
+  const fig = document.querySelector('.figure'), strip = document.getElementById('lane-strip');
+  fig.scrollTop = fig.scrollHeight / 2; fig.scrollLeft = (fig.scrollWidth - fig.clientWidth) / 2;
+  fig.dispatchEvent(new Event('scroll'));
+  const rows = document.querySelector('svg.pd.on').getAttribute('data-orient') === 'lr';
+  const shown = !strip.hidden && strip.getClientRects().length > 0;
+  const span = b => rows ? [b.top, b.bottom] : [b.left, b.right];
+  const heads = Array.from(document.querySelectorAll('svg.pd.on g.lane .lane-head')).map(
+    h => span(h.getBoundingClientRect()));
+  const names = Array.from(strip.children).map(sp => {
+    const b = span(sp.getBoundingClientRect());
+    return [sp.textContent.trim(), b[0], b[1], parseFloat(getComputedStyle(sp).fontSize)]; });
+  return {shown, heads, names, rows};
+}
+"""
+
+
+def viewport_checks(r: Report, browser, engine: str, path: pathlib.Path, spec: bpd.Spec,
+                    shots: bool) -> None:
+    """The drawing in every window in VIEWPORTS, each in a fresh page."""
+    for w, h in VIEWPORTS:
+        tag = f"{engine} {w}x{h}"
+        ctx = browser.new_context(viewport={"width": w, "height": h})
+        try:
+            page = ctx.new_page()
+            page.goto(path.resolve().as_uri())
+            page.wait_for_timeout(100)
+            first = page.evaluate(LAYOUT_JS)["flowSelected"]
+            r.check("viewports", f"[{tag}] starts on «{TABS[0] if w > PHONE_MAX else TABS[1]}»",
+                    first == (w > PHONE_MAX), f"flow tab selected {first}")
+            page.click("#tab-flyt")
+            page.wait_for_timeout(50)
+            m = page.evaluate(LAYOUT_JS)
+            room = m["innerH"] - m["figTop"] - 8
+            mine = next(d for d in m["drawings"] if d["orient"] == m["orient"])
+            k = start_scale(mine, m["frame"], room)
+            rows = m["orient"] == "lr"
+            want = m["nat"] * k if rows and k else expected_width(m["nat"], m["frame"])
+            r.check("viewports", f"[{tag}] no sideways scroll on the page itself",
+                    m["page"] <= w + 1, f"page is {m['page']} px wide")
+            r.check("viewports", f"[{tag}] the drawing uses the width it is given "
+                    f"({want / m['nat']:.0%} of natural size)",
+                    abs(m["svgW"] - want) < 2 and m["frame"] >= w - WIDE_SLACK,
+                    f"drawn {m['svgW']:.0f} px, want {want:.0f}, frame {m['frame']} px, natural {m['nat']}")
+            r.check("viewports", f"[{tag}] no text in the drawing under {MIN_FONT_PX} px",
+                    m["svgMin"] >= MIN_FONT_PX - 0.01, f"smallest {m['svgMin']:.2f} px")
+            want_o = expected_orient(m["drawings"], m["frame"], room)
+            r.check("viewports", f"[{tag}] auto shows the {'rows' if want_o == 'lr' else 'columns'} "
+                    "drawing, the one that fits with the least scrolling", m["orient"] == want_o
+                    and sum(d["shown"] for d in m["drawings"]) == 1,
+                    f"shows {m['orient']}, want {want_o}")
+            fits = bool(k) if rows else m["nat"] * bpd.FIT_FLOOR <= m["frame"] + 1
+            if fits:
+                at_ceiling = m["svgW"] >= m["nat"] * bpd.FIT_CEILING - 2
+                by_height = rows and abs(k - room / mine["h"]) < 1e-6
+                r.check("viewports", f"[{tag}] the drawing fills at least {FILL:.0%} of the frame, "
+                        f"or stops at {bpd.FIT_CEILING}x, or (rows) at the window's height",
+                        m["svgW"] >= FILL * m["frame"] or at_ceiling or by_height,
+                        f"drawn {m['svgW']:.0f} of {m['frame']} px ({m['svgW'] / m['frame']:.0%})")
+                if rows:
+                    r.check("viewports", f"[{tag}] rows: every lane is inside the window as the page opens",
+                            all(t >= -1 and b <= m["innerH"] + 1 for t, b in m["bands"]),
+                            f"lane bottoms {[round(b) for _t, b in m['bands']]}, window {m['innerH']}")
+                r.check("viewports", f"[{tag}] no step is cut off at the side",
+                        all(m["frameL"] - 1 <= a and b <= m["frameR"] + 1 for a, b in m["nodes"]),
+                        f"{sum(1 for a, b in m['nodes'] if a < m['frameL'] - 1 or b > m['frameR'] + 1)} cut")
+                r.check("viewports", f"[{tag}] every lane is in view, no panning",
+                        not m["pan"] and m["scrollW"] <= m["frame"] + 1
+                        and all(m["frameL"] - 1 <= a and b <= m["frameR"] + 1 for a, b in m["heads"]),
+                        f"pan {m['pan']}, frame {m['frame']}, content {m['scrollW']}")
+            else:
+                r.check("viewports", f"[{tag}] too narrow to fit readably: it pans in a frame "
+                        "no taller than the window",
+                        m["pan"] and m["frameH"] <= h + 1,
+                        f"pan {m['pan']}, frame height {m['frameH']:.0f}")
+                st = page.evaluate(STRIP_JS)
+                page.wait_for_timeout(50)
+                st = page.evaluate(STRIP_JS)
+                lanes_ok = [n for n, _a, _b, _px in st["names"]] == [norm(x) for x in spec.lanes]
+                over = all(abs(a - h[0]) < 2 and abs(b - h[1]) < 2
+                           for (_n, a, b, _px), h in zip(st["names"], st["heads"]))
+                r.check("viewports", f"[{tag}] scrolled down, the lane names stay over their lanes",
+                        st["shown"] and lanes_ok and over
+                        and all(px >= MIN_FONT_PX for *_x, px in st["names"]),
+                        f"shown {st['shown']}, names {[n for n, *_x in st['names']]}, over lanes {over}")
+            if shots:
+                page.evaluate("() => { const f = document.querySelector('.figure');"
+                              " f.scrollTop = 0; f.scrollLeft = 0; f.scrollIntoView(); }")
+                page.wait_for_timeout(50)
+                shot = path.with_name(f"{path.stem}.{engine}.{w}x{h}.verify.png")
+                page.screenshot(path=str(shot))
+                r.say(f"    screenshot: {shot}")
+        except Exception as exc:  # noqa: BLE001 - a broken page is a finding, not a crash
+            r.check("viewports", f"[{tag}] the viewport checks could not run on this page", False,
+                    f"{type(exc).__name__}: {str(exc).splitlines()[0][:120]}")
+        finally:
+            ctx.close()
 
 
 # --------------------------------------------------------------------------- runs
@@ -695,6 +984,12 @@ def run_engine(browser, engine: str, path: pathlib.Path, spec: bpd.Spec, r: Repo
                 r.check(key, f"[{engine}] {key}: the check could not run on this page", False,
                         f"{type(exc).__name__}: {str(exc).splitlines()[0][:120]}")
                 page.emulate_media(media="screen")
+        # After the reader-driven checks, which start from the page as it opened.
+        try:
+            rows_checks(r, page, spec, f"{engine} rows", max_crossings)
+        except Exception as exc:  # noqa: BLE001
+            r.check("rows", f"[{engine} rows] the rows checks could not run on this page", False,
+                    f"{type(exc).__name__}: {str(exc).splitlines()[0][:120]}")
         r.check("console", f"[{engine}] zero console errors", not errors, f"{errors[:2]}")
         r.check("network", f"[{engine}] zero network requests", not requests, f"{requests[:2]}")
     finally:
@@ -718,7 +1013,10 @@ def run_nojs(browser, path: pathlib.Path, spec: bpd.Spec, r: Report) -> None:
                 bool(data) and len(data["nodes"]) == len(spec.nodes) and len(data["edges"]) == len(spec.edges))
         if data:
             content_checks(r, data, spec, "no-js")
-        box = page.locator("svg.pd").bounding_box()
+        shown = page.evaluate("() => Array.from(document.querySelectorAll('svg.pd')).filter("
+                              "d => d.getClientRects().length).map(d => d.getAttribute('data-orient'))")
+        r.check("nojs", "[no-js] one drawing shows, the columns", shown == ["tb"], f"{shown}")
+        box = page.locator("svg.pd.on").bounding_box()
         r.check("nojs", "[no-js] drawing has a real size",
                 bool(box) and box["width"] > 100 and box["height"] > 100, f"{box}")
     finally:
@@ -749,6 +1047,7 @@ def verify(path: pathlib.Path, spec: bpd.Spec, engines, shots: bool, quiet: bool
                 if engine in engines:
                     shot = path.with_name(f"{path.stem}.{engine}.verify.png") if shots else None
                     run_engine(browser, engine, path, spec, r, shot, max_crossings)
+                    viewport_checks(r, browser, engine, path, spec, shots)
                 if engine == "chromium":
                     run_nojs(browser, path, spec, r)
             finally:
@@ -823,7 +1122,7 @@ def mutate_console(html: str) -> str:
 
 def mutate_add_crossing(html: str) -> str:
     """One line made to cut straight across the whole drawing."""
-    w, h = map(float, re.search(r'class="pd" width="([\d.]+)" height="([\d.]+)"', html).groups())
+    w, h = map(float, re.search(r'class="pd[^"]*" data-orient="tb" width="([\d.]+)" height="([\d.]+)"', html).groups())
     edge = _lines(html, '<g class="edge"')[0]
     return html.replace(edge, re.sub(r'class="edge-line" d="[^"]+"',
                                      f'class="edge-line" d="M4 {h / 2} L{w - 4} {h / 2}"', edge, count=1), 1)
@@ -856,12 +1155,12 @@ def mutate_wrong_crosslink(html: str) -> str:
 
 
 def mutate_no_highlight(html: str) -> str:
-    return _swap(html, 'svg.classList.toggle("focusing", !!id);', 'svg.classList.toggle("focusing", false);')
+    return _swap(html, 's.classList.toggle("focusing", !!id);', 's.classList.toggle("focusing", false);')
 
 
 def mutate_no_filter(html: str) -> str:
-    return _swap(html, 'svg.classList.toggle("lane-filter", lane !== "");',
-                 'svg.classList.toggle("lane-filter", false);')
+    return _swap(html, 's.classList.toggle("lane-filter", lane !== "");',
+                 's.classList.toggle("lane-filter", false);')
 
 
 def mutate_small_type(html: str) -> str:
@@ -870,6 +1169,77 @@ def mutate_small_type(html: str) -> str:
 
 def mutate_no_zoom(html: str) -> str:
     return _swap(html, 'zoomBy(0.25); });', 'zoomBy(0); });')
+
+
+def mutate_cap_page(html: str) -> str:
+    """The page width capped again, whatever the drawing needs (the wide-screen bug)."""
+    return _swap(html, "main{max-width:none;", "main{max-width:96rem;")
+
+
+def mutate_no_growth(html: str) -> str:
+    """The drawing stops at natural size on a wide screen, with the width left empty."""
+    nat = re.search(r'class="pd[^"]*" data-orient="tb" width="([\d.]+)"', html).group(1)
+    return _sub(html, r"max-width:[\d.]+px;min-width:", f"max-width:{nat}px;min-width:")
+
+
+def mutate_no_fit(html: str) -> str:
+    """The drawing kept at natural size: it scrolls even where it would fit readably."""
+    return _sub(html, r"\.pd\{display:block;width:100%;height:auto;", ".pd{display:block;")
+
+
+def mutate_no_floor(html: str) -> str:
+    """No floor: the drawing shrinks to the frame and its text with it."""
+    return _sub(html, r"min-width:[\d.]+px\}", "min-width:0}")
+
+
+def mutate_print_strip(html: str) -> str:
+    """Print keeps the lane-name strip of a panning frame, on top of the drawing."""
+    return _swap(html, "  html.js .pan .lane-strip:not([hidden]){display:none}\n", "")
+
+
+def mutate_no_strip(html: str) -> str:
+    return _swap(html, "strip.hidden = !first || (rows ? first.right > f.left + 1 : first.bottom > f.top + 1);",
+                 "strip.hidden = true;")
+
+
+def _sub(html: str, pattern: str, new: str) -> str:
+    out, n = re.subn(pattern, new, html, count=1)
+    if not n:
+        raise SystemExit(f"mutation anchor missing: {pattern[:60]!r}")
+    return out
+
+
+def mutate_never_rows(html: str) -> str:
+    """Auto keeps the columns whatever the window: an ultrawide screen stays mostly empty."""
+    return _swap(html, "    if (forced) return forced;\n", "    return svgs[0];\n")
+
+
+def mutate_rows_ignore_height(html: str) -> str:
+    """Rows start at the frame's width alone, so on a short window the last lanes fall
+    below its bottom edge."""
+    return _swap(html, "      k = Math.min(k, (window.innerHeight - top - 8) / r.h);\n", "")
+
+
+def mutate_cut_word(html: str) -> str:
+    """A label line ends inside a word, with a hyphen the label does not have."""
+    m = re.search(r'(<text class="node-label" x="([\d.]+)"[^>]*><tspan x="[\d.]+" dy="0">)'
+                  r'([^<]*?)\b([A-Za-zæøåÆØÅ]{3})([A-Za-zæøåÆØÅ]{3,})', html)
+    if not m:
+        raise SystemExit("mutation anchor missing: no label word of six letters to cut")
+    head, x, before, a, b = m.groups()
+    return html[:m.start()] + f'{head}{before}{a}-</tspan><tspan x="{x}" dy="{bpd.LINE_H}">{b}' + html[m.end():]
+
+
+def mutate_drop_rows_node(html: str) -> str:
+    """A node missing from the rows drawing only, which the default view never shows."""
+    rows = html.index('data-orient="lr"')
+    line = next(ln for ln in _node_lines(html) if html.index(ln) > rows)
+    return html.replace(line + "\n", "", 1)
+
+
+def mutate_print_rows(html: str) -> str:
+    """Print gives whichever drawing was on screen, so rows run off a portrait page."""
+    return _swap(html, "  html .pd.pd-tb{display:block}\n  html .pd.pd-lr{display:none}\n", "")
 
 
 def mutate_loop_from_bottom(html: str) -> str:
@@ -897,6 +1267,17 @@ MUTATIONS = (
     ("stop the role filter", mutate_no_filter, "filter"),
     ("stop zoom in", mutate_no_zoom, "zoom"),
     ("shrink card text to 10 px", mutate_small_type, "type"),
+    ("cap the page width again", mutate_cap_page, "viewports"),
+    ("stop fitting the drawing to its frame", mutate_no_fit, "viewports"),
+    ("stop the drawing growing on a wide screen", mutate_no_growth, "viewports"),
+    ("let the drawing shrink below 12 px text", mutate_no_floor, "viewports"),
+    ("hide the lane names while panning", mutate_no_strip, "viewports"),
+    ("let print show the lane names of a panning frame", mutate_print_strip, "print"),
+    ("let auto never choose the rows drawing", mutate_never_rows, "viewports"),
+    ("let rows ignore the window's height", mutate_rows_ignore_height, "viewports"),
+    ("cut a label inside a word", mutate_cut_word, "words"),
+    ("drop a node from the rows drawing only", mutate_drop_rows_node, "count-nodes"),
+    ("print the rows drawing", mutate_print_rows, "print"),
 )
 
 
