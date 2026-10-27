@@ -52,10 +52,6 @@ h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
 /* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a scaled-down
    drawing is text under the floor. Below that the box pans, and the page never does. */
 .figure svg{display:block;width:100%;height:auto;min-width:51.25rem}
-/* The table under the drawing is as wide as its columns and has no drawing to scale
-   against, so it pans inside its own box. display:block is what lets a table scroll;
-   the rows keep their alignment because they stay in one anonymous table box. */
-table{display:block;max-width:100%;overflow-x:auto}
 .gt-grid{stroke:var(--rule);stroke-width:1}
 .gt-tick{fill:var(--muted);font-size:14px}
 .gt-name{fill:var(--ink);font-size:14px}
@@ -108,6 +104,7 @@ footer p{margin:.25rem 0}
   @media screen and (prefers-color-scheme: dark){
     header{color:var(--ink)}
   }
+table{display:block;max-width:100%;overflow-x:auto}
 </style>
 </head>
 <body>

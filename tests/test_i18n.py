@@ -1123,36 +1123,36 @@ DELIBERATE_NB_CHANGES = [
 
 BASELINE = {
     "fx-deck/fx-deck.html": "16691d40b6810c3ecea32c0150a58e5f8a8e5e87ca371aafa463fc84f47280f3",
-    "dash-bundled/dash-bundled.html": "6ee9847959bb23c0c6e46d3c70eafb7b35c4e1ff56df16ba51c43dbc875fa243",
-    "dash-paired/paired/dash.html": "fe5be06e5fe24d430eca4d8b9c5631fce904f0931b4a282c5f0bb5827f3f2af8",
+    "dash-bundled/dash-bundled.html": "213b8d4b423929d9c0cc353c495cefb65647cea1b8aaeb66d9532e0227940433",
+    "dash-paired/paired/dash.html": "c9c18c34b296460935192b14fd4d9fabb4c8ada28b0f1b608ac01965bd22afd2",
     "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",
-    "dash-feedback/dash-feedback.html": "da34dad728ecd18b57ff8416c41b8455a5438e663eabd0c6afdf7da62e3a26a4",
+    "dash-feedback/dash-feedback.html": "3ec912a36723ae3a768a68e733cc961bd31c6e043d43bd28f1736054e6867e20",
     # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
     # change to its nb output is visible.
     "scorecard/scorecard.html": "333b3fc48b768d14c937a3d47bd1a3aab8633a75b58a83ea18ddefb02f67b8fa",
     # New artefact 2026-10-24 (the distribution page, ROADMAP A23): there is no older
     # builder to compare against, so this hash is its first build, pinned so that any
     # change to its nb output is visible.
-    "distribution/distribution.html": "23764211010146b211a40d6498672f27838d022ebc615d26d1238c7aadacce76",
+    "distribution/distribution.html": "0e60ef2c16aa09c9de847199a13fc0d621877c8905d04b3720559c135a5b199e",
     # New artefact 2026-10-24: there is no older builder to compare against, so this
     # hash is its first build, pinned so that any change to its nb output is visible.
     # Re-pinned the same day (ROADMAP A22, the review layer on the comparison). The proof
     # is a line diff of the old and new builds: six `data-col` attributes on the headers,
     # `id="tbl"` on the table, and two attribute writes in the row script. Nothing else in
     # the file moved, and no visible text changed.
-    "compare/compare.html": "2a2670a0fc95ceec9a88bb2e86f369e0306d8fbbe40932683df3146a97d572a8",
+    "compare/compare.html": "edde4dce935dbc785baf0309a2b95cdfbb9e442d754504990ec98b37c0249dad",
     "index/index.html": "d6dffaed23bb29599bf1d24c9042d2e7d410b28a2d7ade69ed8481ace6bb4aed",
     # New artefact 2026-10-24: its first build, pinned so a change to its nb output is
     # visible. No older builder exists to compare it against.
-    "timeline/timeline.html": "e28e7ff57fcb18f5aca2ef5f6d5110198f987b8a5d4c47f7d5222fa85abcde5b",
-    "cube/cube.html": "775032467b7c7dea8119f321eb0accffd171738f63bb9fb5c64245a80a64aadc",
-    "cube-feedback/cube-feedback.html": "a7a12e9cee30eb6ab279ebab8fc54e4e4fbaf7216285a350d6f6b82c16bdaf5d",
+    "timeline/timeline.html": "d00e2fad42ceeed5e03021a05f1d8edc35fea6ac1c2a1b01ababf3d289b9bfef",
+    "cube/cube.html": "eb457667e35671eea663e155d623733aed6273e95123e432301e7c4e7e60738d",
+    "cube-feedback/cube-feedback.html": "60e370d2c948647003b2978a58863734b3a0ce19cc03350ac22fbf0a274c2dc2",
     "process/process.html": "dcf8040aa4d8c4b2f4dd4814fe75d73f66a9d723efedb199925b383823ccf0ca",
-    "fx-dash/fx-dash.html": "12e7187438184055397662afabc453c830cccc364fd69a1d022773f5ebe7d731",
-    "fx-dash-paired/fxp/dash.html": "c864bc2d3684ff5bb8ae75fc8940349cd02c3779dceaa9a777b9d9d519378acf",
+    "fx-dash/fx-dash.html": "b3882b8c7f22deeba6d636db80b59ce223b2d1489d929850d202302e4772b1a9",
+    "fx-dash-paired/fxp/dash.html": "b79bbc40900b430141f5e84bb1a4f7e7c70946fbf5f7e3f84160974c77eabc0a",
     "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
-    "fx-dash-notime/fx-dash-notime.html": "5704695c3f98980373aab666ab895eb73fb7bf08e58e1b6db640ca364a801edf",
-    "fx-cube/fx-cube.html": "a4ed6fc02931c76cd35ef3b4ef85a19424690537dd45bacc1630d71bad4069a6",
+    "fx-dash-notime/fx-dash-notime.html": "17e2187414c20dad93868500bc78379a0c05302498097c5b7ca8ba2cca0148f2",
+    "fx-cube/fx-cube.html": "9d2ee2326a9c71fdc4b2e2633ecc3313d1d90a4209f4398668ca350570cadff9",
     "fx-process/fx-process.html": "ab1c25de2a97b56d0ca2b852e85df3aa0dae6693c8d150939061fbbd4ee5db12",
     # the survey board (2026-10-24): a new artefact, so its nb output is frozen here
     # 2026-10-24: the survey template gained a cross-tab block (table, its CSS, the
@@ -1164,7 +1164,7 @@ BASELINE = {
     # group strings and the groupCol fact only when the build groups. So the hash below
     # moved and nothing else did; no probe in section 6 builds this template, which is
     # why it is re-pinned here rather than paired.
-    "register/register.html": "6f5e54ff6514b5c5a93962cebab774ff8bfade49be82d36e6f4083626e58d59c",
+    "register/register.html": "e1b2239e2158f57c6d05bd876d924b0f259263d2505bc2ba8e9ba1f6de0152af",
     "fx-survey/fx-survey.html": "b8f9ee3101f960a2e3d8e2021ff53944ba48cf3baf99bdf6906afc775e0940fd",
 }
 
@@ -1381,10 +1381,17 @@ def adversarial(work: pathlib.Path) -> None:
         rb'(?:  <!-- Without the canary class above.*?)?<section class="nojs" id="nojs">.*?</section>\n',
         re.S)
 
+    TABLE_PAN = b"table{display:block;max-width:100%;overflow-x:auto}"
+
     def strip_static(blob: bytes) -> bytes:
-        return static_block.sub(b"<!-- static view -->\n", blob)
+        # The table-pan rule is template chrome that the older builders cannot have: they
+        # write their own shell. It is normalised away on BOTH sides, so the comparison
+        # still holds everything else to the byte. That it was there to begin with is
+        # asserted below, so this cannot become a rule nothing checks.
+        return static_block.sub(b"<!-- static view -->\n", blob).replace(b"\n" + TABLE_PAN, b"")
 
     same, compared = [], 0
+    pan_seen = 0
     applied = {before: 0 for before, _ in DELIBERATE_NB_CHANGES}
     for name, (_b, _s, _a, _f, _t, literals) in probes.items():
         want, _ = build_case(name, work / "adv-old" / name, None, tools=old)
@@ -1393,6 +1400,7 @@ def adversarial(work: pathlib.Path) -> None:
                 applied[before] += want[rel].count(before)
                 want[rel] = want[rel].replace(before, after)
         got_nb, _ = build_case(name, work / "adv-nb" / name, "nb")
+        pan_seen += sum(1 for blob in got_nb.values() if TABLE_PAN in blob)
         got_en, _ = build_case(name, work / "adv-en" / name, "en")
         for rel, blob in want.items():
             compared += 1
@@ -1400,7 +1408,6 @@ def adversarial(work: pathlib.Path) -> None:
                 same.append(f"{name}/{rel}")
                 a = strip_static(blob).decode("utf-8", "replace").split("\n")
                 b = strip_static(got_nb[rel]).decode("utf-8", "replace").split("\n")
-
         if name.startswith("slot-"):      # the string the old builder wrote is still there, in both
             page = lambda built: "".join(b.decode("utf-8") for b in built.values())  # noqa: E731
             for lang, built in (("nb", got_nb), ("en", got_en)):
@@ -1412,6 +1419,7 @@ def adversarial(work: pathlib.Path) -> None:
         n=len(applied))
     chk("nb build equals the old builder's output byte for byte (slots and tokens as data)",
         not same, ", ".join(same), n=compared)
+    chk("the table-pan rule is present in the builds normalised above", pan_seen > 0, n=pan_seen)
     for name, (_b, _s, _a, _f, _t, literals) in probes.items():
         page = "".join(b.decode("utf-8") for b in build_case(name, work / "adv-en" / name, "en")[0].values())
         en_lits = lits_for(literals, "en")
