@@ -1122,7 +1122,7 @@ DELIBERATE_NB_CHANGES = [
 ]
 
 BASELINE = {
-    "fx-deck/fx-deck.html": "77a5386b502ca0b1d2aac8cec2addd239ab298b081d7d67e47ba79db419f82e1",
+    "fx-deck/fx-deck.html": "16691d40b6810c3ecea32c0150a58e5f8a8e5e87ca371aafa463fc84f47280f3",
     "dash-bundled/dash-bundled.html": "6ee9847959bb23c0c6e46d3c70eafb7b35c4e1ff56df16ba51c43dbc875fa243",
     "dash-paired/paired/dash.html": "fe5be06e5fe24d430eca4d8b9c5631fce904f0931b4a282c5f0bb5827f3f2af8",
     "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",

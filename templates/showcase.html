@@ -233,9 +233,11 @@
       b.setAttribute("aria-pressed", on ? "true" : "false");
       if (on) { b.classList.add("on"); } else { b.classList.remove("on"); }
     });
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState(null, "", "#" + next);
-    }
+    try {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, "", "#" + next);
+      }
+    } catch (e) { /* opaque origin: the choice still applies, it just cannot be linked */ }
     apply();
   }
 
@@ -260,12 +262,23 @@
       if (!payload) { return; }
       big.srcdoc = decode(payload);
       if (typeof viewer.showModal === "function") { viewer.showModal(); }
+      // Give the frame the keyboard. A deck inside it advances on an arrow key, but only
+      // once that key is delivered to its own document, and a key pressed with the focus
+      // still on the page behind it goes nowhere. A reader would click first; this does it
+      // for them.
+      try { big.focus(); } catch (e) { /* focus is a courtesy, not the feature */ }
     });
   });
 
   shut.addEventListener("click", function () { viewer.close(); });
   viewer.addEventListener("close", function () { big.srcdoc = ""; });
   viewer.addEventListener("click", function (e) { if (e.target === viewer) { viewer.close(); } });
+  // Escape has to work from the page as well as from the frame. Once the frame holds the
+  // keyboard an Escape pressed there belongs to the artefact, so the page cannot see it; in
+  // that case the Close button and the backdrop are the way out, and both are always there.
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && viewer.open) { viewer.close(); }
+  });
 
   Array.prototype.forEach.call(document.querySelectorAll(".lang button"), function (b) {
     b.addEventListener("click", function () { setLang(b.getAttribute("data-lang")); });

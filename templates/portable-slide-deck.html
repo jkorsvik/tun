@@ -276,7 +276,14 @@ body.on-dark #counter{color:var(--paper)}
     nextButton.disabled = index===slides.length-1;
     document.querySelector('#progress i').style.width =
       (slides.length<2 ? 100 : index/(slides.length-1)*100)+'%';
-    if(location.hash!=='#s'+(index+1)) history.replaceState(null,'','#s'+(index+1));
+    // Deep-linking is an enhancement, not the feature. A document reached through srcdoc
+    // has an opaque origin, and the History API refuses a state there, so an unguarded call
+    // throws on every slide change and kills the navigation that follows it. Position is the
+    // feature; the hash is the convenience.
+    try{
+      try { if(location.hash!=='#s'+(index+1)) history.replaceState(null,'','#s'+(index+1)); }
+    catch(e) { /* opaque origin (An srcdoc frame, a SharePoint preview): the deck still moves, it just cannot deep-link */ }
+    }catch(e){ /* opaque origin: the deck still shows the right slide */ }
   }
   function step(delta){ show(cur+delta); }
 

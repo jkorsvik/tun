@@ -222,7 +222,6 @@ if HAVE_PLUGINS:
     discovered_ids = {p.get("id") for p in found}
     # The brand plugin's id, composed: the export excludes that plugin, so an exported tree
     # must not carry its name as text either.
-    # The public tree ships the fictional brand plugin, so that is the one to discover.
     _brand = "eksempel"
     chk(f"{_brand} and tun are both discovered", {_brand, "tun"}.issubset(discovered_ids), True)
     chk("the manifest is actually parsed, not just located",
