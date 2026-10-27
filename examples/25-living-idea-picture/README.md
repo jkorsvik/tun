@@ -27,7 +27,7 @@ need script, so it has none.
 - **You can explore it.** Six chips under the picture: the whole picture, Forfatteren,
   Leseren, Fellesskapet, Verten, Omveier. Choosing one lights its part of the picture,
   dims the rest, and opens its text. Verten has its own chips (SharePoint, OneDrive,
-  Teams, e-post, minnepinne, sky). Each one shows one line about what was **measured**
+  Teams, Confluence, e-post, minnepinne, sky). Each one shows one line about what was **measured**
   there, and lights that host's name on the ground.
 - **It plays.** «Spill av steg for steg» runs the four steps in a 12-second loop, with a
   caption for each step, timed to the motion.
@@ -36,8 +36,13 @@ need script, so it has none.
   og tunfest det som virker»). The author in the picture writes Markdown «med AI».
 - **It stays honest.** The idea cards say **Finnes**, **På vei** or **Retning**, never
   more than is true. The plugin is **På vei**: today it is packaged for one harness.
-- **Phone:** under 52rem a second, taller picture replaces the wide one (max 28rem wide),
-  so the text stays readable instead of shrinking.
+- **Phone:** a second, taller picture replaces the wide one, so the text stays readable
+  instead of shrinking. Which one shows is asked of the picture's own box
+  (`container-type:inline-size`), not of the window: under 1000 px of stage the tall
+  canvas replaces the wide one, and under 400 px the stage scrolls sideways with a line
+  of text saying so. The two canvases hold their own width (`min-width`), so the labels
+  are 14 px on screen at every width. Scaling the wide canvas down instead was the old
+  bug: a 14 px label reached the reader at 11.6 px while a gate reading CSS reported 14.
 - **Reduced motion:** no packets, no animation. Playback shows the four captions as a
   still list.
 - **Print:** one still picture, fully lit, with every lens text and host line as a list.
@@ -75,6 +80,23 @@ the checkbox restarts them all together, so they stay in sync.
   panel.
 
 It writes `idea-picture.html` (the page) and `figure.css` (the figure's CSS alone).
+
+## Verify
+
+```bash
+python3 examples/25-living-idea-picture/build_idea_picture.py
+uv run --extra verify python examples/25-living-idea-picture/verify_idea_picture.py
+uv run --extra verify python tools/verify_viewports.py \
+  examples/25-living-idea-picture/idea-picture.html
+```
+
+The first opens the page from `file://` in every engine and checks what the picture
+claims: each lens lights its own groups and dims the rest, each host shows only its line,
+playback runs the steps in order, reduced motion stops the animation, and nothing reaches
+the console. The second checks the floors `docs/11` sets: 44 px targets, no overflow, and
+no text under 14 px at any of six viewports. The picture needed both: porting the
+site's container-query geometry (it had carried the older `31rem`/`52rem` breakpoints and
+12–13.5 px labels) was the change that made regeneration safe again.
 `SOURCE_DATE_EPOCH` makes the build date reproducible.
 
 The wide and the tall picture are two hand-drawn layouts. A new element must be added to
@@ -100,6 +122,7 @@ Every host line is a measurement, not a guess:
 | SharePoint | file link downloads, `docs/01` row 1. The inline preview is a sandboxed frame where nothing can be downloaded or printed, measured 2026-10-08 (row 28, in the open PR for example 24) |
 | OneDrive | synced folder opens from disk, row 7. Link in an e-mail works on PC and is inert on a phone, row 22a |
 | Teams | link opened from the preview card works on PC and phone, and the plain text link shows source, rows 22b–c |
+| Confluence | a file in Atlassian Artifacts runs in a sandbox, alone and inside a Confluence page: a sibling data file never loads, nothing persists between visits, and a published file is open to the organisation by link. Measured 2026-10-13, [`docs/29`](../../docs/29-atlassian-artifacts.md) |
 | E-post | Outlook on iOS: no script runs, the static page reads, `docs/11` (2026-09-28) |
 | Minnepinne | the downloaded file works offline on PC and phone, the site's sharing table |
 | Sky | a static host serves the file as it is. An edge network can inject a script: Cloudflare once added an e-mail decoder script to tun.community |

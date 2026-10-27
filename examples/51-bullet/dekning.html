@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dekning mot mål per enhet</title>
+<!--
+  Dekning mot mål per enhet
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (dekning.csv)
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Fagavdelingen
+    Made with   : Tún - tun.community
+    Records     : 14 units, each with a value and a target
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: one row per unit, its value against its target on one axis, with the gap
+  printed as a signed number.
+
+  What it is NOT: an explanation of why a unit is behind, and not a judgement of the target.
+
+  There is no script in this file.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:58rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:58rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a scaled-down
+   drawing is text under the floor. Below that the box pans, and the page never does. */
+.figure svg{display:block;width:100%;height:auto;min-width:48.75rem}
+.bl-grid{stroke:var(--rule);stroke-width:1}
+.bl-tick{fill:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.bl-head{fill:var(--muted);font-size:14px}
+.bl-name{fill:var(--ink);font-size:14px}
+.bl-num{fill:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
+.bl-track{fill:var(--brand-soft)}
+/* The bar is a length and the target is a mark: two shapes, not two shades, so the comparison
+   survives a printout and a colour-vision difference. */
+.bl-bar{fill:var(--brand)}
+.bl-behind{fill:var(--bad)}
+.bl-target{stroke:var(--ink);stroke-width:2.5}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.notes{margin:.75rem 0 0;padding-left:1.25rem;font-size:.9375rem;line-height:1.5}
+.notes li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{max-width:58rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark is a SCREEN choice and paper is white, so this block is scoped to screen: without
+     the guard it would come after the print rule above and paint the ink light on a printed
+     white page. --brand-dark is the darkest surface in dark, so the band that reads
+     white-on-ocean in light needs the theme's own ink. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Dekning mot mål per enhet</h1>
+  <p class="sub">14 enheter mot mål, der høyere er bedre</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 780 612" role="img" aria-labelledby="bl-t bl-d">
+<title id="bl-t">Verdi mot mål</title>
+<desc id="bl-d">14 enheter, hver med verdien av Dekning og målet i Maal, tegnet på én akse.</desc>
+<line class="bl-grid" x1="168.00" y1="32" x2="168.00" y2="572"/>
+<text class="bl-tick" x="168.00" y="590" text-anchor="middle">0,0</text>
+<line class="bl-grid" x1="280.00" y1="32" x2="280.00" y2="572"/>
+<text class="bl-tick" x="280.00" y="590" text-anchor="middle">26,0</text>
+<line class="bl-grid" x1="392.00" y1="32" x2="392.00" y2="572"/>
+<text class="bl-tick" x="392.00" y="590" text-anchor="middle">52,0</text>
+<line class="bl-grid" x1="504.00" y1="32" x2="504.00" y2="572"/>
+<text class="bl-tick" x="504.00" y="590" text-anchor="middle">78,0</text>
+<line class="bl-grid" x1="616.00" y1="32" x2="616.00" y2="572"/>
+<text class="bl-tick" x="616.00" y="590" text-anchor="middle">104,0</text>
+<text class="bl-head" x="766" y="22" text-anchor="end">Verdi  ·  Mål  ·  Avvik</text>
+<text class="bl-name" x="158" y="64.00" text-anchor="end">Nordvest</text>
+<rect class="bl-track" x="168.00" y="52.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-behind" data-label="Nordvest" x="168.00" y="52.00" width="309.33" height="14" rx="2"/>
+<line class="bl-target" data-label="Nordvest" x1="534.20" y1="48.00" x2="534.20" y2="70.00"/>
+<text class="bl-num" x="766" y="64.00" text-anchor="end">71,8  ·  85,0  ·  −13,2</text>
+<text class="bl-name" x="158" y="102.00" text-anchor="end">Sør</text>
+<rect class="bl-track" x="168.00" y="90.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-behind" data-label="Sør" x="168.00" y="90.00" width="342.94" height="14" rx="2"/>
+<line class="bl-target" data-label="Sør" x1="547.13" y1="86.00" x2="547.13" y2="108.00"/>
+<text class="bl-num" x="766" y="102.00" text-anchor="end">79,6  ·  88,0  ·  −8,4</text>
+<text class="bl-name" x="158" y="140.00" text-anchor="end">Vidde</text>
+<rect class="bl-track" x="168.00" y="128.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-behind" data-label="Vidde" x="168.00" y="128.00" width="329.58" height="14" rx="2"/>
+<line class="bl-target" data-label="Vidde" x1="529.89" y1="124.00" x2="529.89" y2="146.00"/>
+<text class="bl-num" x="766" y="140.00" text-anchor="end">76,5  ·  84,0  ·  −7,5</text>
+<text class="bl-name" x="158" y="178.00" text-anchor="end">Innlandet</text>
+<rect class="bl-track" x="168.00" y="166.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-behind" data-label="Innlandet" x="168.00" y="166.00" width="363.19" height="14" rx="2"/>
+<line class="bl-target" data-label="Innlandet" x1="555.74" y1="162.00" x2="555.74" y2="184.00"/>
+<text class="bl-num" x="766" y="178.00" text-anchor="end">84,3  ·  90,0  ·  −5,7</text>
+<text class="bl-name" x="158" y="216.00" text-anchor="end">Fjell</text>
+<rect class="bl-track" x="168.00" y="204.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-behind" data-label="Fjell" x="168.00" y="204.00" width="354.14" height="14" rx="2"/>
+<line class="bl-target" data-label="Fjell" x1="538.51" y1="200.00" x2="538.51" y2="222.00"/>
+<text class="bl-num" x="766" y="216.00" text-anchor="end">82,2  ·  86,0  ·  −3,8</text>
+<text class="bl-name" x="158" y="254.00" text-anchor="end">Midt</text>
+<rect class="bl-track" x="168.00" y="242.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-behind" data-label="Midt" x="168.00" y="242.00" width="379.56" height="14" rx="2"/>
+<line class="bl-target" data-label="Midt" x1="555.74" y1="238.00" x2="555.74" y2="260.00"/>
+<text class="bl-num" x="766" y="254.00" text-anchor="end">88,1  ·  90,0  ·  −1,9</text>
+<text class="bl-name" x="158" y="292.00" text-anchor="end">Aust</text>
+<rect class="bl-track" x="168.00" y="280.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-behind" data-label="Aust" x="168.00" y="280.00" width="373.53" height="14" rx="2"/>
+<line class="bl-target" data-label="Aust" x1="547.13" y1="276.00" x2="547.13" y2="298.00"/>
+<text class="bl-num" x="766" y="292.00" text-anchor="end">86,7  ·  88,0  ·  −1,3</text>
+<text class="bl-name" x="158" y="330.00" text-anchor="end">Trøndelag</text>
+<rect class="bl-track" x="168.00" y="318.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-good" data-label="Trøndelag" x="168.00" y="318.00" width="387.74" height="14" rx="2"/>
+<line class="bl-target" data-label="Trøndelag" x1="555.74" y1="314.00" x2="555.74" y2="336.00"/>
+<text class="bl-num" x="766" y="330.00" text-anchor="end">90,0  ·  90,0  ·  0,0</text>
+<text class="bl-name" x="158" y="368.00" text-anchor="end">Dal</text>
+<rect class="bl-track" x="168.00" y="356.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-good" data-label="Dal" x="168.00" y="356.00" width="385.16" height="14" rx="2"/>
+<line class="bl-target" data-label="Dal" x1="551.44" y1="352.00" x2="551.44" y2="374.00"/>
+<text class="bl-num" x="766" y="368.00" text-anchor="end">89,4  ·  89,0  ·  +0,4</text>
+<text class="bl-name" x="158" y="406.00" text-anchor="end">Øst</text>
+<rect class="bl-track" x="168.00" y="394.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-good" data-label="Øst" x="168.00" y="394.00" width="418.76" height="14" rx="2"/>
+<line class="bl-target" data-label="Øst" x1="577.29" y1="390.00" x2="577.29" y2="412.00"/>
+<text class="bl-num" x="766" y="406.00" text-anchor="end">97,2  ·  95,0  ·  +2,2</text>
+<text class="bl-name" x="158" y="444.00" text-anchor="end">Nord</text>
+<rect class="bl-track" x="168.00" y="432.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-good" data-label="Nord" x="168.00" y="432.00" width="398.08" height="14" rx="2"/>
+<line class="bl-target" data-label="Nord" x1="555.74" y1="428.00" x2="555.74" y2="450.00"/>
+<text class="bl-num" x="766" y="444.00" text-anchor="end">92,4  ·  90,0  ·  +2,4</text>
+<text class="bl-name" x="158" y="482.00" text-anchor="end">Sørvest</text>
+<rect class="bl-track" x="168.00" y="470.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-good" data-label="Sørvest" x="168.00" y="470.00" width="402.82" height="14" rx="2"/>
+<line class="bl-target" data-label="Sørvest" x1="560.05" y1="466.00" x2="560.05" y2="488.00"/>
+<text class="bl-num" x="766" y="482.00" text-anchor="end">93,5  ·  91,0  ·  +2,5</text>
+<text class="bl-name" x="158" y="520.00" text-anchor="end">Vest</text>
+<rect class="bl-track" x="168.00" y="508.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-good" data-label="Vest" x="168.00" y="508.00" width="409.29" height="14" rx="2"/>
+<line class="bl-target" data-label="Vest" x1="564.36" y1="504.00" x2="564.36" y2="526.00"/>
+<text class="bl-num" x="766" y="520.00" text-anchor="end">95,0  ·  92,0  ·  +3,0</text>
+<text class="bl-name" x="158" y="558.00" text-anchor="end">Kyst</text>
+<rect class="bl-track" x="168.00" y="546.00" width="422.64" height="14" rx="2"/>
+<rect class="bl-bar bl-good" data-label="Kyst" x="168.00" y="546.00" width="422.64" height="14" rx="2"/>
+<line class="bl-target" data-label="Kyst" x1="572.98" y1="542.00" x2="572.98" y2="564.00"/>
+<text class="bl-num" x="766" y="558.00" text-anchor="end">98,1  ·  94,0  ·  +4,1</text>
+</svg>
+    <figcaption>Én rad per enhet. Den fargerike linjen er verdien, den loddrette streken er målet, og tallet til høyre er verdien, målet og avviket mellom dem.</figcaption>
+  </figure>
+
+  <p class="summary">14 enheter: 7 ligger bak målet, 1 står på det og 6 ligger foran. Lengst bak ligger Nordvest, 13,2 fra målet. Målet er hentet fra styremøtet 12.05.2026.</p>
+  <ul class="notes">
+<li>Retningen er oppgitt, ikke gjettet: en økning er godt for dekning og dårlig for ventetid, og en side som ikke vet hvilken vei som er bedre, kan ikke si hvem som ligger bak.</li><li>Målet er en beslutning, ikke en måling. Streken viser hvor grensen ble satt, og tabellen viser hva avviket er, så en leser kan være uenig i målet og ikke i regnestykket.</li><li>Avviket er et tall med fortegn i samme enhet som målet, og fortegnet betyr hvor langt foran eller bak målet enheten ligger. Fargen oppsummerer, tallet svarer.</li><li>Aksen starter på null når alle verdiene er positive, fordi en søyle som er kuttet i bunnen, overdriver forskjellen. Er det negative verdier i uttrekket, ligger null inne i aksen, og det ser en leser.</li><li>Radene står sortert etter avvik, lengst bak øverst.</li>
+  </ul>
+
+  <h2 id="tbl-h">Tallene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Én rad per enhet: verdi, mål, avvik med fortegn, og om enheten ligger foran, på eller bak målet.</caption>
+    <thead><tr>
+      <th scope="col">Enhet</th>
+      <th scope="col" class="num">Verdi</th>
+      <th scope="col" class="num">Mål</th>
+      <th scope="col" class="num">Avvik</th>
+      <th scope="col">Status</th>
+    </tr></thead>
+    <tbody>
+<tr><td>Nordvest</td><td class="num">71,8</td><td class="num">85,0</td><td class="num">−13,2</td><td>bak målet</td></tr>
+<tr><td>Sør</td><td class="num">79,6</td><td class="num">88,0</td><td class="num">−8,4</td><td>bak målet</td></tr>
+<tr><td>Vidde</td><td class="num">76,5</td><td class="num">84,0</td><td class="num">−7,5</td><td>bak målet</td></tr>
+<tr><td>Innlandet</td><td class="num">84,3</td><td class="num">90,0</td><td class="num">−5,7</td><td>bak målet</td></tr>
+<tr><td>Fjell</td><td class="num">82,2</td><td class="num">86,0</td><td class="num">−3,8</td><td>bak målet</td></tr>
+<tr><td>Midt</td><td class="num">88,1</td><td class="num">90,0</td><td class="num">−1,9</td><td>bak målet</td></tr>
+<tr><td>Aust</td><td class="num">86,7</td><td class="num">88,0</td><td class="num">−1,3</td><td>bak målet</td></tr>
+<tr><td>Trøndelag</td><td class="num">90,0</td><td class="num">90,0</td><td class="num">0,0</td><td>på målet</td></tr>
+<tr><td>Dal</td><td class="num">89,4</td><td class="num">89,0</td><td class="num">+0,4</td><td>foran målet</td></tr>
+<tr><td>Øst</td><td class="num">97,2</td><td class="num">95,0</td><td class="num">+2,2</td><td>foran målet</td></tr>
+<tr><td>Nord</td><td class="num">92,4</td><td class="num">90,0</td><td class="num">+2,4</td><td>foran målet</td></tr>
+<tr><td>Sørvest</td><td class="num">93,5</td><td class="num">91,0</td><td class="num">+2,5</td><td>foran målet</td></tr>
+<tr><td>Vest</td><td class="num">95,0</td><td class="num">92,0</td><td class="num">+3,0</td><td>foran målet</td></tr>
+<tr><td>Kyst</td><td class="num">98,1</td><td class="num">94,0</td><td class="num">+4,1</td><td>foran målet</td></tr>
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>Bildet sammenligner hver enhet med sitt eget mål på én felles akse. Det sier ikke hvorfor en enhet ligger bak, og en rød linje er ikke en forklaring.</p>
+  <p>Verdi, mål og avvik står i tabellen, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.</p>
+  <p>Kilde: Syntetisk eksempeldata (dekning.csv) · 14 rader · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

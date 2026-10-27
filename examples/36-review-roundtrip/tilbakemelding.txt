@@ -1,0 +1,28 @@
+Hei,
+
+jeg har sett gjennom tallene. Tre ting:
+
+> TUN-REVIEW 1
+> artefact: Saksbehandling: kostnad per sak
+> file: saksbehandling.html
+> built: 2026-10-24 10:00 UTC
+> rows: 96
+> source: Syntetisk eksempeldata (saksbehandling.csv)
+> keys: Maaned, Enhet, Sakstype, Kanal
+> measure: Kostnad
+> --
+> row: 2026-01 | Nord | Etterlevelse | Nettbank
+> value: 16 560
+> comment: Stemmer med det vi faktisk betalte i januar.
+> --
+> row: 2026-03 | Sør | Etterlevelse | Nettbank
+> value: 79 200
+> comment: Dette er ikke tallet vi fikk oppgitt.
+> Fakturaen fra mars sier noe annet.
+> --
+> row: 2026-01 | Øst | Etterlevelse | Nettbank
+> value: 65 352
+> comment: Denne enheten finnes ikke hos oss. Hvor kommer raden fra?
+
+Mvh
+Enhetsleder Nord

@@ -1,5 +1,7 @@
 # 29. Atlassian Artifacts as a host
 
+**Reader:** user — you want an artefact out of your own data and do not intend to change the toolkit.
+
 > **Status:** measured 2026-10-12 on one Atlassian Cloud site, with Artifacts in beta, in desktop
 > Chrome on macOS, signed in as the artifact's owner. Every statement below was measured unless
 > it says **not measured** or **reasoned**. Artifacts is a beta product: re-run the probe

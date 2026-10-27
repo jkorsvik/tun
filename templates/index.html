@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Made by     : tools/build_index.py, from the provenance block of each file listed
+    Folder      : {{FOLDER}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún - tun.community
+    Lists       : {{COUNT_ARTEFACTS}} artefact(s) with a provenance block, {{COUNT_BARE}} without
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: the page a reader lands on. A folder of built dashboards, registers and
+  comparisons has no order and no introduction; a reader who is handed it sees a list of
+  file names and picks one. This is the missing front page: what each file answers, where
+  its numbers came from, when it was built, and for whom.
+
+  What it is NOT: a copy of their content, and not a live view. Every fact on this page is
+  read out of the built file's own provenance block, which is the point: a file that cannot
+  say where it came from is listed separately rather than silently dropped or described by
+  guesswork.
+
+  There is no script in this file. A page whose whole job is a list of links does not need
+  one, and a page that needs no script cannot be broken by a host that refuses to run one.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+{{TOKEN_CSS}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:64rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:64rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--brand);
+  border-radius:.25rem;padding:1rem 1.25rem}
+.card h3{margin:0;font-size:1.0625rem;line-height:1.5rem;font-weight:600}
+.card h3 a{color:var(--brand-dark);text-decoration:underline;text-underline-offset:.15em}
+.card h3 a:hover{color:var(--brand)}
+.card p{margin:.25rem 0 0;font-size:.9375rem;line-height:1.5}
+.facts{margin:.5rem 0 0;display:grid;grid-template-columns:auto 1fr;gap:.125rem .75rem;
+  font-size:.875rem;line-height:1.5;color:var(--muted)}
+.facts dt{font-weight:600;color:var(--ink)}
+.facts dd{margin:0}
+.card.bare{border-left-color:var(--muted)}
+.note{margin:0 0 .75rem;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.empty{background:var(--panel);border:1px solid var(--line);border-radius:.25rem;
+  padding:1rem 1.25rem;font-size:.9375rem}
+footer{max-width:64rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows are the two
+   places this page picks a slot by its LIGHT role, and that role inverts.
+
+   1. THE HEADER BAND fills with --brand-dark and writes --on-brand on it. In light that is
+      dark teal under white: a band, with a title on it. In dark, --brand-dark is the
+      darkest surface and --on-brand is --bg, so the two are both dark and the title
+      measures 1.39:1. The pair theme-dark.css does define is a --brand fill carrying
+      --on-brand, so the band uses that pair here and stays a band.
+   2. THE CARD LINK is --brand-dark on a --panel card: dark teal on white in light, and the
+      same colour as the card in dark, 1.00:1. --brand is the slot the theme keeps for a
+      readable colour on a dark surface, which is what a link has to be. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) header{background:var(--brand);color:var(--on-brand)}
+  :root:not([data-theme]) .card h3 a{color:var(--brand)}
+  :root:not([data-theme]) .card h3 a:hover{color:var(--ink)}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .card{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>{{TITLE}}</h1>
+  <p class="sub">{{SUBTITLE}}</p>
+</div></header>
+<main>
+  <h2 id="built">{{T:head_built}}</h2>
+  <p class="note">{{T:note_built}}</p>
+  <ul class="list">
+{{CARDS}}
+  </ul>
+{{BARE_SECTION}}
+</main>
+<footer>
+  <p>{{T:footer_a}}</p>
+  <p>{{T:footer_b}}</p>
+  <p>{{T:footer_built}} {{BUILD_TIMESTAMP}} · {{T:footer_folder}} {{FOLDER}}</p>
+</footer>
+</body>
+</html>

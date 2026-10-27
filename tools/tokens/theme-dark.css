@@ -7,55 +7,100 @@
    SPDX-License-Identifier: AGPL-3.0-or-later
 */
 /* ==========================================================================
-   Theme: dark (experimental — demo only, not in any production template)
+   Theme: dark (the system route, plus the opt-in attribute)
    ==========================================================================
-   Builds on the neutral palette's dark slots (--palette-primary-dark,
-   --palette-primary-darkest) rather than inventing a separate dark
-   colour set, so a brand plugin re-skins dark mode by filling the same slots.
+   Reuses the one dark aesthetic the brand already has designed — the
+   Ocean/Emerald background + Light Yellow text pattern documented in the
+   the brand's presentation skill for slides — rather than inventing a new dark
+   theme from scratch.
 
-   STATUS: not wired into templates/*.html. Exists only for
-   examples/05-theme-toggle-demo/, so the pattern can be looked at before
-   anyone decides it belongs in a real dashboard. See
-   docs/09-usability-and-navigation-principles.md §4 for the two things
-   that must be checked before this could graduate out of the demo:
-     1. The status-colour contrast numbers in status-semantic.css were
-        measured against a WHITE background only. Ember and Moss
-        must be re-measured against --palette-primary-dark/--palette-primary-darkest before
-        they can be trusted here — do not assume the light-theme numbers
-        carry over.
-     2. Whether a theme choice persists per file (not just per browser)
-        under file:// via localStorage is unmeasured. Log the result in
-        docs/01-tenant-constraints.md before relying on it.
+   STATUS: shipped, not a demo. Two routes reach these declarations:
+     1. No script: a template's own `@media (prefers-color-scheme: dark)` block
+        paints a reader whose operating system is dark and who has chosen no
+        theme of their own. tools/build_process_diagram.py inlines this file
+        via tun_tokens.load_token_css(auto_dark=True), and
+        examples/23-process-diagram/ is the first production artefact to use it.
+     2. Opt-in: [data-theme="dark"] on <html> or <body>, toggled by a script —
+        see examples/05-theme-toggle-demo/ for that wiring.
 
-   Activated via [data-theme="dark"] on <html> or <body>, toggled by a
-   script — see the demo for the actual toggle wiring.
+   A role or surface that cannot inherit these tokens is remapped in the
+   template's own dark block, and tools/check_token_contrast.py measures it
+   there. tests/test_dark_scheme_gate.py holds REQUIRED_FOLLOWERS: a builder on
+   that list may not stop following the system setting. See
+   docs/09-usability-and-navigation-principles.md §4.
+
+   MEASURED by tools/check_token_contrast.py (WCAG 2.2 AA: 4.5:1 for text,
+   3:1 for non-text). Numbers below are against the neutral palette's dark
+   surface; the darker surface and the brand palette are both higher.
+     --brand on --bg          6.54:1  PASS   (was 1.43:1 — see below)
+     --ok on --bg             6.37:1  PASS   (was 2.35:1)
+     --bad on --bg            4.89:1  PASS   (was 2.59:1)
+     --ink on --ok-bg        12.54:1  PASS   (was 1.04:1, invisible)
+     --ink on --bad-bg       12.62:1  PASS   (was 1.04:1, invisible)
+     --muted on --bg          7.88:1  PASS
    ========================================================================== */
 :root[data-theme="dark"]{
-  --ink:        var(--palette-on-dark); /* text on dark surface */
-  --muted:      #B4C0D0;                 /* neutral light slate: dimmed label text, 6.7:1 on --bg, 9.3:1 on --panel */
-  --line:       #33496B;                 /* neutral slate separator between --bg and --panel */
+  --ink:        var(--palette-on-dark); /* "the new white" — text on dark bg */
+  --muted:      #DCE6F5;                 /* blue 30% — dimmed label text on dark bg */
+  --line:       #1B2A4A;                 /* subtle separator, darker than panel */
   --bg:         var(--palette-primary-dark);
   --panel:      var(--palette-primary-darkest);
-  --brand:      var(--palette-primary);
+  --brand:      var(--palette-primary-on-dark);
+  /* Text on a --brand fill is the page background: dark navy on the light-on-dark
+     primary measures 6.54:1. White would measure 1.89:1, which is what an active tab
+     rendered before this role existed. */
+  --on-brand:   var(--bg);
   --brand-dark: var(--palette-primary-darkest);
+  /* A dark tint of the brand, and the text that reads on it. --brand-dark is the wrong
+     choice there: it is the darkest surface in this theme, so a band filled with the tint
+     and lettered with --brand-dark is dark on dark. Measured: --on-brand-soft on
+     --brand-soft is 6.49:1 in the neutral palette, and --ink on it is 11.24:1. */
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  /* A hairline inside a card, a step up from --panel rather than the --line separator. */
+  --rule:       #1d4a52;
   --series-2:   var(--palette-accent-light);
 
-  /* Status TEXT colours (--ok, --bad) are still UNCHECKED for the case of
-     being read directly on --bg/--panel with no chip background of their
-     own — do not ship that combination without re-measuring against
-     --palette-primary-dark/--palette-primary-darkest first.
-     The CHIP backgrounds below (--ok-bg, --bad-bg) ARE checked: a
-     low-opacity dark overlay measured too low a contrast against the text
-     colour to pass WCAG AA (4.5:1) at the delta badges' font size, so these
-     use the same light, near-white tints as the light theme instead of a
-     darkened variant. A light chip on a dark page is a deliberate,
-     conventional pattern (seen e.g. in GitHub's own dark mode labels), not
-     an inconsistency.
-       Moss on Moss 12% (#eaf5f0):                4.71:1 — PASS
-       Ember on Ember 8% (#fbeded):                4.53:1 — PASS
-       Ember on white (#ffffff):                   5.16:1 — PASS, used instead */
-  --ok:    var(--status-positive);
-  --ok-bg: var(--status-positive-bg-12);
-  --bad:   var(--status-negative);
-  --bad-bg:var(--palette-surface);
+  /* The same five blocks on a dark panel: every one clears 7.5:1 against the panel and
+     4.3:1 against the bar's track, and the closest pair is deltaE 34.5, so the segments
+     separate better here than in light. Same hue family as light (two teals, a green, a
+     sand, a red) so a reader who knows the chart in light still reads it here. */
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+
+  /* --brand is the primary colour *as read on a dark surface*. The light
+     theme's --palette-primary is chosen to sit on white and is nearly
+     invisible here: measured 1.43:1 against the dark background. Core
+     therefore requires a light-on-dark primary of its own — see the ninth
+     slot in docs/22-plugin-contract.md — and this theme consumes it. */
+
+  /* Status colours are read as TEXT on the dark page in several templates
+     (templates/process-diagram.html .flag-note, the waterfall chart's
+     negative fill), so they are re-picked for a dark background instead of
+     inheriting the light-theme values. Measured against both dark surfaces:
+       --ok  #66ccb0  ->  6.37:1 on the dark bg, 6.59:1 on the darkest
+       --bad #ff7a7a  ->  4.89:1 on the dark bg, 5.06:1 on the darkest
+     The hue family is kept (a light tint of Success Green and of Fire Red)
+     so a reader still reads "green means good" without checking a legend. */
+
+  /* The chip BACKGROUNDS are dark tints, not the light near-white tints the
+     light theme uses. That earlier choice ("a light chip on a dark page is a
+     deliberate, conventional pattern") was made when chip text was assumed to
+     be dark; templates render chip text as var(--ink), which in this theme is
+     light. Measured: light ink on those light chips is 1.04:1 — the chip
+     label was invisible. A dark tint of the same status hue keeps the light
+     ink at 12.5:1 and keeps the status colour recognisable.
+       --ok-bg  #12332c  -> --ink 12.54:1, --ok border 7.05:1
+       --bad-bg #4a2026  -> --ink 12.62:1, --bad border 5.45:1 */
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  /* Already a light tint on a dark page, 6.01:1 on --bg and 7.24:1 on --panel, so the text
+     role is the same colour here rather than a second value nobody measured. */
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
 }

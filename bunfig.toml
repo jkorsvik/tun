@@ -4,7 +4,7 @@
 # dashboard template is hand-rolled SVG with no framework, no bundler and no
 # node_modules, so a dashboard stays a single portable file with nothing to install.
 #
-# This file exists so that IF anyone ever reaches for a JS tool, it is bun, and so nobody
-# reaches for npm. The registry is bun's default (the public npm registry). An
-# organisation with an internal mirror sets it locally, not here; see the note in
-# pyproject.toml about proving a mirror from every environment that must use it.
+# This file exists so that IF anyone ever reaches for a JS tool, it resolves somewhere
+# predictable and so nobody reaches for npm. The registry is bun's default (the public npm
+# registry). An organisation that mirrors it internally can set `registry` in its own
+# bunfig or BUN_CONFIG_REGISTRY; a mirror does not belong in this file.

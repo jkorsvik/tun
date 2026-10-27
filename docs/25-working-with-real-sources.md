@@ -1,5 +1,7 @@
 # Working with real sources
 
+**Reader:** user — you want an artefact out of your own data and do not intend to change the toolkit.
+
 Methods from two real deliveries built on Tún, written down so the next one starts
 from them. The cases themselves stay private. Only the methods are here.
 

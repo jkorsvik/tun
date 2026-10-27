@@ -1,7 +1,6 @@
 # 15 — Chart-bibliotek sammenligning: Chart.js vs. håndrullet vs. Matplotlib
 
-Oppfølging av JavaScript-fri standalone HTML (`examples/13`), men med motsatt
-utgangspunkt av `examples/13`/`14`: **denne
+Follow-up til issue #30, men med motsatt utgangspunkt av `examples/13`/`14`: **denne
 siden krever JavaScript, med vilje.** Den finnes for å sette tre helt forskjellige
 tilnærminger til diagrammer side om side og la forskjellen faktisk sees, ikke bare
 beskrives i en tabell.
@@ -41,7 +40,7 @@ Samme tre filtervalg («Alle regioner», «Over snittet», «Under snittet»), t
   `chart.data` og kaller `chart.update()` — ingen ny markup, chart-objektet tegner
   seg selv på nytt. Skalerer til et vilkårlig antall filterverdier, inkludert en
   fritekst-terskel brukeren skriver inn selv.
-- **CSS (rent CSS-designforslag):** tre helt ferdige håndrullede
+- **CSS (designforslag fra samtalen i issue #30):** tre helt ferdige håndrullede
   søylediagrammer ligger allerede i HTML-en fra byggetidspunktet. Tre skjulte
   radioknapper + `:checked ~`-selektorer bytter bare hvilket som **vises**. Testet
   og bekreftet at det virker med JavaScript helt avslått. Skalerer **ikke** til en
@@ -125,6 +124,16 @@ uv sync --extra charts                      # kun nødvendig for å regenerere S
 python3 generate_matplotlib_charts.py       # skriver mpl-svg/*.svg på nytt
 python3 build_comparison_poc.py             # bygger selve HTML-filen — ingen matplotlib-avhengighet her
 python3 ../../tools/verify_standalone_core.py chart-library-comparison-poc.html
+```
+
+The three charts are drawn in a fixed coordinate space and scaled to their card, so the
+axis text is not 14 px at every width: from 1366 px up its smallest label is 10 px, and
+narrower than that the drawing scales with the window. The artefact therefore declares
+its floor, and overflow and touch targets are still checked at every width:
+
+```bash
+python3 ../../tools/verify_viewports.py chart-library-comparison-poc.html \
+    --text-floor 10 --text-floor-above 1366
 ```
 
 ## Filer

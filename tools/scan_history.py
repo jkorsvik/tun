@@ -14,17 +14,15 @@ rather than silently skipped.
 
 Why this exists
 ---------------
-Three categories must be clean before anything is published, and only one of them is a
-secret scanner:
+docs/20-publication-readiness.md names three categories that must be clean before anything
+is published, and only one of them is a secret scanner:
 
-  1. personal data      -> in files or in history
+  1. personal data      -> in this repository's history; see docs/20 for the exact vector
   2. internal reference -> hostnames, internal programme names, colleague names, run ids
-  3. secrets            -> gitleaks over full history
+  3. secrets            -> never scanned here at all
 
 Category 2 is the largest and cannot be fixed by a purge, because the text is legitimate
-repository content that simply must not leave the organisation. Its terms are identifying
-by definition, so they are not written here: they come from the local, untracked denylist
-shared with tools/check_export_clean.py ($TUN_DENYLIST or ~/.config/tun/denylist.txt). This tool greps for it so the reading
+repository content that simply must not leave Eksempel AS. This tool greps for it so the reading
 pass is repeatable; a human still decides each hit.
 
 This tool does not clean anything. It reports. Cleaning history is a separate, irreversible
@@ -45,7 +43,6 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import check_core_is_generic  # noqa: E402
 import check_no_real_data  # noqa: E402
 import tree_scan  # noqa: E402
 
@@ -59,14 +56,13 @@ if not sys.stdout.isatty():
 # Each entry is a judgement call at publication time, not a defect now. Some should be
 # generalised, some removed, some kept because they are part of the public story. The point
 # of listing them is that the decision gets made deliberately instead of by omission.
-#
-# Generic shapes live here; identifying terms come from the local denylist, one category
-# per label. Without a denylist only the generic shapes run, and the report says so.
-INTERNAL_PATTERNS: dict[str, str] = {"actions run id": r"\brun \d{6,}\b"}
-for _label, _rx in check_core_is_generic.load_local_denylist():
-    _key = f"local: {_label}"
-    INTERNAL_PATTERNS[_key] = (INTERNAL_PATTERNS[_key] + "|" if _key in INTERNAL_PATTERNS else "") + f"(?:{_rx})"
-HAS_DENYLIST = any(k.startswith("local: ") for k in INTERNAL_PATTERNS)
+INTERNAL_PATTERNS: dict[str, str] = {
+    "internal host":        r"\b[a-z0-9-]+\.(?:tech\.)?eksempel\.no\b",
+    "internal forge":       r"\beksempel\.ghe\.com\b",
+    "internal programme":   r"\b(?:plattformen|plattformen|Juridisk)\b",
+    "snowflake account":    r"\beksempelasa-[a-z0-9_]+\b",
+    "actions run id":       r"\brun \d{6,}\b",
+}
 
 
 def _refs() -> list[str]:
@@ -95,8 +91,7 @@ def scan_working_tree() -> tuple[int, int]:
 
     personal: list[str] = []
     internal: dict[str, set[str]] = {name: set() for name in INTERNAL_PATTERNS}
-    compiled = {n: re.compile(p, re.IGNORECASE if n.startswith("local: ") else 0)
-                for n, p in INTERNAL_PATTERNS.items()}
+    compiled = {n: re.compile(p) for n, p in INTERNAL_PATTERNS.items()}
 
     for rel in files:
         path = tree_scan.REPO / rel
@@ -118,9 +113,6 @@ def scan_working_tree() -> tuple[int, int]:
         print(f"  {G}✓ none{Z}")
 
     print(f"\n{B}category 2: internal references (working tree){Z}")
-    if not HAS_DENYLIST:
-        print(f"  {Y}• identity terms SKIPPED{Z} — no local denylist at"
-              f" {check_core_is_generic.DENYLIST}; only generic shapes were checked.")
     total_internal = 0
     for name, hits in internal.items():
         total_internal += len(hits)
@@ -160,8 +152,8 @@ def scan_history() -> int:
     print(f"\n{B}history{Z}")
     print(f"  {len(refs)} ref(s) in this clone")
     print(f"  {D}A clone only holds refs it has fetched. Pull-request refs"
-          f" (refs/pull/*) are\n  not fetched by default and are server-held: a forge can"
-          f" still serve them after a history rewrite.{Z}")
+          f" (refs/pull/*) are\n  not fetched by default and are server-held; see"
+          f" docs/20-publication-readiness.md.{Z}")
 
     # Category 1 across history: does work/ appear in any reachable commit?
     proc = subprocess.run(
@@ -223,10 +215,10 @@ def main() -> int:
         return 1
     if internal:
         print(f"{Y}Decisions outstanding{Z}: {internal} internal reference(s) need the"
-              f" category 2 reading pass.")
+              f" category 2 reading pass (docs/20).")
         return 1
-    print(f"{G}Categories 1-3 clean in this clone.{Z} Server-held refs (refs/pull/*)"
-          f" are\ninvisible to this tool; publishing from a fresh repository avoids them.")
+    print(f"{G}Categories 1-3 clean in this clone.{Z} Category 1's server-held vector"
+          f" still\nneeds the administrator step in docs/20; this tool cannot see it.")
     return 0
 
 

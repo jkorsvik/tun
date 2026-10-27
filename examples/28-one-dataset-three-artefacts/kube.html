@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Saksbehandling: kube</title>
+<!--
+  PROVENANCE  (do not delete — this is how numbers get traced back)
+    Source data : Syntetiske data, 285 rader — 285 rows aggregated to 540 cube cells over Team, Prioritet, Kanal, Maaned
+    Built       : 2026-10-24 10:00
+    Requested by: Prosjekteier
+    Generator   : tools/build_cube_dashboard.py
+    Repo        : tun
+    Made with   : Tún — tun.community
+
+  Single-file dashboard backed by a dense OLAP cube.
+
+  The script element with id="cube" below is gzipped, base64-encoded typed-array data:
+  one cell per combination of the filterable dimensions. The browser inflates it
+  with the native DecompressionStream — no library, and it works from a file://
+  page, which is what makes this portable out of SharePoint/OneDrive.
+
+  The encoding is documented in docs/07-portable-cube.md; the builder and this file
+  must agree byte for byte.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+:root{
+  /* The names this template has always used, pointed at the seam. --ink and --bg are the
+     seam's own names already, so they are not restated. */
+  --gr:var(--brand);--gr2:var(--brand-dark);--mut:var(--muted);--bd:var(--line);
+}
+*{box-sizing:border-box}
+/* Accessibility (docs/09-usability-and-navigation-principles.md §1/§5, WCAG 2.2 2.1.1
+   and 2.4.7): visible keyboard focus + reduced motion honoured. Confirmed cheap and safe
+   — an independently built, unrelated dashboard benchmarked in html-sammenligning
+   (2026-09-11) has both with no visible downside. */
+:focus-visible{outline:2px solid var(--gr);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:var(--panel);border-bottom:1px solid var(--bd);padding:1rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
+h1{font-size:1.15rem;margin:0;font-weight:650}
+.sub{color:var(--mut);font-size:.875rem}
+main{padding:1.25rem 1.5rem;max-width:1400px;margin:0 auto}
+.panel{background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem}
+.panel h2{font-size:.875rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 .8rem;font-weight:650}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.fg label{display:block;font-size:.875rem;font-weight:650;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.chip{border:1px solid var(--bd);background:var(--panel);border-radius:14px;padding:.2rem .6rem;font-size:.875rem;cursor:pointer;user-select:none;transition:.12s}
+.chip:hover{border-color:var(--gr)}
+.chip.on{background:var(--gr);border-color:var(--gr);color:var(--on-brand)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+.kpi{background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:.9rem 1rem}
+.kpi .v{font-size:1.5rem;font-weight:680;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:.875rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-top:.15rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+/* A five-column table cannot shrink below its own minimum, and WebKit's minimum
+   is 350 px here against Chromium's 342: the page overflowed a 390 px phone by
+   3 px, so the last column was clipped. The scroll container keeps the overflow
+   inside the panel, where a reader can reach it, instead of off the page. */
+#tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{min-width:100%}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--bd);font-size:.875rem}
+th{font-size:.875rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:650}
+td.n,th.n{text-align:right}
+.bar{fill:var(--gr)}.bar:hover{fill:var(--gr2)}
+.dot{pointer-events:all}
+.axis{stroke:var(--bd);stroke-width:1}.gl{stroke:#eef1f2;stroke-width:1}
+.lbl{font-size:14px;fill:var(--mut)}
+.vlbl{font-size:14px;fill:var(--mut);font-variant-numeric:tabular-nums}
+/* color: the browser's own button text is CanvasText, which does not follow the theme:
+   black on the dark panel measures 1.22:1. A form control needs its colour stated. */
+button.rst,select.ms{border:1px solid var(--bd);background:var(--panel);color:var(--ink);border-radius:6px;padding:.3rem .7rem;font-size:.875rem;min-height:2.75rem;cursor:pointer;font-family:inherit}
+/* Safari ignores padding, border and min-height on a native <select>, so the
+   44 px minimum above did not exist there. appearance:none plus a chevron drawn
+   as a background hands the box back to the stylesheet. */
+select.ms{-webkit-appearance:none;appearance:none;padding-right:1.75rem;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .5rem center;
+  background-size:.75rem .5rem}
+button.rst:hover{border-color:var(--gr);color:var(--gr)}
+footer{padding:.5rem 1.5rem 2rem;max-width:1400px;margin:0 auto;
+  font:14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);display:flex;gap:1.1rem;flex-wrap:wrap}
+footer b{color:var(--gr2);font-weight:650}
+#boot{padding:3rem 1.5rem;text-align:center;color:var(--mut)}
+/* Without scripting (Quick Look on iOS and macOS blocks it) the cube never decodes, so
+   this file showed the boot line forever. The build writes the facts it already knew into
+   the markup, and a canary class on <html> decides which view shows: docs/11 §3c. */
+.nojs{display:none}
+html:not(.js) .nojs{display:block;padding:1.5rem}
+html:not(.js) #boot,html:not(.js) #app{display:none}
+.nojs-lead{margin:0 0 1.5rem;max-width:52rem;line-height:1.5rem}
+.nojs-facts{display:flex;flex-wrap:wrap;gap:1.5rem;margin:0 0 1.5rem}
+.nojs-facts div{min-width:9rem}
+.nojs-facts dt{font-size:.875rem;line-height:1.5rem;color:var(--mut);text-transform:uppercase;
+  letter-spacing:.04em}
+.nojs-facts dd{margin:0;font-size:1.75rem;line-height:2rem;font-weight:700;
+  font-variant-numeric:tabular-nums}
+.nojs h2{font-size:.875rem;line-height:1.5rem;color:var(--mut);text-transform:uppercase;
+  letter-spacing:.04em;margin:0 0 .5rem}
+.nojs ul{margin:0;padding-left:1.25rem;line-height:1.5rem}
+#boot.err{color:#b00020}
+/* Print, copied from the dashboard's tested rules (docs/11 §8): the paper copy is
+   the numbers, not the controls. The header keeps #scope, so the applied selection
+   still prints even though the controls do not. */
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows are the two
+   places this page gives a slot a role that inverts.
+
+   --brand-dark is the darkest surface in the dark theme, so it is a fine colour to READ on
+   a white page (the footer's bold run) and a fine colour to darken a bar TOWARDS in light,
+   and invisible at both jobs in dark. --brand is the slot for a readable colour on a dark
+   surface, so both use it here. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) footer b{color:var(--brand)}
+  :root:not([data-theme]) .bar:hover{fill:var(--brand)}
+}
+@media print{header{background:#fff;border-bottom:1px solid var(--bd)}
+  .ms,.rst,.filters{display:none}main{padding:0;max-width:none}
+  .panel{break-inside:avoid;box-shadow:none}}
+</style></head><body>
+<script>document.documentElement.className+=" js"</script>
+<section class="nojs" id="nojs">
+  <!-- Without the canary class above, this is the page: the cube cannot be
+       decoded without scripting, so the build writes the facts it knew. -->
+  <p class="nojs-lead">Koden kjører ikke her. Denne filen dekoder terningen med den, så diagrammene og tabellene er borte. Tallene under ble regnet ut da filen ble laget, og gjelder hele datasettet.</p>
+  <dl class="nojs-facts"><div><dt>rader</dt><dd>285</dd></div><div><dt>celler</dt><dd>540</dd></div><div><dt>Dimensjoner</dt><dd>4</dd></div><div><dt>Fylte celler</dt><dd>53%</dd></div></dl>
+  <h2>Dimensjoner</h2>
+  <ul><li>Team</li><li>Prioritet</li><li>Kanal</li><li>Maaned</li></ul>
+</section>
+<div id="boot">dekoder datasett…</div>
+<div id="app" hidden>
+<header>
+  <h1 id="title"></h1><span class="sub" id="scope"></span>
+  <span style="flex:1"></span>
+  <select class="ms" id="measure" aria-label="Mål"></select>
+  <button class="rst" id="csv">Last ned CSV</button>
+  <button class="rst" id="reset">Nullstill filtre</button>
+</header>
+<main>
+  <div class="panel"><h2>Filtre</h2><div class="filters" id="filters"></div></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="panel" id="trendPanel" style="margin-top:1rem" hidden><h2 id="trendTitle"></h2><div id="trend"></div></div>
+  <div class="grid2" id="charts"></div>
+  <div class="panel" id="tablePanel"><h2>Detaljer</h2><div id="tbl"></div></div>
+</main>
+<footer id="perf"></footer>
+</div>
+
+<script id="cube" type="application/gzip;base64">H4sIAAAAAAAC/61Vz6tXRRSfc2fu/d5LVKTPktCKpB+kRWkFUUGBEY/IHt/AwgLFflJB8UyKNmW9EqFokYaLdq76sYgW4cqFQa8o/AdsUxREBK4iaOUZ7xnf5x3P3DtfaeDDmTnz4/w+s+Cc2854yvXjKqELjBcEU8ac8B9mXMvYJus54T3CuI9xjbPHLsbNsH6JcanQp43zO6mnm6oV3iHGGubfxLx/hPcXr7+Ss6/K3lZZb6hWv3mS+S8yLpP9Hytb1w/pQt5bQr9VNq6Rs8cYJ4Q3FXo3nHuT8QPM41hPvZ8X4NxHjK+V7Kv53CahTmJyo1Ac29Qa9+9h3Cbz6xlXwN524T0HvINi572yvpVxuazfUHLuZL0OiG4HlO9OqfUr7POHYP4b7z8pZz72Pd0DcUnz2+XMCabfwHuXUM87Z5fvdcFxRvyQ4pT2j8v+/RJbnYMxR34F2xM9Au8/y/Pv1b3HGOuM/FnLeDfmKOOwrA8L73VBGo+r+TOM04x5xh3C/xJyMo11jM0xBsB7OdaSUBxb2K+PUo84/vQ90vptnt8CdqT5cb63wa/wT0OsbuAz87KO1Mv8g9DT4HvgiD7YJW//q3sG2fV5l/DfZ+yV+TKcDdSvUZfvjHeeUO8vwvwTmO8VGn2/T+YbGUtSE07qYqPM54VeKfRB3dtiL2LsljyI4yjQtRDjHapH/c067/crOuFoyV7vEdrAWwczve/32CuqHsu04tdlIxaN8A5l4hTHfpG/Q9afudW6XCd3f6bet/vU/Sg31X6svRjvo6oOz9Ur9Ll3pA4W82q55xkPGH3zc8angvinvcZ4T/aOSMyX4PwU5luVjEpyfWe1ev1H/Gfhn0rjJ+p5EScFOI7xnSnz5vidJXlrWvWIPWK97xH/rzPU8+M/mhD9uAhxdvKPoE/S+EL+BD3+g780zrfQ6n8A/9Bf4j7kYfzXJjH2kZd8JDTyO0Gr+NHUGs5PZB3g3AW5KffO1wKDhE6M8zWccyAriE4B9icgo4O7jfFmAD26jK61wQvwJqZBB/ykh1e+dMpnHnxZqXPBkI++SmuvfIM6OsO+Gva9siHFrVEyK+NOyMitM75rDJ0I5hO40xl3GuWzesCvnRHTifKVllGpnEC56V0C2ilbtL1VJp9J1Rrm/kTdqdU85bVXdVgbMnQc60xO1fKeV77DtVd+TnLbjK6YLwHm6HOdDx5sr43YWQPrrDXOBuhfli253KwytdMYulYql7H36bzxRr2k3CHV51pVH1YP61T9uowcr/pCGOlxya4a8iZkegv6pRv4173sV+qdzujzlfF/oA9ao56d8nWAeLcDerUgOyh5rSCovo57lh99pv9O1DrlUTD8GRSsPxRrsIE/CfXGvoH/uFexo4z+dSbHatX7mky9Yn434GcC6N5KmX0qOGf1WzLWuTtk+GNIHzdgiyvcdwN8GrDDDfjQjezTwDlX4PMhvYfk08D7JXF2I7a5kRi4kdzL5QHNYFeJjFlsmiVWbkAPGqkbGrlXamuJfWN1XZr/bqQu3f+QOyU15wp9VVIvY/KosP5pJBfGZLiCeA7ZQyP2ucJ8K+nR7iLqb5Y6HOt9JX9Rae6U9F26CP+X1CTNkDezoiQnSv7lWfpW4p0Fu3CGoVAZAAA=</script>
+<script>
+"use strict";
+const META = {"dims": ["Team", "Prioritet", "Kanal", "Maaned"], "shape": [5, 3, 4, 9], "labels": {"Team": ["Team Midt", "Team Nord", "Team Ost", "Team Sor", "Team Vest"], "Prioritet": ["Hoy", "Lav", "Middels"], "Kanal": ["Filial", "Nett", "Post", "Telefon"], "Maaned": ["2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"]}, "n": 540, "measures": [{"field": "Timer", "agg": "sum", "unit": "", "scale": 10, "dtype": "i"}, {"field": "Antall", "agg": "sum", "unit": "", "scale": 1, "dtype": "i"}], "time_dim": "Maaned", "source_rows": 285, "skipped_rows": 0, "density": 0.5278, "raw_bytes": 6480, "title": "Saksbehandling: kube", "built": "2026-10-24 10:00", "requested_by": "Prosjekteier", "source": "Syntetiske data, 285 rader"};
+const NB = n => n.toLocaleString("nb-NO");
+const T = () => performance.now();
+
+/* ---- kompakt tallformat, med enhet ---- */
+function fmt(v, unit){
+  const a = Math.abs(v), u = unit ? " " + unit : "";
+  if (a >= 1e9) return (v/1e9).toFixed(2).replace(".", ",") + " mrd" + u;
+  if (a >= 1e6) return (v/1e6).toFixed(1).replace(".", ",") + " mill." + u;
+  if (a >= 1e4) return NB(Math.round(v/1e3)) + "k" + u;
+  return NB(Math.round(v * 100) / 100) + u;
+}
+
+/* ---- dekoding: base64 -> gunzip -> typed arrays over kubens minne ---- */
+async function loadCube(){
+  const t0 = T();
+  const b64 = document.getElementById("cube").textContent.trim();
+  const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const t1 = T();
+  const ds = new DecompressionStream("gzip");
+  const w = ds.writable.getWriter(); w.write(bin); w.close();
+  const buf = await new Response(ds.readable).arrayBuffer();
+  const t2 = T();
+
+  const N = META.n, cols = [];
+  let off = 0;
+  for (const m of META.measures){
+    if (m.dtype === "d"){
+      // Float64Array needs 8-byte alignment; slice rather than assume it
+      cols.push(off % 8 ? new Float64Array(buf.slice(off, off + N*8)) : new Float64Array(buf, off, N));
+      off += N * 8;
+    } else {
+      cols.push(new Int32Array(buf, off, N)); off += N * 4;
+    }
+  }
+  const cnt = new Uint32Array(buf, off, N);
+  return {cols, cnt, t_b64: t1-t0, t_gunzip: t2-t1, bytes_b64: b64.length, bytes_raw: buf.byteLength};
+}
+
+/* ---- kubens geometri ---- */
+const D = META.dims, S = META.shape;
+const STRIDE = (() => { const s = new Array(S.length); s[S.length-1] = 1;
+  for (let i = S.length-2; i >= 0; i--) s[i] = s[i+1] * S[i+1]; return s; })();
+const sel = {}; D.forEach(d => sel[d] = new Set());
+const active = d => { const i = D.indexOf(d);
+  return sel[d].size ? [...sel[d]].sort((a,b)=>a-b) : Array.from({length: S[i]}, (_,k) => k); };
+
+/* ---- aggregering: én pass over de valgte cellene ----
+   Gruppering skjer på plass i en tett utmatrise; ingen hashing, ingen allokering
+   per celle. Med <= 2 mill. celler er et fullt sveip raskere enn et musklikk. */
+let CUBE = null;
+function rollup(groupDim, mi){
+  const gi = D.indexOf(groupDim);
+  const lists = D.map(active);
+  const src = CUBE.cols[mi], scale = META.measures[mi].scale || 1;
+  const out = new Float64Array(S[gi]), outN = new Float64Array(S[gi]);
+  let tot = 0, totN = 0, cells = 0;
+  const rec = (k, base, gidx) => {
+    if (k === D.length){
+      const c = CUBE.cnt[base]; if (!c) return;
+      const v = src[base] / scale;
+      out[gidx] += v; outN[gidx] += c; tot += v; totN += c; cells++;
+      return;
+    }
+    const st = STRIDE[k];
+    for (const i of lists[k]) rec(k+1, base + i*st, k === gi ? i : gidx);
+  };
+  rec(0, 0, 0);
+  return {out, outN, tot, totN, cells};
+}
+
+/* ---- SVG ---- */
+const esc = s => String(s).replace(/[<>&"]/g, m => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[m]));
+/* Charts draw in their panel's own pixels, so the label size is the size a reader
+   gets. A fixed 560/1120-wide viewBox scaled to a 330 px phone panel drew 10 px text
+   at 3 to 6 px; the labels are 14 px now, which is the floor docs/11 §1 sets, so the
+   paddings below are wide enough to hold them.
+   measureCharts() reads the real widths after a render; boot and resize redraw
+   once when they changed. */
+let barW = 560, lineW = 1120;
+function measureCharts(){
+  const px = sel => { const el = document.querySelector(sel);
+    return el ? Math.round(el.getBoundingClientRect().width) : 0; };
+  const b = px("#charts svg") || barW, l = px("#trend svg") || lineW;
+  const changed = Math.abs(b - barW) > 1 || Math.abs(l - lineW) > 1;
+  barW = Math.max(280, b); lineW = Math.max(280, l);
+  return changed;
+}
+function barChart(labels, values, unit, name){
+  const rowH = 26, W = barW, padL = 150, padR = 96, H = labels.length*rowH + 8;
+  const max = Math.max(...values, 1), bw = W - padL - padR;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${esc(name)}">`;
+  labels.forEach((l, i) => { const y = i*rowH + 4, w = Math.max(1, values[i]/max*bw);
+    s += `<text class="lbl" x="${padL-8}" y="${y+13}" text-anchor="end">${esc(l)}</text>`
+      +  `<rect class="bar" x="${padL}" y="${y+3}" width="${w.toFixed(1)}" height="${rowH-9}" rx="2">`
+      +  `<title>${esc(l)}: ${fmt(values[i], unit)}</title></rect>`
+      +  `<text class="vlbl" x="${padL+w+6}" y="${y+13}">${fmt(values[i], "")}</text>`; });
+  return s + "</svg>";
+}
+function lineChart(labels, values, unit, name){
+  const W = lineW, H = 230, padL = 80, padR = 14, padT = 12, padB = 44;
+  const n = labels.length, max = Math.max(...values, 1);
+  const x = i => padL + (n < 2 ? (W-padL-padR)/2 : i*(W-padL-padR)/(n-1));
+  const y = v => H - padB - (v/max)*(H-padT-padB);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${esc(name)}">`;
+  for (let g = 0; g <= 4; g++){ const v = max*g/4, yy = y(v);
+    s += `<line class="gl" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`
+      +  `<text class="vlbl" x="${padL-8}" y="${yy+3}" text-anchor="end">${fmt(v, "")}</text>`; }
+  s += `<line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>`;
+  const pts = values.map((v,i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  s += `<polygon fill="var(--gr)" opacity=".08" points="${padL},${H-padB} ${pts} ${x(n-1).toFixed(1)},${H-padB}"/>`
+    +  `<polyline fill="none" stroke="var(--gr)" stroke-width="2" points="${pts}"/>`;
+  if (n <= 60) values.forEach((v,i) => { s += `<circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" `
+    + `fill="var(--panel)" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });
+  const step = Math.ceil(n / Math.max(2, Math.floor((W-padL-padR)/104)));  // wider labels at 14 px
+  labels.forEach((l,i) => { if (i % step) return;
+    // The first and last labels sit on the axes: centring them hangs half a label
+    // outside the drawing, which at 14 px is visible text cut off.
+    const anchor = i === n-1 ? "end" : (i === 0 ? "start" : "middle");
+    s += `<text class="lbl" x="${x(i).toFixed(1)}" y="${H-padB+16}" text-anchor="${anchor}">${esc(l)}</text>`; });
+  return s + "</svg>";
+}
+
+/* ---- oppbygging ---- */
+const TIME = META.time_dim, CHART_DIMS = D.filter(d => d !== TIME);
+let MI = 0;
+
+/* ---- CSV: det leseren ser, ikke radene
+   verdiene er de aggregerte cellene under gjeldende utvalg, og filen bærer kilde og utvalg ---- */
+const SEP = "," === "," ? ";" : ",";
+function csvField(v){
+  const s = String(v);
+  return s.indexOf('"') >= 0 || s.indexOf(SEP) >= 0 || /[\r\n]/.test(s)
+    ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+// No thousands separator and the reader's own decimal mark: a spreadsheet given
+// "1 234,5" reads text, and a text column is not why anyone downloads this.
+function csvNumber(v, dp){
+  const n = dp === 0 ? Math.round(v) : Math.round(v * 100) / 100;
+  return String(n).replace(".", ",");
+}
+function csvSlug(){
+  const iso = META.built.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dotted = META.built.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+  const date = iso ? iso[0] : (dotted ? dotted[3] + "-" + dotted[2] + "-" + dotted[1] : META.built);
+  const clean = v => v.replace(/[\\/:*?"<>|\s]+/g, "-").replace(/^-+|-+$/g, "");
+  return clean("kube-" + META.title).slice(0, 60) + "-" + clean(date) + ".csv";
+}
+function csvText(){
+  const meas = META.measures[MI];
+  const name = meas.agg === "count" ? "antall rader" : meas.field;
+  const lines = [];
+  // Provenance travels with the file: a CSV that outlives the page has to say
+  // where it came from and which selection it holds, or the numbers are a claim
+  // with no source.
+  lines.push(csvField("# Kilde: " + META.source));
+  lines.push(csvField("# Bygget: " + META.built
+    + (META.requested_by ? " for " + META.requested_by : "")));
+  lines.push(csvField("# Utvalg: " + D.map(d =>
+    d + " = " + (sel[d].size ? [...sel[d]].sort((a,b)=>a-b).map(i => META.labels[d][i]).join(", ")
+                            : "alle")).join("; ")));
+  lines.push("");
+  const head = ["Dimensjon", "Verdi", name, "Rader", "Snitt"];
+  lines.push(head.map(csvField).join(SEP));
+
+  const base = rollup(TIME || D[0], MI);
+  const dims = (TIME ? [TIME] : []).concat(CHART_DIMS);
+  for (const d of dims){
+    const r = rollup(d, MI);
+    const idx = active(d).sort((a,b) => r.out[b] - r.out[a]);
+    for (const i of idx){
+      if (!r.outN[i]) continue;
+      lines.push([d, META.labels[d][i], name, csvNumber(r.out[i]),
+                  csvNumber(r.outN[i], 0),
+                  csvNumber(r.out[i] / Math.max(1, r.outN[i]))].map(csvField).join(SEP));
+    }
+  }
+  lines.push(["Totalt", "", name, csvNumber(base.tot), csvNumber(base.totN, 0),
+              csvNumber(base.tot / Math.max(1, base.totN))].map(csvField).join(SEP));
+  return "\ufeff" + lines.join("\r\n") + "\r\n";
+}
+function downloadCSV(){
+  const text = csvText();
+  try {
+    const url = URL.createObjectURL(new Blob([text], {type: "text/csv;charset=utf-8"}));
+    const a = document.createElement("a");
+    a.href = url; a.download = csvSlug();
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (err) {
+    // A host that blocks blob downloads gets the text in the page instead, in a
+    // box the reader can select and copy. Never a button that does nothing.
+    const box = document.createElement("div");
+    box.className = "panel"; box.id = "csvFallback";
+    box.innerHTML = "<h2>Kopier tabellen under</h2>";
+    const ta = document.createElement("textarea");
+    ta.readOnly = true; ta.rows = 12; ta.style.width = "100%";
+    ta.style.font = '14px ui-monospace,SFMono-Regular,Menlo,monospace';
+    ta.value = text;
+    box.appendChild(ta);
+    document.querySelector("main").prepend(box);
+    ta.focus(); ta.select();
+  }
+}
+
+function buildChrome(){
+  document.getElementById("title").textContent = META.title;
+  document.getElementById("measure").innerHTML = META.measures
+    .map((m,i) => `<option value="${i}">${esc(m.agg === "count" ? "antall rader" : m.field)}</option>`).join("");
+  document.getElementById("measure").hidden = META.measures.length < 2;
+  document.getElementById("measure").onchange = e => { MI = +e.target.value; render(); };
+
+  document.getElementById("filters").innerHTML = D.map(d =>
+    `<div class="fg"><label>${esc(d)}</label><div class="chips" data-dim="${esc(d)}">`
+    + META.labels[d].map((l,i) => `<span class="chip" data-i="${i}">${esc(l)}</span>`).join("")
+    + `</div></div>`).join("");
+  document.getElementById("filters").addEventListener("click", e => {
+    const c = e.target.closest(".chip"); if (!c) return;
+    const dim = c.parentElement.dataset.dim, i = +c.dataset.i;
+    sel[dim].has(i) ? sel[dim].delete(i) : sel[dim].add(i);
+    c.classList.toggle("on"); render();
+  });
+  document.getElementById("csv").onclick = downloadCSV;
+  document.getElementById("reset").onclick = () => { D.forEach(d => sel[d].clear());
+    document.querySelectorAll(".chip.on").forEach(c => c.classList.remove("on")); render(); };
+  if (TIME){ document.getElementById("trendPanel").hidden = false;
+    document.getElementById("trendTitle").textContent = "Utvikling per " + TIME; }
+}
+
+function render(){
+  const t0 = T();
+  const meas = META.measures[MI], unit = meas.unit;
+  const base = rollup(TIME || D[0], MI);
+  const per = {}; for (const d of CHART_DIMS) per[d] = rollup(d, MI);
+  const ms = T() - t0;
+
+  const kpis = [[meas.agg === "count" ? "Antall rader" : meas.field, fmt(base.tot, unit)],
+                ["Rader i utvalg", NB(base.totN)]];
+  if (meas.agg === "sum") kpis.push(["Snitt per rad", fmt(base.tot / Math.max(1, base.totN), unit)]);
+  kpis.push(["Kubeceller lest", NB(base.cells)]);
+  document.getElementById("kpis").innerHTML = kpis
+    .map(([l,v]) => `<div class="kpi"><div class="v">${v}</div><div class="l">${esc(l)}</div></div>`).join("");
+
+  if (TIME){ const ti = active(TIME);
+    document.getElementById("trend").innerHTML =
+      lineChart(ti.map(i => META.labels[TIME][i]), ti.map(i => base.out[i]), unit,
+                "Utvikling per " + TIME); }
+
+  const ranked = d => { const r = per[d], idx = active(d).sort((a,b) => r.out[b] - r.out[a]);
+    return [idx, idx.map(i => META.labels[d][i]), idx.map(i => r.out[i])]; };
+  document.getElementById("charts").innerHTML = CHART_DIMS.slice(0, 2).map(d => {
+    const [, l, v] = ranked(d);
+    return `<div class="panel"><h2>Per ${esc(d)}</h2>${barChart(l, v, unit, "Per " + d)}</div>`; }).join("");
+
+  const rest = CHART_DIMS.slice(2);
+  const tp = document.getElementById("tablePanel");
+  tp.hidden = rest.length === 0;
+  if (rest.length) document.getElementById("tbl").innerHTML = rest.map(d => {
+    const [idx, l, v] = ranked(d), r = per[d];
+    return `<table style="margin-bottom:1rem"><thead><tr><th>${esc(d)}</th>`
+      + `<th class="n">${esc(meas.agg === "count" ? "antall" : meas.field)}</th>`
+      + `<th class="n">rader</th><th class="n">snitt</th></tr></thead><tbody>`
+      + idx.map((i, k) => `<tr><td>${esc(l[k])}</td><td class="n">${fmt(v[k], "")}</td>`
+        + `<td class="n">${NB(r.outN[i])}</td>`
+        + `<td class="n">${fmt(v[k] / Math.max(1, r.outN[i]), "")}</td></tr>`).join("")
+      + `</tbody></table>`; }).join("");
+
+  document.getElementById("scope").textContent =
+    `${NB(META.source_rows)} rader aggregert til ${NB(META.n)} celler · ingen server`;
+  document.getElementById("perf").innerHTML =
+      `<span>kilderader <b>${NB(META.source_rows)}</b></span>`
+    + `<span>kubeceller <b>${NB(META.n)}</b></span>`
+    + `<span>data i fil <b>${(CUBE.bytes_b64/1e6).toFixed(2)} MB</b></span>`
+    + `<span>dekodet <b>${(CUBE.t_b64 + CUBE.t_gunzip).toFixed(0)} ms</b></span>`
+    + `<span>siste spørring <b>${ms.toFixed(1)} ms</b></span>`
+    + `<span>bygget ${esc(META.built)}${META.requested_by ? " for " + esc(META.requested_by) : ""} fra ${esc(META.source)}</span>`;
+  window.__LAST_MS__ = ms; window.__TOTAL__ = base.tot; window.__ROWS__ = base.totN;
+}
+
+(async () => {
+  try {
+    if (typeof DecompressionStream === "undefined")
+      throw new Error("nettleseren mangler DecompressionStream (krever Chrome/Edge 80+, Safari 16.4+)");
+    CUBE = await loadCube();
+    buildChrome();
+    document.getElementById("boot").hidden = true;
+    document.getElementById("app").hidden = false;
+    render();
+    if (measureCharts()) render();
+    let frame = 0;
+    const redraw = () => { cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => { if (measureCharts()) render(); }); };
+    addEventListener("resize", redraw);
+    /* A host can size the frame without firing resize (measured in an Atlassian Artifacts
+       embed, docs/29), so also watch the chart containers. measureCharts() returns false
+       when no width changed, which stops the loop a redraw's own reflow would start. */
+    if (typeof ResizeObserver === "function") {
+      const ro = new ResizeObserver(redraw);
+      ["charts", "trend"].forEach(id => { const el = document.getElementById(id); if (el) ro.observe(el); });
+    }
+    window.__READY__ = true;
+  } catch (e) {
+    const b = document.getElementById("boot");
+    b.className = "err"; b.textContent = "Klarte ikke å laste data: " + e.message;
+    window.__READY__ = false;
+  }
+})();
+</script></body></html>

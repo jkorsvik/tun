@@ -79,8 +79,8 @@ def build(template: pathlib.Path, out: pathlib.Path) -> subprocess.CompletedProc
     rewrites = [
         ('TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "single-file-dashboard.html"',
          f'TEMPLATE = pathlib.Path({str(template)!r})'),
-        ('TOOLS_DIR = pathlib.Path(__file__).resolve().parent',
-         f'TOOLS_DIR = pathlib.Path({str(TOOLS)!r})'),
+        ('sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))',
+         f'sys.path.insert(0, {str(TOOLS)!r})'),
     ]
     for old, new in rewrites:
         if src.count(old) != 1:

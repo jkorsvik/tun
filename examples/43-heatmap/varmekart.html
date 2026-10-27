@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Henvendelser per enhet og uke</title>
+<!--
+  Henvendelser per enhet og uke
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (henvendelser.csv) — 46 ruter med verdi
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Kundeservice
+    Made with   : Tún - tun.community
+    Cells       : 46 cells with a value
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: one cell per row-and-column pair, shaded by its value on a stated
+  one-hue scale, with the value printed inside the cell and the scale printed in the legend.
+
+  What it is NOT: a model, a forecast, or a claim about why a cell is dark. It counts what
+  the extract holds per pair. A cell with no data is hatched, never drawn as zero.
+
+  There is no script in this file. A filter would re-lay the drawing, and the drawing is the
+  claim being made.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+:root{
+  /* The two stripes of the "no data" hatch. A texture is not a value, and --line sits within a
+     hair of --panel, so a hatch built from the seam would read as an empty cell. */
+  --hatch-1:#f2f2f2;--hatch-2:#c8c8c8;
+}
+  /* The five bands, written by the builder: a fill and the ink that reads on it, chosen by
+     measurement for each theme. The ramp is not the same one re-pointed; it is mixed from the
+     panel toward a light teal in dark, because blue on a dark panel is 1.31:1. */
+  .hm-b0{fill:#e6ecf3}
+  .hm-b0 .hm-val{fill:#0a0a0a}
+  .sw.hm-b0{background:#e6ecf3}
+  .hm-b1{fill:#bccbe0}
+  .hm-b1 .hm-val{fill:#0a0a0a}
+  .sw.hm-b1{background:#bccbe0}
+  .hm-b2{fill:#8da6ca}
+  .hm-b2 .hm-val{fill:#0a0a0a}
+  .sw.hm-b2{background:#8da6ca}
+  .hm-b3{fill:#5d81b3}
+  .hm-b3 .hm-val{fill:#0a0a0a}
+  .sw.hm-b3{background:#5d81b3}
+  .hm-b4{fill:#2f5d9e}
+  .hm-b4 .hm-val{fill:#ffffff}
+  .sw.hm-b4{background:#2f5d9e}
+  @media (prefers-color-scheme: dark){
+    .hm-b0{fill:#1c3240}
+    .hm-b0 .hm-val{fill:#ffffff}
+    .sw.hm-b0{background:#1c3240}
+    .hm-b1{fill:#32575f}
+    .hm-b1 .hm-val{fill:#ffffff}
+    .sw.hm-b1{background:#32575f}
+    .hm-b2{fill:#4c8183}
+    .hm-b2 .hm-val{fill:#0a0a0a}
+    .sw.hm-b2{background:#4c8183}
+    .hm-b3{fill:#66aca6}
+    .hm-b3 .hm-val{fill:#0a0a0a}
+    .sw.hm-b3{background:#66aca6}
+    .hm-b4{fill:#7fd4c8}
+    .hm-b4 .hm-val{fill:#0a0a0a}
+    .sw.hm-b4{background:#7fd4c8}
+  }
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a
+   scaled-down drawing is text under the floor. Below that the box pans. */
+.figure svg{display:block;width:100%;height:auto;min-width:62.5rem}
+.hm-chead{fill:var(--muted);font-size:14px;font-weight:600}
+.hm-rname{fill:var(--ink);font-size:14px}
+.hm-val{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.hm-box{stroke:var(--panel);stroke-width:2}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.legend{list-style:none;display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;margin:0;padding:0}
+.legend li{display:flex;align-items:center;gap:.5rem;font-size:.875rem;line-height:1.5}
+.legend .sw{display:inline-block;width:1.5rem;height:1rem;border:1px solid var(--line);
+  border-radius:.1875rem}
+/* The hatched swatch is the "no data" cell, drawn the same way the drawing draws it. */
+.legend .sw-none{background:repeating-linear-gradient(45deg,var(--hatch-1) 0 .1875rem,var(--hatch-2) .1875rem .375rem)}
+.legend .rg{font-variant-numeric:tabular-nums;color:var(--ink)}
+.legend-note{margin:.5rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.note{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.meta{margin:0;padding-left:1.25rem;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.meta li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.tot,th.tot{font-weight:600}
+tfoot th,tfoot td{font-weight:600;background:var(--brand-soft);border-bottom:0}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* The drawing keeps a readable minimum and the figure scrolls sideways inside its own
+     box: a phone may pan a picture, but the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .note{background:#fff;padding-left:0}
+  .meta{color:#000}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* The hatch's two stripes, so the texture follows the theme like everything else. */
+  #hm-none .hatch-bg{fill:var(--hatch-1)}
+  #hm-none .hatch-line{stroke:var(--hatch-2)}
+  /* A cell that cannot exist yet takes the ordinary ink: its fill is a texture, not a value. */
+  .hm-none .hm-val{fill:var(--ink)}
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band that reads white-on-ocean in light would be dark on dark. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    :root{--hatch-1:#1d4a52;--hatch-2:#5f9aa8}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Henvendelser per enhet og uke</h1>
+  <p class="sub">6 rader og 8 kolonner · Antall (sum)</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 1000 238" role="img" aria-labelledby="hm-t hm-d" preserveAspectRatio="xMinYMin meet">
+<title id="hm-t">Varmekart</title>
+<desc id="hm-d">Varmekart med 6 rader og 8 kolonner. Hver rute er farget etter verdien, og verdien står i ruten.</desc>
+<defs><pattern id="hm-none" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="8" height="8"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="8" stroke-width="3"/></pattern></defs>
+<text class="hm-chead" x="148.3" y="18" text-anchor="middle">2026-W01</text>
+<text class="hm-chead" x="259.7" y="18" text-anchor="middle">2026-W02</text>
+<text class="hm-chead" x="371.2" y="18" text-anchor="middle">2026-W03</text>
+<text class="hm-chead" x="482.6" y="18" text-anchor="middle">2026-W04</text>
+<text class="hm-chead" x="594.0" y="18" text-anchor="middle">2026-W05</text>
+<text class="hm-chead" x="705.4" y="18" text-anchor="middle">2026-W06</text>
+<text class="hm-chead" x="816.9" y="18" text-anchor="middle">2026-W07</text>
+<text class="hm-chead" x="928.3" y="18" text-anchor="middle">2026-W08</text>
+<text class="hm-rname" x="16" y="52.0">Oslo</text>
+<g class="hm-cell hm-b3"><title>Oslo / 2026-W01: 67</title><rect class="hm-box" x="92.6" y="31" width="109.4" height="32"/><text class="hm-val" x="148.3" y="52.0" text-anchor="middle">67</text></g>
+<g class="hm-cell hm-b3"><title>Oslo / 2026-W02: 66</title><rect class="hm-box" x="204.0" y="31" width="109.4" height="32"/><text class="hm-val" x="259.7" y="52.0" text-anchor="middle">66</text></g>
+<g class="hm-cell hm-b3"><title>Oslo / 2026-W03: 67</title><rect class="hm-box" x="315.4" y="31" width="109.4" height="32"/><text class="hm-val" x="371.2" y="52.0" text-anchor="middle">67</text></g>
+<g class="hm-cell hm-b0"><title>Oslo / 2026-W04: 18</title><rect class="hm-box" x="426.9" y="31" width="109.4" height="32"/><text class="hm-val" x="482.6" y="52.0" text-anchor="middle">18</text></g>
+<g class="hm-cell hm-b3"><title>Oslo / 2026-W05: 69</title><rect class="hm-box" x="538.3" y="31" width="109.4" height="32"/><text class="hm-val" x="594.0" y="52.0" text-anchor="middle">69</text></g>
+<g class="hm-cell hm-b3"><title>Oslo / 2026-W06: 64</title><rect class="hm-box" x="649.7" y="31" width="109.4" height="32"/><text class="hm-val" x="705.4" y="52.0" text-anchor="middle">64</text></g>
+<g class="hm-cell hm-b3"><title>Oslo / 2026-W07: 67</title><rect class="hm-box" x="761.1" y="31" width="109.4" height="32"/><text class="hm-val" x="816.9" y="52.0" text-anchor="middle">67</text></g>
+<g class="hm-cell hm-b4"><title>Oslo / 2026-W08: 90</title><rect class="hm-box" x="872.6" y="31" width="109.4" height="32"/><text class="hm-val" x="928.3" y="52.0" text-anchor="middle">90</text></g>
+<text class="hm-rname" x="16" y="86.0">Vestland</text>
+<g class="hm-cell hm-b1"><title>Vestland / 2026-W01: 43</title><rect class="hm-box" x="92.6" y="65" width="109.4" height="32"/><text class="hm-val" x="148.3" y="86.0" text-anchor="middle">43</text></g>
+<g class="hm-cell hm-b1"><title>Vestland / 2026-W02: 37</title><rect class="hm-box" x="204.0" y="65" width="109.4" height="32"/><text class="hm-val" x="259.7" y="86.0" text-anchor="middle">37</text></g>
+<g class="hm-cell hm-b2"><title>Vestland / 2026-W03: 46</title><rect class="hm-box" x="315.4" y="65" width="109.4" height="32"/><text class="hm-val" x="371.2" y="86.0" text-anchor="middle">46</text></g>
+<g class="hm-cell hm-b2"><title>Vestland / 2026-W04: 50</title><rect class="hm-box" x="426.9" y="65" width="109.4" height="32"/><text class="hm-val" x="482.6" y="86.0" text-anchor="middle">50</text></g>
+<g class="hm-cell hm-b2"><title>Vestland / 2026-W05: 53</title><rect class="hm-box" x="538.3" y="65" width="109.4" height="32"/><text class="hm-val" x="594.0" y="86.0" text-anchor="middle">53</text></g>
+<g class="hm-cell hm-b4"><title>Vestland / 2026-W06: 89</title><rect class="hm-box" x="649.7" y="65" width="109.4" height="32"/><text class="hm-val" x="705.4" y="86.0" text-anchor="middle">89</text></g>
+<g class="hm-cell hm-b2"><title>Vestland / 2026-W07: 51</title><rect class="hm-box" x="761.1" y="65" width="109.4" height="32"/><text class="hm-val" x="816.9" y="86.0" text-anchor="middle">51</text></g>
+<g class="hm-cell hm-b2"><title>Vestland / 2026-W08: 56</title><rect class="hm-box" x="872.6" y="65" width="109.4" height="32"/><text class="hm-val" x="928.3" y="86.0" text-anchor="middle">56</text></g>
+<text class="hm-rname" x="16" y="120.0">Trondelag</text>
+<g class="hm-cell hm-b1"><title>Trondelag / 2026-W01: 33</title><rect class="hm-box" x="92.6" y="99" width="109.4" height="32"/><text class="hm-val" x="148.3" y="120.0" text-anchor="middle">33</text></g>
+<g class="hm-cell hm-b1"><title>Trondelag / 2026-W02: 29</title><rect class="hm-box" x="204.0" y="99" width="109.4" height="32"/><text class="hm-val" x="259.7" y="120.0" text-anchor="middle">29</text></g>
+<g class="hm-cell hm-b1"><title>Trondelag / 2026-W03: 36</title><rect class="hm-box" x="315.4" y="99" width="109.4" height="32"/><text class="hm-val" x="371.2" y="120.0" text-anchor="middle">36</text></g>
+<g class="hm-cell hm-b1"><title>Trondelag / 2026-W04: 34</title><rect class="hm-box" x="426.9" y="99" width="109.4" height="32"/><text class="hm-val" x="482.6" y="120.0" text-anchor="middle">34</text></g>
+<g class="hm-cell hm-b1"><title>Trondelag / 2026-W05: 31</title><rect class="hm-box" x="538.3" y="99" width="109.4" height="32"/><text class="hm-val" x="594.0" y="120.0" text-anchor="middle">31</text></g>
+<g class="hm-cell hm-b1"><title>Trondelag / 2026-W06: 40</title><rect class="hm-box" x="649.7" y="99" width="109.4" height="32"/><text class="hm-val" x="705.4" y="120.0" text-anchor="middle">40</text></g>
+<g class="hm-cell hm-b1"><title>Trondelag / 2026-W07: 38</title><rect class="hm-box" x="761.1" y="99" width="109.4" height="32"/><text class="hm-val" x="816.9" y="120.0" text-anchor="middle">38</text></g>
+<g class="hm-cell hm-b1"><title>Trondelag / 2026-W08: 43</title><rect class="hm-box" x="872.6" y="99" width="109.4" height="32"/><text class="hm-val" x="928.3" y="120.0" text-anchor="middle">43</text></g>
+<text class="hm-rname" x="16" y="154.0">Innlandet</text>
+<g class="hm-cell hm-b0"><title>Innlandet / 2026-W01: 24</title><rect class="hm-box" x="92.6" y="133" width="109.4" height="32"/><text class="hm-val" x="148.3" y="154.0" text-anchor="middle">24</text></g>
+<g class="hm-cell hm-b0"><title>Innlandet / 2026-W02: 21</title><rect class="hm-box" x="204.0" y="133" width="109.4" height="32"/><text class="hm-val" x="259.7" y="154.0" text-anchor="middle">21</text></g>
+<g class="hm-cell hm-b0"><title>Innlandet / 2026-W03: 25</title><rect class="hm-box" x="315.4" y="133" width="109.4" height="32"/><text class="hm-val" x="371.2" y="154.0" text-anchor="middle">25</text></g>
+<g class="hm-cell hm-b0"><title>Innlandet / 2026-W04: 26</title><rect class="hm-box" x="426.9" y="133" width="109.4" height="32"/><text class="hm-val" x="482.6" y="154.0" text-anchor="middle">26</text></g>
+<g class="hm-cell hm-b1"><title>Innlandet / 2026-W05: 31</title><rect class="hm-box" x="538.3" y="133" width="109.4" height="32"/><text class="hm-val" x="594.0" y="154.0" text-anchor="middle">31</text></g>
+<g class="hm-cell hm-b1"><title>Innlandet / 2026-W06: 29</title><rect class="hm-box" x="649.7" y="133" width="109.4" height="32"/><text class="hm-val" x="705.4" y="154.0" text-anchor="middle">29</text></g>
+<g class="hm-cell hm-b1"><title>Innlandet / 2026-W07: 32</title><rect class="hm-box" x="761.1" y="133" width="109.4" height="32"/><text class="hm-val" x="816.9" y="154.0" text-anchor="middle">32</text></g>
+<g class="hm-cell hm-b1"><title>Innlandet / 2026-W08: 30</title><rect class="hm-box" x="872.6" y="133" width="109.4" height="32"/><text class="hm-val" x="928.3" y="154.0" text-anchor="middle">30</text></g>
+<text class="hm-rname" x="16" y="188.0">Agder</text>
+<g class="hm-cell hm-b0"><title>Agder / 2026-W01: 16</title><rect class="hm-box" x="92.6" y="167" width="109.4" height="32"/><text class="hm-val" x="148.3" y="188.0" text-anchor="middle">16</text></g>
+<g class="hm-cell hm-b0"><title>Agder / 2026-W02: 20</title><rect class="hm-box" x="204.0" y="167" width="109.4" height="32"/><text class="hm-val" x="259.7" y="188.0" text-anchor="middle">20</text></g>
+<g class="hm-cell hm-b0"><title>Agder / 2026-W03: 17</title><rect class="hm-box" x="315.4" y="167" width="109.4" height="32"/><text class="hm-val" x="371.2" y="188.0" text-anchor="middle">17</text></g>
+<g class="hm-cell hm-b0"><title>Agder / 2026-W04: 20</title><rect class="hm-box" x="426.9" y="167" width="109.4" height="32"/><text class="hm-val" x="482.6" y="188.0" text-anchor="middle">20</text></g>
+<g class="hm-cell hm-b0"><title>Agder / 2026-W05: 22</title><rect class="hm-box" x="538.3" y="167" width="109.4" height="32"/><text class="hm-val" x="594.0" y="188.0" text-anchor="middle">22</text></g>
+<g class="hm-cell hm-b0"><title>Agder / 2026-W06: 23</title><rect class="hm-box" x="649.7" y="167" width="109.4" height="32"/><text class="hm-val" x="705.4" y="188.0" text-anchor="middle">23</text></g>
+<g class="hm-cell hm-none"><title>Agder / 2026-W07: ingen data</title><rect class="hm-box" x="761.1" y="167" width="109.4" height="32" fill="url(#hm-none)"/><text class="hm-val" x="816.9" y="188.0" text-anchor="middle">–</text></g>
+<g class="hm-cell hm-b0"><title>Agder / 2026-W08: 23</title><rect class="hm-box" x="872.6" y="167" width="109.4" height="32"/><text class="hm-val" x="928.3" y="188.0" text-anchor="middle">23</text></g>
+<text class="hm-rname" x="16" y="222.0">Nordland</text>
+<g class="hm-cell hm-b0"><title>Nordland / 2026-W01: 13</title><rect class="hm-box" x="92.6" y="201" width="109.4" height="32"/><text class="hm-val" x="148.3" y="222.0" text-anchor="middle">13</text></g>
+<g class="hm-cell hm-none"><title>Nordland / 2026-W02: ingen data</title><rect class="hm-box" x="204.0" y="201" width="109.4" height="32" fill="url(#hm-none)"/><text class="hm-val" x="259.7" y="222.0" text-anchor="middle">–</text></g>
+<g class="hm-cell hm-b0"><title>Nordland / 2026-W03: 17</title><rect class="hm-box" x="315.4" y="201" width="109.4" height="32"/><text class="hm-val" x="371.2" y="222.0" text-anchor="middle">17</text></g>
+<g class="hm-cell hm-b0"><title>Nordland / 2026-W04: 17</title><rect class="hm-box" x="426.9" y="201" width="109.4" height="32"/><text class="hm-val" x="482.6" y="222.0" text-anchor="middle">17</text></g>
+<g class="hm-cell hm-b0"><title>Nordland / 2026-W05: 16</title><rect class="hm-box" x="538.3" y="201" width="109.4" height="32"/><text class="hm-val" x="594.0" y="222.0" text-anchor="middle">16</text></g>
+<g class="hm-cell hm-b0"><title>Nordland / 2026-W06: 15</title><rect class="hm-box" x="649.7" y="201" width="109.4" height="32"/><text class="hm-val" x="705.4" y="222.0" text-anchor="middle">15</text></g>
+<g class="hm-cell hm-b0"><title>Nordland / 2026-W07: 17</title><rect class="hm-box" x="761.1" y="201" width="109.4" height="32"/><text class="hm-val" x="816.9" y="222.0" text-anchor="middle">17</text></g>
+<g class="hm-cell hm-b0"><title>Nordland / 2026-W08: 18</title><rect class="hm-box" x="872.6" y="201" width="109.4" height="32"/><text class="hm-val" x="928.3" y="222.0" text-anchor="middle">18</text></g>
+</svg>
+    <figcaption>Hver rute er ett møte mellom Antall og de to kolonnene, og fargen følger skalaen under. Verdien står i ruten, så fargen er en andre lesning av et tall som allerede er på siden, ikke den eneste.</figcaption>
+  </figure>
+
+<h2 id="lg-h">Skalaen</h2>
+<ul class="legend" aria-labelledby="lg-h">
+  <li><span class="sw hm-b0" aria-hidden="true"></span><span class="rg">13–28</span></li>
+  <li><span class="sw hm-b1" aria-hidden="true"></span><span class="rg">28–44</span></li>
+  <li><span class="sw hm-b2" aria-hidden="true"></span><span class="rg">44–59</span></li>
+  <li><span class="sw hm-b3" aria-hidden="true"></span><span class="rg">59–75</span></li>
+  <li><span class="sw hm-b4" aria-hidden="true"></span><span class="rg">≥ 75</span></li>
+  <li><span class="sw sw-none" aria-hidden="true"></span><span class="rg">Ingen data</span></li>
+</ul>
+
+
+  <p class="note">Den høyeste ruten er Oslo / 2026-W08 med 90, som er 5,3 % av summen.</p>
+
+  <h2 id="how-h">Slik er bildet laget</h2>
+  <ul class="meta" aria-labelledby="how-h">
+    <li>Radene er sortert etter sum, høyest først, fordi du ikke oppgav en rekkefølge.</li>
+    <li>Kolonnene er sortert stigende etter navn, fordi du ikke oppgav en rekkefølge.</li>
+    <li>2 av 48 ruter har ingen data. De er skravert, ikke farget som null: ingen saker og ingen registrerte saker er to ulike funn.</li>
+    <li>Skalaen går fra 13 til 90 og er lineær mellom dem, delt i fem trinn. Trinnene er avrundet til det sidene viser, så bredden kan skille med én.</li>
+  </ul>
+
+  <h2 id="tbl-h">Tallene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Hver rad med sin sum, og hver kolonne med sin sum, så tallene i bildet kan kontrolleres.</caption>
+    <thead><tr>
+      <th scope="col">Rad</th>
+      <th scope="col" class="num">2026-W01</th>
+      <th scope="col" class="num">2026-W02</th>
+      <th scope="col" class="num">2026-W03</th>
+      <th scope="col" class="num">2026-W04</th>
+      <th scope="col" class="num">2026-W05</th>
+      <th scope="col" class="num">2026-W06</th>
+      <th scope="col" class="num">2026-W07</th>
+      <th scope="col" class="num">2026-W08</th>
+      <th scope="col" class="num tot">Sum</th>
+    </tr></thead>
+    <tbody>
+      <tr><th scope="row">Oslo</th><td class="num">67</td><td class="num">66</td><td class="num">67</td><td class="num">18</td><td class="num">69</td><td class="num">64</td><td class="num">67</td><td class="num">90</td><td class="num tot">508</td></tr>
+      <tr><th scope="row">Vestland</th><td class="num">43</td><td class="num">37</td><td class="num">46</td><td class="num">50</td><td class="num">53</td><td class="num">89</td><td class="num">51</td><td class="num">56</td><td class="num tot">425</td></tr>
+      <tr><th scope="row">Trondelag</th><td class="num">33</td><td class="num">29</td><td class="num">36</td><td class="num">34</td><td class="num">31</td><td class="num">40</td><td class="num">38</td><td class="num">43</td><td class="num tot">284</td></tr>
+      <tr><th scope="row">Innlandet</th><td class="num">24</td><td class="num">21</td><td class="num">25</td><td class="num">26</td><td class="num">31</td><td class="num">29</td><td class="num">32</td><td class="num">30</td><td class="num tot">218</td></tr>
+      <tr><th scope="row">Agder</th><td class="num">16</td><td class="num">20</td><td class="num">17</td><td class="num">20</td><td class="num">22</td><td class="num">23</td><td class="num">–</td><td class="num">23</td><td class="num tot">141</td></tr>
+      <tr><th scope="row">Nordland</th><td class="num">13</td><td class="num">–</td><td class="num">17</td><td class="num">17</td><td class="num">16</td><td class="num">15</td><td class="num">17</td><td class="num">18</td><td class="num tot">113</td></tr>
+    </tbody>
+    <tfoot>
+      <tr><th scope="row">Sum</th><td class="num">196</td><td class="num">173</td><td class="num">208</td><td class="num">165</td><td class="num">222</td><td class="num">260</td><td class="num">205</td><td class="num">260</td><td class="num">1 689</td></tr>
+    </tfoot>
+  </table>
+</main>
+<footer>
+  <p>Selvstendig fil: alle tallene er regnet ut på forhånd, og ingenting hentes når den åpnes.</p>
+  <p>Ingen server, ingen innlogging, ingen skript. En rute uten data er skravert, aldri tegnet som null.</p>
+  <p>Syntetisk eksempeldata (henvendelser.csv) — 46 ruter med verdi · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

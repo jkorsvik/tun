@@ -9,13 +9,13 @@
 build_embedding_comparison_poc.py — generates embedding-mode-comparison-poc.html
 and its paired sidecar, paired-data.js.
 
-Diagnostic tool, not a design pattern demo. Grew out of one symptom: a
-standalone HTML file rendered a misleading "no data"
+Diagnostic tool, not a design pattern demo. Grew out of a real incident
+(issue #39, 15. sept. 2026): a saksrom case file rendered a misleading "no data"
 message when opened via SharePoint's own inline file-preview pane ("hurtigvisning"
 in the document library — single click, NOT a download, NOT the `/preview`
 embed.aspx viewer already covered by tenant-constraints.md row 4). Two theories
 were floated and disproved before the real cause was found with two clean A/B
-tests run directly against a live tenant, same click path, repeated:
+tests run directly against the live tenant, same click path, repeated:
 
   - Embedded (inline <script>), single-line JSON-style string data -> WORKED
   - Embedded, same content but built from ~35 lines of "text" + "text" +
@@ -38,7 +38,7 @@ recommended pattern:
   A. Embedded + JavaScript, single-line data              — recommended pattern
   B. Embedded + JavaScript, multi-line string concatenation — CONFIRMED to fail
      in SharePoint's inline preview; kept here deliberately so the failure can
-     be reproduced on demand instead of only living in a write-up
+     be reproduced on demand instead of only living in an issue thread
   C. Embedded, no JavaScript required at all               — always safe
   D. Paired (`<script src>`)                                — CONFIRMED to fail
      in SharePoint's inline preview regardless of data format
@@ -61,8 +61,8 @@ HERE = pathlib.Path(__file__).resolve().parent
 TEXT = (
     "Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere "
     "avsnitt \u2014 opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes \u00e5 "
-    "knekke embedded data i SharePoints innebygde forh\u00e5ndsvisning; "
-    "den mistanken er senere tilbakevist (se rad 23 i tenant-constraints.md).\n\n"
+    "knekke embedded data i SharePoints innebygde forh\u00e5ndsvisning 15. september 2026; "
+    "den mistanken er tilbakevist samme kveld (se rad 23 i tenant-constraints.md).\n\n"
     "Andre avsnitt f\u00f8lger her. Hvis dette avsnittet vises i alle fire rutene, virker "
     "ingenting av det denne siden tester \u00e5 skille mellom \u2014 se README.md."
 )
@@ -81,30 +81,15 @@ PANEL_B_CONCAT = " +\n    ".join(PANEL_B_JS_LINES)
 PAIRED_DATA_JS = f"window.PANEL_D_DATA = {TEXT_JSON};\n"
 
 HTML = f"""<!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
-<!--
-  PROVENANCE
-    Source data : none, synthetic demonstration
-    Repo        : tun
-    Made with   : Tún — tun.community
-    Generator   : examples/16-embedding-mode-comparison-poc/build_embedding_comparison_poc.py
--->
 <html lang="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>16 \u2014 Embedding-modus sammenligning</title>
+<title>16 \u2014 Embedding-modus sammenligning (issue #39)</title>
 <style>
 :root{{
   --ink:#182430; --ink2:#5b6b7a; --line:#d8dee5; --bg:#f4f6f9; --panel:#fff;
-  --ok:#1F7A5C; --ok-bg:#eaf5f0;  /* Moss on the 25% tint was 4.25:1 */ --bad:#C9372C; --bad-bg:#fbeded;
+  --ok:#007b5e; --ok-bg:#e9f8f4; --bad:#dc2a2a; --bad-bg:#fdeeee;
   --warn:#9a3412; --warn-bg:#fff7ed;
 }}
 *{{box-sizing:border-box;}}
@@ -135,9 +120,9 @@ footer{{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid
 <main>
 <h1>16 \u2014 Embedding-modus sammenligning</h1>
 <div class="intro">
-  Diagnoseverktøy, ikke et designmønster å kopiere. Bygget for å feilsøke ett
-  symptom: en fil viste
-  feilaktig "ingen data funnet" åpnet via SharePoints
+  Diagnoseverktøy, ikke et designmønster å kopiere. Bygget etter et ekte brudd
+  (<a href="https://example.com/tun/issues/39">issue #39</a>,
+  15. sept. 2026): en fil viste feilaktig "ingen data funnet" åpnet via SharePoints
   innebygde filforhåndsvisning (enkeltklikk "hurtigvisning" i dokumentbiblioteket
   \u2014 ikke nedlasting, ikke <code>/preview</code> embed.aspx-vieweren fra rad 4).
   <br><br>
@@ -147,7 +132,7 @@ footer{{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid
   Alle fire ruter viser IDENTISK tekstinnhold; kun embedding-metoden og
   linjeformateringen i JavaScript-en varierer.
   <br><br>
-  <strong>Oppdatering:</strong> ruteforsøket under viste at BÅDE rute A
+  <strong>Oppdatering, samme kveld:</strong> ruteforsøket under viste at BÅDE rute A
   og B kjører helt fint \u2014 flerlinjes strengsammensetting var aldri årsaken (den
   første, forhastede konklusjonen er tilbakevist, se rad 23 i
   <code>docs/01-tenant-constraints.md</code>). Bisecting av selve sideskallet
@@ -158,7 +143,8 @@ footer{{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid
   forhåndsvisning \u2014 bruk et JavaScript-klikklytter i stedet, (3)
   <code>position:sticky</code> og <code>position:fixed</code> er begge upålitelige
   der \u2014 bruk et ikke-rullende app-skall med \u00e9n dedikert rullende beholder i
-  stedet.
+  stedet. Full historikk: <code>en kollega-kollega/saksrom</code>
+  <code>docs/04-hosting-og-dedup.md</code> Trinn E\u2013H.
 </div>
 <div class="grid">
 
@@ -220,7 +206,7 @@ function paint(id, statusId, value) {{
     st.textContent = "\\u2713 JavaScript kj\\u00f8rte, data lastet korrekt";
     st.className = "status ok";
   }} else {{
-    st.textContent = "\\u2717 Data IKKE lastet \\u2014 samme symptom som i den opprinnelige feilen";
+    st.textContent = "\\u2717 Data IKKE lastet \\u2014 samme symptom som issue #39";
     st.className = "status fail";
   }}
 }}

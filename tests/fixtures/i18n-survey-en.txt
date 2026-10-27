@@ -1,0 +1,136 @@
+Department,Job,Question,Answer
+Staffing,Manager,I get an answer when I ask,4 Agree
+Staffing,Manager,I get an answer when I ask,5 Strongly agree
+Staffing,Manager,I get an answer when I ask,1 Strongly disagree
+Staffing,Manager,I get an answer when I ask,2 Disagree
+Staffing,Specialist,I get an answer when I ask,4 Agree
+Staffing,Specialist,I get an answer when I ask,5 Strongly agree
+Staffing,Specialist,I get an answer when I ask,1 Strongly disagree
+Staffing,Specialist,I get an answer when I ask,2 Disagree
+Staffing,Support,I get an answer when I ask,4 Agree
+Staffing,Support,I get an answer when I ask,5 Strongly agree
+Staffing,Support,I get an answer when I ask,1 Strongly disagree
+Staffing,Support,I get an answer when I ask,2 Disagree
+Content,Manager,I get an answer when I ask,3 Neither
+Content,Manager,I get an answer when I ask,4 Agree
+Content,Manager,I get an answer when I ask,5 Strongly agree
+Content,Manager,I get an answer when I ask,1 Strongly disagree
+Content,Specialist,I get an answer when I ask,3 Neither
+Content,Specialist,I get an answer when I ask,4 Agree
+Content,Specialist,I get an answer when I ask,5 Strongly agree
+Content,Specialist,I get an answer when I ask,1 Strongly disagree
+Content,Support,I get an answer when I ask,3 Neither
+Content,Support,I get an answer when I ask,4 Agree
+Content,Support,I get an answer when I ask,5 Strongly agree
+Content,Support,I get an answer when I ask,1 Strongly disagree
+Technology,Manager,I get an answer when I ask,1 Strongly disagree
+Technology,Manager,I get an answer when I ask,2 Disagree
+Technology,Manager,I get an answer when I ask,3 Neither
+Technology,Manager,I get an answer when I ask,4 Agree
+Technology,Specialist,I get an answer when I ask,1 Strongly disagree
+Technology,Specialist,I get an answer when I ask,2 Disagree
+Technology,Specialist,I get an answer when I ask,3 Neither
+Technology,Specialist,I get an answer when I ask,4 Agree
+Technology,Support,I get an answer when I ask,1 Strongly disagree
+Technology,Support,I get an answer when I ask,2 Disagree
+Technology,Support,I get an answer when I ask,3 Neither
+Technology,Support,I get an answer when I ask,4 Agree
+Staffing,Manager,The tools fit the task,5 Strongly agree
+Staffing,Manager,The tools fit the task,1 Strongly disagree
+Staffing,Manager,The tools fit the task,2 Disagree
+Staffing,Manager,The tools fit the task,3 Neither
+Staffing,Manager,The tools fit the task,4 Agree
+Staffing,Specialist,The tools fit the task,5 Strongly agree
+Staffing,Specialist,The tools fit the task,1 Strongly disagree
+Staffing,Specialist,The tools fit the task,2 Disagree
+Staffing,Specialist,The tools fit the task,3 Neither
+Staffing,Specialist,The tools fit the task,4 Agree
+Staffing,Support,The tools fit the task,5 Strongly agree
+Staffing,Support,The tools fit the task,1 Strongly disagree
+Staffing,Support,The tools fit the task,2 Disagree
+Staffing,Support,The tools fit the task,3 Neither
+Staffing,Support,The tools fit the task,4 Agree
+Content,Manager,The tools fit the task,4 Agree
+Content,Manager,The tools fit the task,5 Strongly agree
+Content,Manager,The tools fit the task,1 Strongly disagree
+Content,Manager,The tools fit the task,2 Disagree
+Content,Manager,The tools fit the task,3 Neither
+Content,Specialist,The tools fit the task,4 Agree
+Content,Specialist,The tools fit the task,5 Strongly agree
+Content,Specialist,The tools fit the task,1 Strongly disagree
+Content,Specialist,The tools fit the task,2 Disagree
+Content,Specialist,The tools fit the task,3 Neither
+Content,Support,The tools fit the task,4 Agree
+Content,Support,The tools fit the task,5 Strongly agree
+Content,Support,The tools fit the task,1 Strongly disagree
+Content,Support,The tools fit the task,2 Disagree
+Content,Support,The tools fit the task,3 Neither
+Technology,Manager,The tools fit the task,2 Disagree
+Technology,Manager,The tools fit the task,3 Neither
+Technology,Manager,The tools fit the task,4 Agree
+Technology,Manager,The tools fit the task,5 Strongly agree
+Technology,Manager,The tools fit the task,1 Strongly disagree
+Technology,Specialist,The tools fit the task,2 Disagree
+Technology,Specialist,The tools fit the task,3 Neither
+Technology,Specialist,The tools fit the task,4 Agree
+Technology,Specialist,The tools fit the task,5 Strongly agree
+Technology,Specialist,The tools fit the task,1 Strongly disagree
+Technology,Support,The tools fit the task,2 Disagree
+Technology,Support,The tools fit the task,3 Neither
+Technology,Support,The tools fit the task,4 Agree
+Technology,Support,The tools fit the task,5 Strongly agree
+Technology,Support,The tools fit the task,1 Strongly disagree
+Staffing,Manager,I know who decides,1 Strongly disagree
+Staffing,Manager,I know who decides,2 Disagree
+Staffing,Manager,I know who decides,3 Neither
+Staffing,Manager,I know who decides,4 Agree
+Staffing,Manager,I know who decides,5 Strongly agree
+Staffing,Manager,I know who decides,1 Strongly disagree
+Staffing,Specialist,I know who decides,1 Strongly disagree
+Staffing,Specialist,I know who decides,2 Disagree
+Staffing,Specialist,I know who decides,3 Neither
+Staffing,Specialist,I know who decides,4 Agree
+Staffing,Specialist,I know who decides,5 Strongly agree
+Staffing,Specialist,I know who decides,1 Strongly disagree
+Staffing,Support,I know who decides,1 Strongly disagree
+Staffing,Support,I know who decides,2 Disagree
+Staffing,Support,I know who decides,3 Neither
+Staffing,Support,I know who decides,4 Agree
+Staffing,Support,I know who decides,5 Strongly agree
+Staffing,Support,I know who decides,1 Strongly disagree
+Content,Manager,I know who decides,5 Strongly agree
+Content,Manager,I know who decides,1 Strongly disagree
+Content,Manager,I know who decides,2 Disagree
+Content,Manager,I know who decides,3 Neither
+Content,Manager,I know who decides,4 Agree
+Content,Manager,I know who decides,5 Strongly agree
+Content,Specialist,I know who decides,5 Strongly agree
+Content,Specialist,I know who decides,1 Strongly disagree
+Content,Specialist,I know who decides,2 Disagree
+Content,Specialist,I know who decides,3 Neither
+Content,Specialist,I know who decides,4 Agree
+Content,Specialist,I know who decides,5 Strongly agree
+Content,Support,I know who decides,5 Strongly agree
+Content,Support,I know who decides,1 Strongly disagree
+Content,Support,I know who decides,2 Disagree
+Content,Support,I know who decides,3 Neither
+Content,Support,I know who decides,4 Agree
+Content,Support,I know who decides,5 Strongly agree
+Technology,Manager,I know who decides,3 Neither
+Technology,Manager,I know who decides,4 Agree
+Technology,Manager,I know who decides,5 Strongly agree
+Technology,Manager,I know who decides,1 Strongly disagree
+Technology,Manager,I know who decides,2 Disagree
+Technology,Manager,I know who decides,3 Neither
+Technology,Specialist,I know who decides,3 Neither
+Technology,Specialist,I know who decides,4 Agree
+Technology,Specialist,I know who decides,5 Strongly agree
+Technology,Specialist,I know who decides,1 Strongly disagree
+Technology,Specialist,I know who decides,2 Disagree
+Technology,Specialist,I know who decides,3 Neither
+Technology,Support,I know who decides,3 Neither
+Technology,Support,I know who decides,4 Agree
+Technology,Support,I know who decides,5 Strongly agree
+Technology,Support,I know who decides,1 Strongly disagree
+Technology,Support,I know who decides,2 Disagree
+Technology,Support,I know who decides,3 Neither

@@ -1,0 +1,82 @@
+# Strings for templates/compare-dashboard.html and tools/build_comparison.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# A comparison is two extracts of the same measure matched on a key. The words here are
+# the ones a reader needs to say what moved, by how much, and what is new or gone.
+
+[nb]
+html_lang = nb
+num_locale = nb-NO
+dec = ,
+search_label = Søk i nøklene
+search_placeholder = Skriv en region, en enhet, et navn
+show_label = Vis
+show_all = Alle nøkler
+show_changed = Bare de som har endret seg
+show_up = Bare økning
+show_down = Bare nedgang
+show_added = Bare nye
+show_gone = Bare borte
+sort_label = Sorter etter
+sort_abs = Største endring først
+sort_delta = Endring, høyest først
+sort_key = Nøkkel, A til Å
+sort_after = Siste verdi, høyest først
+sort_pct = Endring i prosent, høyest først
+reset = Nullstill
+hint = To uttrekk av samme måltall, matchet på nøkkelen. En nøkkel som bare finnes i ett av uttrekkene står som ny eller borte, aldri utelatt.
+kpi_before = Før
+kpi_after = Etter
+kpi_delta = Endring
+kpi_rows = Nøkler
+kpi_moved = Nye / borte
+table_head = Nøkkel for nøkkel
+table_caption = Endring per nøkkel, sortert etter hvor mye som flyttet seg.
+col_delta = Endring
+col_pct = Endring i prosent
+col_bar = Andel av største endring
+total = Sum
+nojs_note = Uten skript viser denne filen de største endringene, ferdig tegnet. Alle nøklene ligger i filen; søk, filter og sortering tegnes av skriptet når det kjører.
+footer_a = Selvstendig fil: tallene ligger i filen, og ingenting hentes når den åpnes.
+footer_b = Ingen server, ingen innlogging.
+footer_built = Bygget
+added = ny
+gone = borte
+
+[en]
+html_lang = en
+num_locale = en-GB
+dec = .
+search_label = Search the keys
+search_placeholder = Type a region, a unit, a name
+show_label = Show
+show_all = All keys
+show_changed = Only the ones that moved
+show_up = Only increases
+show_down = Only decreases
+show_added = Only new keys
+show_gone = Only missing keys
+sort_label = Sort by
+sort_abs = Largest change first
+sort_delta = Change, highest first
+sort_key = Key, A to Z
+sort_after = Latest value, highest first
+sort_pct = Change in percent, highest first
+reset = Reset
+hint = Two extracts of the same measure, matched on the key. A key that exists in only one of them is shown as new or missing, never left out.
+kpi_before = Before
+kpi_after = After
+kpi_delta = Change
+kpi_rows = Keys
+kpi_moved = New / missing
+table_head = Key by key
+table_caption = Change per key, sorted by how much moved.
+col_delta = Change
+col_pct = Change in percent
+col_bar = Share of the largest change
+total = Total
+nojs_note = Without scripts this file shows the largest changes, pre-drawn. Every key is in the file; search, filtering and sorting are drawn by the script when it runs.
+footer_a = Self-contained file: the numbers are in the file, and nothing is fetched when it opens.
+footer_b = No server, no sign-in.
+footer_built = Built
+added = new
+gone = missing

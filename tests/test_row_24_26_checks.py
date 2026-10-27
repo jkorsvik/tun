@@ -25,7 +25,7 @@ Three things are therefore asserted for every fixture, not one:
 Plus a mutation pass at the end: each gate is deleted from a copy of the module source
 and every fixture re-run. If a fixture still reports the same verdict with the gate
 gone, that fixture was never testing the gate. That check has caught real theatre
-before (a register suite where 9 of 15 gates could be deleted unnoticed), so it
+before (an plattformen register suite where 9 of 15 gates could be deleted unnoticed), so it
 is committed here rather than run once by hand.
 
 Stdlib only, like the rest of the repo.
@@ -111,7 +111,7 @@ def assert_all_clean(label: str, html: str) -> None:
 # ---------------------------------------------------------------------------
 print("row 24 — :target-driven visibility")
 
-# The exact shape shipped in examples/13.
+# The exact shape shipped in examples/13 before #50.
 assert_fires_alone(
     "examples/13 shape",
     doc(".page{display:none}\n.page:target{display:block}\n#page-b:target ~ #page-a{display:none}"),
@@ -157,7 +157,7 @@ assert_fires_alone("named .site-header", doc(".site-header{position:sticky;top:0
 
 # The carve-out that matters: sticky inside a bounded scroll container is row 26's own
 # prescribed shape, not the case it rejected. templates/single-file-dashboard.html:136
-# depends on this staying legal; it is an open probe item, not a known defect.
+# depends on this staying legal; it is an open probe item on #51, not a known defect.
 assert_all_clean(
     "sticky th inside a bounded scroll container",
     doc(".table-wrap{max-height:26rem;overflow:auto}\nth{position:sticky;top:0;background:#fff}"),
@@ -174,7 +174,7 @@ assert_all_clean("comment describing a pinned header", doc("/* #topbar{position:
 # it fails on a NEW offender as loudly as on a regression in an old one, which "assert
 # empty" would only do once the list reached empty.
 #
-# The incident named three files. The gate found a fourth (examples/07). That is the whole
+# #50 named three files. The gate found a fourth (examples/07). That is the whole
 # argument for having a gate rather than a careful reading.
 print("\nthe real tree")
 
@@ -188,13 +188,13 @@ print("\nthe real tree")
 #
 # What each entry means:
 #   target-nav / pinned-header (rows 24, 26) are empty, and must stay empty. All four
-#   files the incident found were converted on the same branch: examples/13 moved from :target to a
+#   files #50 found were converted on the same branch: examples/13 moved from :target to a
 #   radio group, and examples/07/09/10/13 all moved to the row-26 flex shell.
 #
 #   stray-script (row 25) is NOT empty, and that is the point. The check has existed for a
 #   while and nothing ran it across the tree, so violations accumulated unseen — the same
-#   failure this gate is about, one more time. Each needs its own prose rewritten to stop writing
-#   the literal characters. Tracked as debt, not fixed here.
+#   failure #50 is about, one more time. Each needs its own prose rewritten to stop writing
+#   the literal characters. Tracked as debt, not fixed here. See #45.
 tree_files, tree_failing = tree_scan.scan()
 print(f"  scanning {len(tree_files)} tracked .html file(s)")
 

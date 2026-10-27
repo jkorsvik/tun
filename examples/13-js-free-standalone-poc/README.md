@@ -1,9 +1,10 @@
-# 13 — Javascript-løs standalone HTML: POC
+# 13 — Javascript-løs standalone HTML: POC for issue #30
 
-Beviser mønsteret for JavaScript-fri standalone HTML på en ekte, renderbar
-fil — ikke bare i prosa. Dette er et separat sammenligningspunkt for de
-JavaScript-drevne eksemplene, ikke en erstatning. Bakgrunnen står i
-[`docs/11-responsiveness-and-browser-support.md`](../../docs/11-responsiveness-and-browser-support.md).
+Beviser mønsteret fra [issue #30](https://example.com/tun/issues/30)
+på en ekte, renderbar fil — ikke bare i prosa. Rører ikke
+`examples/10-consolidated-standalone-demo/`, som fortsatt er
+JavaScript-drevet slik den alltid har vært; dette er et separat
+sammenligningspunkt, ikke en erstatning.
 
 ![Grafer, lyst tema](preview-js-charts-light.png)
 ![Grafer, mørkt tema](preview-js-charts-dark.png)
@@ -17,7 +18,7 @@ JavaScript-drevne eksemplene, ikke en erstatning. Bakgrunnen står i
 | 1 | Usynlig for brukeren om det byttes (meny, sideskift, info-panel, tema) | **Null JavaScript.** `<input type="checkbox">` + CSS `:checked` for meny/tema/info, og `<input type="radio">` + `:checked` for sideskift. Ikke en reserveløsning — det finnes ingen JS-variant av dette i filen i det hele tatt. |
 | 2 | God HTML/CSS-erstatning finnes (stolpediagram) | CSS-versjonen (stablede `<div>`-er) ligger alltid i DOM-en. JavaScript tegner en finere canvas-versjon over den — men skjuler CSS-versjonen først **etter** at canvas-tegningen faktisk lyktes. |
 | 3 | Ingen god erstatning finnes, men innhold forventes (spredningsdiagram med trendlinje) | Ingen forsøk på en falsk/misvisende CSS-tilnærming. Viser i stedet, ordrett: *«Krever JavaScript som ikke er støttet i denne visningen.»* |
-| 4 | Ingen erstatning finnes, og funksjonen er en ren bonus (fullskjerm) | Knappen har `hidden` i markup fra start. Vises kun hvis JavaScript kjører **og** `requestFullscreen()` faktisk lykkes når den prøves — feilslått forsøk skjuler den igjen, i tråd med lærdommen fra `examples/07-topbar-pattern-demo/`: ikke stol på at funksjonen *finnes*, reager på et faktisk avvist forsøk. |
+| 4 | Ingen erstatning finnes, og funksjonen er en ren bonus (fullskjerm) | Knappen har `hidden` i markup fra start. Vises kun hvis JavaScript kjører **og** `requestFullscreen()` faktisk lykkes når den prøves — feilslått forsøk skjuler den igjen, i tråd med lærdommen fra `examples/07-topbar-pattern-demo/` (issue #15/#16): ikke stol på at funksjonen *finnes*, reager på et faktisk avvist forsøk. |
 
 ## Reproduser
 
@@ -30,9 +31,8 @@ python3 examples/13-js-free-standalone-poc/verify_js_free_poc.py
 
 `verify_js_free_poc.py` er den som faktisk beviser poenget: den laster filen
 **to ganger** i en ekte (headless) nettleser — én gang med JavaScript av
-(`java_script_enabled=False`, Playwrights nærmeste tilnærming til funnet i
-`docs/11-responsiveness-and-browser-support.md` om at skripting rett og slett
-ikke kjører i enkelte mottaks­kontekster),
+(`java_script_enabled=False`, Playwrights nærmeste tilnærming til #22s
+funn om at skripting rett og slett ikke kjører i enkelte mottaks­kontekster),
 én gang med JavaScript på — og sjekker at meny, sideskift og tema-bryter
 virker identisk begge veier, og at graf-/fullskjerm-oppførselen følger
 tabellen over presist.
@@ -62,7 +62,7 @@ søsken-kombinator-grunn som avkrysningsboksene, og `#nav-home` har `checked`
 slik at landingssiden er eksplisitt HTML-tilstand. Menyoppføringene er
 `<label for="nav-…">`.
 
-Dette var CSS `:target` til og med en tidligere revisjon. `docs/01-tenant-constraints.md` rad 24
+Dette var CSS `:target` til og med #50. `docs/01-tenant-constraints.md` rad 24
 måler at fragment-navigasjon **ikke skjer i det hele tatt** i SharePoints
 innebygde forhåndsvisning, selv om JavaScript kjører der (rad 25) — så
 `<a href="#page-x">` gjorde aldri `#page-x` til `:target`, siden byttet aldri,
@@ -75,7 +75,7 @@ ved sidebytte, og `#page-home` trenger ikke lenger ligge sist i DOM-en.
 
 ## Kjente, bevisste begrensninger (ikke skjult, se AGENTS.md-ånden)
 
-- ~~**"Aktiv" styling på navigasjonsknappen mangler.**~~ **Løst i en senere revisjon.**
+- ~~**"Aktiv" styling på navigasjonsknappen mangler.**~~ **Løst i #50.**
   Begrunnelsen for å utelate den var at `:target` ikke kunne nå tilbake til
   *lenken* uten `:has()` eller JavaScript. Radiogruppen kan:
   `#nav-charts:checked ~ #app-root .navlink[for="nav-charts"]` gir en synlig
@@ -107,7 +107,7 @@ automatiske sjekkene (som bare tester tilstand/synlighet, ikke visuell
 plassering) — nøyaktig grunnen til at `tun-verify`-familien alltid
 krever et menneske som ser på resultatet:
 
-1. **Eksempel AS-logoen lå oppå hamburgerikonet.** Toppfeltet hadde ikke
+1. **logoen lå oppå hamburgerikonet.** Toppfeltet hadde ikke
    venstre-innrykk til å gi plass til den fastposisjonerte
    hamburger-toggelen som ligger over den. Rettet med `padding-left:56px`
    på `#topbar`.
@@ -148,7 +148,7 @@ av dem endrer noe ved selve null-JS-navigasjonsmønsteret.
   mobil uansett) for å frigjøre plass — samme «ingen god erstatning →
   skjul den helt»-prinsipp som resten av POC-en bruker for fullskjerm på
   alle bredder. En kortere mobilvisnings-tittel («JS-løs standalone HTML —
-  POC») brukes samtidig, ren CSS `display`-veksling, ingen JavaScript.
+  POC #30») brukes samtidig, ren CSS `display`-veksling, ingen JavaScript.
 - **`--topbar-h`** er nå én enkelt CSS-variabel brukt overalt et element
   må vite toppfeltets høyde (innholdsområdets `padding-top`, info-panelets
   `top`, menyens `padding-top`) — endres høyden ett sted (f.eks. i

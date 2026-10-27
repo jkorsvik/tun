@@ -1,5 +1,7 @@
 # Chart colour palettes — categorical, sequential, diverging, and light/dark
 
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
 **Status:** proposal, written for review. Nothing here is wired into `templates/` yet,
 and — measured, not assumed — **neither is Chart.js**: `templates/single-file-dashboard.html`
 and `templates/cube-dashboard.html` render their bar/line charts with hand-rolled inline
@@ -14,7 +16,7 @@ Follow-up to `docs/09-usability-and-navigation-principles.md`, same scoping spli
 doc drew for status colour vs. brand colour: this covers the palette used for **chart
 series** — the colours mapped to categories/values inside a chart — which `docs/09` did
 not cover (it covers KPI delta colour via `status-semantic.css`, and page chrome via
-`plugins/eksempel/tokens/palette.css`). Those two files are unaffected by anything below.
+`eksempel-brand-2026.css`). Those two files are unaffected by anything below.
 
 ---
 
@@ -27,7 +29,7 @@ not cover (it covers KPI delta colour via `status-semantic.css`, and page chrome
 | **C** | **No swatch is reused unmodified between a light and a dark background.** Same principle `theme-dark.css` already applies to status chips (same token name, different measured value) — every series colour needs a light-mode value and a dark-mode value, each measured against the background it will actually sit on, not derived by inverting lightness. |
 | **D** | Wherever colour is the **only** channel identifying a data point — pie/doughnut/polar-area segments, stacked-area bands — pair it with a redundant channel: a contrasting stroke around the segment, and a direct data label rather than colour+legend alone (WCAG 2.2, 1.4.1, *Use of Color*). Wherever marks are drawn individually — lines, scatter points — pair colour with a line-dash pattern or point shape. |
 | **E** | Contrast target for the mark itself (bar fill, line stroke, point, pie segment) against its background is **3:1** — WCAG 2.2, 1.4.11 (*Non-text Contrast*), not the 4.5:1 text minimum. 4.5:1 still applies to any text drawn on or over a chart (data labels, legend text, tooltip body). |
-| **F** | Measure each candidate swatch against the backgrounds the file actually ships with — not a generic white/black. For this repo that means the light template background and `--eksempel-navy` / `--eksempel-night` for dark, the same two tokens `theme-dark.css` already targets. Same "measure the tenant, not the doc" discipline the rest of this repo uses for SharePoint/OneDrive behaviour, applied to colour. |
+| **F** | Measure each candidate swatch against the backgrounds the file actually ships with — not a generic white/black. For this repo that means the light template background and `--tun-green` / `--eksempel-ocean` for dark, the same two tokens `theme-dark.css` already targets. Same "measure the tenant, not the doc" discipline the rest of this repo uses for SharePoint/OneDrive behaviour, applied to colour. |
 
 ## 2. Assessment per Chart.js chart type
 
@@ -92,14 +94,30 @@ Not in scope, and not decided by this demo existing:
 - Whether Chart.js is adopted at all for `templates/*.html` (see opening note).
 - Whether any specific palette becomes the repo default — the demo is for comparing
   candidates, not for picking a winner.
-- Any change to `status-semantic.css` or `plugins/eksempel/tokens/palette.css` — both are untouched.
+- Any change to `status-semantic.css` or `eksempel-brand-2026.css` — both are untouched.
+
+## 6. Checked and ruled out: the `frontend-design` marketplace skill
+
+Before writing this document, checked whether the marketplace skill `frontend-design`
+(Anthropic-authored, not Eksempel AS) had any colour guidance that should feed into it. It does,
+but for a different problem than this one: it asks for a palette described as "4–6 named
+hex values" as part of a creative brainstorming pass, and it explicitly warns *against*
+three cliché AI-generated palettes (cream/terracotta, near-black/neon accent, hairline-rule
+broadsheet) in favour of deliberate visual distinctiveness per brief. No mention of
+contrast, WCAG, or colour-vision deficiency anywhere in it.
+
+More importantly, its own frontmatter says it is "NOT an official Eksempel AS tool... Best for
+standalone visual exploration, not production Eksempel AS UI" — and its stated goal (take a
+visible aesthetic risk, avoid looking reusable across briefs) points the opposite direction
+from this document's goal (a measured, reusable, accessibility-first default). Not used as
+a source anywhere above; noted here so the question doesn't get re-asked later.
 
 ## Open items this document does not resolve
 
 - [ ] **Chart.js vs. the existing hand-rolled SVG charts in `templates/*.html` — not
-      decided, not this document's job to decide. It needs a deliberate decision. Now
-      four candidates on the table, not two** — `examples/13`, `14` and `15` explored two
-      more approaches beyond the original "Chart.js + JS" vs.
+      decided, not this document's job to decide. Needs vedlikeholderen's read/comment. Now
+      four candidates on the table, not two** — issue #30 (`examples/13`, `14`, `15`, all
+      merged) explored two more approaches beyond the original "Chart.js + JS" vs.
       "hand-rolled SVG + JS" framing this item started with:
       1. **Hand-rolled SVG/CSS with no JavaScript at all** — `examples/14-chart-emulation-nojs-poc/`,
          computed once at build time instead of in the browser, for twelve chart types
@@ -114,9 +132,9 @@ Not in scope, and not decided by this demo existing:
          `window.print()` approach, no extra JS library, no canvas-tainting issues.
 
       Neither is decided or recommended here — both are still unproven beyond
-      bar/donut/pie/map; see the READMEs of examples 14 and 15 for what's still open.
+      bar/donut/pie/map; see #30's "Må testes videre" section for what's still open.
 - [ ] Feeds into the item above, needs reconciling either way it lands: `AGENTS.md`
-      rejects embedding a ~150 KB base64 webfont as "too heavy" for every dashboard,
+      rejected inlining the design system's ~150 KB base64 font as "too heavy" for every dashboard,
       yet `examples/06-chart-palette-demo/` vendors and inlines ~205 KB of Chart.js. Scope
       differs (one experimental demo vs. every production file), so it's not a direct
       contradiction today — but if Chart.js moves into `templates/*.html`, the "too heavy"

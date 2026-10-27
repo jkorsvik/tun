@@ -1,0 +1,68 @@
+# Strings for templates/boxplot.html and tools/build_boxplot.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shows one box per group on one numeric axis, so a list of groups can be compared on
+# spread as well as on level.
+
+[nb]
+html_lang = nb
+svg_title = Boksplott
+svg_desc = {n} grupper, fordelingen av {value} i hver, tegnet på én akse.
+sub_line = {groups} grupper, {rows} observasjoner av {value}
+caption = Én boks per gruppe på samme akse. Boksen er fra første til tredje kvartil, streken i den er medianen, og halene går til den ytterste observasjonen innenfor 1,5 ganger boksens høyde. Punktene utenfor er enkeltobervasjoner.
+summary_line = {groups} grupper. Høyest median har {late} med {latev}, lavest {early} med {earlyv}. Størst spredning har {wide}, med en boks på {widev}.
+summary_tails = Utenfor halene ligger {n} observasjon(er), fordelt på {groups} grupper, og de er tegnet som punkter.
+summary_no_tails = Ingen observasjon ligger utenfor halene i noen gruppe.
+note_box = En boks skjuler formen. To grupper med samme median og samme kvartiler kan være én topp eller to, og bildet kan ikke se forskjellen. Er formen spørsmålet, er det distribusjonssiden (build_distribution.py) som gjelder, ikke denne.
+note_quantiles = Kvartilene er regnet ved å interpolere mellom de sorterte verdiene. Det finnes flere konvensjoner, og de gir ikke samme tall på små utvalg; denne står her fordi et tall ingen kan gjenskape ikke er et tall.
+note_fence = Halene er Tukey sine: den ytterste observasjonen innenfor 1,5 ganger kvartilavstanden. Alternativet, minste og største verdi, gjør halen til et variasjonsområde og skjuler nettopp den halen bildet er laget for å vise.
+note_order = Radene står {rule}.
+order_median = sortert etter median, lavest øverst
+order_name = sortert etter gruppens navn
+note_n = Antall observasjoner står ved hver gruppe i tabellen. En boks over få observasjoner ser lik ut som en over mange, og det er grunnen til at tallet står der.
+head_table = Tallene bak bildet
+table_caption = Én rad per gruppe: hvor mange observasjoner den har, halene, de tre kvartilene, og hvor mange observasjoner som ligger utenfor.
+col_group = Gruppe
+col_n = Antall
+col_low = Laveste
+col_q1 = 1. kvartil
+col_median = Median
+col_q3 = 3. kvartil
+col_high = Høyeste
+col_outliers = Utenfor
+source_line = Kilde: {name} · {rows} rader
+skipped = {n} rad(er) uten gruppe eller uten tall er ikke tegnet.
+footer_a = Hver boks er én gruppe, tegnet på samme akse. Bildet sammenligner spredning og nivå mellom grupper; det viser ikke formen på fordelingen i den enkelte gruppen.
+footer_b = Kvartiler, haler og antall står i tabellen, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.
+footer_built = Bygget
+
+[en]
+html_lang = en
+svg_title = Box plot
+svg_desc = {n} groups, the distribution of {value} in each, drawn on one axis.
+sub_line = {groups} groups, {rows} observations of {value}
+caption = One box per group on the same axis. The box runs from the first to the third quartile, the line inside it is the median, and the whiskers reach the furthest observation within 1.5 times the height of the box. Points beyond are single observations.
+summary_line = {groups} groups. Highest median is {late} at {latev}, lowest {early} at {earlyv}. Widest spread is {wide}, with a box of {widev}.
+summary_tails = Beyond the whiskers lie {n} observation(s), spread over {groups} groups; they are drawn as points.
+summary_no_tails = No observation lies beyond the whiskers in any group.
+note_box = A box hides the shape. Two groups with the same median and the same quartiles can be one peak or two, and the picture cannot see the difference. When the shape is the question, the distribution page (build_distribution.py) is the one to use.
+note_quantiles = The quartiles interpolate between the sorted values. Several conventions exist and they do not agree on small samples; this one is stated because a figure nobody can reproduce is not a figure.
+note_fence = The whiskers follow Tukey: the furthest observation within 1.5 times the quartile distance. The alternative, the smallest and largest value, turns the whisker into a range and hides exactly the tail this picture exists to show.
+note_order = The rows are {rule}.
+order_median = sorted by median, lowest first
+order_name = sorted by the name of the group
+note_n = The number of observations is beside each group in the table. A box over a few observations looks exactly like one over many, which is why the number is there.
+head_table = The numbers behind the picture
+table_caption = One row per group: how many observations it holds, the whiskers, the three quartiles, and how many observations lie beyond.
+col_group = Group
+col_n = Count
+col_low = Lowest
+col_q1 = 1st quartile
+col_median = Median
+col_q3 = 3rd quartile
+col_high = Highest
+col_outliers = Beyond
+source_line = Source: {name} · {rows} rows
+skipped = {n} row(s) with no group or no number are not drawn.
+footer_a = Each box is one group, drawn on the same axis. The picture compares spread and level between groups; it does not show the shape of the distribution inside a group.
+footer_b = Quartiles, whiskers and counts are in the table, so the picture can be checked instead of trusted. The file carries no script.
+footer_built = Built

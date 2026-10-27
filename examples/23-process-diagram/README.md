@@ -97,6 +97,19 @@ uv run --extra verify python tools/verify_process_diagram.py \
   --spec examples/23-process-diagram/fem-roller.process.txt --max-crossings 3
 ```
 
+The drawing is fitted to the frame, and it stops shrinking at the size where its smallest
+text is 12 px; narrower than that the frame pans instead. So these two declare 12 px:
+the fitted drawing is the one thing here that cannot hold 14 px at every width without
+giving up the whole flow on one screen. Overflow and touch targets are checked at every
+viewport regardless.
+
+```bash
+uv run --extra verify python tools/verify_viewports.py \
+  examples/23-process-diagram/tun-workflow.html --text-floor 12
+uv run --extra verify python tools/verify_viewports.py \
+  examples/23-process-diagram/fem-roller.html --text-floor 12
+```
+
 It opens the file from `file://` in Chromium, Firefox and WebKit. It checks the drawing
 against the spec, and drives the page like a reader: tabs by keyboard, every panel's
 content, detail panel, highlight, role filter, zoom, «Vis i flyten», print, and no text

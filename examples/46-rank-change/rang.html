@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hvem klatret, hvem falt</title>
+<!--
+  Hvem klatret, hvem falt
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Kilde: Syntetisk eksempeldata (produkter.csv) · 13 enheter
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Salg
+    Made with   : Tún - tun.community
+    Records     : 24 values, one per group and period drawn
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: one small panel per group, all drawn on the same vertical scale, so the
+  reader compares the shape of one group's path with another's.
+
+  What it is NOT: a ranking, or a claim about why one group moves differently from another. It
+  draws the numbers it was given, on one scale, with the scale written on the page.
+
+  There is no script in this file. A filter would re-lay the grid, and the grid is the claim
+  being made.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+:root{
+  /* The flat-line stroke. It is template-local rather than --rule, which the seam already
+     uses for a UI rule: this is a chart mark, and it has to stay visible on a dark panel. */
+  --rc-flat-line:#c9d6d5;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: 61.25rem is the viewBox's 980 units at 16 px, so the
+   drawing's 14-unit text lands on 14 px and never below it. A narrower box would scale the
+   whole picture down and take the text under the floor with it, which no contrast rule sees.
+   Below that width the box pans, and the page never does. */
+.figure svg{display:block;width:100%;height:auto;min-width:61.25rem}
+.rc-head{fill:var(--ink);font-size:14px;font-weight:600}
+.rc-rank{fill:var(--muted);font-size:14px}
+.rc-name{fill:var(--ink);font-size:14px}
+.rc-value{fill:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.rc-mark{fill:var(--muted);font-size:14px;font-style:italic}
+/* One colour per direction, and the same colour for the same meaning everywhere on the page:
+   a climb is not "good" and a fall is not "bad" until the page is told which way is which. */
+.rc-up{fill:none;stroke:var(--brand);stroke-width:2;stroke-linecap:round}
+.rc-down{fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;
+  stroke-dasharray:5 3}
+.rc-flat{fill:none;stroke:var(--rc-flat-line);stroke-width:1.5}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.gaps{margin:.5rem 0 0;font-size:.9375rem;line-height:1.5}
+/* Only shown where the drawing cannot fit: a phone sees one column of panels and must be
+   told that the grid continues sideways, or it reads three groups and stops. */
+.hint{display:none;margin:.5rem 0 0;color:var(--muted);font-size:.875rem;line-height:1.5}
+@media (max-width:56rem){.hint{display:block}}
+.order{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.warn{margin:1rem 0 0;padding:.75rem 1rem;background:var(--warn-soft);border-radius:.5rem;
+  border:1px solid var(--bad);font-size:.9375rem;line-height:1.5}
+.warn h2{margin:0 0 .25rem;font-size:1rem;line-height:1.5rem;color:var(--bad)}
+.warn p{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  .warn{background:#fff}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band inverts; the flat connector needs a lighter grey for the same
+     reason the line does. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    :root{--rc-flat-line:#5f7a86}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Hvem klatret, hvem falt</h1>
+  <p class="sub">12 enheter i den første perioden, 12 i den andre, fra 2026-K1 til 2026-K2</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 980 412" role="img" aria-labelledby="rc-t rc-d" preserveAspectRatio="xMinYMin meet">
+<title id="rc-t">Rangendring</title>
+<desc id="rc-d">12 rader i den første perioden og 12 i den andre, med en linje per enhet som finnes i begge. Rangene er utledet fra verdiene.</desc>
+<text class="rc-head" x="8" y="20">2026-K1</text>
+<text class="rc-head" x="880" y="20" text-anchor="end">2026-K2</text>
+<path class="rc-up" data-entity="Breavtale" data-move="1" d="M310 289.0 C430 289.0 540 259.0 650 259.0"/>
+<path class="rc-down" data-entity="Dalforet" data-move="-1" d="M310 319.0 C430 319.0 540 349.0 650 349.0"/>
+<path class="rc-flat" data-entity="Fjordtjenesten" data-move="0" d="M310 49.0 C430 49.0 540 49.0 650 49.0"/>
+<path class="rc-down" data-entity="Havbruk Pluss" data-move="-1" d="M310 79.0 C430 79.0 540 109.0 650 109.0"/>
+<path class="rc-flat" data-entity="Innlandet Basis" data-move="0" d="M310 169.0 C430 169.0 540 169.0 650 169.0"/>
+<path class="rc-down" data-entity="Kystlett" data-move="-5" d="M310 139.0 C430 139.0 540 289.0 650 289.0"/>
+<path class="rc-down" data-entity="Nordlys Avtale" data-move="-1" d="M310 109.0 C430 109.0 540 139.0 650 139.0"/>
+<path class="rc-up" data-entity="Polarpakken" data-move="1" d="M310 349.0 C430 349.0 540 319.0 650 319.0"/>
+<path class="rc-flat" data-entity="Sorfjell Pro" data-move="0" d="M310 199.0 C430 199.0 540 199.0 650 199.0"/>
+<path class="rc-up" data-entity="Tinde Mini" data-move="1" d="M310 259.0 C430 259.0 540 229.0 650 229.0"/>
+<path class="rc-up" data-entity="Vestavind" data-move="4" d="M310 229.0 C430 229.0 540 79.0 650 79.0"/>
+<text class="rc-rank" x="8" y="54.0" text-anchor="start">1</text>
+<text class="rc-name" x="40" y="54.0">Fjordtjenesten</text>
+<text class="rc-value" x="300" y="54.0" text-anchor="end" data-side="left" data-rank="1" data-value="4820000">4 820 000</text>
+<text class="rc-rank" x="8" y="84.0" text-anchor="start">2</text>
+<text class="rc-name" x="40" y="84.0">Havbruk Pluss</text>
+<text class="rc-value" x="300" y="84.0" text-anchor="end" data-side="left" data-rank="2" data-value="3960000">3 960 000</text>
+<text class="rc-rank" x="8" y="114.0" text-anchor="start">3</text>
+<text class="rc-name" x="40" y="114.0">Nordlys Avtale</text>
+<text class="rc-value" x="300" y="114.0" text-anchor="end" data-side="left" data-rank="3" data-value="3100000">3 100 000</text>
+<text class="rc-rank" x="8" y="144.0" text-anchor="start">4</text>
+<text class="rc-name" x="40" y="144.0">Kystlett</text>
+<text class="rc-value" x="300" y="144.0" text-anchor="end" data-side="left" data-rank="4" data-value="2860000">2 860 000</text>
+<text class="rc-rank" x="8" y="174.0" text-anchor="start">5</text>
+<text class="rc-name" x="40" y="174.0">Innlandet Basis</text>
+<text class="rc-value" x="300" y="174.0" text-anchor="end" data-side="left" data-rank="5" data-value="2400000">2 400 000</text>
+<text class="rc-rank" x="8" y="204.0" text-anchor="start">6</text>
+<text class="rc-name" x="40" y="204.0">Sorfjell Pro</text>
+<text class="rc-value" x="300" y="204.0" text-anchor="end" data-side="left" data-rank="6" data-value="1950000">1 950 000</text>
+<text class="rc-rank" x="8" y="234.0" text-anchor="start">6</text>
+<text class="rc-name" x="40" y="234.0">Vestavind</text>
+<text class="rc-value" x="300" y="234.0" text-anchor="end" data-side="left" data-rank="6" data-value="1950000">1 950 000</text>
+<text class="rc-rank" x="8" y="264.0" text-anchor="start">8</text>
+<text class="rc-name" x="40" y="264.0">Tinde Mini</text>
+<text class="rc-value" x="300" y="264.0" text-anchor="end" data-side="left" data-rank="8" data-value="1600000">1 600 000</text>
+<text class="rc-rank" x="8" y="294.0" text-anchor="start">9</text>
+<text class="rc-name" x="40" y="294.0">Breavtale</text>
+<text class="rc-value" x="300" y="294.0" text-anchor="end" data-side="left" data-rank="9" data-value="1240000">1 240 000</text>
+<text class="rc-rank" x="8" y="324.0" text-anchor="start">10</text>
+<text class="rc-name" x="40" y="324.0">Dalforet</text>
+<text class="rc-value" x="300" y="324.0" text-anchor="end" data-side="left" data-rank="10" data-value="980000">980 000</text>
+<text class="rc-rank" x="8" y="354.0" text-anchor="start">11</text>
+<text class="rc-name" x="40" y="354.0">Polarpakken</text>
+<text class="rc-value" x="300" y="354.0" text-anchor="end" data-side="left" data-rank="11" data-value="620000">620 000</text>
+<text class="rc-rank" x="8" y="384.0" text-anchor="start">12</text>
+<text class="rc-name" x="40" y="384.0">Sommertilbudet</text>
+<text class="rc-value" x="300" y="384.0" text-anchor="end" data-side="left" data-rank="12" data-value="410000">410 000</text>
+<text class="rc-mark" x="40" y="397.0">borte</text>
+<text class="rc-rank" x="972" y="54.0" text-anchor="end">1</text>
+<text class="rc-name" x="660" y="54.0">Fjordtjenesten</text>
+<text class="rc-value" x="880" y="54.0" text-anchor="end" data-side="right" data-rank="1" data-value="5140000">5 140 000</text>
+<text class="rc-rank" x="972" y="84.0" text-anchor="end">2</text>
+<text class="rc-name" x="660" y="84.0">Vestavind</text>
+<text class="rc-value" x="880" y="84.0" text-anchor="end" data-side="right" data-rank="2" data-value="3450000">3 450 000</text>
+<text class="rc-rank" x="972" y="114.0" text-anchor="end">3</text>
+<text class="rc-name" x="660" y="114.0">Havbruk Pluss</text>
+<text class="rc-value" x="880" y="114.0" text-anchor="end" data-side="right" data-rank="3" data-value="3180000">3 180 000</text>
+<text class="rc-rank" x="972" y="144.0" text-anchor="end">4</text>
+<text class="rc-name" x="660" y="144.0">Nordlys Avtale</text>
+<text class="rc-value" x="880" y="144.0" text-anchor="end" data-side="right" data-rank="4" data-value="2900000">2 900 000</text>
+<text class="rc-rank" x="972" y="174.0" text-anchor="end">5</text>
+<text class="rc-name" x="660" y="174.0">Innlandet Basis</text>
+<text class="rc-value" x="880" y="174.0" text-anchor="end" data-side="right" data-rank="5" data-value="2500000">2 500 000</text>
+<text class="rc-rank" x="972" y="204.0" text-anchor="end">6</text>
+<text class="rc-name" x="660" y="204.0">Sorfjell Pro</text>
+<text class="rc-value" x="880" y="204.0" text-anchor="end" data-side="right" data-rank="6" data-value="2350000">2 350 000</text>
+<text class="rc-rank" x="972" y="234.0" text-anchor="end">7</text>
+<text class="rc-name" x="660" y="234.0">Tinde Mini</text>
+<text class="rc-value" x="880" y="234.0" text-anchor="end" data-side="right" data-rank="7" data-value="1900000">1 900 000</text>
+<text class="rc-rank" x="972" y="264.0" text-anchor="end">8</text>
+<text class="rc-name" x="660" y="264.0">Breavtale</text>
+<text class="rc-value" x="880" y="264.0" text-anchor="end" data-side="right" data-rank="8" data-value="1750000">1 750 000</text>
+<text class="rc-rank" x="972" y="294.0" text-anchor="end">9</text>
+<text class="rc-name" x="660" y="294.0">Kystlett</text>
+<text class="rc-value" x="880" y="294.0" text-anchor="end" data-side="right" data-rank="9" data-value="1700000">1 700 000</text>
+<text class="rc-rank" x="972" y="324.0" text-anchor="end">10</text>
+<text class="rc-name" x="660" y="324.0">Polarpakken</text>
+<text class="rc-value" x="880" y="324.0" text-anchor="end" data-side="right" data-rank="10" data-value="1250000">1 250 000</text>
+<text class="rc-rank" x="972" y="354.0" text-anchor="end">11</text>
+<text class="rc-name" x="660" y="354.0">Dalforet</text>
+<text class="rc-value" x="880" y="354.0" text-anchor="end" data-side="right" data-rank="11" data-value="1200000">1 200 000</text>
+<text class="rc-rank" x="972" y="384.0" text-anchor="end">12</text>
+<text class="rc-name" x="660" y="384.0">Hostkampanje</text>
+<text class="rc-value" x="880" y="384.0" text-anchor="end" data-side="right" data-rank="12" data-value="900000">900 000</text>
+<text class="rc-mark" x="660" y="397.0">ny</text>
+</svg>
+    <figcaption>Hver linje er én enhet som finnes i begge periodene. Rangnummeret står ved hvert navn, og verdien står ved siden av: rang alene skiller ikke et byks på en avrundingsfeil fra et fall.</figcaption>
+  </figure>
+  <p class="hint">Dra sidelengs i bildet for å se hele tabellen.</p>
+
+  <p class="summary">11 enheter finnes i begge periodene. 4 klatret, 4 falt, 3 står på samme plass fra 2026-K1 til 2026-K2. Størst klatring: Vestavind, 4 plass(er) opp, til 2. Størst fall: Kystlett, 5 plass(er) ned, til 9. 1 enhet(er) er borte i den andre perioden og 1 er ny: de er tegnet uten linje, fordi en linje ville påstått en bevegelse ingen har gjort.</p>
+  <p class="gaps">2 rad(er) deler plass med raden over eller under, så rangene hopper: 1, 1, 3. En delt plass er ikke en feil, men den må stå skrevet, ellers ser den ut som en.</p>
+
+  <h2 id="tbl-h">Tallene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Rangene er utledet fra verdiene i hver periode, ikke fra rekkefølgen i filen. En strek betyr at enheten ikke finnes i den perioden.</caption>
+    <thead><tr>
+      <th scope="col">Enhet</th>
+      <th scope="col" class="num">Verdi 2026-K1</th>
+      <th scope="col" class="num">Rang 2026-K1</th>
+      <th scope="col" class="num">Verdi 2026-K2</th>
+      <th scope="col" class="num">Rang 2026-K2</th>
+      <th scope="col" class="num">Endring</th>
+      <th scope="col" class="num">Plasser</th>
+    </tr></thead>
+    <tbody>
+      <tr><th scope="row">Fjordtjenesten</th><td class="num">4 820 000</td><td class="num">1</td><td class="num">5 140 000</td><td class="num">1</td><td class="num">+320 000</td><td class="num">0</td></tr>
+      <tr><th scope="row">Vestavind</th><td class="num">1 950 000</td><td class="num">6</td><td class="num">3 450 000</td><td class="num">2</td><td class="num">+1 500 000</td><td class="num">-4</td></tr>
+      <tr><th scope="row">Havbruk Pluss</th><td class="num">3 960 000</td><td class="num">2</td><td class="num">3 180 000</td><td class="num">3</td><td class="num">−780 000</td><td class="num">1</td></tr>
+      <tr><th scope="row">Nordlys Avtale</th><td class="num">3 100 000</td><td class="num">3</td><td class="num">2 900 000</td><td class="num">4</td><td class="num">−200 000</td><td class="num">1</td></tr>
+      <tr><th scope="row">Innlandet Basis</th><td class="num">2 400 000</td><td class="num">5</td><td class="num">2 500 000</td><td class="num">5</td><td class="num">+100 000</td><td class="num">0</td></tr>
+      <tr><th scope="row">Sorfjell Pro</th><td class="num">1 950 000</td><td class="num">6</td><td class="num">2 350 000</td><td class="num">6</td><td class="num">+400 000</td><td class="num">0</td></tr>
+      <tr><th scope="row">Tinde Mini</th><td class="num">1 600 000</td><td class="num">8</td><td class="num">1 900 000</td><td class="num">7</td><td class="num">+300 000</td><td class="num">-1</td></tr>
+      <tr><th scope="row">Breavtale</th><td class="num">1 240 000</td><td class="num">9</td><td class="num">1 750 000</td><td class="num">8</td><td class="num">+510 000</td><td class="num">-1</td></tr>
+      <tr><th scope="row">Kystlett</th><td class="num">2 860 000</td><td class="num">4</td><td class="num">1 700 000</td><td class="num">9</td><td class="num">−1 160 000</td><td class="num">5</td></tr>
+      <tr><th scope="row">Polarpakken</th><td class="num">620 000</td><td class="num">11</td><td class="num">1 250 000</td><td class="num">10</td><td class="num">+630 000</td><td class="num">-1</td></tr>
+      <tr><th scope="row">Dalforet</th><td class="num">980 000</td><td class="num">10</td><td class="num">1 200 000</td><td class="num">11</td><td class="num">+220 000</td><td class="num">1</td></tr>
+      <tr><th scope="row">Hostkampanje</th><td class="num">–</td><td class="num">–</td><td class="num">900 000</td><td class="num">12</td><td class="num">–</td><td class="num">–</td></tr>
+      <tr><th scope="row">Sommertilbudet</th><td class="num">410 000</td><td class="num">12</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td></tr>
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>Rang er ikke det samme som verdi. En enhet kan klatre flere plasser på en avrundingsfeil og falle en plass mens den vokser, så verdien står ved hvert navn.</p>
+  <p>En heltrukket linje er en klatring, en stiplet er et fall, og en vannrett linje er samme plass. Retningen går også fram av hvilken kolonne linjen ender høyere i, så fargen er ikke den eneste bæreren. En enhet som bare finnes i én av periodene er tegnet uten linje og merket «ny» eller «borte». Filen har ingen skript: et filter ville lagt kolonnene på nytt, og kolonnene er påstanden.</p>
+  <p>Kilde: Syntetisk eksempeldata (produkter.csv) · 13 enheter · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Henvendelser per årsak</title>
+<!--
+  Henvendelser per årsak
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (henvendelser.csv)
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Kundesenteret
+    Made with   : Tún - tun.community
+    Records     : 22 categories
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: categories sorted by size, with the cumulative share of the total, so the
+  few that carry most of it are visible.
+
+  What it is NOT: a reason. A long bar is a fact, not an explanation.
+
+  There is no script in this file.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:58rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:58rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a scaled-down
+   drawing is text under the floor. Below that the box pans, and the page never does. */
+.figure svg{display:block;width:100%;height:auto;min-width:51.25rem}  /* 820 px: the drawing is 820 units wide, so 1 unit = 1 px at the floor */
+.pa-grid{stroke:var(--rule);stroke-width:1}
+.pa-tick{fill:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.pa-pct{fill:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.pa-axis-title{fill:var(--muted);font-size:14px}
+.pa-name{fill:var(--ink);font-size:14px}
+/* The numbers live in their own column, on the page background, so they take the
+   ordinary ink whatever fill their bar happens to have. */
+.pa-val{fill:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
+.pa-bar{fill:var(--brand)}
+/* The folded tail is a different kind of quantity and looks it: a lighter fill, so nobody reads
+   one large category where there are twelve small ones. */
+.pa-folded{fill:var(--brand-soft);stroke:var(--brand);stroke-width:1}
+/* The cumulative line is a second series on a second axis, so it is a line with dots rather
+   than another set of bars. */
+.pa-cum{fill:none;stroke:var(--ink);stroke-width:2}
+.pa-dot{fill:var(--ink)}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.notes{margin:.75rem 0 0;padding-left:1.25rem;font-size:.9375rem;line-height:1.5}
+.notes li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{max-width:58rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark is a SCREEN choice and paper is white, so this block is scoped to screen: without
+     the guard it would come after the print rule above and paint the ink light on a printed
+     white page. --brand-dark is the darkest surface in dark, so the band that reads
+     white-on-ocean in light needs the theme's own ink. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+  }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Henvendelser per årsak</h1>
+  <p class="sub">22 kategorier, til sammen 2 054</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 820 528" role="img" aria-labelledby="pa-t pa-d">
+<title id="pa-t">Pareto</title>
+<desc id="pa-d">22 kategorier av Antall, sortert etter størrelse, med hvor stor del av totalen de utgjør til sammen. Terskelen er 80 prosent.</desc>
+<line class="pa-grid" x1="167.00" y1="32" x2="167.00" y2="482"/>
+<text class="pa-tick" x="167.00" y="500" text-anchor="middle">0</text>
+<line class="pa-grid" x1="275.00" y1="32" x2="275.00" y2="482"/>
+<text class="pa-tick" x="275.00" y="500" text-anchor="middle">103</text>
+<line class="pa-grid" x1="384.00" y1="32" x2="384.00" y2="482"/>
+<text class="pa-tick" x="384.00" y="500" text-anchor="middle">206</text>
+<line class="pa-grid" x1="493.00" y1="32" x2="493.00" y2="482"/>
+<text class="pa-tick" x="493.00" y="500" text-anchor="middle">309</text>
+<line class="pa-grid" x1="602.00" y1="32" x2="602.00" y2="482"/>
+<text class="pa-tick" x="602.00" y="500" text-anchor="middle">412</text>
+<text class="pa-pct" x="766" y="486.00">0 %</text>
+<text class="pa-pct" x="766" y="377.50">25 %</text>
+<text class="pa-pct" x="766" y="269.00">50 %</text>
+<text class="pa-pct" x="766" y="160.50">75 %</text>
+<text class="pa-pct" x="766" y="52.00">100 %</text>
+<text class="pa-axis-title" x="806" y="26" text-anchor="end">kumulert</text>
+<text class="pa-name" x="156" y="62.00" text-anchor="end">Fakturafeil</text>
+<rect class="pa-bar" data-label="Fakturafeil" x="166" y="46.00" width="436.00" height="22" rx="2"/>
+<text class="pa-val" x="742" y="62.00" text-anchor="end">412 (20,1 %)</text>
+<text class="pa-name" x="156" y="96.00" text-anchor="end">Glemt passord</text>
+<rect class="pa-bar" data-label="Glemt passord" x="166" y="80.00" width="410.60" height="22" rx="2"/>
+<text class="pa-val" x="742" y="96.00" text-anchor="end">388 (18,9 %)</text>
+<text class="pa-name" x="156" y="130.00" text-anchor="end">Endre adresse</text>
+<rect class="pa-bar" data-label="Endre adresse" x="166" y="114.00" width="280.44" height="22" rx="2"/>
+<text class="pa-val" x="742" y="130.00" text-anchor="end">265 (12,9 %)</text>
+<text class="pa-name" x="156" y="164.00" text-anchor="end">Leveringsstatus</text>
+<rect class="pa-bar" data-label="Leveringsstatus" x="166" y="148.00" width="255.04" height="22" rx="2"/>
+<text class="pa-val" x="742" y="164.00" text-anchor="end">241 (11,7 %)</text>
+<text class="pa-name" x="156" y="198.00" text-anchor="end">Feil i app</text>
+<rect class="pa-bar" data-label="Feil i app" x="166" y="182.00" width="207.42" height="22" rx="2"/>
+<text class="pa-val" x="742" y="198.00" text-anchor="end">196 (9,5 %)</text>
+<text class="pa-name" x="156" y="232.00" text-anchor="end">Bestille nytt kort</text>
+<rect class="pa-bar" data-label="Bestille nytt kort" x="166" y="216.00" width="124.87" height="22" rx="2"/>
+<text class="pa-val" x="742" y="232.00" text-anchor="end">118 (5,7 %)</text>
+<text class="pa-name" x="156" y="266.00" text-anchor="end">Avtale om betaling</text>
+<rect class="pa-bar" data-label="Avtale om betaling" x="166" y="250.00" width="101.59" height="22" rx="2"/>
+<text class="pa-val" x="742" y="266.00" text-anchor="end">96 (4,7 %)</text>
+<text class="pa-name" x="156" y="300.00" text-anchor="end">Sperre kort</text>
+<rect class="pa-bar" data-label="Sperre kort" x="166" y="284.00" width="78.31" height="22" rx="2"/>
+<text class="pa-val" x="742" y="300.00" text-anchor="end">74 (3,6 %)</text>
+<text class="pa-name" x="156" y="334.00" text-anchor="end">Feil beløp</text>
+<rect class="pa-bar" data-label="Feil beløp" x="166" y="318.00" width="64.55" height="22" rx="2"/>
+<text class="pa-val" x="742" y="334.00" text-anchor="end">61 (3,0 %)</text>
+<text class="pa-name" x="156" y="368.00" text-anchor="end">Dobbeltbetaling</text>
+<rect class="pa-bar" data-label="Dobbeltbetaling" x="166" y="352.00" width="49.74" height="22" rx="2"/>
+<text class="pa-val" x="742" y="368.00" text-anchor="end">47 (2,3 %)</text>
+<text class="pa-name" x="156" y="402.00" text-anchor="end">Endre navn</text>
+<rect class="pa-bar" data-label="Endre navn" x="166" y="386.00" width="34.92" height="22" rx="2"/>
+<text class="pa-val" x="742" y="402.00" text-anchor="end">33 (1,6 %)</text>
+<text class="pa-name" x="156" y="436.00" text-anchor="end">Eldre sak gjenåpnet</text>
+<rect class="pa-bar" data-label="Eldre sak gjenåpnet" x="166" y="420.00" width="29.63" height="22" rx="2"/>
+<text class="pa-val" x="742" y="436.00" text-anchor="end">28 (1,4 %)</text>
+<text class="pa-name" x="156" y="470.00" text-anchor="end">Andre (10)</text>
+<rect class="pa-bar pa-folded" data-label="Andre (10)" x="166" y="454.00" width="100.53" height="22" rx="2"/>
+<text class="pa-val" x="742" y="470.00" text-anchor="end">95 (4,6 %)</text>
+<polyline class="pa-cum" points="602.00,394.95 576.60,312.96 446.44,256.97 421.04,206.05 373.42,164.63 290.87,139.70 267.59,119.42 244.31,103.78 230.55,90.89 215.74,80.96 200.92,73.99 195.63,68.07 266.53,48.00"/>
+<circle class="pa-dot" data-label="Fakturafeil" cx="602.00" cy="394.95" r="3.5"/>
+<circle class="pa-dot" data-label="Glemt passord" cx="576.60" cy="312.96" r="3.5"/>
+<circle class="pa-dot" data-label="Endre adresse" cx="446.44" cy="256.97" r="3.5"/>
+<circle class="pa-dot" data-label="Leveringsstatus" cx="421.04" cy="206.05" r="3.5"/>
+<circle class="pa-dot" data-label="Feil i app" cx="373.42" cy="164.63" r="3.5"/>
+<circle class="pa-dot" data-label="Bestille nytt kort" cx="290.87" cy="139.70" r="3.5"/>
+<circle class="pa-dot" data-label="Avtale om betaling" cx="267.59" cy="119.42" r="3.5"/>
+<circle class="pa-dot" data-label="Sperre kort" cx="244.31" cy="103.78" r="3.5"/>
+<circle class="pa-dot" data-label="Feil beløp" cx="230.55" cy="90.89" r="3.5"/>
+<circle class="pa-dot" data-label="Dobbeltbetaling" cx="215.74" cy="80.96" r="3.5"/>
+<circle class="pa-dot" data-label="Endre navn" cx="200.92" cy="73.99" r="3.5"/>
+<circle class="pa-dot" data-label="Eldre sak gjenåpnet" cx="195.63" cy="68.07" r="3.5"/>
+<circle class="pa-dot" data-label="Andre (10)" cx="266.53" cy="48.00" r="3.5"/>
+</svg>
+    <figcaption>Søylene er sortert etter størrelse, størst først. Linjen viser hvor stor del av totalen som er dekket når en leser fra venstre, og den har sin egen akse til høyre i prosent. Terskelen på 80 prosent står i tabellen.</figcaption>
+  </figure>
+
+  <p class="summary">22 kategorier til sammen 2 054. De 7 største dekker 80 prosent eller mer. Størst er Fakturafeil med 412, som er 20,1 prosent av totalen. De 10 minste er slått sammen til én søyle etter de 12 største, og tallet deres er med i totalen.</p>
+  <ul class="notes">
+<li>Søylene er sortert etter størrelse, størst først, fordi sorteringen er selve påstanden. Et Pareto-diagram i kilderekkefølge er et søylediagram med en linje over, og sier ingenting om hvilke få som betyr mest.</li><li>Linjen er kumulativ og ender på hundre prosent av det som er tegnet. Hvert punkt står i tabellen, så en leser kan kontrollere hvor kneet er i stedet for å gjette det fra bildet.</li><li>Det er to akser, og de er merket hver for seg: søylene i kategorienes egen enhet, linjen i prosent til høyre. En leser som tar linjen mot venstre akse, får et tall som ikke betyr noe.</li><li>Kategoriene utenfor de øverste er slått sammen til én søyle som bærer antallet sitt i navnet. Ingenting er droppet, og totalen er den samme som i uttrekket.</li><li>Prosentene er avrundet med største rest, så kolonnen summerer til nøyaktig hundre komma null. Avrunding per tall gir 99,9 og en leser som tror de har regnet feil.</li>
+  </ul>
+
+  <h2 id="tbl-h">Tallene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Én rad per tegnet kategori: verdi, andel av totalen, og kumulert andel. Prosentkolonnen summerer til 100,0.</caption>
+    <thead><tr>
+      <th scope="col">Kategori</th>
+      <th scope="col" class="num">Verdi</th>
+      <th scope="col" class="num">Andel</th>
+      <th scope="col" class="num">Kumulert</th>
+    </tr></thead>
+    <tbody>
+<tr><td>Fakturafeil</td><td class="num">412</td><td class="num">20,1</td><td class="num">20,1</td></tr>
+<tr><td>Glemt passord</td><td class="num">388</td><td class="num">18,9</td><td class="num">38,9</td></tr>
+<tr><td>Endre adresse</td><td class="num">265</td><td class="num">12,9</td><td class="num">51,9</td></tr>
+<tr><td>Leveringsstatus</td><td class="num">241</td><td class="num">11,7</td><td class="num">63,6</td></tr>
+<tr><td>Feil i app</td><td class="num">196</td><td class="num">9,5</td><td class="num">73,1</td></tr>
+<tr><td>Bestille nytt kort</td><td class="num">118</td><td class="num">5,7</td><td class="num">78,9</td></tr>
+<tr><td>Avtale om betaling</td><td class="num">96</td><td class="num">4,7</td><td class="num">83,5</td></tr>
+<tr><td>Sperre kort</td><td class="num">74</td><td class="num">3,6</td><td class="num">87,1</td></tr>
+<tr><td>Feil beløp</td><td class="num">61</td><td class="num">3,0</td><td class="num">90,1</td></tr>
+<tr><td>Dobbeltbetaling</td><td class="num">47</td><td class="num">2,3</td><td class="num">92,4</td></tr>
+<tr><td>Endre navn</td><td class="num">33</td><td class="num">1,6</td><td class="num">94,0</td></tr>
+<tr><td>Eldre sak gjenåpnet</td><td class="num">28</td><td class="num">1,4</td><td class="num">95,4</td></tr>
+<tr><td>Andre (10)</td><td class="num">95</td><td class="num">4,6</td><td class="num">100,0</td></tr>
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>Bildet viser hvilke kategorier som bærer totalen, ikke hvorfor de er store. En lang søyle er et faktum, ikke en forklaring.</p>
+  <p>Verdier, andeler og kumulert andel står i tabellen, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.</p>
+  <p>Kilde: Syntetisk eksempeldata (henvendelser.csv) · 22 kategorier · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

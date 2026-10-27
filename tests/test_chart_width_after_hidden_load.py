@@ -66,6 +66,46 @@ MEASURE = """sel => [...document.querySelectorAll(sel)].map(s => ({
 }))"""
 
 
+def drawn(inner, sel: str, budget_ms: int = 8000, step_ms: int = 50) -> tuple[list, int]:
+    """Poll until the artefact's boot has drawn every chart, whatever width it drew at.
+
+    The boot used to get a flat 1500 ms before the frame was shown. Under load it can be
+    slower, and then the ResizeObserver callback runs before the charts exist and never
+    fires again, so the fallback width stays for good — the other half of the flake. Wait
+    for the drawing, not for a stopwatch.
+    """
+    waited = 0
+    charts = inner.evaluate(MEASURE, sel)
+    while waited < budget_ms:
+        if charts and all(c["vb"] is not None for c in charts):
+            return charts, waited
+        inner.page.wait_for_timeout(step_ms)
+        waited += step_ms
+        charts = inner.evaluate(MEASURE, sel)
+    return charts, waited
+
+
+def settle(inner, sel: str, budget_ms: int = 8000, step_ms: int = 100) -> tuple[list, int]:
+    """Poll until every chart is drawn for its rendered width, or the budget runs out.
+
+    The old version slept a fixed 1500 ms and measured once, which is a guess about how
+    long a boot plus a ResizeObserver callback plus a requestAnimationFrame takes on a
+    loaded machine — the reason this suite failed about once in eight runs. The property
+    being checked is that the artefact converges, not that it converges within a chosen
+    window, so poll and report how long it took.
+    """
+    waited = 0
+    charts = inner.evaluate(MEASURE, sel)
+    while waited < budget_ms:
+        if charts and all(c["vb"] is not None and c["px"] > 0
+                          and abs(c["vb"] - c["px"]) <= TOLERANCE_PX for c in charts):
+            return charts, waited
+        inner.page.wait_for_timeout(step_ms)
+        waited += step_ms
+        charts = inner.evaluate(MEASURE, sel)
+    return charts, waited
+
+
 def main() -> int:
     try:
         from playwright.sync_api import sync_playwright
@@ -112,18 +152,18 @@ def main() -> int:
                 page.goto(host.as_uri())
                 frame = page.frame_locator("#f")
                 frame.locator(sel.split(",")[0].strip()).first.wait_for(state="attached", timeout=15000)
-                page.wait_for_timeout(1500)  # boot finishes while the frame is still 0 x 0
                 inner = page.frames[1]
+                _, boot_ms = drawn(inner, sel)  # boot finishes while the frame is still 0 x 0
                 hidden_w = inner.evaluate("innerWidth")
-                check(f"{label}: booted while the frame had no width (innerWidth {hidden_w})",
-                      hidden_w == 0)
+                check(f"{label}: booted while the frame had no width (innerWidth {hidden_w}, "
+                      f"drawn after {boot_ms} ms)", hidden_w == 0)
                 page.evaluate("document.getElementById('f').style.display = 'block'")
-                page.wait_for_timeout(1500)
-                charts = inner.evaluate(MEASURE, sel)
+                charts, waited = settle(inner, sel, budget_ms=8000 if expect_ok else 2000)
                 check(f"{label}: found the charts ({len(charts)})", len(charts) >= 2, str(charts))
                 right = [c["vb"] is not None and c["px"] > 0 and abs(c["vb"] - c["px"]) <= TOLERANCE_PX
                          for c in charts]
-                detail = ", ".join(f"#{c['id'] or '?'} viewBox {c['vb']} vs {c['px']}" for c in charts)
+                detail = (f"settled after {waited} ms; "
+                          + ", ".join(f"#{c['id'] or '?'} viewBox {c['vb']} vs {c['px']}" for c in charts))
                 if expect_ok:
                     check(f"{label}: every chart drawn for its real width ({detail})", all(right))
                 else:

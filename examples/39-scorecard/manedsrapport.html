@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Månedsrapport oktober 2026</title>
+<!--
+  Månedsrapport oktober 2026
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (manedstall.csv) — 90 rader, 7 mål
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Kvalitetsavdelingen
+    Made with   : Tún - tun.community
+    Rows        : 90 rows, 13 periods
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: a scorecard. Many measures, one period, each with its history, its
+  target, and the distance between the two. The monthly report a manager reads has this
+  shape, and it is the one report that needs a target: without one, a figure is a fact with
+  no verdict.
+
+  What it is NOT: an opinion about which way is good. Direction comes from the data or from
+  --lower-is-better. Without it, this page prints the figures and says nothing about whether
+  they are good news, because an increase is good for revenue and bad for complaints, and the
+  file cannot know which it holds. Status appears only when the bands were declared.
+
+  There is no third status colour. The approved status pair is Fire Red and Success Green
+  (tools/tokens/status-semantic.css, both measured at WCAG AA on white), and a new amber
+  value would be a design decision nobody has approved. The middle band therefore uses the
+  approved neutral and carries its meaning in the word beside it.
+
+  There is no script in this file. A scorecard is a snapshot with its history behind it, and
+  a filter would be a different artefact. Every figure on every card is in the table below.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(19rem,100%),1fr));
+  gap:1rem;margin:0;padding:0;list-style:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:.5rem;padding:1rem 1.25rem;
+  /* A card is one measure: keep it whole on paper. */
+  break-inside:avoid}
+.card h2{margin:0;font-size:1rem;line-height:1.5rem;font-weight:600}
+.card .unit{font-weight:400;color:var(--muted)}
+.card .big{margin:.25rem 0 0;font-size:2rem;line-height:2.25rem;font-weight:600;
+  font-variant-numeric:tabular-nums}
+.card .when{margin:0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.card .stale{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;color:var(--bad-ink)}
+.card .spark{display:block;width:100%;height:3.75rem;margin:.75rem 0 .25rem}
+.spark-line{fill:none;stroke:var(--brand);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.spark-dot{fill:var(--panel);stroke:var(--brand);stroke-width:1.8}
+.spark-target{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3}
+.card .spark-note{margin:0 0 .5rem;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.card dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.25rem .75rem;margin:0;
+  font-size:.875rem;line-height:1.5}
+.card dt{color:var(--muted)}
+.card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.card dd.s-green{color:var(--ok);font-weight:600}
+.card dd.s-amber{color:var(--muted);font-weight:600}
+.card dd.s-red{color:var(--bad-ink);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin:.5rem 0 0;padding:0;list-style:none;
+  font-size:.875rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:.375rem}
+.legend .ln{width:1.25rem;height:0;border-top:2px solid var(--brand);display:inline-block}
+.legend .ln.dash{border-top:2px dashed var(--muted)}
+h2.section{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.notes{margin:.5rem 0 0;padding-left:1.25rem;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.notes li{margin:.25rem 0}
+.tablewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:.5rem}
+table{width:100%;border-collapse:collapse;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:.75rem 1rem .25rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  white-space:nowrap;font-variant-numeric:tabular-nums}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft)}
+td.num,th.num{text-align:right}
+td.latest{font-weight:600}
+td.hole{color:var(--muted)}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .cards{grid-template-columns:1fr 1fr}
+  .tablewrap{overflow:visible;border:0}
+  table{font-size:.75rem}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band that reads white-on-ocean in light would be dark on dark. The
+     status colours come from the seam, which already re-picks them for a dark page. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+  }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Månedsrapport oktober 2026</h1>
+  <p class="sub">7 mål · 13 perioder, okt 2025 til okt 2026</p>
+</div></header>
+<main>
+  <ul class="cards">
+<article class="card">
+  <h2>Kundetilfredshet<span class="unit">, poeng</span></h2>
+  <p class="big">80</p>
+  <p class="when">Siste periode okt 2026</p>
+
+  <svg class="spark" viewBox="0 0 240 60" role="img" aria-labelledby="s-kundetilfredshet-t" preserveAspectRatio="none"><title id="s-kundetilfredshet-t">Forløp for Kundetilfredshet</title><desc>Kundetilfredshet: 75, 75, 76, 75, 76, 77, 78, 78, 80, 78, 81, 80</desc><line class="spark-target" x1="6" y1="30.0" x2="234" y2="30.0"/><circle class="spark-dot" cx="6.0" cy="54.0" r="2.2"><title>nov 2025: 75</title></circle><circle class="spark-dot" cx="26.7" cy="54.0" r="2.2"><title>des 2025: 75</title></circle><circle class="spark-dot" cx="47.5" cy="46.0" r="2.2"><title>jan 2026: 76</title></circle><circle class="spark-dot" cx="68.2" cy="54.0" r="2.2"><title>feb 2026: 75</title></circle><circle class="spark-dot" cx="88.9" cy="46.0" r="2.2"><title>mar 2026: 76</title></circle><circle class="spark-dot" cx="109.6" cy="38.0" r="2.2"><title>apr 2026: 77</title></circle><circle class="spark-dot" cx="130.4" cy="30.0" r="2.2"><title>mai 2026: 78</title></circle><circle class="spark-dot" cx="151.1" cy="30.0" r="2.2"><title>jun 2026: 78</title></circle><circle class="spark-dot" cx="171.8" cy="14.0" r="2.2"><title>jul 2026: 80</title></circle><circle class="spark-dot" cx="192.5" cy="30.0" r="2.2"><title>aug 2026: 78</title></circle><circle class="spark-dot" cx="213.3" cy="6.0" r="2.2"><title>sep 2026: 81</title></circle><circle class="spark-dot" cx="234.0" cy="14.0" r="2.2"><title>okt 2026: 80</title></circle><polyline class="spark-line" points="6.0,54.0 26.7,54.0 47.5,46.0 68.2,54.0 88.9,46.0 109.6,38.0 130.4,30.0 151.1,30.0 171.8,14.0 192.5,30.0 213.3,6.0 234.0,14.0"/></svg>
+  <p class="spark-note">12 perioder, nov 2025 til okt 2026. Laveste 75, høyeste 81. Målet 78 er tegnet som en stiplet linje.</p>
+  <dl><div><dt>Mot forrige</dt><dd>−1</dd></div><div><dt>Mot i fjor</dt><dd>+6</dd></div><div><dt>Mål</dt><dd>78</dd></div><div><dt>Avvik fra mål</dt><dd>+2</dd></div><div><dt>Status</dt><dd class="s-green">i mål</dd></div></dl>
+</article>
+<article class="card">
+  <h2>Saksbehandlingstid<span class="unit">, dager</span></h2>
+  <p class="big">5,9</p>
+  <p class="when">Siste periode okt 2026</p>
+
+  <svg class="spark" viewBox="0 0 240 60" role="img" aria-labelledby="s-saksbehandlingstid-t" preserveAspectRatio="none"><title id="s-saksbehandlingstid-t">Forløp for Saksbehandlingstid</title><desc>Saksbehandlingstid: 4,1, 4,6, 4,6, 4,2, 4,6, 5,0, 5,1, 5,0, 5,4, 5,9, 6,2, 5,9</desc><line class="spark-target" x1="6" y1="33.4" x2="234" y2="33.4"/><circle class="spark-dot" cx="6.0" cy="54.0" r="2.2"><title>nov 2025: 4,1</title></circle><circle class="spark-dot" cx="26.7" cy="42.6" r="2.2"><title>des 2025: 4,6</title></circle><circle class="spark-dot" cx="47.5" cy="42.6" r="2.2"><title>jan 2026: 4,6</title></circle><circle class="spark-dot" cx="68.2" cy="51.7" r="2.2"><title>feb 2026: 4,2</title></circle><circle class="spark-dot" cx="88.9" cy="42.6" r="2.2"><title>mar 2026: 4,6</title></circle><circle class="spark-dot" cx="109.6" cy="33.4" r="2.2"><title>apr 2026: 5,0</title></circle><circle class="spark-dot" cx="130.4" cy="31.1" r="2.2"><title>mai 2026: 5,1</title></circle><circle class="spark-dot" cx="151.1" cy="33.4" r="2.2"><title>jun 2026: 5,0</title></circle><circle class="spark-dot" cx="171.8" cy="24.3" r="2.2"><title>jul 2026: 5,4</title></circle><circle class="spark-dot" cx="192.5" cy="12.9" r="2.2"><title>aug 2026: 5,9</title></circle><circle class="spark-dot" cx="213.3" cy="6.0" r="2.2"><title>sep 2026: 6,2</title></circle><circle class="spark-dot" cx="234.0" cy="12.9" r="2.2"><title>okt 2026: 5,9</title></circle><polyline class="spark-line" points="6.0,54.0 26.7,42.6 47.5,42.6 68.2,51.7 88.9,42.6 109.6,33.4 130.4,31.1 151.1,33.4 171.8,24.3 192.5,12.9 213.3,6.0 234.0,12.9"/></svg>
+  <p class="spark-note">12 perioder, nov 2025 til okt 2026. Laveste 4,1, høyeste 6,2. Målet 5,0 er tegnet som en stiplet linje.</p>
+  <dl><div><dt>Mot forrige</dt><dd>−0,3</dd></div><div><dt>Mot i fjor</dt><dd>+1,7</dd></div><div><dt>Mål</dt><dd>5,0</dd></div><div><dt>Avvik fra mål</dt><dd>+0,9</dd></div><div><dt>Status</dt><dd class="s-red">ikke i mål</dd></div></dl>
+</article>
+<article class="card">
+  <h2>Svartid telefoni<span class="unit">, sekund</span></h2>
+  <p class="big">48</p>
+  <p class="when">Siste periode okt 2026</p>
+
+  <svg class="spark" viewBox="0 0 240 60" role="img" aria-labelledby="s-svartid-telefoni-t" preserveAspectRatio="none"><title id="s-svartid-telefoni-t">Forløp for Svartid telefoni</title><desc>Svartid telefoni: 36, 33, 34, 35, 37, 45, 34, 49, 45, 46, 51, 48</desc><line class="spark-target" x1="6" y1="35.3" x2="234" y2="35.3"/><circle class="spark-dot" cx="6.0" cy="46.0" r="2.2"><title>nov 2025: 36</title></circle><circle class="spark-dot" cx="26.7" cy="54.0" r="2.2"><title>des 2025: 33</title></circle><circle class="spark-dot" cx="47.5" cy="51.3" r="2.2"><title>jan 2026: 34</title></circle><circle class="spark-dot" cx="68.2" cy="48.7" r="2.2"><title>feb 2026: 35</title></circle><circle class="spark-dot" cx="88.9" cy="43.3" r="2.2"><title>mar 2026: 37</title></circle><circle class="spark-dot" cx="109.6" cy="22.0" r="2.2"><title>apr 2026: 45</title></circle><circle class="spark-dot" cx="130.4" cy="51.3" r="2.2"><title>mai 2026: 34</title></circle><circle class="spark-dot" cx="151.1" cy="11.3" r="2.2"><title>jun 2026: 49</title></circle><circle class="spark-dot" cx="171.8" cy="22.0" r="2.2"><title>jul 2026: 45</title></circle><circle class="spark-dot" cx="192.5" cy="19.3" r="2.2"><title>aug 2026: 46</title></circle><circle class="spark-dot" cx="213.3" cy="6.0" r="2.2"><title>sep 2026: 51</title></circle><circle class="spark-dot" cx="234.0" cy="14.0" r="2.2"><title>okt 2026: 48</title></circle><polyline class="spark-line" points="6.0,46.0 26.7,54.0 47.5,51.3 68.2,48.7 88.9,43.3 109.6,22.0 130.4,51.3 151.1,11.3 171.8,22.0 192.5,19.3 213.3,6.0 234.0,14.0"/></svg>
+  <p class="spark-note">12 perioder, nov 2025 til okt 2026. Laveste 33, høyeste 51. Målet 40 er tegnet som en stiplet linje.</p>
+  <dl><div><dt>Mot forrige</dt><dd>−3</dd></div><div><dt>Mot i fjor</dt><dd>+12</dd></div><div><dt>Mål</dt><dd>40</dd></div><div><dt>Avvik fra mål</dt><dd>+8</dd></div><div><dt>Status</dt><dd class="s-red">ikke i mål</dd></div></dl>
+</article>
+<article class="card">
+  <h2>Digital andel<span class="unit">, prosent</span></h2>
+  <p class="big">82</p>
+  <p class="when">Siste periode okt 2026</p>
+
+  <svg class="spark" viewBox="0 0 240 60" role="img" aria-labelledby="s-digital-andel-t" preserveAspectRatio="none"><title id="s-digital-andel-t">Forløp for Digital andel</title><desc>Digital andel: 70, 69, 71, 74, 73, 74, 76, 75, 76, 80, 81, 82</desc><line class="spark-target" x1="6" y1="13.4" x2="234" y2="13.4"/><circle class="spark-dot" cx="6.0" cy="50.3" r="2.2"><title>nov 2025: 70</title></circle><circle class="spark-dot" cx="26.7" cy="54.0" r="2.2"><title>des 2025: 69</title></circle><circle class="spark-dot" cx="47.5" cy="46.6" r="2.2"><title>jan 2026: 71</title></circle><circle class="spark-dot" cx="68.2" cy="35.5" r="2.2"><title>feb 2026: 74</title></circle><circle class="spark-dot" cx="88.9" cy="39.2" r="2.2"><title>mar 2026: 73</title></circle><circle class="spark-dot" cx="109.6" cy="35.5" r="2.2"><title>apr 2026: 74</title></circle><circle class="spark-dot" cx="130.4" cy="28.2" r="2.2"><title>mai 2026: 76</title></circle><circle class="spark-dot" cx="151.1" cy="31.8" r="2.2"><title>jun 2026: 75</title></circle><circle class="spark-dot" cx="171.8" cy="28.2" r="2.2"><title>jul 2026: 76</title></circle><circle class="spark-dot" cx="192.5" cy="13.4" r="2.2"><title>aug 2026: 80</title></circle><circle class="spark-dot" cx="213.3" cy="9.7" r="2.2"><title>sep 2026: 81</title></circle><circle class="spark-dot" cx="234.0" cy="6.0" r="2.2"><title>okt 2026: 82</title></circle><polyline class="spark-line" points="6.0,50.3 26.7,54.0 47.5,46.6 68.2,35.5 88.9,39.2 109.6,35.5 130.4,28.2 151.1,31.8 171.8,28.2 192.5,13.4 213.3,9.7 234.0,6.0"/></svg>
+  <p class="spark-note">12 perioder, nov 2025 til okt 2026. Laveste 69, høyeste 82. Målet 80 er tegnet som en stiplet linje.</p>
+  <dl><div><dt>Mot forrige</dt><dd>+1</dd></div><div><dt>Mot i fjor</dt><dd>+15</dd></div><div><dt>Mål</dt><dd>80</dd></div><div><dt>Avvik fra mål</dt><dd>+2</dd></div><div><dt>Status</dt><dd class="s-green">i mål</dd></div></dl>
+</article>
+<article class="card">
+  <h2>Avvik lukket innen frist<span class="unit">, prosent</span></h2>
+  <p class="big">90</p>
+  <p class="when">Siste periode okt 2026</p>
+
+  <svg class="spark" viewBox="0 0 240 60" role="img" aria-labelledby="s-avvik-lukket-innen-frist-t" preserveAspectRatio="none"><title id="s-avvik-lukket-innen-frist-t">Forløp for Avvik lukket innen frist</title><desc>Avvik lukket innen frist: 86, 96, 92, 89, 90, 96, 96, 95, 90, 93, 97, 90</desc><line class="spark-target" x1="6" y1="14.7" x2="234" y2="14.7"/><circle class="spark-dot" cx="6.0" cy="54.0" r="2.2"><title>nov 2025: 86</title></circle><circle class="spark-dot" cx="26.7" cy="10.4" r="2.2"><title>des 2025: 96</title></circle><circle class="spark-dot" cx="47.5" cy="27.8" r="2.2"><title>jan 2026: 92</title></circle><circle class="spark-dot" cx="68.2" cy="40.9" r="2.2"><title>feb 2026: 89</title></circle><circle class="spark-dot" cx="88.9" cy="36.5" r="2.2"><title>mar 2026: 90</title></circle><circle class="spark-dot" cx="109.6" cy="10.4" r="2.2"><title>apr 2026: 96</title></circle><circle class="spark-dot" cx="130.4" cy="10.4" r="2.2"><title>mai 2026: 96</title></circle><circle class="spark-dot" cx="151.1" cy="14.7" r="2.2"><title>jun 2026: 95</title></circle><circle class="spark-dot" cx="171.8" cy="36.5" r="2.2"><title>jul 2026: 90</title></circle><circle class="spark-dot" cx="192.5" cy="23.5" r="2.2"><title>aug 2026: 93</title></circle><circle class="spark-dot" cx="213.3" cy="6.0" r="2.2"><title>sep 2026: 97</title></circle><circle class="spark-dot" cx="234.0" cy="36.5" r="2.2"><title>okt 2026: 90</title></circle><polyline class="spark-line" points="6.0,54.0 26.7,10.4 47.5,27.8 68.2,40.9 88.9,36.5 109.6,10.4 130.4,10.4 151.1,14.7 171.8,36.5 192.5,23.5 213.3,6.0 234.0,36.5"/></svg>
+  <p class="spark-note">12 perioder, nov 2025 til okt 2026. Laveste 86, høyeste 97. Målet 95 er tegnet som en stiplet linje.</p>
+  <dl><div><dt>Mot forrige</dt><dd>−7</dd></div><div><dt>Mot i fjor</dt><dd>0</dd></div><div><dt>Mål</dt><dd>95</dd></div><div><dt>Avvik fra mål</dt><dd>−5</dd></div><div><dt>Status</dt><dd class="s-red">ikke i mål</dd></div></dl>
+</article>
+<article class="card">
+  <h2>Sykefravær<span class="unit">, prosent</span></h2>
+  <p class="big">5,7</p>
+  <p class="when">Siste periode okt 2026</p>
+
+  <svg class="spark" viewBox="0 0 240 60" role="img" aria-labelledby="s-sykefrav-r-t" preserveAspectRatio="none"><title id="s-sykefrav-r-t">Forløp for Sykefravær</title><desc>Sykefravær: 4,7, 4,4, 5,2, 4,2, 4,9, 4,9, 4,9, 4,4, 5,7, 4,3, 4,8, 5,7</desc><line class="spark-target" x1="6" y1="44.4" x2="234" y2="44.4"/><circle class="spark-dot" cx="6.0" cy="38.0" r="2.2"><title>nov 2025: 4,7</title></circle><circle class="spark-dot" cx="26.7" cy="47.6" r="2.2"><title>des 2025: 4,4</title></circle><circle class="spark-dot" cx="47.5" cy="22.0" r="2.2"><title>jan 2026: 5,2</title></circle><circle class="spark-dot" cx="68.2" cy="54.0" r="2.2"><title>feb 2026: 4,2</title></circle><circle class="spark-dot" cx="88.9" cy="31.6" r="2.2"><title>mar 2026: 4,9</title></circle><circle class="spark-dot" cx="109.6" cy="31.6" r="2.2"><title>apr 2026: 4,9</title></circle><circle class="spark-dot" cx="130.4" cy="31.6" r="2.2"><title>mai 2026: 4,9</title></circle><circle class="spark-dot" cx="151.1" cy="47.6" r="2.2"><title>jun 2026: 4,4</title></circle><circle class="spark-dot" cx="171.8" cy="6.0" r="2.2"><title>jul 2026: 5,7</title></circle><circle class="spark-dot" cx="192.5" cy="50.8" r="2.2"><title>aug 2026: 4,3</title></circle><circle class="spark-dot" cx="213.3" cy="34.8" r="2.2"><title>sep 2026: 4,8</title></circle><circle class="spark-dot" cx="234.0" cy="6.0" r="2.2"><title>okt 2026: 5,7</title></circle><polyline class="spark-line" points="6.0,38.0 26.7,47.6 47.5,22.0 68.2,54.0 88.9,31.6 109.6,31.6 130.4,31.6 151.1,47.6 171.8,6.0 192.5,50.8 213.3,34.8 234.0,6.0"/></svg>
+  <p class="spark-note">12 perioder, nov 2025 til okt 2026. Laveste 4,2, høyeste 5,7. Målet 4,5 er tegnet som en stiplet linje.</p>
+  <dl><div><dt>Mot forrige</dt><dd>+0,9</dd></div><div><dt>Mot i fjor</dt><dd>+1,5</dd></div><div><dt>Mål</dt><dd>4,5</dd></div><div><dt>Avvik fra mål</dt><dd>+1,2</dd></div><div><dt>Status</dt><dd class="s-red">ikke i mål</dd></div></dl>
+</article>
+<article class="card">
+  <h2>Antall klager<span class="unit">, antall</span></h2>
+  <p class="big">143</p>
+  <p class="when">Siste periode okt 2026</p>
+
+  <svg class="spark" viewBox="0 0 240 60" role="img" aria-labelledby="s-antall-klager-t" preserveAspectRatio="none"><title id="s-antall-klager-t">Forløp for Antall klager</title><desc>Antall klager: 130, 120, 142, 137, 145, 96, 122, 123, 124, 117, 143</desc><line class="spark-target" x1="6" y1="30.5" x2="234" y2="30.5"/><circle class="spark-dot" cx="6.0" cy="20.7" r="2.2"><title>nov 2025: 130</title></circle><circle class="spark-dot" cx="26.7" cy="30.5" r="2.2"><title>des 2025: 120</title></circle><circle class="spark-dot" cx="47.5" cy="8.9" r="2.2"><title>jan 2026: 142</title></circle><circle class="spark-dot" cx="68.2" cy="13.8" r="2.2"><title>feb 2026: 137</title></circle><circle class="spark-dot" cx="88.9" cy="6.0" r="2.2"><title>mar 2026: 145</title></circle><circle class="spark-dot" cx="109.6" cy="54.0" r="2.2"><title>apr 2026: 96</title></circle><circle class="spark-dot" cx="130.4" cy="28.5" r="2.2"><title>mai 2026: 122</title></circle><circle class="spark-dot" cx="151.1" cy="27.6" r="2.2"><title>jun 2026: 123</title></circle><polyline class="spark-line" points="6.0,20.7 26.7,30.5 47.5,8.9 68.2,13.8 88.9,6.0 109.6,54.0 130.4,28.5 151.1,27.6"/><circle class="spark-dot" cx="192.5" cy="26.6" r="2.2"><title>aug 2026: 124</title></circle><circle class="spark-dot" cx="213.3" cy="33.4" r="2.2"><title>sep 2026: 117</title></circle><circle class="spark-dot" cx="234.0" cy="8.0" r="2.2"><title>okt 2026: 143</title></circle><polyline class="spark-line" points="192.5,26.6 213.3,33.4 234.0,8.0"/></svg>
+  <p class="spark-note">11 perioder, nov 2025 til okt 2026. Laveste 96, høyeste 145. Målet 120 er tegnet som en stiplet linje.</p>
+  <dl><div><dt>Mot forrige</dt><dd>+26</dd></div><div><dt>Mot i fjor</dt><dd>+34</dd></div><div><dt>Mål</dt><dd>120</dd></div><div><dt>Avvik fra mål</dt><dd>+23</dd></div><div><dt>Status</dt><dd class="s-red">ikke i mål</dd></div></dl>
+</article>
+  </ul>
+  <ul class="legend"><li><span class="ln"></span>Serien</li><li><span class="ln dash"></span>Målet</li></ul>
+  <ul class="notes"><li>Retning er oppgitt i dataene eller på kommandolinjen. Uten den står det ingen status på siden: en økning er godt for inntekter og dårlig for klager, og filen kan ikke vite hvilken den holder.</li><li>Hvert forløp har sin egen skala, så to kort kan ikke sammenlignes i høyden. Tallene står på kortet og i tabellen.</li><li>En periode som mangler i en serie tegnes som et brudd, aldri som en rett linje mellom to punkter.</li></ul>
+
+  <h2 class="section" id="tbl-h">Tallene bak kortene</h2>
+<div class="tablewrap"><table>
+  <caption>Hver linje er en serie fra kilden, periode for periode. Kortene over er de samme tallene, med siste periode framhevet.</caption>
+  <thead><tr><th scope="col">Nøkkeltall</th><th scope="col" class="num">Mål</th><th scope="col" class="num">okt 2025</th><th scope="col" class="num">nov 2025</th><th scope="col" class="num">des 2025</th><th scope="col" class="num">jan 2026</th><th scope="col" class="num">feb 2026</th><th scope="col" class="num">mar 2026</th><th scope="col" class="num">apr 2026</th><th scope="col" class="num">mai 2026</th><th scope="col" class="num">jun 2026</th><th scope="col" class="num">jul 2026</th><th scope="col" class="num">aug 2026</th><th scope="col" class="num">sep 2026</th><th scope="col" class="num">okt 2026</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Kundetilfredshet<span class="unit">, poeng</span></th><td class="num target">78</td><td class="num">74</td><td class="num">75</td><td class="num">75</td><td class="num">76</td><td class="num">75</td><td class="num">76</td><td class="num">77</td><td class="num">78</td><td class="num">78</td><td class="num">80</td><td class="num">78</td><td class="num">81</td><td class="num latest">80</td></tr>
+    <tr><th scope="row">Saksbehandlingstid<span class="unit">, dager</span></th><td class="num target">5,0</td><td class="num">4,2</td><td class="num">4,1</td><td class="num">4,6</td><td class="num">4,6</td><td class="num">4,2</td><td class="num">4,6</td><td class="num">5,0</td><td class="num">5,1</td><td class="num">5,0</td><td class="num">5,4</td><td class="num">5,9</td><td class="num">6,2</td><td class="num latest">5,9</td></tr>
+    <tr><th scope="row">Svartid telefoni<span class="unit">, sekund</span></th><td class="num target">40</td><td class="num">36</td><td class="num">36</td><td class="num">33</td><td class="num">34</td><td class="num">35</td><td class="num">37</td><td class="num">45</td><td class="num">34</td><td class="num">49</td><td class="num">45</td><td class="num">46</td><td class="num">51</td><td class="num latest">48</td></tr>
+    <tr><th scope="row">Digital andel<span class="unit">, prosent</span></th><td class="num target">80</td><td class="num">67</td><td class="num">70</td><td class="num">69</td><td class="num">71</td><td class="num">74</td><td class="num">73</td><td class="num">74</td><td class="num">76</td><td class="num">75</td><td class="num">76</td><td class="num">80</td><td class="num">81</td><td class="num latest">82</td></tr>
+    <tr><th scope="row">Avvik lukket innen frist<span class="unit">, prosent</span></th><td class="num target">95</td><td class="num">90</td><td class="num">86</td><td class="num">96</td><td class="num">92</td><td class="num">89</td><td class="num">90</td><td class="num">96</td><td class="num">96</td><td class="num">95</td><td class="num">90</td><td class="num">93</td><td class="num">97</td><td class="num latest">90</td></tr>
+    <tr><th scope="row">Sykefravær<span class="unit">, prosent</span></th><td class="num target">4,5</td><td class="num">4,2</td><td class="num">4,7</td><td class="num">4,4</td><td class="num">5,2</td><td class="num">4,2</td><td class="num">4,9</td><td class="num">4,9</td><td class="num">4,9</td><td class="num">4,4</td><td class="num">5,7</td><td class="num">4,3</td><td class="num">4,8</td><td class="num latest">5,7</td></tr>
+    <tr><th scope="row">Antall klager<span class="unit">, antall</span></th><td class="num target">120</td><td class="num">109</td><td class="num">130</td><td class="num">120</td><td class="num">142</td><td class="num">137</td><td class="num">145</td><td class="num">96</td><td class="num">122</td><td class="num">123</td><td class="num hole">mangler</td><td class="num">124</td><td class="num">117</td><td class="num latest">143</td></tr>
+  </tbody>
+</table></div>
+</main>
+<footer>
+  <p>Selvstendig fil: alle tallene er regnet ut på forhånd, og ingenting hentes når den åpnes.</p>
+  <p>Ingen server, ingen innlogging, ingen skript.</p>
+  <p>Syntetisk eksempeldata (manedstall.csv) — 90 rader, 7 mål · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

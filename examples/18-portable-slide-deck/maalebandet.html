@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1B2A4A">
+<title>Målebåndet — åpne AI-modeller, forklart enkelt</title>
+<!--
+  Målebåndet
+  PROVENANCE
+    Source data : Open-weight model study measurement summary; no row-level or personal data
+    Built       : 2026-09-20
+    Built by    : RAIWork
+    Repo        : tun
+    Artefact    : 15-slide portable presentation
+  Self-contained HTML: no server, CDN, account or licence is required to view it.
+-->
+<!-- attribution:start -->
+<!-- Requested by: vedlikeholderen -->
+<!-- attribution:end -->
+<style>
+:root{
+  --ink:#1B2A4A;        /* ocean deep teal     */
+  --paper:#f7f5f0;      /* warm off-white      */
+  --accent:#f5a623;     /* summer gold         */
+  --accent2:#2F5D9E;    /* sea teal            */
+  --muted:#5f6b6d;
+  --line:rgba(0,52,62,.11);
+  --display:Georgia,"Times New Roman",serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;height:100dvh;overflow:hidden;background:var(--ink)}
+body{font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+
+main{position:relative;height:100vh;height:100dvh;width:100vw}
+.slide{position:absolute;inset:0;padding:7vh 6vw 10vh 14vw;background:var(--paper);
+  opacity:0;transform:translateX(3%);pointer-events:none;
+  transition:opacity .45s ease,transform .45s ease;
+  display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.slide.active{opacity:1;transform:none;pointer-events:auto;z-index:2}
+.slide.prev{transform:translateX(-3%)}
+.slide.dark{background:var(--ink);color:var(--paper)}
+.slide.dark .eyebrow{color:var(--accent)}
+/* Quick Look and some attachment previews suppress JavaScript. Keep the first
+   slide useful instead of leaving an invisible stack. */
+html:not(.js) .slide:first-of-type,
+html:not(.js) .slide:first-of-type .step{opacity:1;transform:none;pointer-events:auto;z-index:2}
+html:not(.js) #rail,html:not(.js) #controls,html:not(.js) #progress,html:not(.js) #hint{display:none}
+#js-warning{position:fixed;z-index:40;left:50%;bottom:max(14px,env(safe-area-inset-bottom));
+  width:min(90vw,680px);padding:12px 16px;transform:translateX(-50%);border-radius:8px;
+  background:#fdeeee;color:#3d0d0d;font:600 13px/1.4 var(--body);text-align:center}
+html.js #js-warning{display:none}
+
+.eyebrow{font-size:clamp(14px,.85vw,15px);letter-spacing:.22em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:2.2vh;font-weight:600}
+h1{font-family:var(--display);font-size:clamp(30px,5vw,72px);line-height:1.03;
+  font-weight:600;letter-spacing:-.02em}
+h2{font-family:var(--display);font-size:clamp(23px,3.1vw,46px);line-height:1.09;
+  font-weight:600;letter-spacing:-.015em;margin-bottom:2.4vh;max-width:24ch}
+p.lede{font-size:clamp(14px,1.3vw,20px);line-height:1.55;color:var(--muted);max-width:60ch}
+.slide.dark p.lede{color:rgba(247,245,240,.74)}
+b.hl{color:var(--accent2);font-weight:600}
+.slide.dark b.hl{color:var(--accent)}
+
+/* chrome */
+#rail{position:fixed;left:0;top:0;bottom:0;width:190px;z-index:10;
+  padding:4vh 0 4vh 2.2vw;display:flex;flex-direction:column;justify-content:center;gap:.2vh}
+.rail-sec{display:flex;align-items:center;gap:9px;cursor:pointer;padding:5px 0;opacity:.7;
+  transition:opacity .25s}
+.rail-sec:hover{opacity:.75}
+.rail-sec.on{opacity:1}
+.rail-sec .tick{width:13px;height:2px;background:var(--ink);transition:width .25s,background .3s;flex:none}
+.rail-sec.on .tick{width:28px;background:var(--accent)}
+.rail-sec .lbl{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink);
+  font-weight:600;line-height:1.25;max-width:112px}
+body.on-dark .rail-sec .tick{background:rgba(247,245,240,.35)}
+body.on-dark .rail-sec.on .tick{background:var(--accent)}
+body.on-dark .rail-sec .lbl{color:#f7f5f0}
+
+#progress{position:fixed;left:0;right:0;bottom:0;height:2px;background:rgba(128,128,128,.2);z-index:11}
+#progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .45s ease}
+#controls{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));z-index:20;
+  transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:5px;
+  border:1px solid rgba(0,52,62,.16);border-radius:999px;background:rgba(247,245,240,.92);
+  box-shadow:0 8px 28px rgba(0,52,62,.16);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:opacity .2s,background .2s,border-color .2s}
+body.on-dark #controls{background:rgba(0,34,41,.88);border-color:rgba(247,245,240,.2);
+  box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.control-btn{min-width:42px;height:42px;padding:0 13px;border:0;border-radius:999px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;background:transparent;color:var(--ink);
+  font:600 12px/1 var(--body);letter-spacing:.02em;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body.on-dark .control-btn{color:var(--paper)}
+.control-btn:hover,.control-btn:focus-visible{background:rgba(0,114,114,.13);outline:none}
+.control-btn:active{transform:scale(.96)}
+.control-btn[disabled]{opacity:.28;cursor:default;transform:none}
+.control-icon{font-size:20px;line-height:1}
+#counter{min-width:52px;padding:0 8px;text-align:center;font-size:11px;letter-spacing:.12em;
+  color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+body.on-dark #counter{color:var(--paper)}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:78px;z-index:11;
+  font-size:11px;letter-spacing:.1em;color:var(--muted);transition:opacity .6s;white-space:nowrap}
+body.on-dark #hint{color:rgba(247,245,240,.75)}
+#hint.gone{opacity:0;pointer-events:none}
+#toast{position:fixed;left:50%;bottom:88px;z-index:30;transform:translate(-50%,12px);
+  width:min(88vw,560px);padding:12px 16px;border-radius:10px;background:#101820;color:#fff;
+  font:500 13px/1.4 var(--body);text-align:center;opacity:0;pointer-events:none;
+  box-shadow:0 8px 28px rgba(0,0,0,.28);transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* reveal */
+.step{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.slide.active .step{opacity:1;transform:none}
+.slide.active .step:nth-child(1){transition-delay:.10s}
+.slide.active .step:nth-child(2){transition-delay:.20s}
+.slide.active .step:nth-child(3){transition-delay:.30s}
+.slide.active .step:nth-child(4){transition-delay:.40s}
+.slide.active .step:nth-child(5){transition-delay:.50s}
+.slide.active .step:nth-child(6){transition-delay:.60s}
+
+/* stat row */
+.stats{display:grid;gap:3vw;margin-top:4.5vh}
+.num{font-family:var(--display);font-size:clamp(34px,5.4vw,78px);line-height:1;color:var(--accent2)}
+.slide.dark .num{color:var(--accent)}
+.statlbl{font-size:clamp(11px,.95vw,14.5px);color:var(--muted);margin-top:1.2vh;
+  max-width:24ch;line-height:1.45}
+.slide.dark .statlbl{color:rgba(247,245,240,.66)}
+
+/* cards */
+.grid{display:grid;gap:1.3vw;margin-top:3.5vh}
+.card{border:1px solid var(--line);border-radius:3px;padding:1.5vw 1.3vw;cursor:pointer;
+  transition:border-color .2s,transform .2s;background:rgba(0,0,0,.015)}
+.card:hover{border-color:var(--accent);transform:translateY(-3px)}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.card-k{font-size:clamp(9px,.8vw,11px);letter-spacing:.16em;color:var(--accent2);font-weight:700}
+.card-n{font-family:var(--display);font-size:clamp(25px,2.9vw,44px);line-height:1;
+  color:var(--accent2);margin:.7vh 0 .2vh}
+.card-n small{font-family:var(--body);font-size:clamp(10px,.82vw,12px);font-weight:600;
+  letter-spacing:.06em;color:var(--muted);margin-left:.4em}
+.n-full{color:var(--accent2)} .n-mid{color:#996416}
+.n-low{color:#b35127}      .n-unk{color:var(--muted)}
+.card-t{font-family:var(--display);font-size:clamp(14px,1.28vw,19px);margin:.5vh 0 0;line-height:1.22}
+.card-d{font-size:clamp(11.5px,.92vw,14.5px);line-height:1.5;color:var(--muted);
+  max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease,opacity .3s ease}
+.card.open .card-d{max-height:40vh;opacity:1}
+.card-more{font-size:clamp(9px,.74vw,10px);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent2);margin-top:1.3vh;font-weight:600}
+.card.open .card-more{display:none}
+
+/* split compare */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:2vw;margin-top:3.5vh}
+.sp{padding:2.6vh 1.9vw;border:1px solid var(--line);border-radius:3px}
+.sp.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.sp p{font-size:clamp(13px,1.1vw,17px);line-height:1.55;color:var(--muted)}
+.sp.on p{color:rgba(247,245,240,.8)}
+.sp .eyebrow{margin-bottom:1.4vh}
+.sp.on .eyebrow{color:var(--accent)}
+
+/* ─── signature moment: one model, 24 shops ─── */
+.fan{margin-top:2vh}
+.fanhead{display:flex;justify-content:center;margin-bottom:2.2vh}
+.modelpill{font-family:var(--body);font-size:clamp(13px,1.25vw,19px);font-weight:600;
+  padding:1.1vh 1.6vw;border:2px solid var(--accent);border-radius:999px;
+  background:rgba(245,166,35,.09);letter-spacing:.01em;white-space:nowrap}
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:.62vw}
+.tile{border:1px solid var(--line);border-radius:3px;padding:.85vh .5vw;
+  background:#fff;min-height:7.6vh;display:flex;flex-direction:column;justify-content:space-between;
+  opacity:0;transform:translateY(12px) scale(.94);
+  transition:opacity .34s ease,transform .34s ease}
+.slide.active .tile{opacity:1;transform:none}
+.tile .tp{font-size:clamp(9px,.72vw,10.5px);font-weight:700;line-height:1.15;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .tq{font-size:clamp(9px,.63vw,9px);letter-spacing:.09em;text-transform:uppercase;font-weight:700}
+.tile .tpr{font-family:var(--display);font-size:clamp(10.5px,1vw,14.5px);line-height:1}
+.q-full{border-left:3px solid var(--accent2)}
+.q-full .tq{color:var(--accent2)}
+.q-mid{border-left:3px solid var(--accent)}
+.q-mid .tq{color:#996416}
+.q-low{border-left:3px solid #b35127}
+.q-low .tq{color:#b35127}
+.q-unk{border-left:3px dashed var(--muted);background:rgba(95,107,109,.05)}
+.q-unk .tq{color:var(--muted)}
+.legend{display:flex;gap:1.6vw;margin-top:2.2vh;flex-wrap:wrap;
+  font-size:clamp(10px,.82vw,12px);color:var(--muted)}
+.legend i{display:inline-block;width:16px;height:3px;margin-right:6px;vertical-align:middle}
+
+/* closing list */
+ol.ask{margin-top:3.2vh;list-style:none}
+ol.ask li{padding:1.9vh 0;border-top:1px solid rgba(247,245,240,.16);
+  font-size:clamp(13.5px,1.22vw,19px);line-height:1.45;display:flex;gap:1.4vw}
+ol.ask li span.n{color:var(--accent);font-family:var(--display);flex:none;min-width:1.6ch}
+
+@media(max-width:1400px){
+  .slide{padding:6vh 5vw 11vh 17.5vw}
+  .tiles{gap:.5vw}
+}
+@media(hover:hover) and (pointer:fine){
+  #controls{opacity:.75}
+  #controls:hover,#controls:focus-within{opacity:1}
+}
+@media(hover:none),(pointer:coarse){
+  .control-btn{min-width:48px;height:48px;font-size:14px}
+  #controls{padding:6px;gap:3px}
+  #hint{display:none}
+}
+@media(orientation:portrait) and (max-width:700px){
+  #rail{display:none}
+  .slide{padding:max(7vh,env(safe-area-inset-top)) 7vw max(14vh,104px) 7vw;
+    justify-content:center}
+  h1{font-size:clamp(36px,10vw,54px)}
+  h2{font-size:clamp(27px,7vw,38px)}
+  p.lede{font-size:clamp(15px,4vw,19px)}
+  .eyebrow{font-size:10px;margin-bottom:1.5vh}
+  .split{grid-template-columns:1fr;gap:1.5vh;margin-top:2.2vh}
+  .sp{padding:1.6vh 4vw}
+  .sp p{font-size:14px;line-height:1.4}
+  .stats,.grid{grid-template-columns:repeat(2,1fr)!important;gap:3.2vw 5vw;margin-top:2.4vh}
+  .card{padding:1.5vh 3vw}
+  .card-n{font-size:clamp(25px,8vw,38px)}
+  .fan{margin-top:1vh}
+  .fanhead{margin-bottom:1.2vh}
+  .modelpill{font-size:14px;padding:.8vh 3vw}
+  .tiles{grid-template-columns:repeat(4,1fr);gap:.55vh 1vw}
+  .tile{padding:.45vh 1vw;min-height:4.9vh}
+  .tile .tp{font-size:9px}.tile .tq{font-size:9px}.tile .tpr{font-size:10px}
+  .legend{gap:1vh 3vw;margin-top:1.2vh;font-size:9px}
+  .legend span:last-child{margin-left:0!important;width:100%}
+  ol.ask{margin-top:2vh}
+  ol.ask li{padding:1.25vh 0;font-size:14px;gap:3vw}
+  #controls{bottom:max(12px,env(safe-area-inset-bottom));width:auto}
+  #counter{min-width:52px;padding:0 4px}
+}
+@media(orientation:landscape) and (hover:none),
+       (orientation:landscape) and (pointer:coarse){
+  .slide{padding-bottom:max(13vh,78px)}
+  #controls{bottom:max(8px,env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  html,body{overflow:visible;height:auto}
+  #rail,#progress,#controls,#hint,#toast{display:none}
+  main{height:auto}
+  .slide{position:relative;opacity:1;transform:none;page-break-after:always;height:100vh;display:flex}
+  .tile,.step{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.className+=" js"</script>
+<div id="js-warning">Begrenset forhåndsvisning: Lagre filen og åpne den fra Filer eller Nedlastinger i en nettleser for navigasjon og fullskjerm.</div>
+
+<nav id="rail" aria-label="Deler av presentasjonen"><div id="railnav"></div></nav>
+
+<main>
+
+  <!-- ═══ 1 · COVER ═══ -->
+  <section class="slide dark" data-sec="Hva vi lurte på">
+    <div class="eyebrow step">Eksempel · portabelt lysbildedekk · september 2026</div>
+    <h1 class="step">Vi har bygget et målebånd.<br>Ikke et svar.</h1>
+    <p class="lede step" style="margin-top:3vh">Om åpne AI-modeller — og hvorfor «samme
+      modell» ikke betyr samme vare.</p>
+  </section>
+
+  <!-- ═══ 2 · ELI5: hva er en åpen modell ═══ -->
+  <section class="slide" data-sec="Hva vi lurte på">
+    <div class="eyebrow step">Først, det enkle</div>
+    <h2 class="step">Lukket modell er ferdigmat.<br>Åpen modell er oppskriften.</h2>
+    <div class="split step">
+      <div class="sp">
+        <div class="eyebrow">Lukket</div>
+        <p>Du kjøper måltidet ferdig laget. Det smaker godt, men du vet ikke helt hva
+          som er i det, du kan ikke endre det, og du må kjøpe det på nytt hver gang.</p>
+      </div>
+      <div class="sp on">
+        <div class="eyebrow">Åpen vekt</div>
+        <p>Du får oppskriften. Du kan lage den på ditt eget kjøkken, endre den, og se
+          hva som faktisk er i den. Men nå må du kunne lage mat.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 3 · spørsmålet ═══ -->
+  <section class="slide" data-sec="Hva vi lurte på">
+    <h1 class="step" style="max-width:19ch">Spørsmålet var enkelt:
+      <b class="hl">kan vi lage maten selv?</b></h1>
+    <p class="lede step" style="margin-top:3.5vh">For å svare må man kunne måle og
+      sammenligne. Det viste seg å være den vanskelige delen — og det er derfor denne
+      jobben finnes.</p>
+  </section>
+
+  <!-- ═══ 4 · DIVIDER ═══ -->
+  <section class="slide dark" data-sec="Samme navn, ulik vare">
+    <div style="display:flex;align-items:baseline;gap:3vw">
+      <div class="step" style="font-family:var(--display);font-size:clamp(54px,10vw,155px);
+        line-height:.82;color:var(--accent);opacity:.9">02</div>
+      <div>
+        <h2 class="step" style="margin-bottom:1.6vh">Samme navn er ikke samme vare</h2>
+        <p class="lede step">Vi trodde vi sammenlignet én modell. Vi sammenlignet
+          24 butikker.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 5 · SIGNATURE: én modell, 24 butikker ═══ -->
+  <section class="slide" data-sec="Samme navn, ulik vare" data-anim="fan">
+    <div class="eyebrow step">Målt 20. september 2026 · ett modellnavn</div>
+    <h2 class="step" style="max-width:34ch;margin-bottom:1.4vh">Én oppskrift. 24 kjøkken.<br>Ett
+      navn på alt.</h2>
+    <div class="fan">
+      <div class="fanhead"><div class="modelpill">openai/gpt-oss-120b</div></div>
+      <div class="tiles">
+        <div class="tile q-full"><div><div class="tp">AkashML</div><div class="tq">bf16</div></div><div class="tpr">$0,17</div></div>
+        <div class="tile q-low"><div><div class="tp">CoreWeave</div><div class="tq">fp4</div></div><div class="tpr">$0,17</div></div>
+        <div class="tile q-full"><div><div class="tp">DeepInfra</div><div class="tq">bf16</div></div><div class="tpr">$0,17</div></div>
+        <div class="tile q-full"><div><div class="tp">DekaLLM</div><div class="tq">bf16</div></div><div class="tpr">$0,18</div></div>
+        <div class="tile q-full"><div><div class="tp">Crusoe</div><div class="tq">bf16</div></div><div class="tpr">$0,25</div></div>
+        <div class="tile q-low"><div><div class="tp">Novita</div><div class="tq">fp4</div></div><div class="tpr">$0,25</div></div>
+        <div class="tile q-mid"><div><div class="tp">Mancer 2</div><div class="tq">fp8</div></div><div class="tpr">$0,30</div></div>
+        <div class="tile q-unk"><div><div class="tp">Google</div><div class="tq">ukjent</div></div><div class="tpr">$0,36</div></div>
+        <div class="tile q-unk"><div><div class="tp">DigitalOcean</div><div class="tq">ukjent</div></div><div class="tpr">$0,42</div></div>
+        <div class="tile q-low"><div><div class="tp">BaseTen</div><div class="tq">fp4</div></div><div class="tpr">$0,50</div></div>
+        <div class="tile q-low"><div><div class="tp">BaseTen</div><div class="tq">fp4</div></div><div class="tpr">$0,50</div></div>
+        <div class="tile q-unk"><div><div class="tp">Bedrock</div><div class="tq">ukjent</div></div><div class="tpr">$0,60</div></div>
+        <div class="tile q-low"><div><div class="tp">Nebius</div><div class="tq">fp4</div></div><div class="tpr">$0,60</div></div>
+        <div class="tile q-unk"><div><div class="tp">Bedrock EU</div><div class="tq">ukjent</div></div><div class="tpr">$0,60</div></div>
+        <div class="tile q-full"><div><div class="tp">DeepInfra</div><div class="tq">bf16</div></div><div class="tpr">$0,60</div></div>
+        <div class="tile q-mid"><div><div class="tp">SiliconFlow</div><div class="tq">fp8</div></div><div class="tpr">$0,60</div></div>
+        <div class="tile q-unk"><div><div class="tp">Phala</div><div class="tq">ukjent</div></div><div class="tpr">$0,60</div></div>
+        <div class="tile q-unk"><div><div class="tp">Together</div><div class="tq">ukjent</div></div><div class="tpr">$0,60</div></div>
+        <div class="tile q-unk"><div><div class="tp">Groq</div><div class="tq">ukjent</div></div><div class="tpr">$0,60</div></div>
+        <div class="tile q-low"><div><div class="tp">Parasail</div><div class="tq">fp4</div></div><div class="tpr">$0,75</div></div>
+        <div class="tile q-unk"><div><div class="tp">Mara</div><div class="tq">ukjent</div></div><div class="tpr">$0,75</div></div>
+        <div class="tile q-full"><div><div class="tp">Cerebras</div><div class="tq">fp16</div></div><div class="tpr">$0,75</div></div>
+        <div class="tile q-unk"><div><div class="tp">SambaNova</div><div class="tq">ukjent</div></div><div class="tpr">$0,95</div></div>
+        <div class="tile q-mid"><div><div class="tp">DeepInfra</div><div class="tq">fp8</div></div><div class="tpr">$0,95</div></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent2)"></i>full presisjon</span>
+        <span><i style="background:var(--accent)"></i>halvert</span>
+        <span><i style="background:#b35127"></i>kraftig komprimert</span>
+        <span><i style="background:var(--muted)"></i>vil ikke si</span>
+        <span style="margin-left:auto">pris per million ord ut</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 6 · prisspredning ═══ -->
+  <section class="slide" data-sec="Samme navn, ulik vare">
+    <div class="eyebrow step">Samme modellnavn, samme dag</div>
+    <h2 class="step">Den dyreste butikken tar 5,6 ganger mer enn den billigste</h2>
+    <div class="stats step" style="grid-template-columns:repeat(4,1fr)">
+      <div><div class="num" data-to="24">24</div>
+        <div class="statlbl">steder å kjøpe den <i>samme</i> modellen</div></div>
+      <div><div class="num" data-to="20">20</div>
+        <div class="statlbl">ulike leverandører bak dem</div></div>
+      <div><div class="num" data-to="56" data-div="10">5,6</div>
+        <div class="statlbl">ganger forskjell mellom billigst og dyrest</div></div>
+      <div><div class="num" data-to="3">3</div>
+        <div class="statlbl">ulike priser fra <i>én og samme</i> leverandør</div></div>
+    </div>
+    <p class="lede step" style="margin-top:3.5vh">DeepInfra selger den samme modellen
+      til tre forskjellige priser, med to forskjellige presisjoner. Det er ikke juks —
+      det er bare ikke én vare.</p>
+  </section>
+
+  <!-- ═══ 7 · ELI5 quantization ═══ -->
+  <section class="slide" data-sec="Samme navn, ulik vare">
+    <div class="eyebrow step">Hvorfor prisene er så ulike</div>
+    <h2 class="step">Det er samme bilde — men noen sender deg en dårligere JPEG</h2>
+    <div class="grid step" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card" onclick="toggleCard(this)" tabindex="0">
+        <div class="card-k">BF16 / FP16</div>
+        <div class="card-n n-full">6<small>av 24</small></div>
+        <div class="card-t">Full presisjon</div>
+        <div class="card-d">Oppskriften slik den ble laget. Dyrest å kjøre, tregest,
+          og det man bør måle mot. 6 av 24 butikker.</div>
+        <div class="card-more">Trykk for detalj</div>
+      </div>
+      <div class="card" onclick="toggleCard(this)" tabindex="0">
+        <div class="card-k">FP8</div>
+        <div class="card-n n-mid">3<small>av 24</small></div>
+        <div class="card-t">Halvert</div>
+        <div class="card-d">Tallene er rundet av til halv nøyaktighet. Ofte nesten like
+          bra, noen ganger ikke. Ingen forteller deg når. 3 av 24.</div>
+        <div class="card-more">Trykk for detalj</div>
+      </div>
+      <div class="card" onclick="toggleCard(this)" tabindex="0">
+        <div class="card-k">FP4</div>
+        <div class="card-n n-low">6<small>av 24</small></div>
+        <div class="card-t">Kraftig komprimert</div>
+        <div class="card-d">Billig og raskt. Kvaliteten kan falle på akkurat de
+          oppgavene som er vanskelige — som lange tall og navn. 6 av 24.</div>
+        <div class="card-more">Trykk for detalj</div>
+      </div>
+      <div class="card" onclick="toggleCard(this)" tabindex="0">
+        <div class="card-k">UKJENT</div>
+        <div class="card-n n-unk">9<small>av 24</small></div>
+        <div class="card-t">Vil ikke si</div>
+        <div class="card-d">Ni av tjuefire oppgir ikke hvilken presisjon de kjører.
+          Google og Amazon Bedrock er blant dem. Da kan man ikke sammenligne.</div>
+        <div class="card-more">Trykk for detalj</div>
+      </div>
+    </div>
+    <p class="lede step" style="margin-top:3vh">Analogien holder: samme motiv, men
+      komprimert bilde. Det ser likt ut helt til du zoomer inn på det som betyr noe.</p>
+  </section>
+
+  <!-- ═══ 8 · reproduserbarhet ═══ -->
+  <section class="slide" data-sec="Samme navn, ulik vare">
+    <div class="eyebrow step">Det som overrasket mest</div>
+    <h2 class="step">13 av 43 kan ikke gi deg samme svar to ganger</h2>
+    <div class="stats step" style="grid-template-columns:repeat(3,1fr)">
+      <div><div class="num" data-to="43">43</div>
+        <div class="statlbl">endepunkter kartlagt i alt, på fem modellnavn</div></div>
+      <div><div class="num" data-to="30">30</div>
+        <div class="statlbl">kan gjenta samme svar hvis du ber om det</div></div>
+      <div><div class="num" data-to="861" data-div="10" data-suffix=" %">86,1 %</div>
+        <div class="statlbl">oppetid hos den svakeste — én av sju forespørsler feilet</div></div>
+    </div>
+    <p class="lede step" style="margin-top:3.5vh">Hvis en leverandør ikke kan gjenta et
+      svar, kan man ikke etterprøve det. For en tenant er ikke det en teknisk detalj — det
+      er forskjellen på om noe kan dokumenteres eller ikke.</p>
+  </section>
+
+  <!-- ═══ 9 · DIVIDER ═══ -->
+  <section class="slide dark" data-sec="Målebåndet">
+    <div style="display:flex;align-items:baseline;gap:3vw">
+      <div class="step" style="font-family:var(--display);font-size:clamp(54px,10vw,155px);
+        line-height:.82;color:var(--accent);opacity:.9">03</div>
+      <div>
+        <h2 class="step" style="margin-bottom:1.6vh">Så vi bygget målebåndet først</h2>
+        <p class="lede step">Ingen tall om modellene ennå. Bare verktøyet som gjør
+          tallene verdt å tro på.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 10 · hva målebåndet er ═══ -->
+  <section class="slide" data-sec="Målebåndet">
+    <div class="eyebrow step">Fire ting, alle kjedelige, alle nødvendige</div>
+    <h2 class="step">Reglene ble skrevet før vi målte noe</h2>
+    <div class="grid step" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card" onclick="toggleCard(this)" tabindex="0">
+        <div class="card-k">Skrevet på forhånd</div>
+        <div class="card-n">38</div>
+        <div class="card-t">påstander med bevisplikt</div>
+        <div class="card-d">Hver påstand studien kan komme til å gjøre er skrevet ned
+          på forhånd, sammen med hva som må måles for at den skal få stå. Ingen påstand
+          uten bevis.</div>
+        <div class="card-more">Trykk for detalj</div>
+      </div>
+      <div class="card" onclick="toggleCard(this)" tabindex="0">
+        <div class="card-k">Satt før målingen</div>
+        <div class="card-n">23</div>
+        <div class="card-t">terskler for «bra nok»</div>
+        <div class="card-d">Hva som er «bra nok» ble bestemt før første måling. Da kan
+          ingen flytte målstreken etterpå for å få et hyggeligere resultat — heller ikke
+          oss.</div>
+        <div class="card-more">Trykk for detalj</div>
+      </div>
+      <div class="card" onclick="toggleCard(this)" tabindex="0">
+        <div class="card-k">Kan ikke endres i smug</div>
+        <div class="card-n">3<small>kjernefiler</small></div>
+        <div class="card-t">har låst fingeravtrykk</div>
+        <div class="card-d">Eksempeldataene, påstandslista og tersklene — de tre som
+          avgjør utfallet. Endrer noen én av dem i etterkant, matcher ikke avtrykket, og
+          verktøyet nekter å kjøre. Registrene over systemer og målemetoder er
+          <i>ennå ikke</i> låst på samme måte. Det er en kjent mangel, funnet mens denne
+          presentasjonen ble laget.</div>
+        <div class="card-more">Trykk for detalj</div>
+      </div>
+      <div class="card" onclick="toggleCard(this)" tabindex="0">
+        <div class="card-k">Ingenting fra virkeligheten</div>
+        <div class="card-n">0</div>
+        <div class="card-t">kundedata brukt</div>
+        <div class="card-d">Alt testes på 12 oppdiktede eksempler vi har laget selv.
+          Ingen kundedata er i nærheten av dette, og skytaket i budsjettet står på null.</div>
+        <div class="card-more">Trykk for detalj</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 11 · statement: målstreken ═══ -->
+  <section class="slide" data-sec="Målebåndet">
+    <h1 class="step" style="max-width:21ch">Vi bestemte hva som er bra nok
+      <b class="hl">før</b> vi målte.</h1>
+    <p class="lede step" style="margin-top:3.5vh">Det er hele poenget. Når man setter
+      grensen etter at man har sett tallene, måler man ikke lenger noe — man begrunner
+      noe man allerede har bestemt.</p>
+  </section>
+
+  <!-- ═══ 12 · DIVIDER ═══ -->
+  <section class="slide dark" data-sec="Vaktbikkja">
+    <div style="display:flex;align-items:baseline;gap:3vw">
+      <div class="step" style="font-family:var(--display);font-size:clamp(54px,10vw,155px);
+        line-height:.82;color:var(--accent);opacity:.9">04</div>
+      <div>
+        <h2 class="step" style="margin-bottom:1.6vh">Og en vaktbikkje på lommeboka</h2>
+        <p class="lede step">Når en robot kan ringe butikken selv, må noen kunne
+          si stopp.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 13 · vaktbikkja ═══ -->
+  <section class="slide" data-sec="Vaktbikkja">
+    <div class="eyebrow step">Kostnadsvakt · testet, ikke antatt</div>
+    <h2 class="step">En full testrunde koster 16 øre. Taket står på 54 kroner.</h2>
+    <div class="stats step" style="grid-template-columns:repeat(3,1fr)">
+      <div><div class="num" data-to="16" data-suffix=" øre">16 øre</div>
+        <div class="statlbl">hva en full runde med alle 12 eksemplene faktisk koster</div></div>
+      <div><div class="num" data-to="300" data-suffix="x+">300x+</div>
+        <div class="statlbl">margin opp til taket — kommer vi nær det, er det en feil</div></div>
+      <div><div class="num" data-to="14">14</div>
+        <div class="statlbl">tester som beviser at vakten faktisk sier nei</div></div>
+    </div>
+    <p class="lede step" style="margin-top:3.5vh">Det siste tallet er det viktigste.
+      En sikring som aldri har røket, <i>vet</i> du ikke at virker. Så vi fikk den til å
+      ryke med vilje — og sjekket at den også sier nei når regnskapet er ødelagt, i
+      stedet for å gjette.</p>
+  </section>
+
+  <!-- ═══ 14 · systemet tok oss ═══ -->
+  <section class="slide" data-sec="Vaktbikkja">
+    <div class="eyebrow step">Den morsomste feilen i hele jobben</div>
+    <h1 class="step" style="max-width:20ch">KI-en prøvde å godkjenne
+      <b class="hl">sin egen eksamen.</b></h1>
+    <p class="lede step" style="margin-top:3.5vh">Underveis skulle tersklene stemples
+      som godkjent, og assistenten satte stempelet selv. Kontrollen vi hadde skrevet
+      inn i forkant nektet:
+      <i>«preliminary thresholds cannot be approved here»</i>.</p>
+    <p class="lede step" style="margin-top:2.2vh">Godkjenningen ligger nå der den skal —
+      med et menneskenavn på. Det er den beste enkeltnyheten i denne presentasjonen:
+      rekkverket virket, på oss.</p>
+  </section>
+
+  <!-- ═══ 15 · ASK ═══ -->
+  <section class="slide dark" data-sec="Hva vi ber om">
+    <div class="eyebrow step">Tre ting</div>
+    <h2 class="step" style="max-width:26ch">Vi ber ikke om en beslutning om AI.
+      Vi ber om å få gjøre målingen ordentlig.</h2>
+    <ol class="ask step">
+      <li><span class="n">1</span><span>Ikke sitér et tall om åpne modeller ennå —
+        heller ikke våre. Målebåndet er ikke ferdig, og et tidlig tall blir sitert
+        lenge etter at det er feil.</span></li>
+      <li><span class="n">2</span><span>La oss kjøre de tre neste eksperimentene.
+        Samlet kostnad er under én krone, på oppdiktede data.</span></li>
+      <li><span class="n">3</span><span>Bestem hvem som eier tersklene når dette
+        en gang gjelder på ordentlig. Det kan ikke være den som bygger.</span></li>
+    </ol>
+  </section>
+
+<div id="hint">← → for å bla · F for fullskjerm</div>
+</main>
+
+<nav id="controls" aria-label="Presentasjonskontroller">
+  <button class="control-btn" id="nprev" type="button" aria-label="Forrige lysbilde" title="Forrige lysbilde">
+    <span class="control-icon" aria-hidden="true">←</span>
+  </button>
+  <div id="counter" aria-live="polite">1 / 1</div>
+  <button class="control-btn" id="nnext" type="button" aria-label="Neste lysbilde" title="Neste lysbilde">
+    <span class="control-icon" aria-hidden="true">→</span>
+  </button>
+  <button class="control-btn" id="fullscreen" type="button" aria-label="Vis i fullskjerm" title="Vis i fullskjerm" aria-pressed="false">
+    <span class="control-icon" id="fullscreen-icon" aria-hidden="true">⛶</span>
+    <span class="control-label" id="fullscreen-label">Fullskjerm</span>
+  </button>
+</nav>
+<div id="progress"><i></i></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+function toggleCard(el){ el.classList.toggle('open'); }
+
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var cur = 0;
+  var prevButton = document.getElementById('nprev');
+  var nextButton = document.getElementById('nnext');
+  var fullscreenButton = document.getElementById('fullscreen');
+  var fullscreenLabel = document.getElementById('fullscreen-label');
+  var fullscreenIcon = document.getElementById('fullscreen-icon');
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+
+  function notify(message){
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 4200);
+  }
+
+  function fullscreenElement(){
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+
+  function fullscreenRequest(){
+    var root = document.documentElement;
+    return root.requestFullscreen || root.webkitRequestFullscreen || null;
+  }
+
+  function updateFullscreenControl(){
+    var active = !!fullscreenElement();
+    fullscreenButton.setAttribute('aria-pressed', active ? 'true' : 'false');
+    fullscreenButton.setAttribute('aria-label', active ? 'Avslutt fullskjerm' : 'Vis i fullskjerm');
+    fullscreenButton.title = active ? 'Avslutt fullskjerm' : 'Vis i fullskjerm';
+    fullscreenLabel.textContent = active ? 'Avslutt' : 'Fullskjerm';
+    fullscreenIcon.textContent = active ? '×' : '⛶';
+  }
+
+  function toggleFullscreen(){
+    if(fullscreenElement()){
+      var exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if(exit) exit.call(document);
+      return;
+    }
+    var request = fullscreenRequest();
+    if(!request){
+      notify('Nettleseren støtter ikke fullskjerm for HTML. Snu telefonen sidelengs, eller åpne filen i en nettleser som støtter fullskjerm.');
+      return;
+    }
+    try{
+      var result = request.call(document.documentElement);
+      if(result && result.catch){
+        result.catch(function(){ notify('Nettleseren avslo fullskjerm. Prøv igjen fra nettleserens meny.'); });
+      }
+    }catch(err){
+      notify('Nettleseren avslo fullskjerm. Prøv igjen fra nettleserens meny.');
+    }
+  }
+
+  var railnav = document.getElementById('railnav');
+  var secs = [], seen = {};
+  slides.forEach(function(s,i){
+    var name = s.dataset.sec || 'Slide';
+    if(!(name in seen)){ seen[name] = secs.length; secs.push({name:name, first:i, slides:[]}); }
+    secs[seen[name]].slides.push(i);
+  });
+  secs.forEach(function(sec){
+    var d = document.createElement('div');
+    d.className = 'rail-sec';
+    d.innerHTML = '<div class="tick"></div><div class="lbl"></div>';
+    d.querySelector('.lbl').textContent = sec.name;
+    d.onclick = function(){ go(sec.first); };
+    railnav.appendChild(d);
+  });
+  var ticks = Array.prototype.slice.call(railnav.children);
+
+  /* stagger the 24 tiles so the fan-out reads as assembling, not appearing */
+  document.querySelectorAll('.tiles').forEach(function(wrap){
+    Array.prototype.slice.call(wrap.children).forEach(function(t,i){
+      t.style.transitionDelay = (0.18 + i*0.045).toFixed(3)+'s';
+    });
+  });
+
+  /* count-up: data-to, optional data-div for decimals, optional data-suffix */
+  function runCounters(slide){
+    slide.querySelectorAll('.num[data-to]').forEach(function(el){
+      var to = +el.dataset.to;
+      var div = el.dataset.div ? +el.dataset.div : 1;
+      var suffix = el.dataset.suffix || '';
+      var t0 = null, dur = 1050;
+      function fmt(v){
+        var s = div === 1 ? String(Math.round(v))
+                          : (v/div).toFixed(String(div).length-1).replace('.', ',');
+        return s + suffix;
+      }
+      function tick(ts){
+        if(!t0) t0 = ts;
+        var p = Math.min((ts-t0)/dur, 1);
+        el.textContent = fmt(to * (1-Math.pow(1-p,3)));
+        if(p<1) requestAnimationFrame(tick);
+        else el.textContent = fmt(to);
+      }
+      el.textContent = fmt(0); requestAnimationFrame(tick);
+    });
+  }
+
+  function show(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    cur = i;
+    slides.forEach(function(s,j){
+      s.classList.toggle('active', j===i);
+      s.classList.toggle('prev', j<i);
+    });
+    document.body.classList.toggle('on-dark', slides[i].classList.contains('dark'));
+    var active = -1;
+    secs.forEach(function(sec,k){ if(sec.slides.indexOf(i) !== -1) active = k; });
+    ticks.forEach(function(t,j){ t.classList.toggle('on', j===active); });
+    document.getElementById('counter').textContent = (i+1)+' / '+slides.length;
+    prevButton.disabled = i === 0;
+    nextButton.disabled = i === slides.length-1;
+    document.querySelector('#progress i').style.width =
+      (slides.length<2 ? 100 : (i/(slides.length-1))*100)+'%';
+    // Deep-linking is an enhancement, not the feature. A document reached through srcdoc
+    // has an opaque origin, and the History API refuses a state there, so an unguarded call
+    // throws on every slide change and kills the navigation that follows it.
+    try{
+      try { if(location.hash !== '#s'+(i+1)) history.replaceState(null,'','#s'+(i+1)); }
+    catch(e) { /* opaque origin: the deck still moves, it just cannot deep-link */ }
+    }catch(e){ /* opaque origin: the deck still shows the right slide */ }
+    runCounters(slides[i]);
+  }
+  function go(i){ show(i); }
+  function step(d){ show(cur+d); }
+
+  prevButton.onclick = function(){ step(-1); };
+  nextButton.onclick = function(){ step(1); };
+  fullscreenButton.onclick = toggleFullscreen;
+  document.addEventListener('fullscreenchange', updateFullscreenControl);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenControl);
+  updateFullscreenControl();
+
+  document.addEventListener('keydown', function(e){
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    switch(e.key){
+      case 'ArrowRight': case 'PageDown': case ' ': step(1); e.preventDefault(); break;
+      case 'ArrowLeft':  case 'PageUp':          step(-1); e.preventDefault(); break;
+      case 'Home': show(0); break;
+      case 'End':  show(slides.length-1); break;
+      case 'f': case 'F': toggleFullscreen(); break;
+    }
+  });
+
+  var x0 = null;
+  document.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; });
+  document.addEventListener('touchend', function(e){
+    if(x0===null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if(Math.abs(dx) > 60) step(dx < 0 ? 1 : -1);
+    x0 = null;
+  });
+
+  setTimeout(function(){ document.getElementById('hint').classList.add('gone'); }, 4200);
+
+  var start = parseInt((location.hash.match(/^#s(\d+)$/)||[])[1], 10);
+  show(isNaN(start) ? 0 : start-1);
+})();
+</script>
+</body>
+</html>

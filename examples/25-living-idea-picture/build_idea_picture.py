@@ -34,16 +34,6 @@ TEMPLATE = HERE / "idea-picture.template.html"
 FRAGMENT = HERE / "figure.fragment.html"
 OUT = HERE / "idea-picture.html"
 CSS_OUT = HERE / "figure.css"
-# figure.css is written by this script, so its licence header is written here too.
-CSS_LICENCE = """/*
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
-*/
-"""
 
 # One path per arrow: w- = the wide picture, t- = the tall one shown on a phone.
 PATHS = {
@@ -74,19 +64,58 @@ STEP = {"author": 1, "out": 2, "kill": 3, "down": 3, "read": 4, "loop": 4, "fb":
 IDLE_DELAY = {"author": 0, "out": .8, "down": 1.6, "kill": 2.0, "read": 2.4, "loop": 2.8,
               "fb": 3.6, "comm": 1.2, "commback": 2.6}
 LENSES = ("author", "reader", "community", "host", "kill")
-HOSTS = ("sp", "od", "teams", "mail", "usb", "sky")
+HOSTS = ("sp", "od", "teams", "conf", "mail", "usb", "sky")
 CYCLE = 12  # seconds for one playback of all four steps
 
 BASE_CSS = """\
-/* Up to 62rem wide even inside a narrower column, so the picture's text stays readable. */
-.lv{position:relative;margin:1.5rem calc(50% - min(31rem, 50vw - 1rem));padding:1.25rem;
-  background:var(--panel,#fff);border:.0625rem solid var(--line,#dfe3e0);border-radius:.6rem}
-.lv-r{position:absolute;width:.0625rem;height:.0625rem;margin:-.0625rem;overflow:hidden;
+/* The picture breaks out of a narrow column: it takes 1056 px, or the window less its
+   margins, so the wide canvas gets the width its text needs. type:inline-size makes the
+   box itself the query container below, instead of the viewport. */
+.lv{position:relative;container-type:inline-size;
+  margin:1.5rem calc(50% - min(528px, 50vw - 16px));padding:20px;
+  background:var(--panel,#fff);border:1px solid var(--line,#dfe3e0);border-radius:.6rem}
+.lv-r{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;
   clip:rect(0 0 0 0);white-space:nowrap;opacity:0}
+/* The stage is 2 x breakout - 2 x 20px padding - 2 x 1px border, so a 528px breakout
+   leaves it 1014 px: wider than the wide canvas. Scaled below its canvas a 14 px label
+   reaches the reader at 11.6 px, while a gate reading CSS reports 14 px for both, so
+   neither picture may shrink below its own width: the stage scrolls instead, and a
+   line of text appears when it does.
+
+   The two min-widths are the guarantee, not the breakpoint below: they make a wrong
+   breakpoint degrade to a scroll rather than to clipped type, and they hold in a
+   browser that never evaluates a container query. */
+.lv-stage{overflow-x:auto}
 .lv-stage svg{display:block;width:100%;height:auto}
-.lv-stage .lv-tall{display:none}
-@media (max-width:52rem){.lv{padding:.75rem}.lv-stage .lv-wide{display:none}
-  .lv-stage .lv-tall{display:block;max-width:28rem;margin:0 auto}}
+.lv-stage .lv-wide{min-width:1000px}
+.lv-stage .lv-tall{min-width:400px;display:none}
+.lv-hint{display:none}
+/* Asked of the stage itself, so the answer is true on every platform and at every root
+   font size: no viewport arithmetic, no scrollbar gutter to guess at. The hint promises
+   that dragging reveals more, so it appears only when the stage is narrower than the
+   tall canvas. */
+@container (max-width:399px){.lv-hint{display:block;font-size:14px;color:var(--ink-soft);margin:8px 0 0}}
+/* Which picture: the stage holds the wide canvas from 1000 px of its own width, which
+   the breakout reaches at 1088 px of viewport. Asking the stage keeps those two numbers
+   from having to agree. */
+@container (max-width:999px){
+  .lv-stage .lv-wide{display:none}
+  .lv-stage .lv-tall{display:block;max-width:544px;margin:0 auto}}
+/* A browser without container queries gets the same two decisions from the viewport, at
+   the numbers the box arithmetic gives for a 16 px root: the stage is the viewport minus
+   74 px (2 x 16px margin, 2 x 20px padding, 2 x 1px border), so it clears the wide
+   canvas from 1074 px and the tall canvas from 474 px. A pixel out is no lie: the
+   min-widths still hold. */
+@supports not (container-type:inline-size){
+  @media (max-width:1088px){
+    .lv-stage .lv-wide{display:none}
+    .lv-stage .lv-tall{display:block;max-width:544px;margin:0 auto}}
+  @media (max-width:474px){.lv-hint{display:block;font-size:14px;color:var(--ink-soft);margin:8px 0 0}}
+}
+/* The whole drawing, at any width and on paper. Both selectors, because a plain svg rule
+   loses on specificity to the min-widths above. */
+@media print{.lv-stage{overflow:visible}
+  .lv-stage .lv-wide,.lv-stage .lv-tall{min-width:0}}
 .lv text{font-family:inherit}
 /* SVG text sizes are user units of the viewBox, not page layout: px keeps the picture's
    proportions fixed when the reader's root font size changes. */
@@ -94,14 +123,14 @@ BASE_CSS = """\
 .lv .t-core{font-size:34px;font-weight:700;fill:#0d2b21}
 .lv .t-file{font-size:17px;font-weight:700;fill:#0d2b21}
 .lv .t-b{font-size:14px;fill:#28473c}
-.lv .t-js{font-size:13px;font-style:italic;fill:#2f6b4f}
-.lv .t-s{font-size:12.5px;fill:#5d6b65}
-.lv .t-s2{font-size:13px;fill:#28473c}
-.lv .t-cap{font-size:12.5px;font-weight:700;letter-spacing:.06em;fill:#28473c}
-.lv .t-kill{font-size:13px;font-weight:700;letter-spacing:.06em;fill:#8c3b2e}
-.lv .t-k{font-size:13.5px;fill:#6b3229}
-.lv .t-w{font-size:12px;fill:#8c3b2e}
-.lv .t-loop{font-size:12.5px;fill:#5d6b65}
+.lv .t-js{font-size:14px;font-style:italic;fill:#2f6b4f}
+.lv .t-s{font-size:14px;fill:#5d6b65}
+.lv .t-s2{font-size:14px;fill:#28473c}
+.lv .t-cap{font-size:14px;font-weight:700;letter-spacing:.06em;fill:#28473c}
+.lv .t-kill{font-size:14px;font-weight:700;letter-spacing:.06em;fill:#8c3b2e}
+.lv .t-k{font-size:14px;fill:#6b3229}
+.lv .t-w{font-size:14px;fill:#8c3b2e}
+.lv .t-loop{font-size:14px;fill:#5d6b65}
 .lv .g{transition:opacity .45s ease}
 .lv .pk{fill:#3f8f3f;opacity:0;offset-rotate:0deg;animation:lv-flow 3.2s linear infinite}
 .lv .pk.back{fill:#7f9a90}
@@ -141,7 +170,7 @@ BASE_CSS = """\
 .lv-p,.lv-ht{display:none}
 .lv-p p+p{margin-top:.6rem}
 .lv-hosts{margin:.25rem 0 .6rem}
-.lv-hosts label{font-size:.85rem}
+.lv-hosts label{font-size:.875rem}
 .lv-r[name=lv-host]:checked~.lv-panels .lv-ht-none{display:none}
 .lv-ideas{margin:1.5rem 0 0;padding-top:1rem;border-top:.0625rem solid var(--line,#dfe3e0)}
 .lv-ideas h3{font-size:1rem;margin:0 0 .5rem;color:#0d2b21}
@@ -149,7 +178,7 @@ BASE_CSS = """\
   grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.6rem}
 .lv-ideas li{margin:0;padding:.6rem .75rem;border:.0625rem solid var(--line,#dfe3e0);
   border-radius:.5rem;font-size:.9rem;color:#28473c;background:var(--paper,#f7f7f5)}
-.lv-ideas b{display:inline-block;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;
+.lv-ideas b{display:inline-block;font-size:.875rem;letter-spacing:.06em;text-transform:uppercase;
   padding:0 .45rem;border-radius:999px;margin-right:.3rem;vertical-align:.1em}
 .lv-ideas .now{background:#0d2b21;color:#fff}
 .lv-ideas .soon{background:#e4efe4;color:#0d2b21}
@@ -245,7 +274,7 @@ def main() -> int:
         print(f"✗ unsubstituted placeholders: {sorted(set(left))}", file=sys.stderr)
         return 1
     OUT.write_text(page, encoding="utf-8")
-    CSS_OUT.write_text(CSS_LICENCE + css + "\n", encoding="utf-8")
+    CSS_OUT.write_text(css + "\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(HERE.parent.parent)} ({len(page.encode()) / 1024:.1f} KB), "
           f"figure {len((css + fragment).encode()) / 1024:.1f} KB")
     return 0

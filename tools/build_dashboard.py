@@ -25,7 +25,6 @@ so the Tier 1 path stays prerequisite-free.
 from __future__ import annotations
 
 import argparse
-import csv
 import datetime as dt
 import html
 import json
@@ -33,30 +32,24 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import build_size  # noqa: E402
+import build_stamp  # noqa: E402
+import feedback_link  # noqa: E402
+import i18n  # noqa: E402
+import review_layer  # noqa: E402
+import tun_core  # noqa: E402
+import tun_tokens  # noqa: E402
+from tun_tokens import strip_css_comments  # noqa: E402
+from tun_core import NOT_STATED, die  # noqa: E402
+
 TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "single-file-dashboard.html"
 # The strings table is named, not derived from TEMPLATE: a test points TEMPLATE at a copy.
 STRINGS = "single-file-dashboard"
 
-# Colours come from tools/tun_tokens.py, never from the template: it resolves the active
-# palette (core's neutral one unless TUN_PALETTE says otherwise), validates every slot,
-# and returns the CSS to inline. Named as a constant so a test can point a copy of this
-# script at the real tools/ directory.
-TOOLS_DIR = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(TOOLS_DIR))
-import feedback_link  # noqa: E402
-import i18n  # noqa: E402
-import tun_tokens  # noqa: E402
-
-TOKEN_FILES = ("status-semantic.css", "theme-light.css")
-
 # Anything above this is a Tier 1 violation — see docs/02-architecture.md
-SIZE_WARN_MB = 20
-SIZE_FAIL_MB = 50
 
-# What the provenance block says when nobody named a requester. Never fall back to the
-# OS user name: it put the builder's login into every committed artefact (#45).
-# A role is what the block wants; pass one with --requested-by.
-NOT_STATED = "not stated"
+# NOT_STATED, the provenance block's wording for "no requester named", is tun_core's.
 
 # The KPI cards a caller can pick with --kpis: the label in the strings table, and the
 # JavaScript for the value. It runs inside renderKpis(), where total, dims and avg exist.
@@ -91,15 +84,15 @@ def kpi_cards(args, t: dict[str, str]) -> str:
     if args.kpis:
         kinds = [k.strip() for k in args.kpis.split(",") if k.strip()]
         if not kinds:
-            sys.exit(f"error: --kpis names no card. Choose from: {', '.join(KPI_CARDS)}")
+            die(f"--kpis names no card. Choose from: {', '.join(KPI_CARDS)}")
         for k in kinds:
             if k not in KPI_CARDS:
-                sys.exit(f"error: --kpis: unknown card {k!r}. Choose from: {', '.join(KPI_CARDS)}")
+                die(f"--kpis: unknown card {k!r}. Choose from: {', '.join(KPI_CARDS)}")
         if "per_period" in kinds and not args.time:
-            sys.exit("error: --kpis per_period needs --time.")
+            die("--kpis per_period needs --time.")
         if "mean" in kinds and args.measure_kind == "rate":
-            sys.exit("error: --kpis mean is the mean per row, which misleads for "
-                     "--measure-kind rate. Drop it, or use per_period.")
+            die("--kpis mean is the mean per row, which misleads for "
+                "--measure-kind rate. Drop it, or use per_period.")
     else:
         kinds = [k for k in MEASURE_KINDS[args.measure_kind] if k != "per_period" or args.time]
     lines = []
@@ -112,79 +105,12 @@ def kpi_cards(args, t: dict[str, str]) -> str:
     return ",\n".join(lines)
 
 
-def load_rows(path: pathlib.Path) -> list[dict]:
-    suffix = path.suffix.lower()
-    if suffix == ".json":
-        rows = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(rows, list):
-            sys.exit("error: JSON input must be an array of objects")
-        return rows
-    if suffix in (".csv", ".tsv", ".txt"):
-        delim = "\t" if suffix == ".tsv" else ","
-        with path.open(newline="", encoding="utf-8-sig") as fh:
-            sample = fh.read(8192)
-            fh.seek(0)
-            if suffix != ".tsv":
-                try:
-                    delim = csv.Sniffer().sniff(sample, delimiters=",;\t|").delimiter
-                except csv.Error:
-                    delim = ","
-            return list(csv.DictReader(fh, delimiter=delim))
-    sys.exit(f"error: unsupported input {suffix!r}. Convert to csv/tsv/json first.")
-
-
-def coerce_numbers(rows: list[dict]) -> list[dict]:
-    """Turn numeric-looking strings into real numbers so charts and sorting work.
-
-    Handles Norwegian formatting: '1 234,56' and '1.234,56' both become 1234.56.
-    A column is only converted if EVERY non-empty value in it parses — otherwise
-    we would silently corrupt an ID column that happens to look numeric. An empty
-    value in a converted column becomes None, never 0: a 0 would move the average.
-    """
-    if not rows:
-        return rows
-    cols = list(rows[0].keys())
-    numeric_cols = []
-    for col in cols:
-        values = [r.get(col) for r in rows]
-        non_empty = [v for v in values if v not in (None, "")]
-        if not non_empty or not all(isinstance(v, str) for v in non_empty):
-            continue
-        if all(_parse_num(v) is not None for v in non_empty):
-            numeric_cols.append(col)
-    for row in rows:
-        for col in numeric_cols:
-            if col in row:
-                row[col] = _parse_num(row[col]) if row[col] not in (None, "") else None
-    return rows
-
-
-def is_numeric_column(rows: list[dict], col: str) -> bool:
-    """True if the column has at least one value and every non-empty value is a number."""
-    values = [r.get(col) for r in rows if r.get(col) not in (None, "")]
-    return bool(values) and all(isinstance(v, (int, float)) and not isinstance(v, bool)
-                                for v in values)
-
-
-def _parse_num(value):
-    if isinstance(value, (int, float)):
-        return value
-    if not isinstance(value, str):
-        return None
-    s = value.strip().replace("\u00a0", "").replace(" ", "")
-    if not s:
-        return None
-    # Norwegian: comma is the decimal separator, dot/space the thousands sep
-    if "," in s and "." in s:
-        s = s.replace(".", "").replace(",", ".")
-    elif "," in s:
-        s = s.replace(",", ".")
-    s = s.rstrip("%")
-    try:
-        f = float(s)
-    except ValueError:
-        return None
-    return int(f) if f.is_integer() and abs(f) < 2**53 else f
+# Reading the table, reading the numbers out of it, and stopping on a bad one all live in
+# tools/tun_core.py, so this builder cannot drift from the other four. See the module
+# docstring for why the numeric parse is the part that mattered.
+load_rows = tun_core.read_rows
+coerce_numbers = tun_core.coerce_numbers
+is_numeric_column = tun_core.is_numeric_column
 
 
 def main() -> None:
@@ -214,38 +140,39 @@ def main() -> None:
                          "data updates for everyone without rebuilding the dashboard.")
     ap.add_argument("--feedback-to", default="", metavar="ADDRESS_OR_ISSUE_URL",
                     help=feedback_link.FLAG_HELP)
+    ap.add_argument("--annotate", action="store_true", help=review_layer.FLAG_HELP)
     i18n.add_lang_argument(ap)
     args = ap.parse_args()
     t = i18n.load(STRINGS, args.lang)
 
     rows = coerce_numbers(load_rows(args.data))
     if not rows:
-        sys.exit("error: input contained zero rows")
+        die("input contained zero rows")
 
     cols = list(rows[0].keys())
     for name, col in (("--dimension", args.dimension), ("--measure", args.measure)):
         if col not in cols:
-            sys.exit(f"error: {name} {col!r} not found. Available: {', '.join(cols)}")
+            die(f"{name} {col!r} not found. Available: {', '.join(cols)}")
     if args.time and args.time not in cols:
-        sys.exit(f"error: --time {args.time!r} not found. Available: {', '.join(cols)}")
+        die(f"--time {args.time!r} not found. Available: {', '.join(cols)}")
 
     # Decided on the non-empty values: a query result often has NULL in the first row.
     if not is_numeric_column(rows, args.measure):
-        sys.exit(f"error: --measure {args.measure!r} is not numeric — charts would be empty. "
-                 f"Check the column, or pick a numeric one from: "
-                 f"{', '.join(c for c in cols if is_numeric_column(rows, c)) or '(none found)'}")
+        die(f"--measure {args.measure!r} is not numeric — charts would be empty. "
+            "Check the column, or pick a numeric one from: "
+            f"{', '.join(c for c in cols if is_numeric_column(rows, c)) or '(none found)'}")
     no_value = sum(1 for r in rows if r.get(args.measure) in (None, ""))
 
     filters = [c.strip() for c in args.filters.split(",") if c.strip()]
     missing = [c for c in filters if c not in cols]
     if missing:
-        sys.exit(f"error: filter column(s) not found: {', '.join(missing)}")
+        die(f"filter column(s) not found: {', '.join(missing)}")
 
     cards_js = kpi_cards(args, t)
 
-    now = dt.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z")
-    extracted = dt.datetime.fromtimestamp(args.data.stat().st_mtime).astimezone() \
-                  .strftime("%Y-%m-%d %H:%M %Z")
+    # Both stamps honour SOURCE_DATE_EPOCH, so a pinned rebuild is byte-identical.
+    now = build_stamp.local()
+    extracted = build_stamp.from_mtime(args.data)
 
     payload = json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
     meta_js = json.dumps({
@@ -264,8 +191,6 @@ def main() -> None:
                       f"window.DASHBOARD_META={meta_js};\n"
                       "</script>")
 
-    token_css, token_source = tun_tokens.load_token_css(TOKEN_FILES)
-
     feedback = ""
     if args.feedback_to:
         try:
@@ -273,26 +198,67 @@ def main() -> None:
                                            source=args.source or args.data.name,
                                            lang=args.lang)
         except ValueError as exc:
-            sys.exit(f"error: --feedback-to: {exc}")
+            die(f"--feedback-to: {exc}")
 
+    # Nothing the caller types goes into the page raw (ROADMAP A0b, 2026-10-24): a title of
+    # `<b>x` became bold text, a column named `Navn "sitert"` ended the JavaScript string it
+    # was pasted into, and a `"` anywhere in a column name stopped the page. Two contexts, so
+    # two treatments: HTML gets html.escape, a JavaScript string gets json.dumps, which is the
+    # JSON escape and therefore also a valid JavaScript one.
+    # The static view (docs/11 section 3c). A viewer that blocks scripting — Quick Look on
+    # iOS and macOS does — shows what the build already knew: the totals, and the first rows
+    # of the file. The same rows feed the script, so the two can only disagree if the file is
+    # regenerated, and then both change together.
+    def static_num(v) -> str:
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            return html.escape("" if v is None else str(v))
+        if float(v).is_integer():
+            return i18n.group_int(int(v), args.lang)
+        whole, frac = divmod(round(abs(v), 1), 1)
+        sign = "-" if v < 0 else ""
+        sep = "," if args.lang == "nb" else "."
+        return f"{sign}{i18n.group_int(int(whole), args.lang)}{sep}{int(round(frac * 10))}"
+
+    measure_values = [r.get(args.measure) for r in rows]
+    measure_total = sum(v for v in measure_values
+                        if isinstance(v, (int, float)) and not isinstance(v, bool))
+    dims = {r.get(args.dimension) for r in rows}
+    nojs_facts = "".join(
+        f"<div><dt>{html.escape(label)}</dt><dd>{value}</dd></div>"
+        for label, value in (
+            (i18n.fill(t["kpi_total"], measure=args.measure), static_num(measure_total)),
+            (t["kpi_rows"], i18n.group_int(len(rows), args.lang)),
+            (i18n.fill(t["kpi_unique"], dimension=args.dimension),
+             i18n.group_int(len(dims), args.lang)),
+        ))
+    cols = [c for c in (args.dimension, args.time, args.measure) if c]
+    nojs_head = "".join(
+        f'<th class="{"num" if c == args.measure else ""}">{html.escape(c)}</th>' for c in cols)
+    nojs_rows = "".join(
+        "<tr>" + "".join(
+            f'<td class="{"num" if c == args.measure else ""}">'
+            f'{static_num(r.get(c)) if c == args.measure else html.escape(str(r.get(c, "")))}</td>'
+            for c in cols) + "</tr>"
+        for r in rows[:8])
+
+    source_name = args.source or args.data.name
     subs = {
-        "TOKEN_CSS": token_css,
         "DATA_BLOCK": data_block,
         "DATA_MODE": args.mode,
-        "DASHBOARD_TITLE": args.title,
-        "SOURCE_DESCRIPTION": args.source or args.data.name,
+        "DASHBOARD_TITLE": html.escape(args.title),
+        "NOJS_FACTS": nojs_facts,
+        "NOJS_HEAD": nojs_head,
+        "NOJS_ROWS": nojs_rows,
+        "SOURCE_DESCRIPTION": html.escape(source_name),
         "EXTRACT_TIMESTAMP": extracted,
         "BUILD_TIMESTAMP": now,
-        "REQUESTED_BY": args.requested_by or NOT_STATED,
+        "REQUESTED_BY": html.escape(args.requested_by or NOT_STATED),
         "ROW_COUNT": i18n.group_int(len(rows), args.lang),
-        "DIMENSION_COL": args.dimension,
-        "TIME_COL": args.time,
-        "MEASURE_COL": args.measure,
         "FILTER_COLS_JSON": json.dumps(filters or [args.dimension], ensure_ascii=False),
-        "CHART1_TITLE": i18n.fill(t["chart1_title"], measure=args.measure,
-                                  dimension=args.dimension),
-        "CHART2_TITLE": (i18n.fill(t["chart2_title"], measure=args.measure, time=args.time)
-                         if args.time else t["chart2_default"]),
+        "CHART1_TITLE": html.escape(i18n.fill(t["chart1_title"], measure=args.measure,
+                                             dimension=args.dimension)),
+        "CHART2_TITLE": html.escape(i18n.fill(t["chart2_title"], measure=args.measure, time=args.time)
+                                    if args.time else t["chart2_default"]),
         # Holds column names, so it goes in late, like the feedback block below.
         "KPI_CARDS": cards_js,
         # Last on purpose: the block holds reader-facing text (the title), and no
@@ -300,16 +266,57 @@ def main() -> None:
         "FEEDBACK_BLOCK": feedback,
     }
 
-    html = i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
+    # The colours come from tools/tokens/: one seam with every other artefact. auto_dark:
+    # a reader whose system is dark gets a dark dashboard with no script.
+    token_css, _ = tun_tokens.load_token_css(auto_dark=True)
+    page = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
+            .replace("{{TOKEN_CSS}}", strip_css_comments(token_css)))
+    # The three column names and the source fallback sit inside a JavaScript string, so they
+    # are substituted on their quoted form, before the HTML pass below can escape them.
+    for token, value in (("DIMENSION_COL", args.dimension), ("TIME_COL", args.time),
+                         ("MEASURE_COL", args.measure)):
+        page = page.replace('"{{' + token + '}}"', json.dumps(value, ensure_ascii=False))
+    page = page.replace('DATA_META.source || "{{SOURCE_DESCRIPTION}}"',
+                        "DATA_META.source || " + json.dumps(source_name, ensure_ascii=False))
     for key, value in subs.items():
-        html = html.replace("{{" + key + "}}", str(value))
+        page = page.replace("{{" + key + "}}", str(value))
 
-    leftover = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", html)))
+    leftover = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", page)))
     if leftover:
-        sys.exit(f"error: template placeholders not substituted: {leftover}")
+        die(f"template placeholders not substituted: {leftover}")
+
+    if args.annotate:
+        # The review round trip (docs/31): the reader comments on a row and copies a text
+        # block back. The layer is appended here, never baked into the template, so an
+        # artefact built without --annotate is byte for byte what it was.
+        # A row is named by its categorical cells, not by every cell: a number that moves
+        # between builds must not make the row the reader pointed at unfindable. The
+        # measure is the value under discussion, so it is never part of the name. In the
+        # example data these four columns are unique per row; where the source file holds
+        # genuine duplicates the report says how many rows share the name.
+        all_cols = list(rows[0]) if rows else [args.dimension]
+        keys = [c for c in all_cols
+                if c != args.measure and not is_numeric_column(rows, c)] or [args.dimension]
+
+        def annotate_num(v) -> str:
+            """A cell as the table shows it: whole numbers grouped, nothing else."""
+            if isinstance(v, bool) or not isinstance(v, (int, float)):
+                return "" if v is None else str(v)
+            return i18n.group_int(int(round(v)), args.lang)
+
+        try:
+            head_html, body_html = review_layer.layer(
+                title=args.title, file=args.out.name, built=now, rows=len(rows),
+                source=source_name, keys=keys, measure=args.measure,
+                examples=[([str(r.get(k, "")) for k in keys], annotate_num(r.get(args.measure)))
+                          for r in rows[:review_layer.MAX_EXAMPLES]],
+                lang=args.lang)
+            page = review_layer.insert(page, head_html, body_html)
+        except (ValueError, KeyError) as exc:
+            die(f"--annotate: {exc}")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(html, encoding="utf-8")
+    args.out.write_text(page, encoding="utf-8")
 
     if data_path is not None:
         data_path.write_text(
@@ -321,7 +328,6 @@ def main() -> None:
 
     size_mb = args.out.stat().st_size / 1_048_576
     print(f"built {args.out}  ({size_mb:.2f} MB, {len(rows):,} rows)".replace(",", " "))
-    print(f"  palette: {token_source}")
     if no_value:
         counts = f"{no_value:,} of {len(rows):,}".replace(",", " ")
         print(f"  note: {counts} rows have no {args.measure!r} value. They show empty in the "
@@ -332,14 +338,9 @@ def main() -> None:
         print("  paired mode: replace data.js to update the numbers everywhere, "
               "no rebuild needed")
         size_mb += d_mb
-    if size_mb > SIZE_FAIL_MB:
-        print(f"  ✗ FAIL {size_mb:.1f} MB exceeds the {SIZE_FAIL_MB} MB Tier 1 ceiling.\n"
-              f"    Pre-aggregate the data, or move to Tier 3 (docs/02-architecture.md).",
-              file=sys.stderr)
-        sys.exit(2)
-    if size_mb > SIZE_WARN_MB:
-        print(f"  ⚠ {size_mb:.1f} MB is above the {SIZE_WARN_MB} MB comfort budget — "
-              f"consider pre-aggregating.", file=sys.stderr)
+    # The budget is shared with every other builder, so a ceiling that changes
+    # changes once (tools/build_size.py, docs/02-architecture.md).
+    build_size.enforce(args.out, extra_mb=0.0 if data_path is None else build_size.megabytes(data_path))
     print("  next: python3 " + _shell_arg(_verifier_path()) + " " + _shell_arg(args.out.as_posix()))
 
 

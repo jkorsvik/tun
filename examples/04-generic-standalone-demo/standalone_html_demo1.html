@@ -18,12 +18,11 @@
   ----------------------------------------------------------------------------
   PROVENANCE
     Source data : none — this is a static demonstration, not a real report
-    Built       : 2026-10-10 13:09 
-    Requested by: the product owner
+    Built       : 2026-10-27 01:39 
+    Requested by: en kollega
     Built by    : RAIWork, as a PROPOSAL artefact for
                   docs/08-generic-artifact-model.md (not yet adopted)
     Repo        : tun
-    Made with   : Tún — tun.community
     Generator   : examples/04-generic-standalone-demo/build_standalone_demo.py
   ----------------------------------------------------------------------------
   Tier 1, STANDALONE leg: fully self-contained, no server, no CDN, no sidecar
@@ -34,148 +33,31 @@
   ============================================================================
 -->
 <style>
-/*
-   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-   under terms of your choice, provided the Origin Notice is preserved.
-   SPDX-License-Identifier: AGPL-3.0-or-later
-*/
-/* ==========================================================================
-   Palette: neutral (core default)
-
-   The eight semantic slots the theme files consume, with values that belong to
-   nobody. This file is what makes core shippable without a brand plugin: with
-   plugins/ empty, a build still produces a coherent artefact rather than an
-   artefact full of unresolved var() references, which would render as
-   invisible or wrong colours and pass every other gate.
-
-   A brand plugin replaces this file by providing `tokens` (see
-   docs/22-plugin-contract.md). It does not patch it.
-
-   The values are a deliberately plain slate-and-amber pair: legible, adequate
-   contrast, and obviously not any real organisation's brand. They are an
-   example, not a recommendation. Do not treat them as a design system.
-   ========================================================================== */
-:root{
-  --palette-ink:             #111418;  /* body text */
-  --palette-surface:         #FFFFFF;  /* page background */
-  --palette-primary:         #2B4C7E;  /* primary data colour, links, focus */
-  --palette-primary-dark:    #1B3559;  /* header background */
-  --palette-primary-darkest: #0E1C2E;  /* darkest surface */
-  --palette-accent:          #B8860B;  /* secondary series, decorative only */
-  --palette-accent-light:    #E8D48B;  /* highlight on dark */
-  --palette-on-dark:         #F7F5EF;  /* text on a dark surface */
-}
-
-/*
-   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-   under terms of your choice, provided the Origin Notice is preserved.
-   SPDX-License-Identifier: AGPL-3.0-or-later
-*/
-/* ==========================================================================
-   Status / semantic colour tokens — positive, negative, neutral
-   Owned by core, not by any brand plugin: status colour is a functional
-   signal, so it must work the same whichever plugin supplies the brand.
-
-   Why not reuse the brand palette: brand accents are chosen to look good,
-   not to be read as text. A KPI delta must pass the WCAG 2.2 text minimum
-   (4.5:1 against #FFFFFF), and typical warm brand accents do not.
-
-   Contrast against #FFFFFF, computed with the WCAG relative-luminance formula:
-     Ember  #C9372C  ->  5.16:1  PASS
-     Moss   #1F7A5C  ->  5.25:1  PASS
-   For comparison, the example plugin's warm accents (Amber, Flame; see
-   plugins/eksempel/tokens/palette.css) measure 2.47:1 and 2.84:1, below even
-   the 3:1 icon minimum, so neither is usable for status.
-
-   Default status pair: Ember/Moss (WCAG AA, see contrast table above).
-   A project may use a different pair if it passes the same contrast test;
-   see docs/09-usability-and-navigation-principles.md §3.
-
-   Per WCAG 2.2 criterion 1.4.1 (Use of Color): colour alone must never be the only
-   signal. Pair these with an icon or text label (e.g. an arrow, or the words
-   "opp"/"ned"), not colour by itself.
-   ========================================================================== */
-:root{
-  --status-negative:          #C9372C; /* Ember — text, icon, delta value */
-  --status-negative-bg:       #fbeded; /* Ember 8% — row/card background tint only */
-  --status-positive:          #1F7A5C; /* Moss — text, icon, delta value */
-  --status-positive-bg-25:    #d7ece3; /* Moss 25% — background tint only */
-  --status-positive-bg-12:    #eaf5f0; /* Moss 12% — subtler background tint */
-  --status-neutral:           #737373; /* neutral grey — no change / n.a. */
-}
-
-/*
-   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-   under terms of your choice, provided the Origin Notice is preserved.
-   SPDX-License-Identifier: AGPL-3.0-or-later
-*/
-/* ==========================================================================
-   Theme: light (default)
-   ==========================================================================
-   Maps the semantic roles the templates already use (--ink, --muted, --bg,
-   --brand, etc.) onto the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css) and status-semantic.css, instead of
-   each template hardcoding its own hex values as it does today.
-
-   NOT YET WIRED INTO templates: html files — this file documents the
-   intended mapping so it can be reviewed before any template changes. Load
-   order for a future build: the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css), then status-semantic.css,
-   then this file (so the palette- and status- prefixed variables it references
-   already exist).
-
-   Rationale for a light default: a dashboard is read repeatedly and at
-   length — Nielsen Norman Group and general dashboard-UX guidance favour a
-   neutral, low-chroma background with colour reserved for data, not the
-   bold colour-dominant background a presentation theme documents for slides.
-   See docs/09-usability-and-navigation-principles.md §4.
-   ========================================================================== */
-:root,
-:root[data-theme="light"]{
-  --ink:        var(--palette-ink);      /* body text */
-  --muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */
-  --line:       #ebebeb;               /* neutral grey: borders, gridlines */
-  --bg:         var(--palette-surface);
-  --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
-  --brand:      var(--palette-primary);        /* primary data colour, links, focus */
-  --brand-dark: var(--palette-primary-dark);    /* header background */
-  --series-2:   var(--palette-accent);     /* secondary chart series — decorative use only, not text */
-
-  --ok:    var(--status-positive);
-  --ok-bg: var(--status-positive-bg-12);
-  --bad:   var(--status-negative);
-  /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
-     is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
-  --bad-bg:var(--palette-surface);
-}
 
   :root{
-    --border:#ccc;                      /* neutral grey, no palette slot for it */
-    --on-brand:var(--palette-on-dark);
+    --color-blue:#2F5D9E; --color-purple:#1B2A4A;
+    --color-black-80:#333; --color-black-60:#666; --color-black-55:#737373; --color-black-8:#ebebeb;
+    --color-black-3:#f8f8f8; --color-black-20:#ccc; --color-white:#fff;
+    --ink:var(--color-black-80); --muted:var(--color-black-60);  /* 5.4:1 on --panel; Black 55% was 4.46:1 */
+    --line:var(--color-black-8); --bg:var(--color-white); --panel:var(--color-black-3);
+    --brand:var(--color-blue); --brand-dark:var(--color-purple);
     --sp-1:0.5rem; --sp-2:1rem; --sp-3:1.5rem; --sp-4:2rem;
   }
 
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-family:"Eksempel AS",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
     font-size:1rem;line-height:1.5}
-  header{background:var(--brand-dark);color:var(--on-brand);padding:var(--sp-3) var(--sp-4)}
+  header{background:var(--brand-dark);color:var(--color-white);padding:var(--sp-3) var(--sp-4)}
   header h1{margin:0;font-size:1.5rem;line-height:2rem;font-weight:500}
   header .meta{opacity:.85;font-size:.875rem;line-height:1.5rem;margin-top:var(--sp-1)}
   nav{display:flex;gap:var(--sp-2);background:var(--panel);padding:var(--sp-2) var(--sp-4);
     border-bottom:1px solid var(--line)}
-  .navbtn{padding:.5rem .9rem;border:1px solid var(--border);border-radius:.25rem;
-    background:var(--bg);font-family:inherit;font-size:.875rem;cursor:pointer;
+  .navbtn{min-height:2.75rem;padding:.5rem .9rem;border:1px solid var(--color-black-20);border-radius:.25rem;
+    background:var(--color-white);font-family:inherit;font-size:.875rem;cursor:pointer;
     color:var(--ink)}
   .navbtn:hover{border-color:var(--brand);color:var(--brand)}
-  .navbtn.active{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+  .navbtn.active{background:var(--brand);color:var(--color-white);border-color:var(--brand)}
   main{padding:var(--sp-3) var(--sp-4);max-width:52rem;margin:0 auto}
   .page h2{font-weight:500}
   .page p{color:var(--ink)}
@@ -199,11 +81,11 @@
   </section>
   <section id="seksjon-b" class="page" style="display:none">
     <h2>Hvorfor tre seksjoner</h2>
-    <p>Navigasjonen over bytter mellom seksjoner med JavaScript (display:none / display:block) — samme HTML-fil, ikke tre separate sider. Det følger docs/09-usability-and-navigation-principles.md: topplinje med meny er standard navigasjon, ikke en fast sidebar, og det gjelder uansett hva siden faktisk viser.</p>
+    <p>Navigasjonen over bytter mellom seksjoner med JavaScript (display:none / display:block) — samme HTML-fil, ikke tre separate sider. Det er prinsipp 4 fra issue #4: topplinje med meny er standard navigasjon, ikke en fast sidebar, og det gjelder uansett hva siden faktisk viser.</p>
   </section>
   <section id="seksjon-c" class="page" style="display:none">
     <h2>Hva denne filen ikke er</h2>
-    <p>Den er ikke et dashboard — ingen rader, ingen dimensjon, ingen måling, ingen filter. Den beviser kun den generiske STANDALONE-grenen i det foreslåtte lag-1-rammeverket (se docs/08-generic-artifact-model.md): at prinsippene om felles styling, proveniens og navigasjon holder helt uavhengig av om innholdet er tall, tekst eller noe annet.</p>
+    <p>Den er ikke et dashboard — ingen rader, ingen dimensjon, ingen måling, ingen filter. Den beviser kun den generiske STANDALONE-grenen i det foreslåtte lag-1-rammeverket (se docs/08-generic-artifact-model.md): at prinsippene om styling, proveniens og navigasjon holder helt uavhengig av om innholdet er tall, tekst eller noe annet.</p>
   </section>
 </main>
 <script>

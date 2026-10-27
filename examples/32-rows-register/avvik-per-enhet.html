@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avvik per enhet</title>
+<!--
+  Avvik per enhet
+  PROVENANCE  (do not delete — this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (avvik.csv) — 1 200 rader, 4 kolonner
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Kvalitet
+    Made with   : Tún — tun.community
+    Rows        : 1 200 inlined, as a list, one array per row
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence
+  required to view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: a register. A list of rows with a search field, sortable
+  columns and pages. There is no chart, on purpose — sometimes the question is
+  "give me the list", and a list that filters in the page beats a spreadsheet
+  nobody can open.
+
+  What it is NOT: a filtered view of a larger dataset. Every row the builder
+  received is in this file, and every reader with the file can search all of
+  them. If two audiences must see different rows, the split happens before the
+  build and produces two files (AGENTS.md rule 1: the boundary is the folder,
+  not a filter inside the file).
+
+  The static table below is the no-JS view: the first page, drawn by the builder.
+  The script re-renders the same table when a search, a sort or a page changes.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.25rem;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+.controls{display:flex;flex-wrap:wrap;gap:.75rem 1rem;align-items:flex-end;
+  background:var(--panel);border:1px solid var(--line);border-radius:.5rem;padding:1rem}
+.controls .field{display:flex;flex-direction:column;gap:.25rem;min-width:12rem}
+.controls .grow{flex:1 1 18rem}
+.controls label{font-size:.875rem;line-height:1.25rem;color:var(--muted);font-weight:600}
+.controls input[type=search],.controls select{font:inherit;font-size:.875rem;
+  min-height:2.75rem;padding:.5rem .625rem;border:1px solid var(--line);border-radius:.25rem;
+  background:var(--panel);color:var(--ink);width:100%}
+.controls select{-webkit-appearance:none;appearance:none;padding-right:2rem;
+  /* WebKit ignores padding and min-height on a native select and draws it 22 px tall. */
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .5rem center;background-size:.75rem .5rem}
+.controls button{font:inherit;font-size:.875rem;font-weight:600;min-height:2.75rem;padding:.5rem 1rem;
+  border:1px solid var(--brand);border-radius:.25rem;background:var(--panel);color:var(--brand);
+  cursor:pointer}
+.controls button:hover{background:var(--brand-soft)}
+.controls button:disabled{color:var(--muted);border-color:var(--line);cursor:default;
+  background:var(--panel)}
+.hint{margin:.5rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(12rem,100%),1fr));
+  gap:.75rem;margin:1rem 0 0;padding:0;list-style:none}
+.kpis li{background:var(--panel);border:1px solid var(--line);border-left:.25rem solid var(--brand);
+  border-radius:.375rem;padding:.75rem 1rem}
+.kpis .label{display:block;font-size:.875rem;line-height:1.25rem;color:var(--muted)}
+.kpis .num{display:block;font-size:1.75rem;line-height:2rem;font-weight:700;
+  font-variant-numeric:tabular-nums}
+.note{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.375rem;
+  font-size:.875rem;line-height:1.5}
+.note strong{display:block}
+.wrap{margin:1rem 0 0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  overflow:auto;max-height:none}
+table{border-collapse:collapse;width:100%;font-size:.875rem;line-height:1.5}
+caption{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--rule);
+  vertical-align:top}
+thead th{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--line);
+  font-weight:600;white-space:nowrap;padding:0}
+thead th button{font:inherit;font-weight:600;text-align:inherit;width:100%;
+  min-height:2.75rem;padding:.5rem .75rem;border:0;background:none;color:var(--ink);
+  cursor:pointer;display:flex;gap:.375rem;align-items:center}
+thead th button:hover{background:var(--brand-soft)}
+thead th button .caret{color:var(--brand)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:#fafbfb}
+tbody tr:last-child td{border-bottom:0}
+/* A group band names the group and says what it holds. It is a header, not a row of data:
+   scope="colgroup" is what tells a screen reader the rows below belong to it, and a styled
+   <td> would look the same and mean nothing. */
+tbody tr.grp th{background:var(--brand-soft);color:var(--on-brand-soft);text-align:left;
+  font-size:.875rem;line-height:1.5;font-weight:600;padding:.5rem .75rem;
+  border-bottom:1px solid var(--line);border-top:2px solid var(--line);position:static}
+tbody tr.grp:first-child th{border-top:0}
+tbody tr.grp .grpmeta{font-weight:400;color:var(--muted);margin-left:.5rem}
+.pager{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;margin:1rem 0 0;
+  font-size:.875rem;color:var(--muted)}
+.pager button{font:inherit;font-size:.875rem;font-weight:600;min-height:2.75rem;
+  padding:.5rem 1rem;border:1px solid var(--brand);border-radius:.25rem;background:var(--panel);
+  color:var(--brand);cursor:pointer}
+.pager button:hover:not(:disabled){background:var(--brand-soft)}
+.pager button:disabled{color:var(--muted);border-color:var(--line);cursor:default}
+.pager .count{font-variant-numeric:tabular-nums}
+footer{max-width:86rem;margin:2rem auto 0;padding:1rem 1.5rem 2rem;color:var(--muted);
+  font-size:.875rem;line-height:1.5;border-top:1px solid var(--line)}
+footer a{color:var(--brand)}
+/* A phone cannot hold seven columns, and pinching a table sideways is how a reader loses
+   the column they sorted by. Under 40 rem each row becomes its own card, labelled per cell,
+   so the values stay readable and the page never scrolls sideways. The heading row is
+   hidden and the sort control above the list takes over. */
+@media (max-width:40rem){
+  .wrap{border:0;background:none;overflow:visible}
+  table,tbody,tr,td{display:block}
+  thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  tbody tr{border:1px solid var(--line);border-radius:.5rem;background:var(--panel);
+    margin:0 0 .75rem;padding:.25rem .875rem}
+  tbody tr:hover{background:var(--panel)}
+  /* A group band is not a card: no cell labels beside it, and it must not be mistaken for a
+     row of data on the narrow layout where every other row is one. */
+  tbody tr.grp{border:0;background:var(--brand-soft);padding:.5rem .875rem;margin:.75rem 0 0}
+  tbody tr.grp th{display:block;padding:0;border:0;font-size:.875rem}
+  tbody tr.grp .grpmeta{display:block;margin:.125rem 0 0}
+  td{border-bottom:1px solid var(--rule);padding:.5rem 0;display:grid;
+    grid-template-columns:minmax(6.5rem,40%) 1fr;gap:.25rem .75rem}
+  tbody tr td:last-child{border-bottom:0}
+  td::before{content:attr(data-label);color:var(--muted);font-weight:600}
+  td.num{text-align:left}
+  /* An empty cell in a card is a value that is not there, not a broken layout: the source
+     had no amount for this row. Say so with a dash rather than a gap. */
+  td:empty::after{content:"\2013";color:var(--muted)}
+  /* The first screen on a phone belongs to the list. The two counts repeat what the
+     pager already says, and the hint describes controls the reader can see. */
+  .kpis,.hint{display:none}
+  .controls{padding:.75rem;gap:.5rem}
+  .controls .field{flex:1 1 calc(50% - .5rem);min-width:0}
+  .controls .grow{flex:1 1 100%}
+  main{padding:1rem}
+}
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows is the one place
+   this page picks a slot by its LIGHT role, and that role inverts.
+
+   THE HEADER BAND fills with --brand-dark and writes --on-brand on it. In light that is
+   dark teal under white. In dark, --brand-dark is the darkest surface and --on-brand is
+   --bg, so the two are both dark and the title measures 1.39:1. The pair the theme does
+   define is a --brand fill carrying --on-brand, so the band uses that pair here and stays a
+   band. The group band is already fixed at the seam: it letters itself with
+   --on-brand-soft, which both themes declare against --brand-soft. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) header{background:var(--brand);color:var(--on-brand)}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
+  .controls,.pager,.hint,.note{display:none}
+  tbody tr{break-inside:avoid}
+}
+</style>
+<style>
+  /* The review layer (docs/31). Shown only when a reader can interact with it: the
+     static sheet below uses the .nojs class the template already has, so a viewer that
+     blocks scripting (Quick Look) shows a block the reader can fill in by hand instead
+     of a button that does nothing. */
+  /* Same container as <main> and <footer>, so the layer sits on the page's own grid
+     instead of against the viewport edge. */
+  .annotate,.annotate-sheet{max-width:90rem;margin:0 auto;padding:var(--sp-3, 1.5rem) var(--sp-4, 2rem)}
+  .annotate-bar{display:none}
+  html.js .annotate-bar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3, 1.5rem);
+    margin:0 0 var(--sp-4, 2rem);padding:var(--sp-3, 1.5rem) 0;border-top:1px solid var(--line, #dcdcdc)}
+  .annotate-count{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959)}
+  .annotate-hint{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959)}
+  .annotate-btn{min-height:2.75rem;padding:0 var(--sp-3, 1.5rem);font:inherit;font-size:.875rem;
+    /* The surface token, not a raw white: this layer is injected into artefacts that now
+       follow the system's dark setting, and a button painted white under the theme's light
+       ink measures 1.09:1 there. */
+    border:1px solid var(--line, #dcdcdc);border-radius:4px;background:var(--panel, #fff);
+    color:var(--ink, #0a0a0a);cursor:pointer}
+  .annotate-btn:hover{border-color:var(--brand, #2F5D9E)}
+  .annotate-btn[aria-pressed="true"]{background:var(--brand, #2F5D9E);border-color:var(--brand, #2F5D9E);
+    color:var(--on-brand, #fff)}
+  .annotate-form,.annotate-out{font-size:.875rem;line-height:1.5rem}
+  .annotate-form p,.annotate-out p{margin:0 0 var(--sp-2, 1rem);max-width:52rem}
+  .annotate-form label{display:block;margin:var(--sp-1, 0.5rem) 0 var(--sp-1, 0.5rem);font-weight:600}
+  .annotate-form textarea,.annotate-out textarea{width:100%;box-sizing:border-box;
+    font:inherit;font-size:.875rem;line-height:1.5rem;padding:var(--sp-2, 1rem);
+    border:1px solid var(--line, #dcdcdc);border-radius:4px;background:var(--color-white, #fff);color:var(--ink, #0a0a0a)}
+  .annotate-out textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.875rem}
+  .annotate-actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2, 1rem);
+    margin:var(--sp-2, 1rem) 0 0}
+  .annotate-list{list-style:none;margin:var(--sp-3, 1.5rem) 0 0;padding:0}
+  .annotate-list li{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-2, 1rem);
+    padding:var(--sp-1, 0.5rem) 0;border-bottom:1px solid var(--line, #dcdcdc)}
+  .annotate-list .who{font-weight:600}
+  .annotate-live{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959);margin:var(--sp-1, 0.5rem) 0 0}
+  body.annotate-on #tbl tbody tr{cursor:pointer}
+  body.annotate-on #tbl tbody tr:hover td{background:var(--color-light blue-25, #e9f8f4)}
+  body.annotate-on #tbl tbody tr.annotate-hit td{background:var(--color-light blue-50, #EEE7F7)}
+  #tbl tbody tr.annotate-done td:first-child{box-shadow:inset 3px 0 0 var(--brand, #2F5D9E)}
+  .annotate-sheet pre{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,
+    monospace;font-size:.875rem;line-height:1.5rem;padding:var(--sp-2, 1rem);
+    border-left:3px solid var(--line, #dcdcdc);margin:0 0 var(--sp-3, 1.5rem)}
+</style>
+</head>
+<body>
+<script>document.documentElement.className += " js"</script>
+<header><div class="in">
+  <h1>Avvik per enhet</h1>
+  <p class="sub">Syntetisk eksempeldata (avvik.csv) — 1 200 rader, 4 kolonner</p>
+</div></header>
+<main>
+  <form class="controls" id="controls" hidden>
+    <div class="field grow">
+      <label for="q">Søk i listen</label>
+      <input type="search" id="q" name="q" placeholder="Skriv et ord eller et tall"
+             autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="sortsel">Sorter etter</label>
+      <select id="sortsel"><option value="0">Enhet</option><option value="1">Status</option><option value="2" selected>Dager</option><option value="3">Belop</option></select>
+    </div>
+    <div class="field">
+      <button type="button" id="dirbtn">Stigende</button>
+    </div>
+    <div class="field">
+      <label for="size">Rader per side</label>
+      <select id="size"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="250">250</option></select>
+    </div>
+    <div class="field">
+      <button type="reset" id="reset">Nullstill</button>
+    </div>
+  </form>
+  <p class="hint" id="hint" hidden>Søket ser i alle kolonnene som vises. Tøm feltet for å se alt. Klikk på en kolonneoverskrift for å sortere. Klikk en gang til for å snu rekkefølgen. På en smal skjerm bruker du Sorter etter over listen.</p>
+
+  <ul class="kpis">
+    <li><span class="label">Rader</span><span class="num">1 200</span></li>
+    <li><span class="label">Kolonner</span><span class="num">4</span></li>
+  </ul>
+
+  <div class="note" id="nojs">
+    <strong>Uten skript</strong>
+    <span>Denne filen viser de første 25 av 1 200 radene uten skript. Alt ligger i filen, men søk, sortering og de øvrige sidene tegnes av skriptet når det kjører.</span>
+  </div>
+
+  <div class="wrap" role="region" aria-label="Register" tabindex="0">
+    <table id="tbl">
+      <caption>Avvik per enhet — Register</caption>
+      <thead><tr><th scope="col" aria-sort="none"><button type="button">Enhet<span class="caret" aria-hidden="true"></span></button></th><th scope="col" aria-sort="none"><button type="button">Status<span class="caret" aria-hidden="true"></span></button></th><th scope="col" class="num" aria-sort="descending"><button type="button">Dager<span class="caret" aria-hidden="true">▾</span></button></th><th scope="col" class="num" aria-sort="none"><button type="button">Belop<span class="caret" aria-hidden="true"></span></button></th></tr></thead>
+      <tbody><tr class="grp"><th scope="colgroup" colspan="4"><span class="grpname">Drift</span><span class="grpmeta">140 rader · Dager 6 062 · Belop 3 749 623</span></th></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">119</td><td class="num" data-label="Belop">48518</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Apent</td><td class="num" data-label="Dager">117</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Apent</td><td class="num" data-label="Dager">117</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Venter pa svar</td><td class="num" data-label="Dager">117</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">116</td><td class="num" data-label="Belop">52921</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">114</td><td class="num" data-label="Belop">83955</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">111</td><td class="num" data-label="Belop">4533</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">110</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">110</td><td class="num" data-label="Belop">80939</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">107</td><td class="num" data-label="Belop">71076</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">101</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Venter pa svar</td><td class="num" data-label="Dager">100</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">97</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Venter pa svar</td><td class="num" data-label="Dager">97</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Venter pa svar</td><td class="num" data-label="Dager">97</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Apent</td><td class="num" data-label="Dager">96</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">95</td><td class="num" data-label="Belop">9737</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Apent</td><td class="num" data-label="Dager">95</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Venter pa svar</td><td class="num" data-label="Dager">92</td><td class="num" data-label="Belop">320</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">92</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">89</td><td class="num" data-label="Belop">79858</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Apent</td><td class="num" data-label="Dager">89</td><td class="num" data-label="Belop">53916</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">89</td><td class="num" data-label="Belop"></td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">89</td><td class="num" data-label="Belop">1228</td></tr><tr><td data-label="Enhet">Drift</td><td data-label="Status">Under behandling</td><td class="num" data-label="Dager">88</td><td class="num" data-label="Belop">48380</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="pager">
+    <button type="button" id="prev" disabled>Forrige</button>
+    <span class="count" id="count" aria-live="polite">{shown} av {total} rader</span>
+    <button type="button" id="next" disabled>Neste</button>
+  </div>
+
+</main>
+<footer>
+  <p>Selvstendig fil: radene ligger i filen, og ingenting hentes når den åpnes · Ingen server, ingen innlogging · Bygget 2026-10-24 10:00</p>
+</footer>
+<script>
+/* The register. One array per row, in the column order the build chose, plus the header
+   the build chose: nothing here decides what is shown, only which rows and in what order.
+
+   Two things this page refuses to do quietly:
+     * a search that matches nothing says so in the table body, and the count says "0 of N".
+       An empty table with no sentence reads as a broken page.
+     * a numeric column sorts as a number. Sorting "9" after "10" is the classic silent
+       wrong answer in a page like this, so the build marks the numeric columns and the
+       comparator reads them as numbers (and an empty cell sorts last in either direction,
+       because "no value" is not "zero"). */
+const META = {"columns":["Enhet","Status","Dager","Belop"],"numeric":[2,3],"pageSize":50,"pageSizes":[25,50,100,250],"sortCol":2,"sortDir":-1,"rows":1200,"groupCol":0};
+const ROWS = [["Fag","Lukket",13.0,""],["Fag","Apent",57.0,""],["Kundeservice","Venter pa svar",6.0,13277.0],["HR","Under behandling",3.0,""],["Drift","Lukket",15.0,61377.0],["IT","Lukket",8.0,""],["Salg","Under behandling",111.0,""],["Okonomi","Apent",79.0,69729.0],["Kundeservice","Lukket",25.0,22978.0],["Fag","Lukket",31.0,313.0],["HR","Under behandling",119.0,32181.0],["Drift","Lukket",4.0,20915.0],["HR","Lukket",4.0,57568.0],["IT","Lukket",35.0,69807.0],["Innkjop","Apent",111.0,76494.0],["Fag","Under behandling",25.0,""],["Okonomi","Apent",73.0,17522.0],["Salg","Venter pa svar",3.0,""],["Innkjop","Apent",16.0,37198.0],["IT","Apent",69.0,""],["Drift","Venter pa svar",97.0,""],["Kundeservice","Lukket",35.0,53376.0],["IT","Apent",55.0,""],["Okonomi","Under behandling",53.0,""],["Okonomi","Venter pa svar",20.0,52994.0],["Salg","Lukket",4.0,79300.0],["IT","Lukket",18.0,62938.0],["Kundeservice","Apent",73.0,22087.0],["Kundeservice","Under behandling",36.0,""],["IT","Venter pa svar",15.0,""],["Kundeservice","Apent",1.0,""],["Okonomi","Venter pa svar",76.0,""],["Drift","Lukket",25.0,42294.0],["HR","Apent",1.0,""],["Innkjop","Under behandling",120.0,""],["IT","Under behandling",110.0,84510.0],["IT","Lukket",5.0,""],["Fag","Lukket",38.0,86971.0],["Okonomi","Under behandling",101.0,24028.0],["Innkjop","Apent",5.0,""],["HR","Under behandling",58.0,42274.0],["Drift","Lukket",5.0,""],["IT","Apent",14.0,33116.0],["Drift","Lukket",34.0,""],["Fag","Lukket",31.0,5362.0],["Okonomi","Lukket",37.0,35936.0],["IT","Lukket",28.0,96752.0],["Drift","Under behandling",89.0,1228.0],["IT","Under behandling",111.0,21100.0],["Salg","Lukket",36.0,""],["Innkjop","Lukket",10.0,""],["Drift","Lukket",25.0,68386.0],["IT","Lukket",39.0,41270.0],["Innkjop","Lukket",22.0,""],["HR","Venter pa svar",74.0,""],["Salg","Under behandling",104.0,56725.0],["IT","Venter pa svar",34.0,""],["Okonomi","Lukket",7.0,79128.0],["Innkjop","Under behandling",32.0,60204.0],["Salg","Under behandling",39.0,4767.0],["Innkjop","Lukket",3.0,""],["Salg","Lukket",32.0,""],["Innkjop","Under behandling",79.0,52764.0],["Kundeservice","Apent",21.0,76393.0],["Kundeservice","Under behandling",3.0,34753.0],["IT","Lukket",2.0,9621.0],["Salg","Venter pa svar",57.0,""],["Drift","Under behandling",119.0,48518.0],["Salg","Lukket",12.0,70003.0],["IT","Lukket",3.0,""],["Salg","Under behandling",103.0,46822.0],["Drift","Venter pa svar",97.0,""],["Salg","Lukket",33.0,""],["Okonomi","Under behandling",113.0,""],["Fag","Apent",118.0,""],["HR","Lukket",8.0,29766.0],["Innkjop","Lukket",26.0,10351.0],["Innkjop","Venter pa svar",81.0,""],["HR","Lukket",37.0,""],["Salg","Apent",54.0,""],["Innkjop","Lukket",13.0,36435.0],["Salg","Lukket",5.0,87197.0],["HR","Under behandling",45.0,""],["Drift","Under behandling",77.0,95848.0],["Salg","Apent",95.0,2820.0],["Drift","Lukket",20.0,42202.0],["Drift","Lukket",33.0,""],["Kundeservice","Lukket",2.0,33865.0],["Fag","Lukket",35.0,""],["Salg","Lukket",35.0,""],["Kundeservice","Under behandling",100.0,""],["Fag","Lukket",34.0,""],["Drift","Lukket",35.0,""],["Innkjop","Under behandling",14.0,70818.0],["Salg","Apent",97.0,54601.0],["IT","Lukket",35.0,""],["Innkjop","Lukket",17.0,368.0],["Drift","Lukket",23.0,""],["HR","Under behandling",52.0,""],["Fag","Apent",27.0,""],["Salg","Lukket",17.0,""],["Salg","Lukket",8.0,97442.0],["HR","Apent",58.0,34638.0],["Drift","Venter pa svar",117.0,""],["Innkjop","Apent",18.0,""],["Innkjop","Apent",119.0,53327.0],["Fag","Under behandling",81.0,15361.0],["Kundeservice","Apent",73.0,""],["Kundeservice","Under behandling",49.0,""],["Kundeservice","Lukket",30.0,""],["Okonomi","Lukket",27.0,74097.0],["Innkjop","Venter pa svar",8.0,82343.0],["IT","Lukket",33.0,22026.0],["Drift","Lukket",15.0,80624.0],["IT","Lukket",31.0,""],["Salg","Venter pa svar",68.0,41133.0],["HR","Under behandling",78.0,35086.0],["Okonomi","Under behandling",15.0,47356.0],["IT","Lukket",1.0,""],["Okonomi","Lukket",7.0,""],["IT","Lukket",19.0,30471.0],["Kundeservice","Under behandling",119.0,52943.0],["IT","Lukket",24.0,""],["Okonomi","Under behandling",43.0,83873.0],["Kundeservice","Apent",68.0,""],["HR","Lukket",17.0,74754.0],["IT","Apent",9.0,88278.0],["IT","Apent",74.0,87606.0],["Salg","Lukket",32.0,24355.0],["IT","Apent",100.0,""],["Salg","Lukket",21.0,92281.0],["HR","Lukket",19.0,""],["HR","Lukket",12.0,49265.0],["IT","Under behandling",76.0,""],["Kundeservice","Apent",62.0,97144.0],["Fag","Under behandling",109.0,""],["Kundeservice","Apent",84.0,83818.0],["Innkjop","Lukket",33.0,17314.0],["Drift","Under behandling",111.0,4533.0],["Okonomi","Lukket",10.0,46930.0],["HR","Apent",74.0,61877.0],["IT","Apent",3.0,2227.0],["Drift","Lukket",10.0,""],["Drift","Under behandling",107.0,71076.0],["Okonomi","Lukket",32.0,""],["Kundeservice","Lukket",40.0,""],["Okonomi","Under behandling",40.0,40437.0],["Salg","Venter pa svar",45.0,""],["Okonomi","Under behandling",104.0,""],["Salg","Lukket",37.0,50025.0],["Fag","Lukket",2.0,""],["Innkjop","Lukket",25.0,""],["HR","Lukket",26.0,""],["Salg","Under behandling",76.0,""],["Drift","Lukket",16.0,42873.0],["Kundeservice","Under behandling",79.0,""],["Okonomi","Under behandling",32.0,92840.0],["Fag","Lukket",19.0,""],["Salg","Apent",109.0,91472.0],["Fag","Under behandling",111.0,90854.0],["Kundeservice","Apent",77.0,""],["Okonomi","Lukket",31.0,""],["Drift","Lukket",25.0,""],["Salg","Apent",28.0,""],["Salg","Under behandling",1.0,""],["Fag","Venter pa svar",17.0,""],["Innkjop","Lukket",10.0,""],["Kundeservice","Apent",102.0,""],["HR","Under behandling",107.0,""],["Kundeservice","Lukket",16.0,92790.0],["Okonomi","Venter pa svar",78.0,""],["Salg","Under behandling",35.0,37616.0],["IT","Under behandling",52.0,""],["HR","Apent",99.0,4870.0],["IT","Lukket",19.0,31443.0],["Fag","Under behandling",78.0,""],["Kundeservice","Under behandling",84.0,""],["IT","Under behandling",102.0,""],["IT","Lukket",28.0,""],["Kundeservice","Lukket",24.0,""],["Kundeservice","Lukket",36.0,9592.0],["Salg","Apent",114.0,81011.0],["Fag","Under behandling",34.0,""],["Drift","Lukket",23.0,16527.0],["IT","Under behandling",63.0,16655.0],["Drift","Under behandling",27.0,""],["HR","Under behandling",39.0,""],["Okonomi","Lukket",20.0,52974.0],["Salg","Lukket",20.0,52158.0],["Innkjop","Under behandling",79.0,""],["Salg","Lukket",27.0,""],["Okonomi","Lukket",18.0,""],["Innkjop","Lukket",22.0,60955.0],["Innkjop","Under behandling",90.0,""],["Innkjop","Lukket",31.0,96727.0],["IT","Apent",62.0,""],["Okonomi","Under behandling",104.0,97792.0],["Fag","Under behandling",66.0,""],["Innkjop","Venter pa svar",28.0,""],["IT","Lukket",32.0,53352.0],["HR","Apent",1.0,""],["Kundeservice","Apent",102.0,63545.0],["Drift","Under behandling",89.0,""],["Kundeservice","Venter pa svar",61.0,""],["Okonomi","Venter pa svar",98.0,""],["Drift","Apent",47.0,45124.0],["Drift","Apent",47.0,""],["Innkjop","Lukket",13.0,""],["Fag","Apent",62.0,""],["Kundeservice","Lukket",19.0,25566.0],["Innkjop","Lukket",24.0,""],["Fag","Under behandling",49.0,37302.0],["Okonomi","Under behandling",31.0,7315.0],["Salg","Lukket",6.0,""],["Kundeservice","Lukket",23.0,84572.0],["Innkjop","Lukket",37.0,69739.0],["Fag","Apent",18.0,""],["IT","Lukket",38.0,""],["HR","Lukket",39.0,""],["HR","Lukket",5.0,""],["Fag","Lukket",22.0,""],["Fag","Lukket",15.0,64357.0],["HR","Lukket",35.0,17009.0],["HR","Lukket",36.0,20162.0],["Okonomi","Under behandling",12.0,""],["Fag","Lukket",11.0,""],["Fag","Apent",108.0,71836.0],["Fag","Apent",87.0,50854.0],["IT","Under behandling",112.0,""],["Okonomi","Venter pa svar",76.0,49392.0],["Kundeservice","Lukket",32.0,53431.0],["HR","Apent",112.0,55833.0],["HR","Lukket",30.0,""],["HR","Under behandling",4.0,""],["Fag","Lukket",13.0,55977.0],["IT","Lukket",24.0,6592.0],["Okonomi","Lukket",28.0,48536.0],["Fag","Apent",83.0,""],["IT","Lukket",34.0,""],["Kundeservice","Under behandling",66.0,""],["Salg","Apent",44.0,54493.0],["Fag","Under behandling",31.0,""],["IT","Under behandling",73.0,""],["IT","Lukket",14.0,21120.0],["Okonomi","Apent",104.0,""],["Innkjop","Under behandling",18.0,""],["Fag","Lukket",36.0,97883.0],["IT","Lukket",25.0,1094.0],["Fag","Apent",20.0,""],["Drift","Lukket",35.0,91187.0],["Drift","Lukket",5.0,""],["IT","Lukket",31.0,77633.0],["Okonomi","Under behandling",119.0,""],["Innkjop","Lukket",40.0,31837.0],["Salg","Lukket",18.0,""],["Kundeservice","Under behandling",78.0,""],["Kundeservice","Lukket",27.0,67158.0],["IT","Venter pa svar",17.0,28124.0],["Fag","Under behandling",41.0,""],["HR","Lukket",13.0,20844.0],["Drift","Apent",61.0,2941.0],["Fag","Lukket",37.0,""],["Salg","Apent",91.0,""],["Kundeservice","Lukket",28.0,8930.0],["Salg","Lukket",15.0,71807.0],["Drift","Lukket",35.0,24495.0],["Kundeservice","Lukket",8.0,""],["Fag","Lukket",5.0,""],["Innkjop","Under behandling",16.0,56756.0],["IT","Apent",9.0,""],["Fag","Under behandling",105.0,""],["Kundeservice","Under behandling",99.0,69775.0],["Kundeservice","Lukket",29.0,""],["IT","Apent",12.0,73696.0],["Innkjop","Under behandling",101.0,""],["IT","Lukket",38.0,""],["Innkjop","Under behandling",51.0,""],["IT","Apent",43.0,68548.0],["Kundeservice","Lukket",25.0,""],["HR","Under behandling",81.0,45734.0],["HR","Under behandling",59.0,46090.0],["Kundeservice","Venter pa svar",86.0,19327.0],["Kundeservice","Apent",63.0,66996.0],["Okonomi","Apent",78.0,""],["Fag","Lukket",16.0,""],["Drift","Lukket",8.0,""],["Kundeservice","Under behandling",38.0,""],["Salg","Under behandling",29.0,88257.0],["Fag","Lukket",28.0,""],["Okonomi","Under behandling",41.0,""],["Okonomi","Lukket",30.0,77259.0],["Fag","Under behandling",32.0,""],["Drift","Lukket",22.0,""],["HR","Lukket",21.0,""],["Salg","Lukket",33.0,""],["Kundeservice","Under behandling",2.0,46870.0],["Salg","Lukket",35.0,8007.0],["Salg","Under behandling",118.0,33313.0],["Fag","Apent",80.0,62693.0],["Innkjop","Apent",79.0,""],["Okonomi","Lukket",36.0,12084.0],["IT","Under behandling",30.0,""],["Okonomi","Lukket",34.0,""],["Drift","Lukket",38.0,97017.0],["Salg","Venter pa svar",117.0,36796.0],["IT","Apent",94.0,""],["Kundeservice","Under behandling",22.0,""],["Kundeservice","Lukket",40.0,""],["HR","Under behandling",10.0,77398.0],["Salg","Under behandling",56.0,""],["IT","Under behandling",22.0,58729.0],["Innkjop","Apent",116.0,94480.0],["Kundeservice","Apent",32.0,33924.0],["HR","Lukket",6.0,""],["IT","Apent",7.0,""],["Drift","Apent",15.0,""],["Innkjop","Under behandling",19.0,83856.0],["IT","Apent",34.0,""],["Salg","Lukket",24.0,""],["HR","Lukket",4.0,83277.0],["Okonomi","Apent",110.0,""],["Kundeservice","Lukket",6.0,90032.0],["IT","Under behandling",22.0,""],["Salg","Venter pa svar",80.0,""],["Kundeservice","Under behandling",97.0,11665.0],["Drift","Under behandling",110.0,80939.0],["IT","Lukket",23.0,74861.0],["Innkjop","Lukket",1.0,37208.0],["IT","Venter pa svar",119.0,76426.0],["Innkjop","Apent",42.0,""],["IT","Lukket",9.0,""],["IT","Lukket",12.0,74252.0],["HR","Lukket",32.0,47364.0],["Innkjop","Under behandling",91.0,3991.0],["Drift","Lukket",21.0,68404.0],["Okonomi","Venter pa svar",93.0,""],["Salg","Apent",71.0,""],["IT","Under behandling",39.0,42303.0],["Innkjop","Lukket",19.0,36323.0],["Innkjop","Lukket",25.0,""],["Drift","Apent",35.0,96463.0],["Okonomi","Venter pa svar",113.0,""],["IT","Under behandling",118.0,23661.0],["Innkjop","Apent",6.0,""],["Salg","Lukket",2.0,76729.0],["Innkjop","Lukket",30.0,""],["IT","Apent",20.0,24909.0],["Salg","Under behandling",93.0,""],["Okonomi","Lukket",19.0,6783.0],["Innkjop","Lukket",17.0,20724.0],["Innkjop","Lukket",35.0,48594.0],["Fag","Lukket",11.0,48056.0],["Innkjop","Lukket",20.0,""],["Drift","Apent",51.0,90534.0],["Salg","Lukket",24.0,47042.0],["IT","Lukket",24.0,25451.0],["Okonomi","Lukket",20.0,77528.0],["Kundeservice","Venter pa svar",53.0,47219.0],["Salg","Under behandling",119.0,78376.0],["Fag","Lukket",35.0,""],["Salg","Apent",55.0,""],["HR","Lukket",24.0,""],["HR","Apent",31.0,""],["Kundeservice","Venter pa svar",44.0,""],["Salg","Under behandling",102.0,90712.0],["Drift","Lukket",28.0,50349.0],["Fag","Under behandling",109.0,""],["Kundeservice","Apent",32.0,""],["Okonomi","Apent",77.0,""],["Drift","Under behandling",17.0,39004.0],["HR","Apent",90.0,48710.0],["Kundeservice","Lukket",33.0,78195.0],["Okonomi","Lukket",38.0,55960.0],["HR","Under behandling",54.0,""],["Salg","Under behandling",12.0,""],["Salg","Lukket",8.0,""],["Salg","Under behandling",36.0,""],["Fag","Lukket",17.0,10359.0],["Kundeservice","Lukket",32.0,""],["Drift","Under behandling",101.0,""],["IT","Under behandling",60.0,""],["Salg","Under behandling",77.0,""],["Fag","Apent",59.0,""],["Innkjop","Under behandling",111.0,19436.0],["Fag","Lukket",15.0,""],["Kundeservice","Apent",18.0,95518.0],["Drift","Apent",60.0,55879.0],["Salg","Lukket",8.0,""],["Kundeservice","Under behandling",3.0,""],["IT","Under behandling",99.0,58937.0],["Kundeservice","Under behandling",25.0,94115.0],["Drift","Apent",85.0,48938.0],["Fag","Lukket",18.0,62252.0],["Okonomi","Apent",37.0,""],["Okonomi","Lukket",19.0,21882.0],["Okonomi","Apent",59.0,64194.0],["IT","Lukket",24.0,""],["Drift","Lukket",12.0,""],["IT","Lukket",5.0,""],["Salg","Apent",28.0,""],["HR","Lukket",40.0,""],["HR","Lukket",29.0,50750.0],["Kundeservice","Apent",115.0,81871.0],["Innkjop","Lukket",4.0,""],["Okonomi","Apent",67.0,""],["HR","Apent",54.0,46005.0],["HR","Lukket",17.0,91220.0],["Drift","Under behandling",114.0,83955.0],["Kundeservice","Lukket",20.0,67525.0],["Innkjop","Venter pa svar",60.0,""],["Okonomi","Under behandling",74.0,20734.0],["Fag","Lukket",10.0,""],["Fag","Lukket",37.0,69163.0],["Innkjop","Under behandling",58.0,""],["Salg","Lukket",30.0,52761.0],["Drift","Under behandling",69.0,82381.0],["HR","Lukket",15.0,50886.0],["Innkjop","Lukket",29.0,82977.0],["Kundeservice","Under behandling",20.0,""],["HR","Under behandling",49.0,41821.0],["Okonomi","Apent",57.0,""],["Kundeservice","Apent",46.0,46341.0],["IT","Lukket",27.0,""],["Okonomi","Under behandling",26.0,18793.0],["Innkjop","Apent",77.0,27055.0],["Innkjop","Apent",109.0,49316.0],["IT","Apent",42.0,""],["Drift","Lukket",14.0,""],["Fag","Apent",63.0,""],["Innkjop","Apent",30.0,29842.0],["Kundeservice","Under behandling",74.0,""],["Kundeservice","Lukket",20.0,""],["HR","Under behandling",41.0,3157.0],["Kundeservice","Apent",106.0,""],["Kundeservice","Apent",77.0,67469.0],["Kundeservice","Lukket",15.0,""],["Drift","Apent",95.0,""],["Salg","Apent",120.0,""],["HR","Apent",11.0,40607.0],["Fag","Lukket",10.0,20822.0],["Salg","Lukket",4.0,10639.0],["Innkjop","Under behandling",44.0,95207.0],["Okonomi","Apent",12.0,55199.0],["Kundeservice","Under behandling",29.0,46863.0],["Okonomi","Apent",24.0,""],["Salg","Under behandling",21.0,""],["IT","Under behandling",85.0,31416.0],["HR","Lukket",1.0,63557.0],["HR","Lukket",20.0,4915.0],["Kundeservice","Under behandling",38.0,74357.0],["Fag","Lukket",10.0,85901.0],["Fag","Under behandling",80.0,1261.0],["IT","Apent",84.0,87852.0],["Fag","Under behandling",75.0,""],["Fag","Lukket",22.0,""],["IT","Apent",111.0,""],["Salg","Apent",66.0,""],["Innkjop","Apent",109.0,""],["Salg","Under behandling",89.0,58404.0],["Okonomi","Lukket",21.0,77614.0],["Kundeservice","Lukket",22.0,""],["Kundeservice","Apent",31.0,60165.0],["Salg","Apent",89.0,""],["Innkjop","Under behandling",81.0,73055.0],["IT","Under behandling",46.0,18478.0],["Fag","Under behandling",44.0,""],["Salg","Under behandling",20.0,67314.0],["HR","Apent",21.0,""],["Kundeservice","Apent",62.0,""],["HR","Apent",57.0,""],["Fag","Apent",108.0,""],["IT","Lukket",21.0,""],["Innkjop","Apent",96.0,86868.0],["Okonomi","Lukket",17.0,""],["Kundeservice","Apent",52.0,""],["Salg","Apent",108.0,55669.0],["HR","Venter pa svar",64.0,""],["Fag","Lukket",6.0,21006.0],["HR","Apent",29.0,""],["HR","Lukket",23.0,81935.0],["Okonomi","Apent",30.0,40307.0],["Kundeservice","Lukket",2.0,""],["Drift","Apent",59.0,41011.0],["Drift","Lukket",22.0,41478.0],["Drift","Under behandling",95.0,9737.0],["Kundeservice","Lukket",5.0,57280.0],["Kundeservice","Lukket",31.0,""],["Kundeservice","Lukket",17.0,""],["Fag","Under behandling",92.0,13647.0],["IT","Apent",10.0,""],["IT","Under behandling",113.0,32268.0],["Kundeservice","Apent",70.0,88103.0],["Salg","Venter pa svar",45.0,""],["Okonomi","Venter pa svar",75.0,""],["Kundeservice","Apent",16.0,83475.0],["Okonomi","Lukket",39.0,""],["IT","Apent",30.0,""],["Okonomi","Apent",36.0,69231.0],["Innkjop","Apent",16.0,12786.0],["Innkjop","Under behandling",52.0,""],["Kundeservice","Under behandling",66.0,""],["Fag","Apent",120.0,""],["IT","Lukket",38.0,28242.0],["Salg","Apent",11.0,92835.0],["IT","Lukket",34.0,35564.0],["Salg","Lukket",5.0,""],["Salg","Apent",85.0,""],["Innkjop","Under behandling",52.0,30147.0],["HR","Lukket",21.0,71864.0],["Drift","Under behandling",45.0,36260.0],["Drift","Under behandling",14.0,35320.0],["Kundeservice","Under behandling",75.0,79947.0],["Okonomi","Apent",5.0,""],["HR","Lukket",13.0,""],["Kundeservice","Under behandling",58.0,""],["Drift","Lukket",14.0,""],["Drift","Apent",96.0,""],["Fag","Lukket",3.0,""],["Kundeservice","Under behandling",82.0,18790.0],["Innkjop","Apent",26.0,77638.0],["Innkjop","Lukket",38.0,""],["Fag","Lukket",17.0,25151.0],["Salg","Lukket",2.0,52048.0],["Fag","Under behandling",35.0,""],["Kundeservice","Lukket",38.0,93293.0],["HR","Under behandling",78.0,""],["Okonomi","Under behandling",109.0,63796.0],["IT","Apent",114.0,4147.0],["Drift","Lukket",18.0,""],["Salg","Lukket",35.0,""],["Drift","Venter pa svar",63.0,""],["Okonomi","Apent",96.0,""],["Drift","Under behandling",43.0,59370.0],["Fag","Lukket",28.0,76871.0],["Innkjop","Lukket",28.0,16773.0],["Drift","Under behandling",85.0,43921.0],["Fag","Apent",28.0,93964.0],["Salg","Under behandling",27.0,""],["Innkjop","Apent",89.0,72474.0],["Drift","Under behandling",76.0,""],["IT","Venter pa svar",5.0,""],["Drift","Apent",86.0,34027.0],["Innkjop","Venter pa svar",78.0,""],["Drift","Under behandling",92.0,""],["Fag","Under behandling",46.0,""],["Drift","Apent",10.0,15539.0],["Drift","Lukket",21.0,1129.0],["IT","Lukket",13.0,5097.0],["Fag","Venter pa svar",21.0,""],["Fag","Lukket",35.0,68846.0],["HR","Apent",90.0,5924.0],["Kundeservice","Apent",51.0,47120.0],["Salg","Apent",12.0,""],["Okonomi","Lukket",32.0,15911.0],["Salg","Venter pa svar",13.0,77205.0],["IT","Lukket",32.0,78818.0],["Drift","Under behandling",82.0,42480.0],["Innkjop","Lukket",33.0,97052.0],["HR","Lukket",13.0,71232.0],["Okonomi","Apent",30.0,23024.0],["Okonomi","Lukket",6.0,54489.0],["Fag","Under behandling",110.0,""],["IT","Lukket",15.0,91731.0],["Salg","Venter pa svar",82.0,23639.0],["Salg","Lukket",31.0,""],["HR","Lukket",7.0,15080.0],["HR","Apent",78.0,70352.0],["Kundeservice","Venter pa svar",22.0,16595.0],["Kundeservice","Apent",118.0,32457.0],["Kundeservice","Lukket",7.0,52539.0],["HR","Lukket",34.0,35794.0],["Okonomi","Lukket",36.0,""],["Salg","Lukket",15.0,53977.0],["Okonomi","Lukket",13.0,""],["Fag","Apent",1.0,""],["Salg","Under behandling",51.0,""],["IT","Apent",35.0,46466.0],["Salg","Venter pa svar",26.0,""],["Okonomi","Under behandling",69.0,""],["Innkjop","Under behandling",88.0,""],["HR","Under behandling",71.0,""],["Drift","Under behandling",16.0,""],["Innkjop","Lukket",8.0,""],["Fag","Under behandling",92.0,""],["Kundeservice","Lukket",24.0,""],["Salg","Venter pa svar",112.0,66315.0],["Drift","Lukket",23.0,""],["Salg","Under behandling",77.0,18035.0],["Innkjop","Under behandling",40.0,""],["Innkjop","Lukket",1.0,""],["Kundeservice","Lukket",11.0,39210.0],["IT","Under behandling",23.0,""],["IT","Under behandling",25.0,83204.0],["Kundeservice","Under behandling",106.0,72869.0],["Okonomi","Apent",86.0,""],["HR","Under behandling",83.0,81706.0],["HR","Apent",78.0,64273.0],["Drift","Under behandling",66.0,""],["Kundeservice","Under behandling",32.0,""],["Salg","Apent",99.0,42000.0],["Drift","Under behandling",97.0,""],["Salg","Under behandling",35.0,""],["Okonomi","Lukket",1.0,""],["Okonomi","Lukket",39.0,""],["Drift","Apent",10.0,29204.0],["Salg","Venter pa svar",41.0,""],["Innkjop","Venter pa svar",113.0,42399.0],["Drift","Lukket",9.0,94087.0],["HR","Under behandling",18.0,""],["Salg","Apent",110.0,""],["HR","Lukket",31.0,94325.0],["Drift","Under behandling",13.0,33664.0],["Innkjop","Lukket",40.0,69698.0],["IT","Venter pa svar",71.0,""],["Fag","Under behandling",45.0,43587.0],["IT","Lukket",18.0,""],["Salg","Under behandling",114.0,""],["Salg","Lukket",14.0,19623.0],["Salg","Under behandling",62.0,6858.0],["Fag","Lukket",18.0,16279.0],["HR","Under behandling",89.0,""],["IT","Under behandling",68.0,53482.0],["Okonomi","Venter pa svar",8.0,""],["Drift","Lukket",6.0,""],["HR","Under behandling",26.0,""],["Innkjop","Lukket",12.0,""],["Innkjop","Lukket",18.0,50404.0],["Fag","Apent",79.0,""],["Fag","Lukket",17.0,43667.0],["IT","Under behandling",2.0,61349.0],["Innkjop","Venter pa svar",51.0,766.0],["Okonomi","Lukket",3.0,67982.0],["Okonomi","Lukket",19.0,""],["Salg","Lukket",6.0,32902.0],["Okonomi","Under behandling",36.0,83330.0],["IT","Lukket",40.0,""],["Okonomi","Under behandling",102.0,""],["HR","Lukket",15.0,10372.0],["Drift","Lukket",9.0,75394.0],["Innkjop","Lukket",36.0,""],["Okonomi","Apent",50.0,80114.0],["Okonomi","Lukket",17.0,""],["Fag","Lukket",26.0,""],["Okonomi","Apent",97.0,3055.0],["Kundeservice","Lukket",16.0,""],["Okonomi","Apent",17.0,85031.0],["IT","Apent",26.0,97622.0],["Kundeservice","Apent",10.0,10641.0],["Innkjop","Lukket",25.0,""],["Salg","Lukket",16.0,""],["Kundeservice","Lukket",28.0,""],["IT","Under behandling",55.0,""],["HR","Apent",43.0,""],["Fag","Lukket",30.0,""],["Kundeservice","Lukket",23.0,88228.0],["Drift","Lukket",16.0,""],["Innkjop","Lukket",22.0,47718.0],["Drift","Apent",89.0,53916.0],["Drift","Apent",117.0,""],["Innkjop","Apent",57.0,51061.0],["Kundeservice","Apent",69.0,""],["Drift","Lukket",13.0,""],["Innkjop","Venter pa svar",70.0,""],["Innkjop","Under behandling",97.0,""],["Drift","Apent",5.0,96717.0],["Kundeservice","Venter pa svar",65.0,""],["HR","Lukket",19.0,""],["HR","Venter pa svar",87.0,""],["Kundeservice","Lukket",5.0,""],["Salg","Apent",80.0,""],["Innkjop","Under behandling",95.0,95780.0],["IT","Apent",103.0,46151.0],["Okonomi","Under behandling",100.0,""],["HR","Under behandling",18.0,""],["Salg","Lukket",9.0,""],["Innkjop","Under behandling",8.0,""],["IT","Under behandling",3.0,""],["Okonomi","Lukket",21.0,88885.0],["Fag","Lukket",19.0,24414.0],["Salg","Apent",38.0,76886.0],["Fag","Under behandling",25.0,""],["Fag","Lukket",31.0,""],["Fag","Venter pa svar",72.0,88581.0],["Drift","Lukket",4.0,61971.0],["Innkjop","Lukket",7.0,""],["Okonomi","Apent",11.0,10178.0],["Fag","Under behandling",65.0,""],["Drift","Lukket",34.0,20326.0],["IT","Lukket",25.0,33410.0],["HR","Under behandling",68.0,23503.0],["Kundeservice","Under behandling",86.0,""],["Kundeservice","Under behandling",44.0,""],["Innkjop","Apent",30.0,86572.0],["Kundeservice","Lukket",28.0,""],["HR","Apent",37.0,""],["Okonomi","Lukket",4.0,""],["HR","Lukket",40.0,""],["Fag","Lukket",26.0,82460.0],["Salg","Lukket",32.0,20128.0],["Kundeservice","Lukket",5.0,""],["Salg","Apent",29.0,37732.0],["HR","Apent",88.0,5752.0],["Innkjop","Lukket",23.0,""],["Fag","Apent",64.0,18854.0],["Kundeservice","Apent",67.0,94021.0],["Okonomi","Apent",4.0,88046.0],["HR","Lukket",26.0,""],["IT","Under behandling",26.0,89170.0],["Salg","Venter pa svar",101.0,62984.0],["Drift","Apent",10.0,""],["Innkjop","Under behandling",90.0,""],["HR","Lukket",3.0,4627.0],["Fag","Lukket",32.0,46799.0],["Drift","Lukket",14.0,""],["Kundeservice","Under behandling",40.0,""],["IT","Lukket",33.0,""],["Kundeservice","Lukket",30.0,""],["Okonomi","Lukket",14.0,43532.0],["Innkjop","Apent",82.0,11055.0],["Salg","Lukket",36.0,""],["Drift","Lukket",32.0,""],["Okonomi","Apent",118.0,79869.0],["Salg","Lukket",22.0,42888.0],["Innkjop","Lukket",28.0,""],["Salg","Apent",103.0,62418.0],["Fag","Venter pa svar",24.0,""],["Fag","Under behandling",98.0,""],["IT","Apent",62.0,""],["Kundeservice","Lukket",7.0,""],["Salg","Lukket",8.0,74014.0],["Fag","Under behandling",93.0,75297.0],["Innkjop","Under behandling",38.0,""],["Innkjop","Lukket",16.0,""],["Innkjop","Under behandling",58.0,""],["Kundeservice","Apent",17.0,""],["Innkjop","Under behandling",38.0,""],["Kundeservice","Under behandling",50.0,39976.0],["Fag","Venter pa svar",54.0,""],["Innkjop","Lukket",20.0,70902.0],["Okonomi","Under behandling",76.0,32250.0],["IT","Under behandling",61.0,""],["Drift","Lukket",3.0,""],["Drift","Under behandling",49.0,""],["IT","Apent",1.0,""],["HR","Under behandling",50.0,31071.0],["IT","Venter pa svar",67.0,""],["HR","Venter pa svar",110.0,79406.0],["Drift","Lukket",40.0,72803.0],["Okonomi","Lukket",28.0,52072.0],["Fag","Under behandling",4.0,4608.0],["Kundeservice","Apent",1.0,""],["Kundeservice","Lukket",15.0,""],["Innkjop","Under behandling",4.0,96806.0],["Drift","Lukket",35.0,69440.0],["Innkjop","Under behandling",85.0,6338.0],["Salg","Under behandling",56.0,6578.0],["HR","Lukket",39.0,""],["Okonomi","Apent",110.0,41525.0],["Salg","Apent",94.0,10541.0],["Kundeservice","Apent",105.0,""],["IT","Lukket",2.0,31024.0],["Drift","Under behandling",60.0,77163.0],["Fag","Lukket",1.0,68718.0],["IT","Apent",43.0,63687.0],["Fag","Apent",104.0,""],["Salg","Apent",32.0,8891.0],["Okonomi","Lukket",6.0,40793.0],["Innkjop","Under behandling",7.0,32438.0],["Drift","Apent",47.0,""],["Okonomi","Lukket",35.0,""],["IT","Under behandling",113.0,""],["IT","Lukket",29.0,48811.0],["Innkjop","Under behandling",106.0,""],["HR","Lukket",25.0,""],["Fag","Lukket",15.0,""],["Innkjop","Under behandling",65.0,""],["Salg","Lukket",32.0,""],["Okonomi","Lukket",29.0,""],["IT","Apent",107.0,36024.0],["Kundeservice","Apent",49.0,""],["Salg","Apent",72.0,""],["Salg","Under behandling",28.0,""],["Fag","Apent",62.0,""],["Salg","Lukket",37.0,""],["Fag","Lukket",17.0,68345.0],["IT","Venter pa svar",36.0,3948.0],["HR","Under behandling",13.0,""],["Innkjop","Apent",7.0,""],["Salg","Under behandling",35.0,""],["Kundeservice","Under behandling",58.0,60378.0],["Fag","Apent",96.0,""],["Drift","Apent",56.0,37930.0],["Kundeservice","Apent",80.0,58713.0],["IT","Apent",6.0,""],["Innkjop","Under behandling",89.0,""],["IT","Under behandling",69.0,53650.0],["Salg","Apent",94.0,5037.0],["Okonomi","Lukket",4.0,83229.0],["Okonomi","Apent",33.0,84678.0],["Fag","Under behandling",10.0,""],["Kundeservice","Lukket",29.0,""],["IT","Lukket",36.0,77962.0],["Drift","Under behandling",62.0,""],["Innkjop","Under behandling",10.0,55791.0],["Fag","Lukket",28.0,""],["Drift","Venter pa svar",92.0,320.0],["Kundeservice","Under behandling",102.0,""],["HR","Lukket",26.0,""],["Kundeservice","Lukket",18.0,11181.0],["Okonomi","Under behandling",37.0,37992.0],["Salg","Under behandling",85.0,40105.0],["Fag","Apent",38.0,""],["IT","Under behandling",79.0,61956.0],["Okonomi","Apent",48.0,""],["Drift","Apent",32.0,""],["Salg","Under behandling",95.0,""],["IT","Under behandling",106.0,64548.0],["Innkjop","Apent",105.0,54649.0],["HR","Lukket",29.0,16936.0],["Innkjop","Lukket",36.0,""],["Kundeservice","Venter pa svar",28.0,1512.0],["Kundeservice","Under behandling",92.0,68114.0],["Fag","Lukket",23.0,37262.0],["IT","Under behandling",96.0,6196.0],["Salg","Venter pa svar",65.0,93631.0],["HR","Under behandling",10.0,""],["HR","Under behandling",71.0,""],["Okonomi","Apent",33.0,88855.0],["IT","Lukket",30.0,""],["Okonomi","Lukket",19.0,81699.0],["Innkjop","Lukket",36.0,""],["Okonomi","Under behandling",10.0,49518.0],["Drift","Under behandling",26.0,""],["Fag","Lukket",8.0,384.0],["IT","Lukket",22.0,""],["HR","Lukket",26.0,78460.0],["Innkjop","Apent",41.0,86485.0],["Kundeservice","Lukket",1.0,""],["HR","Under behandling",66.0,61504.0],["Kundeservice","Under behandling",56.0,74464.0],["HR","Under behandling",77.0,71400.0],["Kundeservice","Apent",10.0,""],["Okonomi","Apent",50.0,91708.0],["Okonomi","Lukket",18.0,""],["HR","Under behandling",36.0,82683.0],["IT","Lukket",23.0,80404.0],["HR","Apent",10.0,""],["Salg","Under behandling",92.0,""],["Innkjop","Lukket",20.0,""],["HR","Under behandling",46.0,21280.0],["Innkjop","Venter pa svar",97.0,""],["Okonomi","Lukket",10.0,""],["HR","Apent",12.0,41661.0],["IT","Lukket",29.0,80879.0],["Okonomi","Venter pa svar",22.0,35313.0],["IT","Under behandling",110.0,65262.0],["Innkjop","Under behandling",116.0,""],["IT","Apent",28.0,""],["Okonomi","Under behandling",119.0,""],["Salg","Lukket",13.0,""],["HR","Apent",94.0,16210.0],["IT","Under behandling",35.0,74122.0],["Kundeservice","Lukket",7.0,""],["Drift","Lukket",33.0,59249.0],["HR","Lukket",37.0,""],["Drift","Apent",75.0,""],["HR","Venter pa svar",7.0,95129.0],["Salg","Venter pa svar",13.0,46852.0],["Salg","Under behandling",117.0,16419.0],["Kundeservice","Under behandling",52.0,""],["Drift","Under behandling",88.0,48380.0],["Salg","Apent",92.0,15391.0],["Kundeservice","Venter pa svar",12.0,67851.0],["Drift","Lukket",2.0,45869.0],["Salg","Apent",25.0,""],["Okonomi","Venter pa svar",114.0,95556.0],["Fag","Lukket",13.0,38079.0],["Okonomi","Apent",46.0,""],["Fag","Apent",22.0,1025.0],["IT","Under behandling",57.0,71172.0],["Innkjop","Venter pa svar",39.0,55217.0],["HR","Venter pa svar",107.0,""],["HR","Venter pa svar",93.0,61986.0],["Fag","Apent",40.0,13246.0],["Salg","Lukket",26.0,""],["HR","Under behandling",83.0,""],["Innkjop","Under behandling",25.0,""],["Okonomi","Lukket",31.0,""],["HR","Lukket",10.0,""],["Drift","Apent",28.0,""],["Innkjop","Lukket",9.0,93574.0],["HR","Lukket",13.0,""],["HR","Apent",113.0,1069.0],["Innkjop","Lukket",32.0,""],["Drift","Lukket",23.0,8336.0],["Kundeservice","Under behandling",97.0,""],["Kundeservice","Lukket",9.0,69369.0],["IT","Lukket",33.0,""],["Salg","Apent",56.0,""],["Drift","Under behandling",89.0,79858.0],["Fag","Lukket",1.0,""],["Innkjop","Under behandling",117.0,58510.0],["HR","Lukket",25.0,37342.0],["IT","Under behandling",34.0,""],["IT","Under behandling",120.0,""],["Innkjop","Lukket",23.0,""],["Kundeservice","Lukket",36.0,""],["IT","Lukket",33.0,""],["Kundeservice","Lukket",11.0,76921.0],["Innkjop","Apent",9.0,65494.0],["Drift","Under behandling",20.0,""],["Drift","Lukket",14.0,""],["HR","Lukket",16.0,74568.0],["IT","Lukket",35.0,41317.0],["Okonomi","Under behandling",73.0,19504.0],["HR","Venter pa svar",61.0,""],["HR","Lukket",7.0,""],["Drift","Under behandling",25.0,54278.0],["Drift","Under behandling",110.0,""],["Innkjop","Lukket",15.0,""],["Drift","Apent",117.0,""],["Drift","Lukket",24.0,""],["Salg","Venter pa svar",92.0,""],["HR","Apent",85.0,""],["Fag","Venter pa svar",95.0,40470.0],["Okonomi","Under behandling",92.0,""],["Fag","Apent",47.0,""],["Kundeservice","Lukket",39.0,9281.0],["Innkjop","Apent",37.0,25511.0],["HR","Under behandling",119.0,""],["HR","Lukket",28.0,6438.0],["Kundeservice","Venter pa svar",27.0,""],["IT","Under behandling",81.0,58599.0],["IT","Lukket",26.0,48973.0],["Innkjop","Lukket",31.0,83587.0],["Salg","Apent",115.0,""],["Innkjop","Lukket",20.0,37461.0],["Kundeservice","Apent",98.0,""],["IT","Lukket",37.0,""],["Salg","Lukket",39.0,74257.0],["IT","Apent",27.0,""],["IT","Apent",112.0,43160.0],["Drift","Lukket",3.0,""],["HR","Apent",102.0,""],["IT","Apent",4.0,""],["IT","Lukket",17.0,51118.0],["HR","Apent",61.0,""],["Okonomi","Lukket",7.0,29298.0],["Fag","Lukket",14.0,""],["Okonomi","Under behandling",33.0,""],["Innkjop","Lukket",18.0,""],["Fag","Lukket",1.0,""],["Drift","Apent",42.0,46113.0],["IT","Under behandling",78.0,45904.0],["Drift","Under behandling",116.0,52921.0],["Innkjop","Lukket",17.0,""],["HR","Apent",2.0,""],["Innkjop","Under behandling",87.0,""],["Fag","Apent",101.0,""],["Fag","Lukket",40.0,73868.0],["Okonomi","Under behandling",88.0,""],["Drift","Lukket",2.0,""],["Kundeservice","Apent",18.0,""],["Innkjop","Lukket",27.0,87466.0],["Drift","Lukket",5.0,16440.0],["Salg","Apent",7.0,""],["Innkjop","Apent",75.0,88933.0],["HR","Lukket",12.0,56884.0],["Kundeservice","Lukket",19.0,38480.0],["Okonomi","Under behandling",74.0,""],["Salg","Lukket",9.0,25283.0],["Kundeservice","Under behandling",3.0,79707.0],["HR","Lukket",16.0,""],["Kundeservice","Under behandling",81.0,49938.0],["Kundeservice","Lukket",8.0,""],["Innkjop","Lukket",38.0,""],["Salg","Venter pa svar",58.0,57260.0],["Kundeservice","Lukket",23.0,""],["HR","Lukket",13.0,""],["Innkjop","Venter pa svar",22.0,""],["HR","Lukket",9.0,""],["Drift","Lukket",12.0,""],["Innkjop","Lukket",5.0,94144.0],["IT","Under behandling",46.0,81040.0],["Drift","Lukket",40.0,""],["HR","Lukket",13.0,59784.0],["HR","Under behandling",2.0,34794.0],["Kundeservice","Venter pa svar",31.0,""],["Innkjop","Venter pa svar",117.0,""],["Okonomi","Lukket",6.0,83014.0],["Kundeservice","Lukket",30.0,""],["Fag","Apent",80.0,55315.0],["Okonomi","Apent",12.0,94555.0],["Salg","Lukket",22.0,19806.0],["Okonomi","Lukket",34.0,""],["Fag","Under behandling",2.0,""],["Drift","Venter pa svar",100.0,""],["Fag","Under behandling",70.0,95830.0],["HR","Lukket",23.0,85492.0],["Innkjop","Under behandling",97.0,""],["HR","Lukket",31.0,7816.0],["Fag","Lukket",32.0,""],["Kundeservice","Under behandling",35.0,92244.0],["Drift","Lukket",29.0,63801.0],["Salg","Venter pa svar",96.0,""],["Innkjop","Under behandling",71.0,39436.0],["Innkjop","Under behandling",57.0,1035.0],["Salg","Under behandling",106.0,""],["IT","Lukket",28.0,22470.0],["IT","Under behandling",68.0,3754.0],["Salg","Lukket",1.0,41233.0],["Drift","Lukket",38.0,82715.0],["HR","Apent",90.0,""],["Salg","Apent",85.0,88617.0],["HR","Lukket",5.0,52825.0],["IT","Under behandling",67.0,""],["Fag","Venter pa svar",54.0,97296.0],["Okonomi","Under behandling",81.0,40481.0],["Salg","Venter pa svar",25.0,47787.0],["Fag","Lukket",38.0,88719.0],["Innkjop","Apent",114.0,""],["Kundeservice","Lukket",25.0,""],["Kundeservice","Apent",95.0,11459.0],["Drift","Lukket",38.0,""],["Fag","Apent",86.0,7615.0],["Fag","Apent",105.0,""],["Okonomi","Apent",3.0,""],["Okonomi","Lukket",6.0,21557.0],["Okonomi","Lukket",26.0,39528.0],["Kundeservice","Lukket",25.0,92005.0],["Fag","Under behandling",34.0,""],["IT","Lukket",22.0,40130.0],["Drift","Lukket",39.0,90295.0],["Salg","Venter pa svar",57.0,""],["Fag","Venter pa svar",6.0,80014.0],["Drift","Lukket",30.0,""],["Drift","Venter pa svar",66.0,""],["Fag","Under behandling",10.0,""],["Salg","Under behandling",76.0,""],["IT","Lukket",39.0,67374.0],["Salg","Lukket",40.0,29244.0],["Drift","Under behandling",74.0,9689.0],["Fag","Under behandling",49.0,""],["Okonomi","Lukket",21.0,""],["Okonomi","Under behandling",55.0,65479.0],["Innkjop","Venter pa svar",83.0,""],["HR","Under behandling",46.0,""],["Okonomi","Apent",74.0,34730.0],["Drift","Lukket",2.0,57211.0],["Okonomi","Lukket",40.0,""],["Salg","Apent",73.0,""],["Okonomi","Lukket",39.0,""],["Salg","Lukket",14.0,""],["IT","Apent",58.0,""],["Salg","Lukket",34.0,95062.0],["Drift","Apent",23.0,""],["Fag","Apent",103.0,54508.0],["Innkjop","Apent",46.0,""],["Innkjop","Lukket",3.0,74671.0],["Kundeservice","Venter pa svar",116.0,66489.0],["Kundeservice","Apent",96.0,80464.0],["HR","Under behandling",17.0,""],["Salg","Lukket",36.0,77197.0],["Fag","Under behandling",100.0,80238.0],["Drift","Lukket",30.0,15788.0],["HR","Lukket",2.0,90703.0],["Innkjop","Lukket",25.0,13343.0],["Fag","Under behandling",19.0,""],["Innkjop","Venter pa svar",110.0,20232.0],["Kundeservice","Venter pa svar",19.0,39928.0],["HR","Under behandling",54.0,""],["Salg","Lukket",27.0,""],["HR","Venter pa svar",108.0,""],["Okonomi","Lukket",37.0,""],["Kundeservice","Lukket",8.0,6035.0],["Kundeservice","Lukket",1.0,""],["Fag","Under behandling",120.0,70501.0],["IT","Apent",28.0,""],["Fag","Apent",18.0,""],["IT","Apent",80.0,""],["HR","Under behandling",60.0,77568.0],["Okonomi","Under behandling",118.0,34376.0],["Innkjop","Apent",104.0,32977.0],["Fag","Lukket",28.0,""],["Drift","Lukket",16.0,""],["IT","Apent",104.0,""],["HR","Under behandling",53.0,""],["HR","Lukket",23.0,""],["IT","Venter pa svar",71.0,67731.0],["Drift","Under behandling",19.0,""],["IT","Apent",82.0,61819.0],["IT","Venter pa svar",26.0,""],["IT","Under behandling",75.0,65135.0],["Fag","Under behandling",1.0,46228.0],["HR","Lukket",35.0,29339.0],["Okonomi","Lukket",35.0,34160.0],["Kundeservice","Apent",65.0,""],["Kundeservice","Apent",75.0,""],["Okonomi","Under behandling",112.0,24262.0],["Drift","Apent",9.0,""],["Okonomi","Apent",37.0,""],["Innkjop","Lukket",15.0,""],["Kundeservice","Lukket",20.0,""],["Fag","Lukket",18.0,9804.0],["Okonomi","Venter pa svar",120.0,""],["IT","Lukket",20.0,""],["Kundeservice","Lukket",5.0,8301.0],["Drift","Under behandling",44.0,""],["Kundeservice","Apent",73.0,""],["Kundeservice","Lukket",23.0,""],["Fag","Lukket",39.0,13761.0],["Innkjop","Lukket",2.0,7204.0],["Kundeservice","Venter pa svar",29.0,83491.0],["HR","Apent",45.0,""],["Salg","Venter pa svar",22.0,92569.0],["IT","Apent",1.0,""],["Okonomi","Under behandling",94.0,93484.0],["Kundeservice","Lukket",3.0,""],["Okonomi","Apent",33.0,54887.0],["Kundeservice","Lukket",17.0,""],["Drift","Lukket",22.0,""],["Salg","Lukket",2.0,87973.0],["HR","Lukket",15.0,""],["Drift","Lukket",8.0,90071.0],["Drift","Apent",52.0,42581.0],["Fag","Under behandling",49.0,54435.0],["HR","Lukket",38.0,45822.0],["Drift","Under behandling",59.0,92169.0],["Fag","Lukket",29.0,13014.0],["Okonomi","Under behandling",1.0,""],["HR","Under behandling",118.0,""],["Fag","Apent",26.0,72199.0],["Kundeservice","Under behandling",72.0,48357.0],["Drift","Lukket",2.0,""],["Innkjop","Lukket",36.0,18625.0],["Innkjop","Under behandling",24.0,""],["Innkjop","Under behandling",93.0,""],["Salg","Apent",76.0,""],["Innkjop","Lukket",40.0,84895.0],["IT","Apent",12.0,35477.0],["Kundeservice","Under behandling",13.0,""],["HR","Under behandling",35.0,""],["Drift","Lukket",29.0,87347.0],["Kundeservice","Under behandling",35.0,""],["Salg","Lukket",26.0,97520.0],["IT","Under behandling",14.0,86314.0],["Okonomi","Lukket",11.0,92069.0],["Salg","Lukket",34.0,""],["Okonomi","Lukket",36.0,27725.0],["Salg","Lukket",7.0,""],["Okonomi","Under behandling",112.0,""],["Kundeservice","Under behandling",5.0,17433.0],["Okonomi","Apent",38.0,""],["Okonomi","Lukket",12.0,82603.0],["Okonomi","Lukket",5.0,27641.0],["Innkjop","Under behandling",51.0,""],["IT","Lukket",18.0,""],["Innkjop","Under behandling",34.0,""],["Innkjop","Lukket",4.0,22818.0],["Kundeservice","Lukket",31.0,61942.0],["Salg","Venter pa svar",95.0,""],["Okonomi","Lukket",4.0,15234.0],["Fag","Lukket",10.0,""],["Kundeservice","Under behandling",67.0,93338.0],["Fag","Apent",90.0,""],["Kundeservice","Lukket",4.0,69383.0],["IT","Apent",81.0,""],["IT","Under behandling",72.0,""],["Kundeservice","Under behandling",114.0,96787.0],["HR","Lukket",15.0,""],["Okonomi","Under behandling",5.0,""],["Innkjop","Apent",7.0,""],["Okonomi","Apent",56.0,""],["Fag","Under behandling",120.0,""],["Okonomi","Under behandling",104.0,75668.0],["Innkjop","Lukket",11.0,""],["Okonomi","Lukket",26.0,92467.0],["Fag","Under behandling",105.0,""],["Fag","Lukket",32.0,""],["HR","Apent",43.0,""],["HR","Under behandling",6.0,14698.0],["IT","Under behandling",74.0,""],["Innkjop","Lukket",10.0,55639.0],["Drift","Lukket",34.0,69294.0],["Fag","Apent",2.0,11960.0],["HR","Venter pa svar",4.0,97222.0],["Drift","Lukket",29.0,""],["Salg","Venter pa svar",7.0,89815.0],["Salg","Apent",112.0,59602.0],["Okonomi","Apent",56.0,""],["Fag","Lukket",8.0,""],["HR","Lukket",9.0,""],["Kundeservice","Lukket",13.0,82126.0],["Fag","Venter pa svar",92.0,66916.0],["Kundeservice","Lukket",9.0,""],["Fag","Lukket",2.0,""],["IT","Apent",120.0,""],["IT","Venter pa svar",53.0,""],["Kundeservice","Under behandling",4.0,46281.0],["Drift","Lukket",33.0,""]];
+const T = {"rows_shown":"{shown} av {total} rader","rows_empty":"Ingen rader med dette søket.","sort_label":"Sorter etter","sort_asc":"Stigende","sort_desc":"Synkende","locale":"nb-NO","groupRows":"{n} rader","groupRowsOne":"1 rad"};
+const tb = document.querySelector("#tbl tbody");
+const thead = document.querySelector("#tbl thead tr");
+const q = document.getElementById("q");
+const sizeSel = document.getElementById("size");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+const count = document.getElementById("count");
+const empty = T.rows_empty;
+/* -1 means the build did not group. The key is absent from META then, so a build
+   without --group-by writes exactly the bytes it wrote before. */
+const GROUP_COL = typeof META.groupCol === "number" ? META.groupCol : -1;
+
+let state = {q: "", sort: META.sortCol, dir: META.sortDir, page: 0, size: META.pageSize};
+
+function norm(v) { return String(v === null || v === undefined ? "" : v).toLocaleLowerCase(); }
+
+function filtered() {
+  const needle = norm(state.q).trim();
+  if (!needle) return ROWS.map((row, i) => i);
+  const words = needle.split(/\s+/);
+  const out = [];
+  for (let i = 0; i < ROWS.length; i++) {
+    const hay = ROWS[i].map(norm).join(" \u0000 ");
+    if (words.every(w => hay.indexOf(w) !== -1)) out.push(i);
+  }
+  return out;
+}
+
+function compare(a, b) {
+  /* Grouping beats the chosen sort, or the bands would repeat: a group that is split into
+     two runs of rows shows its header twice and reads as two groups. */
+  if (GROUP_COL >= 0) {
+    const ga = ROWS[a][GROUP_COL], gb = ROWS[b][GROUP_COL];
+    if (ga !== gb) {
+      const na = typeof ga === "number", nb = typeof gb === "number";
+      if (na && nb) return ga - gb;
+      if (na !== nb) return na ? -1 : 1;
+      return String(ga).localeCompare(String(gb), T.locale, {numeric: true});
+    }
+  }
+  const col = state.sort;
+  const av = ROWS[a][col], bv = ROWS[b][col];
+  const aEmpty = av === "" || av === null || av === undefined;
+  const bEmpty = bv === "" || bv === null || bv === undefined;
+  if (aEmpty || bEmpty) return aEmpty === bEmpty ? a - b : (aEmpty ? 1 : -1);
+  if (META.numeric.indexOf(col) !== -1) return (Number(av) - Number(bv)) * state.dir;
+  return String(av).localeCompare(String(bv), T.locale, {numeric: true}) * state.dir;
+}
+
+function cell(value, col) {
+  const td = document.createElement("td");
+  td.setAttribute("data-label", META.columns[col]);
+  if (META.numeric.indexOf(col) !== -1) td.className = "num";
+  td.textContent = value === null || value === undefined ? "" : String(value);
+  return td;
+}
+
+function render() {
+  const idx = filtered();
+  idx.sort(compare);
+  const pages = Math.max(1, Math.ceil(idx.length / state.size));
+  if (state.page >= pages) state.page = pages - 1;
+  if (state.page < 0) state.page = 0;
+  const start = state.page * state.size;
+  const slice = idx.slice(start, start + state.size);
+
+  /* A group's totals are counted over the rows in the current view, not over the page on
+     screen: a group split across two pages must not report two different sums. That is also
+     why the count is taken here and not carried in from the build: a search narrows what is
+     shown, and a total that ignored the search would be a second answer to the same
+     question. */
+  const groups = new Map();
+  if (GROUP_COL >= 0) {
+    for (const i of idx) {
+      const g = ROWS[i][GROUP_COL];
+      let acc = groups.get(g);
+      if (!acc) { acc = {n: 0, sum: META.numeric.map(() => 0)}; groups.set(g, acc); }
+      acc.n += 1;
+      META.numeric.forEach((col, k) => {
+        const v = ROWS[i][col];
+        if (typeof v === "number") acc.sum[k] += v;
+      });
+    }
+  }
+
+  const fmtNum = (n) => Number(n).toLocaleString(T.locale, {maximumFractionDigits: 1});
+  const band = (g) => {
+    const acc = groups.get(g) || {n: 0, sum: META.numeric.map(() => 0)};
+    const tr = document.createElement("tr");
+    tr.className = "grp";
+    const th = document.createElement("th");
+    th.setAttribute("scope", "colgroup");
+    th.colSpan = META.columns.length;
+    const name = document.createElement("span");
+    name.className = "grpname";
+    name.textContent = String(g);
+    const meta = document.createElement("span");
+    meta.className = "grpmeta";
+    const bits = [(acc.n === 1 ? T.groupRowsOne : T.groupRows).replace("{n}", fmtNum(acc.n))];
+    META.numeric.forEach((col, k) => bits.push(META.columns[col] + " " + fmtNum(acc.sum[k])));
+    meta.textContent = bits.join(" \u00b7 ");
+    th.appendChild(name);
+    th.appendChild(meta);
+    tr.appendChild(th);
+    return tr;
+  };
+
+  tb.textContent = "";
+  if (!slice.length) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = META.columns.length;
+    td.textContent = empty;
+    tr.appendChild(td);
+    tb.appendChild(tr);
+  } else {
+    let lastGroup;
+    for (const i of slice) {
+      if (GROUP_COL >= 0) {
+        const g = ROWS[i][GROUP_COL];
+        if (g !== lastGroup) { tb.appendChild(band(g)); lastGroup = g; }
+      }
+      const tr = document.createElement("tr");
+      for (let c = 0; c < META.columns.length; c++) tr.appendChild(cell(ROWS[i][c], c));
+      tb.appendChild(tr);
+    }
+  }
+
+  /* aria-sort only on the sorted column: "none" on the rest is what the attribute means,
+     and the caret is aria-hidden because aria-sort already says it. */
+  thead.querySelectorAll("th").forEach((th, i) => {
+    const on = i === state.sort;
+    th.setAttribute("aria-sort", on ? (state.dir < 0 ? "descending" : "ascending") : "none");
+    const caret = th.querySelector(".caret");
+    if (caret) {
+      caret.textContent = on ? (state.dir < 0 ? "\u25be" : "\u25b4") : "";
+      caret.setAttribute("aria-hidden", "true");
+    }
+  });
+
+  /* The counts follow the page's own convention: nb groups with a space, en with a comma.
+     A reader in Oslo should not read "1,200 rows" in a Norwegian list. */
+  const fmt = n => Number(n).toLocaleString(T.locale);
+  syncSort();
+  count.textContent = T.rows_shown
+    .replace("{shown}", (idx.length ? fmt(start + 1) : "0") + "\u2013" + fmt(start + slice.length))
+    .replace("{total}", fmt(idx.length));
+  prev.disabled = state.page === 0;
+  next.disabled = state.page >= pages - 1;
+}
+
+/* A search types; a render per keystroke on a 5,000-row list is a stutter. One frame of
+   delay is invisible and keeps the field responsive. */
+let queued = false;
+q.addEventListener("input", () => {
+  state.q = q.value;
+  state.page = 0;
+  if (queued) return;
+  queued = true;
+  requestAnimationFrame(() => { queued = false; render(); });
+});
+sizeSel.addEventListener("change", () => {
+  state.size = Number(sizeSel.value) || META.pageSize;
+  state.page = 0;
+  render();
+});
+document.getElementById("controls").addEventListener("reset", () => {
+  state = {q: "", sort: META.sortCol, dir: META.sortDir, page: 0, size: META.pageSize};
+  sizeSel.value = String(META.pageSize);
+  requestAnimationFrame(render);
+});
+prev.addEventListener("click", () => { state.page -= 1; render(); });
+next.addEventListener("click", () => { state.page += 1; render(); });
+thead.querySelectorAll("th button").forEach((btn, i) => {
+  btn.addEventListener("click", () => {
+    if (state.sort === i) state.dir = -state.dir;
+    else { state.sort = i; state.dir = META.numeric.indexOf(i) !== -1 ? -1 : 1; }
+    state.page = 0;
+    render();
+  });
+});
+
+const sortSel = document.getElementById("sortsel");
+const dirBtn = document.getElementById("dirbtn");
+function syncSort() {
+  sortSel.value = String(state.sort);
+  dirBtn.textContent = state.dir < 0 ? T.sort_desc : T.sort_asc;
+  dirBtn.setAttribute("aria-label", T.sort_label + ": "
+    + META.columns[state.sort] + ", " + (state.dir < 0 ? T.sort_desc : T.sort_asc));
+}
+sortSel.addEventListener("change", () => {
+  state.sort = Number(sortSel.value);
+  state.dir = META.numeric.indexOf(state.sort) !== -1 ? -1 : 1;
+  state.page = 0;
+  syncSort();
+  render();
+});
+dirBtn.addEventListener("click", () => {
+  state.dir = -state.dir;
+  state.page = 0;
+  syncSort();
+  render();
+});
+document.getElementById("nojs").hidden = true;
+document.getElementById("controls").hidden = false;
+document.getElementById("hint").hidden = false;
+syncSort();
+render();
+</script>
+<section class="nojs annotate-sheet" id="annotate-sheet">
+  <h2>Vil du si fra om noe?</h2>
+  <p class="nojs-lead">Skriv en e-post til den som bygde filen. Lim inn blokken under, og skriv kommentaren din etter hver rad du vil si noe om.</p>
+  <pre>TUN-REVIEW 1
+artefact: Avvik per enhet
+file: avvik-per-enhet.html
+built: 2026-10-24 10:00
+rows: 1200
+source: Syntetisk eksempeldata (avvik.csv) — 1 200 rader, 4 kolonner
+keys: Enhet, Status
+measure: 
+--
+row: Drift | Under behandling
+comment: kommentaren din her
+--
+row: Drift | Apent
+comment: kommentaren din her
+--
+row: Drift | Apent
+comment: kommentaren din her</pre>
+  <p class="nojs-lead">Kopier linjen for raden det gjelder, skriv kommentaren på linjen under, og gjenta.</p>
+</section>
+<section class="annotate" id="annotate">
+  <div class="annotate-bar">
+    <button type="button" class="annotate-btn" id="annotate-toggle"
+            aria-pressed="false">Kommenter</button>
+    <span class="annotate-count" id="annotate-count">Ingen kommentarer</span>
+    <span class="annotate-hint" id="annotate-hint" hidden>Klikk på en rad i tabellen for å kommentere den.</span>
+  </div>
+  <div class="annotate-form" id="annotate-form" hidden>
+    <p id="annotate-target"></p>
+    <label for="annotate-text">Hva er galt, eller hva mangler?</label>
+    <textarea id="annotate-text" rows="3"></textarea>
+    <div class="annotate-actions">
+      <button type="button" class="annotate-btn" id="annotate-add">Legg til</button>
+      <button type="button" class="annotate-btn" id="annotate-cancel">Avbryt</button>
+    </div>
+  </div>
+  <div class="annotate-out" id="annotate-out" hidden>
+    <h2 id="annotate-out-title">Tilbakemeldingen din</h2>
+    <p>Kopier blokken og lim den inn i en e-post eller melding til den som bygde filen. Den inneholder hvilken bygging du så, og hvilke rader du mener.</p>
+    <textarea id="annotate-payload" readonly rows="10"
+              aria-labelledby="annotate-out-title"></textarea>
+    <div class="annotate-actions">
+      <button type="button" class="annotate-btn" id="annotate-copy">Kopier</button>
+      <span class="annotate-live" id="annotate-copied"></span>
+    </div>
+    <ul class="annotate-list" id="annotate-list"></ul>
+  </div>
+  <p class="annotate-live" id="annotate-live" role="status" aria-live="polite"></p>
+</section>
+<script>
+(function () {
+  "use strict";
+  // Filled in by tools/review_layer.py. Nothing leaves the file: the block a reader
+  // copies is assembled here, from what is already on the page, and handed to their own
+  // clipboard. tools/read_review.py reads it back and finds the rows again.
+  var C = {"title": "Avvik per enhet", "file": "avvik-per-enhet.html", "built": "2026-10-24 10:00", "rows": 1200, "source": "Syntetisk eksempeldata (avvik.csv) — 1 200 rader, 4 kolonner", "keys": ["Enhet", "Status"], "measure": "", "table": "tbl", "cellAttr": "data-label", "measures": ["Dager", "Belop"], "statusAttr": "", "keyAttr": "", "t": {"btn_on": "Kommenter", "btn_off": "Avslutt kommentering", "hint": "Klikk på en rad i tabellen for å kommentere den.", "count_none": "Ingen kommentarer", "count_one": "1 kommentar", "count_other": "{n} kommentarer", "row": "Rad", "add": "Legg til", "cancel": "Avbryt", "ask": "Hva er galt, eller hva mangler?", "added": "Kommentarer", "remove": "Fjern", "copied": "Kopiert", "copy_manual": "Merk teksten og kopier den.", "annotated": "Denne raden har en kommentar."}};
+  var notes = [];
+  var target = null;
+
+  function el(id) { return document.getElementById(id); }
+  function table() { return el(C.table || "tbl"); }
+  function heads() {
+    var t = table();
+    return t ? Array.prototype.slice.call(t.querySelectorAll("thead th")) : [];
+  }
+  // A column is found by a name the builder put in the markup, never by the visible text:
+  // a sorted column carries a caret. Two builders, two ways of saying it, so the config
+  // says which one this artefact uses: `cellAttr` names the attribute a cell carries
+  // (the register writes data-label on every td), and without it the header's data-col
+  // is read instead (the rows dashboard).
+  function colIndex(name) {
+    // An empty name is "no such column", not "the first one": an artefact with no single
+    // measure passes measure="", and the register's headers carry no data-col for it to
+    // match, so without this the first column answered to the empty name and every
+    // comment carried the case number as its figure.
+    if (!name) return -1;
+    if (C.cellAttr) {
+      var t = table();
+      var rows = t ? t.querySelectorAll("tbody tr") : [];
+      for (var r = 0; r < rows.length; r++) {
+        var tds = rows[r].children;
+        for (var i = 0; i < tds.length; i++) {
+          if ((tds[i].getAttribute(C.cellAttr) || "") === name) return i;
+        }
+      }
+      return -1;
+    }
+    var hs = heads();
+    for (var h = 0; h < hs.length; h++) {
+      if ((hs[h].getAttribute("data-col") || "") === name) return h;
+    }
+    return -1;
+  }
+  // The identity of a row. A key cell can carry a tag ("gone", "new") inside it, and
+  // textContent then reads "Nordvest borte" for a key that is "Nordvest": a comment would
+  // be filed against a name the file does not hold. An artefact that knows its own key puts
+  // it on the row, and that wins.
+  function rowKeys(tr) {
+    if (C.keyAttr) {
+      var said = tr.getAttribute(C.keyAttr);
+      if (said !== null && said !== undefined && said !== "") return [said];
+    }
+    return keyCols().map(function (k) { return cell(tr, colIndex(k)); });
+  }
+  function cell(tr, i) {
+    var c = tr.children[i];
+    return c ? (c.textContent || "").trim() : "";
+  }
+  function keyCols() {
+    var out = C.keys.filter(function (k) { return colIndex(k) >= 0; });
+    if (out.length) return out;
+    return heads().slice(0, 1).map(function (h) {
+      return h.getAttribute("data-col") || "";
+    }).filter(function (n) { return n; });
+  }
+  // A row a reader can comment on: cells, no heading, and at least one cell that says
+  // which column it belongs to. A grouped register also draws band rows (a th that spans
+  // the table) and an empty-state row (one td with a colspan); neither is a record.
+  function isDataRow(tr) {
+    if (!tr || tr.nodeName !== "TR" || !tr.parentNode || tr.parentNode.nodeName !== "TBODY") return false;
+    if (tr.querySelector("th") || tr.className.indexOf("grp") >= 0) return false;
+    var tds = tr.children;
+    if (!tds.length || (tds[0] && tds[0].colSpan > 1)) return false;
+    if (C.cellAttr) {
+      for (var i = 0; i < tds.length; i++) {
+        if (tds[i].getAttribute(C.cellAttr)) return true;
+      }
+      return false;
+    }
+    return tds.length === heads().length;
+  }
+
+  function header(keys) {
+    return ["TUN-REVIEW 1",
+      "artefact: " + C.title,
+      "file: " + C.file,
+      "built: " + C.built,
+      "rows: " + C.rows,
+      "source: " + C.source,
+      "keys: " + keys.join(", "),
+      "measure: " + C.measure];
+  }
+  function payload() {
+    var keys = keyCols();
+    var lines = header(keys);
+    notes.forEach(function (n) {
+      lines.push("--");
+      lines.push("row: " + n.row.join(" | "));
+      if (n.status) lines.push("status: " + n.status);
+      if (n.value) lines.push("value: " + n.value);
+      else if (n.cells.length) lines.push("cells: " + cellsText(n));
+      lines.push("comment: " + n.comment);
+    });
+    return lines.join("\n") + "\n";
+  }
+
+  // The figures a reader could disagree about. A dashboard has one (--measure); a register
+  // has every numeric column, and there the reader's values also break a tie when several
+  // records share the same text cells.
+  function measureCols() {
+    return (C.measures && C.measures.length) ? C.measures : (C.measure ? [C.measure] : []);
+  }
+  function rowFor(tr) {
+    var keys = keyCols();
+    var mi = colIndex(C.measure);
+    var cells = measureCols().map(function (name) {
+      var i = colIndex(name);
+      return [name, i >= 0 ? cell(tr, i) : ""];
+    }).filter(function (pair) { return pair[1] !== ""; });
+    return {
+      keys: keys,
+      row: rowKeys(tr),
+      value: mi >= 0 ? cell(tr, mi) : "",
+      // An artefact can mark a row as present on one side only (the comparison marks a key
+      // added or gone). The comment still belongs to the key; the mark says why one figure
+      // is empty, so the report does not read as "the row is wrong".
+      status: C.statusAttr ? (tr.getAttribute(C.statusAttr) || "") : "",
+      cells: cells
+    };
+  }
+  function cellsText(n) {
+    return n.cells.map(function (pair) { return pair[0] + "=" + pair[1]; }).join("; ");
+  }
+
+  function count() {
+    var c = el("annotate-count");
+    if (!c) return;
+    c.textContent = notes.length === 0 ? C.t.count_none
+      : notes.length === 1 ? C.t.count_one
+      : C.t.count_other.replace("{n}", String(notes.length));
+  }
+
+  function listNotes() {
+    var ul = el("annotate-list");
+    if (!ul) return;
+    ul.textContent = "";
+    notes.forEach(function (n, i) {
+      var li = document.createElement("li");
+      var who = document.createElement("span");
+      who.className = "who";
+      // textContent throughout: a comment is the reader's text, never markup.
+      who.textContent = n.row.join(" | ") + (n.value ? " \u00b7 " + n.value : "");
+      var said = document.createElement("span");
+      said.textContent = n.comment;
+      var del = document.createElement("button");
+      del.type = "button";
+      del.className = "annotate-btn";
+      del.textContent = C.t.remove;
+      del.addEventListener("click", function () {
+        notes.splice(i, 1);
+        render();
+        el("annotate-live").textContent = "";
+      });
+      li.appendChild(who);
+      li.appendChild(said);
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+
+  function markRows() {
+    var t = table();
+    if (!t) return;
+    var tb = t.querySelector("tbody");
+    if (!tb) return;
+    var keys = keyCols();
+    Array.prototype.forEach.call(tb.querySelectorAll("tr"), function (tr) {
+      if (!isDataRow(tr)) return;
+      var name = rowKeys(tr).join(" | ");
+      var hit = false;
+      for (var i = 0; i < notes.length; i++) {
+        if (notes[i].row.join(" | ") === name) { hit = true; break; }
+      }
+      tr.classList.toggle("annotate-done", hit);
+      if (hit) tr.title = C.t.annotated; else tr.removeAttribute("title");
+    });
+  }
+
+  function render() {
+    count();
+    markRows();
+    var out = el("annotate-out");
+    if (out) out.hidden = notes.length === 0;
+    var box = el("annotate-payload");
+    if (box) box.value = notes.length ? payload() : "";
+    listNotes();
+  }
+
+  function start() {
+    var t = el("annotate-toggle");
+    if (!t) return;
+    var on = document.body.classList.toggle("annotate-on");
+    t.setAttribute("aria-pressed", on ? "true" : "false");
+    t.textContent = on ? C.t.btn_off : C.t.btn_on;
+    var hint = el("annotate-hint");
+    if (hint) hint.hidden = !on;
+    if (!on) cancel();
+  }
+
+  function cancel() {
+    target = null;
+    var f = el("annotate-form");
+    if (f) f.hidden = true;
+    var box = el("annotate-text");
+    if (box) box.value = "";
+    var tb = table();
+    if (tb) {
+      Array.prototype.forEach.call(tb.querySelectorAll("tr.annotate-hit"), function (tr) {
+        tr.classList.remove("annotate-hit");
+      });
+    }
+  }
+
+  function begin(tr) {
+    target = rowFor(tr);
+    Array.prototype.forEach.call(table().querySelectorAll("tr.annotate-hit"), function (r) {
+      r.classList.remove("annotate-hit");
+    });
+    tr.classList.add("annotate-hit");
+    var f = el("annotate-form");
+    var p = el("annotate-target");
+    var figures = target.value || (target.cells.length ? cellsText(target) : "");
+    if (p) p.textContent = C.t.row + ": " + target.row.join(" | ")
+      + (figures ? " \u00b7 " + figures : "");
+    if (f) f.hidden = false;
+    var box = el("annotate-text");
+    if (box) { box.value = ""; box.focus(); }
+  }
+
+  function add() {
+    var box = el("annotate-text");
+    if (!target || !box) return;
+    // One line per comment, so the pasted block stays line-based. A comment that is
+    // empty is not a comment; the reader gets told rather than getting a blank entry.
+    var said = (box.value || "").replace(/\s+/g, " ").trim();
+    if (!said) { el("annotate-live").textContent = C.t.ask; box.focus(); return; }
+    notes.push({ row: target.row, status: target.status, value: target.value,
+                 cells: target.cells, comment: said });
+    cancel();
+    render();
+    el("annotate-live").textContent = C.t.added + ": " + String(notes.length);
+  }
+
+  function copy() {
+    var box = el("annotate-payload");
+    var said = el("annotate-copied");
+    if (!box || !notes.length) return;
+    function done(ok) {
+      if (said) said.textContent = ok ? C.t.copied : C.t.copy_manual;
+      if (!ok) { box.focus(); box.select(); }
+    }
+    // Clipboard access is refused in a sandboxed frame (an Atlassian Artifacts viewer is
+    // one), so the write is tried first and the textarea is left selectable either way.
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(box.value).then(function () { done(true); },
+          function () { done(false); });
+        return;
+      }
+    } catch (e) { /* fall through */ }
+    try {
+      box.focus(); box.select();
+      done(document.execCommand("copy"));
+    } catch (e2) { done(false); }
+  }
+
+  var tog = el("annotate-toggle");
+  if (!tog) return;
+
+  // The table body is replaced on every sort and filter (renderTable), which would drop
+  // the marker with it. Watching the body keeps the marker without hooking the page's
+  // own rendering code, which this layer does not own.
+  var tb = table() && table().querySelector("tbody");
+  if (tb && window.MutationObserver) {
+    new MutationObserver(markRows).observe(tb, { childList: true });
+  }
+  tog.addEventListener("click", start);
+  var addBtn = el("annotate-add");
+  if (addBtn) addBtn.addEventListener("click", add);
+  var cancelBtn = el("annotate-cancel");
+  if (cancelBtn) cancelBtn.addEventListener("click", cancel);
+  var copyBtn = el("annotate-copy");
+  if (copyBtn) copyBtn.addEventListener("click", copy);
+
+  // Delegated on the document: the table body is replaced on every filter and sort, so a
+  // listener bound to a row would be gone by the time the reader clicked it.
+  document.addEventListener("click", function (e) {
+    if (!document.body.classList.contains("annotate-on")) return;
+    var t = table();
+    if (!t) return;
+    var node = e.target;
+    while (node && node !== t && node.nodeName !== "TR") node = node.parentNode;
+    if (!isDataRow(node)) return;
+    if (node.querySelector("button")) return;
+    e.preventDefault();
+    begin(node);
+  }, false);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") cancel();
+    // Ctrl/Cmd+Enter adds the comment: the textarea keeps plain Enter for a newline,
+    // which a reader writing two sentences expects.
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && target) add();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

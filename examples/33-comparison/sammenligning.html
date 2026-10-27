@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Omsetning per region: september mot oktober</title>
+<!--
+  Omsetning per region: september mot oktober
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (forrige.csv, denne.csv)
+    Extracted   : 2026-10-27 16:17
+    Built       : 2026-10-27 16:17
+    Requested by: Innsikt
+    Made with   : Tún - tun.community
+    Rows        : 7 keys compared (11 before, 11 after)
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence
+  required to view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: a comparison. Two extracts of the same measure, matched on a key,
+  shown as one row per key with the change beside it. "What moved, and by how much" is
+  the question most reports answer by hand in Excel, which is where the arithmetic goes
+  wrong and nobody can see it afterwards.
+
+  What it is NOT: a filter over a larger dataset, and not a place where the two extracts
+  are reconciled. A key that exists in only one of them is shown as new or gone, never
+  silently dropped: an absent row is a fact about the data, not a rounding error.
+
+  The static table below is the no-JS view: the largest movers, drawn by the builder.
+  The script re-renders the same rows when a filter or a sort changes.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+:root{
+  /* Status colour, from the seam: --ok and --bad are Fire Red and Success Green, measured
+     per theme. Used ONLY when the builder is told which direction is good, because an
+     increase is not good or bad by itself: more revenue and more overtime are the same
+     arithmetic and opposite news. Direction is always carried by the sign as well, per
+     WCAG 1.4.1 (colour is never the only signal). */
+  /* --bad-ink, not --bad: these figures are TEXT, and Fire Red on the panel is 4.49:1,
+     under AA by a hundredth. See the role in theme-light.css. */
+  --pos:var(--ok);--neg:var(--bad-ink);--neutral:var(--muted);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.25rem;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:1.5rem 0 .5rem;font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:.75rem 1rem;align-items:flex-end;
+  background:var(--panel);border:1px solid var(--line);border-radius:.5rem;padding:1rem}
+.controls .field{display:flex;flex-direction:column;gap:.25rem;min-width:12rem}
+.controls .grow{flex:1 1 18rem}
+.controls label{font-size:.875rem;line-height:1.25rem;color:var(--muted);font-weight:600}
+.controls input[type=search],.controls select{font:inherit;font-size:.875rem;
+  min-height:2.75rem;padding:.5rem .625rem;border:1px solid var(--line);border-radius:.25rem;
+  background:var(--panel);color:var(--ink);width:100%}
+.controls select{-webkit-appearance:none;appearance:none;padding-right:2rem;
+  /* WebKit ignores padding and min-height on a native select and draws it 22 px tall. */
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .5rem center;background-size:.75rem .5rem}
+.controls button{font:inherit;font-size:.875rem;font-weight:600;min-height:2.75rem;
+  padding:.5rem 1rem;border:1px solid var(--brand);border-radius:.25rem;background:var(--panel);
+  color:var(--brand);cursor:pointer}
+.controls button:hover{background:var(--brand-soft)}
+.hint{margin:.5rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(11rem,100%),1fr));
+  gap:.75rem;margin:1rem 0 0;padding:0;list-style:none}
+.kpis li{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--brand);
+  border-radius:.25rem;padding:.75rem 1rem}
+.kpis .k{display:block;font-size:.875rem;line-height:1.25rem;color:var(--muted);
+  letter-spacing:.02em;text-transform:uppercase}
+.kpis .v{display:block;font-size:1.75rem;line-height:2rem;font-weight:600;margin-top:.125rem}
+.kpis .v{color:var(--ink)}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted);font-size:.875rem}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  font-variant-numeric:tabular-nums}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);font-size:.875rem;
+  line-height:1.25rem;white-space:nowrap}
+td.num,th.num{text-align:right}
+tbody tr:last-child td{border-bottom:0}
+/* The sum row keeps --panel, not the page grey: the status pair in
+   tools/tokens/status-semantic.css was measured against #FFFFFF, and Fire Red on
+   #f7f8f9 is 4.48:1, under AA. A border carries the separation instead. */
+tfoot td{font-weight:600;background:var(--panel);border-top:2px solid var(--line)}
+.delta.up,.delta.down{color:var(--ink)}
+.delta.flat,.delta.added,.delta.gone{color:var(--neutral)}
+/* Only when the builder was told which way is good does colour carry a verdict. */
+body[data-meaning="up"] .delta.up,body[data-meaning="up"] .kpis .v.up,
+body[data-meaning="down"] .delta.down,body[data-meaning="down"] .kpis .v.down{color:var(--pos)}
+body[data-meaning="up"] .delta.down,body[data-meaning="up"] .kpis .v.down,
+body[data-meaning="down"] .delta.up,body[data-meaning="down"] .kpis .v.up{color:var(--neg)}
+.sign{font-weight:600}
+.trk{display:block;height:.5rem;background:var(--line);border-radius:999px;overflow:hidden;
+  min-width:6rem}
+.trk i{display:block;height:100%;background:var(--brand)}
+.trk.added i,.trk.gone i,.trk.flat i{background:var(--neutral)}
+body[data-meaning="up"] .trk.up i,body[data-meaning="down"] .trk.down i{background:var(--pos)}
+body[data-meaning="up"] .trk.down i,body[data-meaning="down"] .trk.up i{background:var(--neg)}
+.tag{display:inline-block;font-size:.875rem;line-height:1.5rem;padding:0 .5rem;
+  /* 14 px, not 12: the text floor is measured, and a tag is text a reader reads. */
+  border-radius:999px;background:var(--brand-soft);color:var(--on-brand-soft);font-weight:600}
+.nojs{margin:1rem 0 0;padding:.75rem 1rem;border:1px solid var(--line);border-left:4px solid var(--brand);
+  background:var(--panel);border-radius:.25rem;font-size:.875rem;line-height:1.5}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:40rem){
+  th,td{padding:.4rem .5rem;font-size:.875rem}
+  /* The bar is the first thing to go: the numbers are the content, it is the picture. */
+  .barcol{display:none}
+}
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows is the one place
+   this page picks a slot by its LIGHT role, and that role inverts.
+
+   THE HEADER BAND fills with --brand-dark and writes --on-brand on it. In light that is
+   dark teal under white. In dark, --brand-dark is the darkest surface in the theme and
+   --on-brand is --bg, so the title would be dark on dark at 1.39:1. The pair the theme does
+   define is a --brand fill carrying --on-brand, so the band uses that pair here. The table
+   header and the status pill letter themselves with --on-brand-soft, which both themes
+   declare against --brand-soft, so they need nothing here. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) header{background:var(--brand);color:var(--on-brand)}
+}
+@media print{
+  .controls,.nojs{display:none}
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+}
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+<style>
+  /* The review layer (docs/31). Shown only when a reader can interact with it: the
+     static sheet below uses the .nojs class the template already has, so a viewer that
+     blocks scripting (Quick Look) shows a block the reader can fill in by hand instead
+     of a button that does nothing. */
+  /* Same container as <main> and <footer>, so the layer sits on the page's own grid
+     instead of against the viewport edge. */
+  .annotate,.annotate-sheet{max-width:90rem;margin:0 auto;padding:var(--sp-3, 1.5rem) var(--sp-4, 2rem)}
+  .annotate-bar{display:none}
+  html.js .annotate-bar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3, 1.5rem);
+    margin:0 0 var(--sp-4, 2rem);padding:var(--sp-3, 1.5rem) 0;border-top:1px solid var(--line, #dcdcdc)}
+  .annotate-count{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959)}
+  .annotate-hint{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959)}
+  .annotate-btn{min-height:2.75rem;padding:0 var(--sp-3, 1.5rem);font:inherit;font-size:.875rem;
+    /* The surface token, not a raw white: this layer is injected into artefacts that now
+       follow the system's dark setting, and a button painted white under the theme's light
+       ink measures 1.09:1 there. */
+    border:1px solid var(--line, #dcdcdc);border-radius:4px;background:var(--panel, #fff);
+    color:var(--ink, #0a0a0a);cursor:pointer}
+  .annotate-btn:hover{border-color:var(--brand, #2F5D9E)}
+  .annotate-btn[aria-pressed="true"]{background:var(--brand, #2F5D9E);border-color:var(--brand, #2F5D9E);
+    color:var(--on-brand, #fff)}
+  .annotate-form,.annotate-out{font-size:.875rem;line-height:1.5rem}
+  .annotate-form p,.annotate-out p{margin:0 0 var(--sp-2, 1rem);max-width:52rem}
+  .annotate-form label{display:block;margin:var(--sp-1, 0.5rem) 0 var(--sp-1, 0.5rem);font-weight:600}
+  .annotate-form textarea,.annotate-out textarea{width:100%;box-sizing:border-box;
+    font:inherit;font-size:.875rem;line-height:1.5rem;padding:var(--sp-2, 1rem);
+    border:1px solid var(--line, #dcdcdc);border-radius:4px;background:var(--color-white, #fff);color:var(--ink, #0a0a0a)}
+  .annotate-out textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.875rem}
+  .annotate-actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2, 1rem);
+    margin:var(--sp-2, 1rem) 0 0}
+  .annotate-list{list-style:none;margin:var(--sp-3, 1.5rem) 0 0;padding:0}
+  .annotate-list li{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-2, 1rem);
+    padding:var(--sp-1, 0.5rem) 0;border-bottom:1px solid var(--line, #dcdcdc)}
+  .annotate-list .who{font-weight:600}
+  .annotate-live{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959);margin:var(--sp-1, 0.5rem) 0 0}
+  body.annotate-on #tbl tbody tr{cursor:pointer}
+  body.annotate-on #tbl tbody tr:hover td{background:var(--color-light blue-25, #e9f8f4)}
+  body.annotate-on #tbl tbody tr.annotate-hit td{background:var(--color-light blue-50, #EEE7F7)}
+  #tbl tbody tr.annotate-done td:first-child{box-shadow:inset 3px 0 0 var(--brand, #2F5D9E)}
+  .annotate-sheet pre{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,
+    monospace;font-size:.875rem;line-height:1.5rem;padding:var(--sp-2, 1rem);
+    border-left:3px solid var(--line, #dcdcdc);margin:0 0 var(--sp-3, 1.5rem)}
+</style>
+</head>
+<body data-meaning="up">
+<script>document.documentElement.className+=" js"</script>
+<header><div class="in">
+  <h1>Omsetning per region: september mot oktober</h1>
+  <p class="sub">September → Oktober · Region · 7 nøkler</p>
+</div></header>
+<main>
+  <div class="controls">
+    <div class="field grow">
+      <label for="q">Søk i nøklene</label>
+      <input id="q" type="search" placeholder="Skriv en region, en enhet, et navn" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="show">Vis</label>
+      <select id="show">
+        <option value="all">Alle nøkler</option>
+        <option value="changed">Bare de som har endret seg</option>
+        <option value="up">Bare økning</option>
+        <option value="down">Bare nedgang</option>
+        <option value="added">Bare nye</option>
+        <option value="gone">Bare borte</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sort">Sorter etter</label>
+      <select id="sort">
+        <option value="abs">Største endring først</option>
+        <option value="delta">Endring, høyest først</option>
+        <option value="key">Nøkkel, A til Å</option>
+        <option value="after">Siste verdi, høyest først</option>
+        <option value="pct">Endring i prosent, høyest først</option>
+      </select>
+    </div>
+    <button type="button" id="reset">Nullstill</button>
+  </div>
+  <p class="hint">To uttrekk av samme måltall, matchet på nøkkelen. En nøkkel som bare finnes i ett av uttrekkene står som ny eller borte, aldri utelatt.</p>
+
+  <ul class="kpis" id="kpis">
+    <li><span class="k">Før</span><span class="v">2 946 000</span></li>
+    <li><span class="k">Etter</span><span class="v">2 975 000</span></li>
+    <li><span class="k">Endring</span><span class="v up">+29 000</span></li>
+    <li><span class="k">Nøkler</span><span class="v">7</span></li>
+    <li><span class="k">Nye / borte</span><span class="v">1 / 1</span></li>
+  </ul>
+
+  <h2 id="tbl-h">Nøkkel for nøkkel</h2>
+  <table aria-labelledby="tbl-h" id="tbl">
+    <caption>Endring per nøkkel, sortert etter hvor mye som flyttet seg.</caption>
+    <thead><tr>
+      <th scope="col" data-col="key">Region</th>
+      <th scope="col" class="num" data-col="before">September</th>
+      <th scope="col" class="num" data-col="after">Oktober</th>
+      <th scope="col" class="num" data-col="delta">Endring</th>
+      <th scope="col" class="num" data-col="pct">Endring i prosent</th>
+      <th scope="col" class="barcol" data-col="bar">Andel av største endring</th>
+    </tr></thead>
+    <tbody id="rows">
+      <tr data-status="gone" data-key="Nordvest"><td>Nordvest <span class="tag">borte</span></td><td class="num">88 000</td><td class="num">–</td><td class="num delta gone"><span class="sign">−88 000</span></td><td class="num">–</td><td class="barcol"><span class="trk gone" aria-hidden="true"><i style="width:100%"></i></span></td></tr>
+      <tr data-status="added" data-key="Sørvest"><td>Sørvest <span class="tag">ny</span></td><td class="num">–</td><td class="num">63 000</td><td class="num delta added"><span class="sign">+63 000</span></td><td class="num">–</td><td class="barcol"><span class="trk added" aria-hidden="true"><i style="width:72%"></i></span></td></tr>
+      <tr data-status="up" data-key="Nord"><td>Nord</td><td class="num">698 000</td><td class="num">756 000</td><td class="num delta up"><span class="sign">+58 000</span></td><td class="num">+8,3 %</td><td class="barcol"><span class="trk up" aria-hidden="true"><i style="width:66%"></i></span></td></tr>
+      <tr data-status="down" data-key="Sør"><td>Sør</td><td class="num">318 000</td><td class="num">273 000</td><td class="num delta down"><span class="sign">−45 000</span></td><td class="num">-14,2 %</td><td class="barcol"><span class="trk down" aria-hidden="true"><i style="width:51%"></i></span></td></tr>
+      <tr data-status="up" data-key="Øst"><td>Øst</td><td class="num">916 000</td><td class="num">939 000</td><td class="num delta up"><span class="sign">+23 000</span></td><td class="num">+2,5 %</td><td class="barcol"><span class="trk up" aria-hidden="true"><i style="width:26%"></i></span></td></tr>
+      <tr data-status="up" data-key="Midt"><td>Midt</td><td class="num">387 000</td><td class="num">401 000</td><td class="num delta up"><span class="sign">+14 000</span></td><td class="num">+3,6 %</td><td class="barcol"><span class="trk up" aria-hidden="true"><i style="width:16%"></i></span></td></tr>
+      <tr data-status="up" data-key="Vest"><td>Vest</td><td class="num">539 000</td><td class="num">543 000</td><td class="num delta up"><span class="sign">+4 000</span></td><td class="num">+0,7 %</td><td class="barcol"><span class="trk up" aria-hidden="true"><i style="width:5%"></i></span></td></tr>
+    </tbody>
+    <tfoot><tr>
+      <td>Sum</td>
+      <td class="num">2 946 000</td>
+      <td class="num">2 975 000</td>
+      <td class="num delta up">+29 000</td>
+      <td class="num">+1,0 %</td>
+      <td class="barcol"></td>
+    </tr></tfoot>
+  </table>
+  <p class="nojs" id="nojs">Uten skript viser denne filen de største endringene, ferdig tegnet. Alle nøklene ligger i filen; søk, filter og sortering tegnes av skriptet når det kjører.</p>
+</main>
+<footer>
+  <p>Selvstendig fil: tallene ligger i filen, og ingenting hentes når den åpnes.</p>
+  <p>Ingen server, ingen innlogging.</p>
+  <p>Syntetisk eksempeldata (forrige.csv, denne.csv) · Bygget 2026-10-27 16:17</p>
+</footer>
+<script>window.COMPARISON_DATA = {"meta":{"locale":"nb-NO","lang":"nb"},"rows":[{"k":"Midt","b":387000.0,"a":401000.0,"d":14000.0,"pct":0.03617571059431524,"s":"up"},{"k":"Nord","b":698000.0,"a":756000.0,"d":58000.0,"pct":0.0830945558739255,"s":"up"},{"k":"Nordvest","b":88000.0,"a":null,"d":-88000.0,"pct":null,"s":"gone"},{"k":"Sør","b":318000.0,"a":273000.0,"d":-45000.0,"pct":-0.14150943396226415,"s":"down"},{"k":"Sørvest","b":null,"a":63000.0,"d":63000.0,"pct":null,"s":"added"},{"k":"Vest","b":539000.0,"a":543000.0,"d":4000.0,"pct":0.0074211502782931356,"s":"up"},{"k":"Øst","b":916000.0,"a":939000.0,"d":23000.0,"pct":0.025109170305676855,"s":"up"}]};</script>
+<script>
+const D = window.COMPARISON_DATA || {rows: [], meta: {}};
+const T = {"added":"ny","gone":"borte"};
+const nf = new Intl.NumberFormat(D.meta.locale || "nb-NO", {maximumFractionDigits: 1});
+const pf = new Intl.NumberFormat(D.meta.locale || "nb-NO",
+  {style: "percent", maximumFractionDigits: 1, signDisplay: "exceptZero"});
+const el = (tag, cls) => { const n = document.createElement(tag); if (cls) n.className = cls; return n; };
+const sign = (v) => (v > 0 ? "+" : v < 0 ? "\u2212" : "");
+
+function magnitude(row) {
+  const a = Math.abs(row.d || 0);
+  return a;
+}
+
+function draw() {
+  const q = (document.getElementById("q").value || "").trim().toLowerCase();
+  const show = document.getElementById("show").value;
+  const sort = document.getElementById("sort").value;
+  let rows = D.rows.filter((r) => {
+    if (q && String(r.k).toLowerCase().indexOf(q) < 0) return false;
+    if (show === "changed") return r.s === "up" || r.s === "down";
+    if (show === "up") return r.s === "up";
+    if (show === "down") return r.s === "down";
+    if (show === "added") return r.s === "added";
+    if (show === "gone") return r.s === "gone";
+    return true;
+  });
+  const by = {
+    abs: (x, y) => magnitude(y) - magnitude(x),
+    delta: (x, y) => (y.d || 0) - (x.d || 0),
+    key: (x, y) => String(x.k).localeCompare(String(y.k), D.meta.locale || "nb-NO"),
+    after: (x, y) => (y.a || 0) - (x.a || 0),
+    pct: (x, y) => (y.pct === null ? -Infinity : y.pct) - (x.pct === null ? -Infinity : x.pct),
+  }[sort] || ((x, y) => magnitude(y) - magnitude(x));
+  rows = rows.slice().sort(by);
+  // The bar is scaled to the largest movement in view, so the picture says "relative to
+  // the biggest mover", not "relative to a full-width bar nobody can interpret".
+  const top = rows.reduce((m, r) => Math.max(m, magnitude(r)), 0) || 1;
+
+  const body = document.getElementById("rows");
+  body.textContent = "";
+  for (const r of rows) {
+    const tr = el("tr");
+    if (r.s) tr.setAttribute("data-status", r.s);
+    tr.setAttribute("data-key", r.k);
+    const k = el("td"); k.textContent = r.k;
+    if (r.s === "added" || r.s === "gone") {
+      const tag = el("span", "tag");
+      tag.textContent = r.s === "added" ? T.added : T.gone;
+      k.appendChild(document.createTextNode(" "));
+      k.appendChild(tag);
+    }
+    tr.appendChild(k);
+    const b = el("td", "num"); b.textContent = r.b === null ? "\u2013" : nf.format(r.b);
+    const a = el("td", "num"); a.textContent = r.a === null ? "\u2013" : nf.format(r.a);
+    const d = el("td", "num delta " + r.s);
+    const sp = el("span", "sign"); sp.textContent = r.d === null ? "\u2013" : sign(r.d) + nf.format(Math.abs(r.d));
+    d.appendChild(sp);
+    const p = el("td", "num");
+    p.textContent = r.pct === null ? "\u2013" : pf.format(r.pct);
+    const bar = el("td", "barcol");
+    const trk = el("span", "trk " + r.s);
+    trk.setAttribute("aria-hidden", "true");
+    const fill = el("i");
+    fill.style.width = Math.round((magnitude(r) / top) * 100) + "%";
+    trk.appendChild(fill);
+    bar.appendChild(trk);
+    tr.appendChild(b); tr.appendChild(a); tr.appendChild(d); tr.appendChild(p);
+    tr.appendChild(bar);
+    body.appendChild(tr);
+  }
+  document.getElementById("nojs").hidden = true;
+}
+
+for (const id of ["q", "show", "sort"]) {
+  document.getElementById(id).addEventListener("input", draw);
+  document.getElementById(id).addEventListener("change", draw);
+}
+document.getElementById("reset").addEventListener("click", () => {
+  document.getElementById("q").value = "";
+  document.getElementById("show").value = "all";
+  document.getElementById("sort").value = "abs";
+  draw();
+});
+if (document.documentElement.className.indexOf("js") >= 0) draw();
+</script>
+<section class="nojs annotate-sheet" id="annotate-sheet">
+  <h2>Vil du si fra om noe?</h2>
+  <p class="nojs-lead">Skriv en e-post til den som bygde filen. Lim inn blokken under, og skriv kommentaren din etter hver rad du vil si noe om.</p>
+  <pre>TUN-REVIEW 1
+artefact: Omsetning per region: september mot oktober
+file: sammenligning.html
+built: 2026-10-27 16:17
+rows: 7
+source: Syntetisk eksempeldata (forrige.csv, denne.csv)
+keys: key
+measure: delta
+--
+row: Midt
+value: +14 000
+comment: kommentaren din her
+--
+row: Nord
+value: +58 000
+comment: kommentaren din her
+--
+row: Nordvest
+value: −88 000
+comment: kommentaren din her</pre>
+  <p class="nojs-lead">Kopier linjen for raden det gjelder, skriv kommentaren på linjen under, og gjenta.</p>
+</section>
+<section class="annotate" id="annotate">
+  <div class="annotate-bar">
+    <button type="button" class="annotate-btn" id="annotate-toggle"
+            aria-pressed="false">Kommenter</button>
+    <span class="annotate-count" id="annotate-count">Ingen kommentarer</span>
+    <span class="annotate-hint" id="annotate-hint" hidden>Klikk på en rad i tabellen for å kommentere den.</span>
+  </div>
+  <div class="annotate-form" id="annotate-form" hidden>
+    <p id="annotate-target"></p>
+    <label for="annotate-text">Hva er galt, eller hva mangler?</label>
+    <textarea id="annotate-text" rows="3"></textarea>
+    <div class="annotate-actions">
+      <button type="button" class="annotate-btn" id="annotate-add">Legg til</button>
+      <button type="button" class="annotate-btn" id="annotate-cancel">Avbryt</button>
+    </div>
+  </div>
+  <div class="annotate-out" id="annotate-out" hidden>
+    <h2 id="annotate-out-title">Tilbakemeldingen din</h2>
+    <p>Kopier blokken og lim den inn i en e-post eller melding til den som bygde filen. Den inneholder hvilken bygging du så, og hvilke rader du mener.</p>
+    <textarea id="annotate-payload" readonly rows="10"
+              aria-labelledby="annotate-out-title"></textarea>
+    <div class="annotate-actions">
+      <button type="button" class="annotate-btn" id="annotate-copy">Kopier</button>
+      <span class="annotate-live" id="annotate-copied"></span>
+    </div>
+    <ul class="annotate-list" id="annotate-list"></ul>
+  </div>
+  <p class="annotate-live" id="annotate-live" role="status" aria-live="polite"></p>
+</section>
+<script>
+(function () {
+  "use strict";
+  // Filled in by tools/review_layer.py. Nothing leaves the file: the block a reader
+  // copies is assembled here, from what is already on the page, and handed to their own
+  // clipboard. tools/read_review.py reads it back and finds the rows again.
+  var C = {"title": "Omsetning per region: september mot oktober", "file": "sammenligning.html", "built": "2026-10-27 16:17", "rows": 7, "source": "Syntetisk eksempeldata (forrige.csv, denne.csv)", "keys": ["key"], "measure": "delta", "table": "tbl", "cellAttr": "", "measures": ["before", "after", "delta"], "statusAttr": "data-status", "keyAttr": "data-key", "t": {"btn_on": "Kommenter", "btn_off": "Avslutt kommentering", "hint": "Klikk på en rad i tabellen for å kommentere den.", "count_none": "Ingen kommentarer", "count_one": "1 kommentar", "count_other": "{n} kommentarer", "row": "Rad", "add": "Legg til", "cancel": "Avbryt", "ask": "Hva er galt, eller hva mangler?", "added": "Kommentarer", "remove": "Fjern", "copied": "Kopiert", "copy_manual": "Merk teksten og kopier den.", "annotated": "Denne raden har en kommentar."}};
+  var notes = [];
+  var target = null;
+
+  function el(id) { return document.getElementById(id); }
+  function table() { return el(C.table || "tbl"); }
+  function heads() {
+    var t = table();
+    return t ? Array.prototype.slice.call(t.querySelectorAll("thead th")) : [];
+  }
+  // A column is found by a name the builder put in the markup, never by the visible text:
+  // a sorted column carries a caret. Two builders, two ways of saying it, so the config
+  // says which one this artefact uses: `cellAttr` names the attribute a cell carries
+  // (the register writes data-label on every td), and without it the header's data-col
+  // is read instead (the rows dashboard).
+  function colIndex(name) {
+    // An empty name is "no such column", not "the first one": an artefact with no single
+    // measure passes measure="", and the register's headers carry no data-col for it to
+    // match, so without this the first column answered to the empty name and every
+    // comment carried the case number as its figure.
+    if (!name) return -1;
+    if (C.cellAttr) {
+      var t = table();
+      var rows = t ? t.querySelectorAll("tbody tr") : [];
+      for (var r = 0; r < rows.length; r++) {
+        var tds = rows[r].children;
+        for (var i = 0; i < tds.length; i++) {
+          if ((tds[i].getAttribute(C.cellAttr) || "") === name) return i;
+        }
+      }
+      return -1;
+    }
+    var hs = heads();
+    for (var h = 0; h < hs.length; h++) {
+      if ((hs[h].getAttribute("data-col") || "") === name) return h;
+    }
+    return -1;
+  }
+  // The identity of a row. A key cell can carry a tag ("gone", "new") inside it, and
+  // textContent then reads "Nordvest borte" for a key that is "Nordvest": a comment would
+  // be filed against a name the file does not hold. An artefact that knows its own key puts
+  // it on the row, and that wins.
+  function rowKeys(tr) {
+    if (C.keyAttr) {
+      var said = tr.getAttribute(C.keyAttr);
+      if (said !== null && said !== undefined && said !== "") return [said];
+    }
+    return keyCols().map(function (k) { return cell(tr, colIndex(k)); });
+  }
+  function cell(tr, i) {
+    var c = tr.children[i];
+    return c ? (c.textContent || "").trim() : "";
+  }
+  function keyCols() {
+    var out = C.keys.filter(function (k) { return colIndex(k) >= 0; });
+    if (out.length) return out;
+    return heads().slice(0, 1).map(function (h) {
+      return h.getAttribute("data-col") || "";
+    }).filter(function (n) { return n; });
+  }
+  // A row a reader can comment on: cells, no heading, and at least one cell that says
+  // which column it belongs to. A grouped register also draws band rows (a th that spans
+  // the table) and an empty-state row (one td with a colspan); neither is a record.
+  function isDataRow(tr) {
+    if (!tr || tr.nodeName !== "TR" || !tr.parentNode || tr.parentNode.nodeName !== "TBODY") return false;
+    if (tr.querySelector("th") || tr.className.indexOf("grp") >= 0) return false;
+    var tds = tr.children;
+    if (!tds.length || (tds[0] && tds[0].colSpan > 1)) return false;
+    if (C.cellAttr) {
+      for (var i = 0; i < tds.length; i++) {
+        if (tds[i].getAttribute(C.cellAttr)) return true;
+      }
+      return false;
+    }
+    return tds.length === heads().length;
+  }
+
+  function header(keys) {
+    return ["TUN-REVIEW 1",
+      "artefact: " + C.title,
+      "file: " + C.file,
+      "built: " + C.built,
+      "rows: " + C.rows,
+      "source: " + C.source,
+      "keys: " + keys.join(", "),
+      "measure: " + C.measure];
+  }
+  function payload() {
+    var keys = keyCols();
+    var lines = header(keys);
+    notes.forEach(function (n) {
+      lines.push("--");
+      lines.push("row: " + n.row.join(" | "));
+      if (n.status) lines.push("status: " + n.status);
+      if (n.value) lines.push("value: " + n.value);
+      else if (n.cells.length) lines.push("cells: " + cellsText(n));
+      lines.push("comment: " + n.comment);
+    });
+    return lines.join("\n") + "\n";
+  }
+
+  // The figures a reader could disagree about. A dashboard has one (--measure); a register
+  // has every numeric column, and there the reader's values also break a tie when several
+  // records share the same text cells.
+  function measureCols() {
+    return (C.measures && C.measures.length) ? C.measures : (C.measure ? [C.measure] : []);
+  }
+  function rowFor(tr) {
+    var keys = keyCols();
+    var mi = colIndex(C.measure);
+    var cells = measureCols().map(function (name) {
+      var i = colIndex(name);
+      return [name, i >= 0 ? cell(tr, i) : ""];
+    }).filter(function (pair) { return pair[1] !== ""; });
+    return {
+      keys: keys,
+      row: rowKeys(tr),
+      value: mi >= 0 ? cell(tr, mi) : "",
+      // An artefact can mark a row as present on one side only (the comparison marks a key
+      // added or gone). The comment still belongs to the key; the mark says why one figure
+      // is empty, so the report does not read as "the row is wrong".
+      status: C.statusAttr ? (tr.getAttribute(C.statusAttr) || "") : "",
+      cells: cells
+    };
+  }
+  function cellsText(n) {
+    return n.cells.map(function (pair) { return pair[0] + "=" + pair[1]; }).join("; ");
+  }
+
+  function count() {
+    var c = el("annotate-count");
+    if (!c) return;
+    c.textContent = notes.length === 0 ? C.t.count_none
+      : notes.length === 1 ? C.t.count_one
+      : C.t.count_other.replace("{n}", String(notes.length));
+  }
+
+  function listNotes() {
+    var ul = el("annotate-list");
+    if (!ul) return;
+    ul.textContent = "";
+    notes.forEach(function (n, i) {
+      var li = document.createElement("li");
+      var who = document.createElement("span");
+      who.className = "who";
+      // textContent throughout: a comment is the reader's text, never markup.
+      who.textContent = n.row.join(" | ") + (n.value ? " \u00b7 " + n.value : "");
+      var said = document.createElement("span");
+      said.textContent = n.comment;
+      var del = document.createElement("button");
+      del.type = "button";
+      del.className = "annotate-btn";
+      del.textContent = C.t.remove;
+      del.addEventListener("click", function () {
+        notes.splice(i, 1);
+        render();
+        el("annotate-live").textContent = "";
+      });
+      li.appendChild(who);
+      li.appendChild(said);
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+
+  function markRows() {
+    var t = table();
+    if (!t) return;
+    var tb = t.querySelector("tbody");
+    if (!tb) return;
+    var keys = keyCols();
+    Array.prototype.forEach.call(tb.querySelectorAll("tr"), function (tr) {
+      if (!isDataRow(tr)) return;
+      var name = rowKeys(tr).join(" | ");
+      var hit = false;
+      for (var i = 0; i < notes.length; i++) {
+        if (notes[i].row.join(" | ") === name) { hit = true; break; }
+      }
+      tr.classList.toggle("annotate-done", hit);
+      if (hit) tr.title = C.t.annotated; else tr.removeAttribute("title");
+    });
+  }
+
+  function render() {
+    count();
+    markRows();
+    var out = el("annotate-out");
+    if (out) out.hidden = notes.length === 0;
+    var box = el("annotate-payload");
+    if (box) box.value = notes.length ? payload() : "";
+    listNotes();
+  }
+
+  function start() {
+    var t = el("annotate-toggle");
+    if (!t) return;
+    var on = document.body.classList.toggle("annotate-on");
+    t.setAttribute("aria-pressed", on ? "true" : "false");
+    t.textContent = on ? C.t.btn_off : C.t.btn_on;
+    var hint = el("annotate-hint");
+    if (hint) hint.hidden = !on;
+    if (!on) cancel();
+  }
+
+  function cancel() {
+    target = null;
+    var f = el("annotate-form");
+    if (f) f.hidden = true;
+    var box = el("annotate-text");
+    if (box) box.value = "";
+    var tb = table();
+    if (tb) {
+      Array.prototype.forEach.call(tb.querySelectorAll("tr.annotate-hit"), function (tr) {
+        tr.classList.remove("annotate-hit");
+      });
+    }
+  }
+
+  function begin(tr) {
+    target = rowFor(tr);
+    Array.prototype.forEach.call(table().querySelectorAll("tr.annotate-hit"), function (r) {
+      r.classList.remove("annotate-hit");
+    });
+    tr.classList.add("annotate-hit");
+    var f = el("annotate-form");
+    var p = el("annotate-target");
+    var figures = target.value || (target.cells.length ? cellsText(target) : "");
+    if (p) p.textContent = C.t.row + ": " + target.row.join(" | ")
+      + (figures ? " \u00b7 " + figures : "");
+    if (f) f.hidden = false;
+    var box = el("annotate-text");
+    if (box) { box.value = ""; box.focus(); }
+  }
+
+  function add() {
+    var box = el("annotate-text");
+    if (!target || !box) return;
+    // One line per comment, so the pasted block stays line-based. A comment that is
+    // empty is not a comment; the reader gets told rather than getting a blank entry.
+    var said = (box.value || "").replace(/\s+/g, " ").trim();
+    if (!said) { el("annotate-live").textContent = C.t.ask; box.focus(); return; }
+    notes.push({ row: target.row, status: target.status, value: target.value,
+                 cells: target.cells, comment: said });
+    cancel();
+    render();
+    el("annotate-live").textContent = C.t.added + ": " + String(notes.length);
+  }
+
+  function copy() {
+    var box = el("annotate-payload");
+    var said = el("annotate-copied");
+    if (!box || !notes.length) return;
+    function done(ok) {
+      if (said) said.textContent = ok ? C.t.copied : C.t.copy_manual;
+      if (!ok) { box.focus(); box.select(); }
+    }
+    // Clipboard access is refused in a sandboxed frame (an Atlassian Artifacts viewer is
+    // one), so the write is tried first and the textarea is left selectable either way.
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(box.value).then(function () { done(true); },
+          function () { done(false); });
+        return;
+      }
+    } catch (e) { /* fall through */ }
+    try {
+      box.focus(); box.select();
+      done(document.execCommand("copy"));
+    } catch (e2) { done(false); }
+  }
+
+  var tog = el("annotate-toggle");
+  if (!tog) return;
+
+  // The table body is replaced on every sort and filter (renderTable), which would drop
+  // the marker with it. Watching the body keeps the marker without hooking the page's
+  // own rendering code, which this layer does not own.
+  var tb = table() && table().querySelector("tbody");
+  if (tb && window.MutationObserver) {
+    new MutationObserver(markRows).observe(tb, { childList: true });
+  }
+  tog.addEventListener("click", start);
+  var addBtn = el("annotate-add");
+  if (addBtn) addBtn.addEventListener("click", add);
+  var cancelBtn = el("annotate-cancel");
+  if (cancelBtn) cancelBtn.addEventListener("click", cancel);
+  var copyBtn = el("annotate-copy");
+  if (copyBtn) copyBtn.addEventListener("click", copy);
+
+  // Delegated on the document: the table body is replaced on every filter and sort, so a
+  // listener bound to a row would be gone by the time the reader clicked it.
+  document.addEventListener("click", function (e) {
+    if (!document.body.classList.contains("annotate-on")) return;
+    var t = table();
+    if (!t) return;
+    var node = e.target;
+    while (node && node !== t && node.nodeName !== "TR") node = node.parentNode;
+    if (!isDataRow(node)) return;
+    if (node.querySelector("button")) return;
+    e.preventDefault();
+    begin(node);
+  }, false);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") cancel();
+    // Ctrl/Cmd+Enter adds the comment: the textarea keeps plain Enter for a newline,
+    // which a reader writing two sentences expects.
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && target) add();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

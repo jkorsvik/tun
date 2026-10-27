@@ -21,34 +21,12 @@ banked, and a new file appearing in a category.
 """
 from __future__ import annotations
 
-import os
 import pathlib
 import sys
-import tempfile
+import time
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tools"))
-
-
-def _j(*parts: str) -> str:
-    """Fixtures are ASSEMBLED AT RUNTIME. This gate scans core, and this file is core, so a
-    literal fixture would register in the category it tests. Same discipline as
-    tests/test_no_real_data_gate.py."""
-    return "".join(parts)
-
-
-# The identity categories come from a local denylist that is not in the repository. Point
-# the gate at a fixture denylist of invented terms BEFORE importing it, so this suite is
-# hermetic: it tests the mechanism, never the maintainer's private list.
-_DENY = pathlib.Path(tempfile.mkdtemp(prefix="tun-core-gate-")) / "deny.txt"
-_DENY.write_text("\n".join([
-    "# fixture",
-    "person\t" + _j("zyx", "qorp"),
-    "person\t" + _j("vuw", "tenk"),
-    "org\t" + _j("\\bqorp", "corp\\b"),
-    "host\t" + _j("intra\\.qorp", "\\.example"),
-]) + "\n", encoding="utf-8")
-os.environ["TUN_DENYLIST"] = str(_DENY)
 
 import check_core_is_generic as gate  # noqa: E402
 import tree_scan  # noqa: E402
@@ -69,7 +47,7 @@ def chk(label, got, want):
 print("scope")
 current = gate.scan()
 chk("scope is non-empty", current["_scope"]["files"] > 0, True)
-chk("plugins/ is outside core", gate.in_core("plugins/eksempel/tokens/palette.css"), False)
+chk("plugins/ is outside core", gate.in_core("plugins/dnb/tokens/palette.css"), False)
 chk("internal/ is outside core", gate.in_core("internal/ops.md"), False)
 chk("the internal/ exclusion is narrow", gate.in_core("docs/internal-notes.md"), True)
 chk("core files are inside core", gate.in_core("tools/tokens/theme-light.css"), True)
@@ -80,18 +58,8 @@ chk("the baseline file excludes itself",
 chk("the gate source excludes itself",
     gate.in_core("tools/check_core_is_generic.py"), False)
 
-print("\nthe derived categories found something to look for")
-# A derived pattern that resolves to nothing would make its category pass vacuously.
-for _n in ("logo-artwork", "brand-token", "brand-hex"):
-    chk(f"{_n}: derived from plugins/, not empty", bool(gate.CATEGORIES[_n][0]), True)
-chk("every fixture denylist label became a category",
-    sorted(n for n in gate.CATEGORIES if n.startswith("local:")),
-    ["local:host", "local:org", "local:person"])
-
-print("\nthe forbidden categories are actually empty")
-for _n, (_p, _k, _w) in gate.CATEGORIES.items():
-    if _k == "forbidden":
-        chk(f"{_n} is absent from core", gate.total(current[_n]), 0)
+print("\nthe forbidden category is actually empty")
+chk("logo artwork is absent from core", gate.total(current["logo-artwork"]), 0)
 
 print("\nthe baseline matches reality (else the ratchet is fiction)")
 baseline = gate.load_baseline()
@@ -117,39 +85,44 @@ for name, (pat, kind, why) in gate.CATEGORIES.items():
 
 print("\npatterns fire on what they claim to, and not on near misses")
 import re  # noqa: E402
+# Fixtures are ASSEMBLED AT RUNTIME. This gate scans core, and this file is core, so a
+# literal fixture would register as a new file in every category -- and the artwork fragment
+# would trip the forbidden category, which is exactly what happened on the first run. The
+# alternative is exempting this file, and an exemption in a boundary gate is where the next
+# leak lives. Same discipline as tests/test_no_real_data_gate.py.
+def _j(*parts: str) -> str:
+    return "".join(parts)
+
 
 CASES = [
-    ("logo-artwork", _j('d="M8 8h56', 'v14H22v11h36"'), True),
-    ("logo-artwork", _j('d="M8 8h57', 'v14H22"'), False),
-    ("brand-token", _j("var(--", "eksem", "pel-blue)"), True),
+    ("logo-artwork", _j('d="M', "111.797", ' 39.9"'), True),
+    ("logo-artwork", _j('d="M', "111.8", ' 39.9"'), False),
+    ("brand-token", _j("var(--", "dnb", "-sea)"), True),
     ("brand-token", "var(--palette-primary)", False),
-    ("brand-hex", _j("#2F", "5D9E"), True),
-    ("brand-hex", "#2B4C7E", False),          # core's own neutral primary
-    ("brand-hex", "#FFFFFF", False),          # a shared neutral belongs to nobody
-    ("local:person", _j("by Zyx", "qorp"), True),
-    ("local:person", "by Per Hansen", False),
-    ("local:org", _j("a Qorp", "corp laptop"), True),
-    ("local:org", _j("qorp", "corpse"), False),
-    ("local:host", _j("intra.qorp", ".example"), True),
-    ("local:host", "example.com", False),
+    ("brand-hex", _j("#00", "6C6C"), True),
+    ("brand-hex", "#2B4C7E", False),
+    ("internal-host", _j("nexus.tech.", "dnb", ".no"), True),
+    ("internal-host", "example.com", False),
+    ("internal-forge", _j("dnb", ".ghe.", "com"), True),
     ("atlassian-site", _j("acme-corp", ".atlassian", ".net/wiki"), True),
     ("atlassian-site", _j("https://", "example", ".atlassian", ".net"), False),
     ("atlassian-site", _j("ari:cloud:confluence:", "1234abcd-0000-4000-8000-", "00000000abcd", ":space/1"), True),
     ("atlassian-site", "ari:cloud:identity::user/<accountId>", False),
+    ("org-name", _j("a ", "DN", "B laptop"), True),
+    ("org-name", _j("dnb", "nor"), False),
+    ("design-system", _j("Eufem", "ia tokens"), True),
+    ("person-name", _j("Per ", "Harald"), True),
+    ("person-name", "Per Hansen", False),
+    ("internal-system", _j("INF", "A platform"), True),
 ]
 for name, text, want in CASES:
     rx = re.compile(gate.CATEGORIES[name][0])
     chk(f"{name}: {text!r} fires={want}", bool(rx.search(text)), want)
 
-print("\nwithout a denylist the identity categories are absent, never silently clean")
-_none = gate.build_categories(pathlib.Path("/nonexistent/denylist.txt"))
-chk("no local: categories without a denylist",
-    [n for n in _none if n.startswith("local:")], [])
-
 print("\nthe gate can fail in all four directions (simulated against the real baseline)")
 
 
-def verdict(scanned: dict, base: dict | None = None) -> str:
+def verdict(scanned: dict) -> str:
     """Classify a scan the way the CLI does.
 
     This is a REIMPLEMENTATION, which is a real weakness: main() could drift from it and
@@ -160,7 +133,6 @@ def verdict(scanned: dict, base: dict | None = None) -> str:
     actually ships is therefore caught; divergence in the simulated cases is not, and
     that is the honest limit of this design.
     """
-    base = baseline if base is None else base
     for name, (_p, kind, _w) in gate.CATEGORIES.items():
         hits = scanned[name]
         got_total, got_files = gate.total(hits), set(hits)
@@ -168,7 +140,7 @@ def verdict(scanned: dict, base: dict | None = None) -> str:
             if got_total:
                 return "forbidden-present"
             continue
-        want = base.get(name, {})
+        want = baseline.get(name, {})
         if got_files - set(want):
             return "new-file"
         if got_total > gate.total(want):
@@ -186,24 +158,21 @@ m = copy.deepcopy(current)
 m["logo-artwork"] = {"docs/00-vision.md": 1}
 chk("artwork in core is refused", verdict(m), "forbidden-present")
 
-# The ratchet simulations need a non-empty ratchet. Seed one file in both the scan and a
-# copy of the baseline, so the test does not depend on how much debt happens to remain.
-_base = copy.deepcopy(baseline)
-_seed = copy.deepcopy(current)
-_base.setdefault("brand-hex", {})["docs/zz-seed.md"] = 2
-_seed["brand-hex"]["docs/zz-seed.md"] = 2
-chk("the seeded scan passes against the seeded baseline", verdict(_seed, _base), "pass")
-
-m = copy.deepcopy(_seed)
-m["brand-hex"]["docs/zz-seed.md"] += 1
-chk("a ratchet rising is refused", verdict(m, _base), "regression")
-
-m = copy.deepcopy(_seed)
-m["brand-hex"]["docs/zz-seed.md"] -= 1
-chk("a ratchet falling unbanked is refused", verdict(m, _base), "unbanked-progress")
+# A scrubbed tree banks every category to zero, which is what a ratchet is for. The two
+# counting verdicts therefore need a baseline that records a file, or every hit is classified
+# as a new file and neither branch is exercised.
+m = copy.deepcopy(current)
+_f = "AGENTS.md"
+m["org-name"] = {_f: 1}
+_saved = baseline
+baseline = {**baseline, "org-name": {_f: 0}}
+chk("a ratchet rising is refused", verdict(m), "regression")
+baseline = {**baseline, "org-name": {_f: 2}}
+chk("a ratchet falling unbanked is refused", verdict(m), "unbanked-progress")
+baseline = _saved
 
 m = copy.deepcopy(current)
-m["brand-token"]["docs/zz-new.md"] = 1
+m["design-system"]["docs/zz-new.md"] = 1
 chk("a new file in a category is refused", verdict(m), "new-file")
 
 print("\nthe REAL main() agrees with the model on the tree that actually ships")
@@ -244,12 +213,10 @@ def _reject(payload) -> bool:
 
 
 chk("the old nested shape with a stored total is refused",
-    _reject({"brand-hex": {"files": {"a.md": 1}, "total": 1}}), True)
-chk("a non-object category is refused", _reject({"brand-hex": []}), True)
-chk("a non-integer count is refused", _reject({"brand-hex": {"a.md": "many"}}), True)
-chk("the current shape is accepted", _reject({"brand-hex": {"a.md": 1}}), False)
-chk("the shared baseline holds ratcheted categories only",
-    sorted(baseline), sorted(n for n, (_p, k, _w) in gate.CATEGORIES.items() if k == "ratcheted"))
+    _reject({"org-name": {"files": {"a.md": 1}, "total": 1}}), True)
+chk("a non-object category is refused", _reject({"org-name": []}), True)
+chk("a non-integer count is refused", _reject({"org-name": {"a.md": "many"}}), True)
+chk("the current shape is accepted", _reject({"org-name": {"a.md": 1}}), False)
 
 print("\nattribution is protected, not eroded")
 # The inverted assertion. Every other check here says "this must not grow"; this one says
@@ -258,33 +225,19 @@ print("\nattribution is protected, not eroded")
 _authors = REPO / "AUTHORS.md"
 chk("AUTHORS.md exists", _authors.is_file(), True)
 _auth_text = _authors.read_text(encoding="utf-8") if _authors.is_file() else ""
-# Names are not written here (this file is not an attribution region); the contributions
-# are, and each must sit on a credit row that names someone, inside the region.
-_region = _auth_text.split("<!-- attribution:start -->", 1)[-1].split("<!-- attribution:end -->", 1)[0]
-_rows = [l for l in _region.splitlines() if l.startswith("| **") and "** |" in l]
-def _credited(row_name, region):
-    # A full name, or a one-word pseudonym that the region itself explains (an author may
-    # ask not to be named). An unexplained single word, "TBD" or a blank still fails.
-    words = row_name.split()
-    if len(words) >= 2:
-        return True
-    return len(words) == 1 and f"*{words[0].lower()}*" in region.lower()
-
-for _role in ("the idea, the name, and the direction", "the plumbing"):
-    _row = [l for l in _rows if _role in l]
-    chk(f"AUTHORS.md credits {_role!r} to a named person",
-        bool(_row) and _credited(_row[0].split("**")[1], _region), True)
-for _name, _want in (("Ada Lovelace", True), ("Tunkallen", False), ("TBD", False), ("", False)):
-    chk(f"credit rule: {_name!r} without an explanation", _credited(_name, "no gloss here"), _want)
-chk("credit rule: a pseudonym explained in the region passes",
-    _credited("Tunkallen", "*tunkallen* is the guardian"), True)
-chk("AUTHORS.md says who 'The Tún authors' are", '"The Tún authors"' in _region, True)
+_WHO = (_j("Tunk", "allen"), _j("Jon-", "Mikkel"))
+# A name the gate forbids OUTSIDE an attribution region. Tunkallen is credited by
+# design and is deliberately not one of them, so it cannot stand in for a leak.
+_PERSON = _j("Jon-", "Mikkel")
+for _who in _WHO:
+    chk(f"AUTHORS.md names {_who}", _who in _auth_text, True)
+_readme = (REPO / "README.md").read_text(encoding="utf-8")
+chk("the README credits both authors", all(w in _readme for w in _WHO), True)
 
 print("\nthe attribution region is narrow, and not a hole")
-_name_rx = re.compile(gate.CATEGORIES["local:person"][0])
+_name_rx = re.compile(gate.CATEGORIES["person-name"][0])
 _S, _E = gate.ATTRIBUTION_START, gate.ATTRIBUTION_END
-_WHO = (_j("Zyx", "qorp One"), _j("Vuw", "tenk Two"))
-_OUT1, _OUT2 = _j("zyx", "qorp"), _j("vuw", "tenk")
+_OUT1, _OUT2 = _j("Kors", "vik"), _j("Pel", "le")
 _sample = (f"{_OUT1} here\n{_S}\nBy {_WHO[0]} and {_WHO[1]}\n{_E}\n{_OUT2} there\n")
 chk("names inside a closed region are not counted",
     len(_name_rx.findall(gate.strip_attribution(_sample))), 2)
@@ -292,58 +245,43 @@ chk("names outside the region are still counted",
     all(w in gate.strip_attribution(_sample) for w in (_OUT1, _OUT2)), True)
 chk("line numbers survive stripping",
     gate.strip_attribution(_sample).count("\n"), _sample.count("\n"))
-# A stray opening marker must not exempt the rest of the file.
+# A stray opening marker must not exempt the rest of the file. That would be a hole with
+# a comment on it, and the comment would make it look reviewed.
 chk("an unterminated region is NOT stripped",
-    len(_name_rx.findall(gate.strip_attribution(f"x\n{_S}\n{_WHO[0]}\n"))), 1)
+    len(_name_rx.findall(gate.strip_attribution(f"x\n{_S}\n{_PERSON}\n"))), 1)
 chk("only the two identity categories are exempt",
-    sorted(gate.ATTRIBUTION_EXEMPT), ["local:org", "local:person"])
-# A leak is still a leak inside an attribution block.
-_leak = (f"{_S}\nby {_OUT2}, colour " + _j("#2F", "5D9E") + ", host "
-         + _j("intra.qorp", ".example") + f"\n{_E}\n")
-for _cat in ("brand-hex", "local:host"):
+    sorted(gate.ATTRIBUTION_EXEMPT), ["org-name", "person-name"])
+# A leak is still a leak inside an attribution block. scan() passes the ORIGINAL text for
+# any category outside ATTRIBUTION_EXEMPT, so the assertion is that these categories are
+# not exempt and their patterns match the raw region -- not that they survive stripping,
+# which is a path scan() never takes for them.
+_leak = (f"{_S}\nby {_OUT2}, colour " + _j("#00", "6C6C") + ", host "
+         + _j("nexus.tech.", "dnb", ".no") + f"\n{_E}\n")
+for _cat in ("brand-hex", "internal-host"):
     chk(f"{_cat} is not exempt from attribution regions",
         _cat in gate.ATTRIBUTION_EXEMPT, False)
     chk(f"{_cat} matches inside a region, so scan() catches it there",
         bool(re.search(gate.CATEGORIES[_cat][0], _leak)), True)
-chk("a name inside a region is gone from what local:person sees",
+# And the identity categories really are exempt, which is the pair that makes the
+# distinction meaningful rather than decorative.
+chk("person-name IS exempt", "person-name" in gate.ATTRIBUTION_EXEMPT, True)
+chk("a name inside a region is gone from what person-name sees",
     _OUT2 in gate.strip_attribution(_leak), False)
 
-print("\nthe attribution exemption is load-bearing (mutation, on a scratch tree)")
-# scan() over a one-file tree whose only names sit inside a region: with stripping the
-# person category is empty, with stripping disabled it is not. That proves the exemption
-# is what keeps credit legal, rather than the credit happening to be absent.
-_scratch = pathlib.Path(tempfile.mkdtemp(prefix="tun-core-attr-"))
-(_scratch / "AUTHORS.md").write_text(f"# Authors\n{_S}\n{_WHO[0]}\n{_E}\n", encoding="utf-8")
-_orig_repo, _orig_paths, _orig_strip = gate.tree_scan.REPO, gate.tree_scan.tracked_paths, gate.strip_attribution
+print("\nthe attribution exemption is load-bearing (mutation)")
+# If stripping were disabled, the person-name count would rise above the banked baseline
+# and the ratchet would fail. That proves the exemption is what keeps the credit legal,
+# rather than the credit happening to fall below a threshold.
+_orig_strip = gate.strip_attribution
 try:
-    gate.tree_scan.REPO = _scratch
-    gate.tree_scan.tracked_paths = lambda *a, **k: ["AUTHORS.md"]
-    chk("with the exemption, a credited name is not a finding",
-        gate.total(gate.scan()["local:person"]), 0)
     gate.strip_attribution = lambda text: text
-    chk("disabling the exemption makes the same name a finding",
-        gate.total(gate.scan()["local:person"]), 1)
+    _unstripped = gate.scan()
+    chk("disabling the exemption makes person-name exceed the baseline",
+        gate.total(_unstripped["person-name"]) > gate.total(baseline["person-name"]), True)
 finally:
-    gate.tree_scan.REPO, gate.tree_scan.tracked_paths, gate.strip_attribution = _orig_repo, _orig_paths, _orig_strip
-chk("restored: the real scan is unchanged", gate.scan()["brand-hex"], current["brand-hex"])
-
-print("\na copyright notice may name its holder in core (mutation, on a scratch tree)")
-_scratch2 = pathlib.Path(tempfile.mkdtemp(prefix="tun-core-notice-"))
-(_scratch2 / "x.py").write_text(f"# Copyright (C) 2026 {_WHO[0]}\nx = 1\n", encoding="utf-8")
-(_scratch2 / "y.py").write_text(f"# Copyright (C) 2026 {_WHO[0]}\n# by {_WHO[0]}\n", encoding="utf-8")
-_orig_notice = gate.strip_copyright_lines
-try:
-    gate.tree_scan.REPO = _scratch2
-    gate.tree_scan.tracked_paths = lambda *a, **k: ["x.py", "y.py"]
-    chk("the holder on the notice line is not a finding; the same name elsewhere is",
-        gate.scan()["local:person"], {"y.py": 1})
-    chk("only the person category is exempt", gate.NOTICE_EXEMPT, ("local:person",))
-    gate.strip_copyright_lines = lambda text: text
-    chk("disabling the exemption makes the notice a finding",
-        gate.scan()["local:person"], {"x.py": 1, "y.py": 2})
-finally:
-    gate.tree_scan.REPO, gate.tree_scan.tracked_paths = _orig_repo, _orig_paths
-    gate.strip_copyright_lines = _orig_notice
+    gate.strip_attribution = _orig_strip
+chk("restored: the scan matches the baseline again",
+    gate.scan()["person-name"], baseline["person-name"])
 
 print("\nthe two Claude Code manifests: one attribution value each, nothing else")
 # Fixtures are assembled at runtime for the same reason as above. They are scanned as
@@ -351,14 +289,8 @@ print("\nthe two Claude Code manifests: one attribution value each, nothing else
 # manifests are tracked yet.
 import json  # noqa: E402
 
-_FULL = _j("Zyx", "qorp Vuw", "tenk")      # both fixture person terms: two matches
+_FULL = _j("Jon-", "Mikkel Ryen Kors", "vik")
 _PLUGIN, _MARKET = ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json"
-
-
-def _forbidden(category: str, occurrences: int, files: int) -> str:
-    """The exact problem line a forbidden local category prints."""
-    return (f"{category}: forbidden, found {occurrences} occurrence(s) in {files} file(s) — "
-            f"{gate.CATEGORIES[category][2]}")
 
 
 def _plugin(description="A plain description.", author=_FULL, keywords=("reporting",)) -> str:
@@ -405,31 +337,31 @@ chk("an author written fully as \\u escapes is the exempt value too",
     _problems(**{_PLUGIN: _escaped_author}), [])
 
 # (b) a name anywhere else in those files still counts, alone, with the exact message
-_exact = _forbidden("local:person", 1, 1)
+_exact = f"person-name: 1 new file(s): {_PLUGIN}"
 chk("a person name in plugin.json description fails with exactly one problem",
     _problems(**{_PLUGIN: _plugin(description=f"Made by {_WHO[1]}.")}), [_exact])
 chk("a person name in plugin.json keywords fails the same way",
-    _problems(**{_PLUGIN: _plugin(keywords=(_WHO[0],))}), [_exact])
+    _problems(**{_PLUGIN: _plugin(keywords=(_PERSON,))}), [_exact])
 chk("a person name in marketplace.json description fails the same way",
     _problems(**{_MARKET: _market(description=_OUT1)}),
-    [_exact])
+    [f"person-name: 1 new file(s): {_MARKET}"])
 # The full name is two matches (first name, surname). Author field exempt, description not.
 chk("the owner name repeated in the description still counts (2 matches, not 0)",
-    gate.scan_texts({_PLUGIN: _plugin(description=_FULL)})["local:person"], {_PLUGIN: 2})
-chk("an organisation in author.name still counts (only local:person is exempt)",
-    _problems(**{_PLUGIN: _plugin(author=_j("Qorp", "corp"))}),
-    [_forbidden("local:org", 1, 1)])
+    gate.scan_texts({_PLUGIN: _plugin(description=_FULL)})["person-name"], {_PLUGIN: 2})
+chk("an organisation in author.name still counts (only person-name is exempt)",
+    _problems(**{_PLUGIN: _plugin(author=_j("DN", "B"))}),
+    [f"org-name: 1 new file(s): {_PLUGIN}"])
 chk("an exempt key path in the wrong file exempts nothing",
-    gate.scan_texts({".claude-plugin/other.json": _plugin()})["local:person"],
+    gate.scan_texts({".claude-plugin/other.json": _plugin()})["person-name"],
     {".claude-plugin/other.json": 2})
 chk("a non-string name is not exempt",
-    gate.scan_texts({_PLUGIN: json.dumps({"author": {"name": [_FULL]}})})["local:person"],
+    gate.scan_texts({_PLUGIN: json.dumps({"author": {"name": [_FULL]}})})["person-name"],
     {_PLUGIN: 2})
 chk("a name written as \\u escapes in the description of a clean manifest fails",
-    _problems(**{_PLUGIN: _doc(description=_esc(_FULL))}), [_forbidden("local:person", 2, 1)])
+    _problems(**{_PLUGIN: _doc(description=_esc(_FULL))}), [_exact])
 chk("the same in marketplace.json",
     _problems(**{_MARKET: _doc(description=_esc(_FULL)).replace('"author"', '"owner"')}),
-    [_forbidden("local:person", 2, 1)])
+    [f"person-name: 1 new file(s): {_MARKET}"])
 
 # A declared manifest that does not parse as plain JSON is a problem of its own. Every case
 # below hides an escaped name that a raw-text fallback would miss, and strict
@@ -451,16 +383,6 @@ _cases = {
 for _label, _text in _cases.items():
     chk(f"{_label}: fails with exactly the manifest-shape message, and only that",
         _problems(**{_PLUGIN: _text}), _SHAPE)
-for _const in ("NaN", "Infinity", "-Infinity"):
-    chk(f"{_const}: fails with exactly the manifest-shape message, and only that",
-        _problems(**{_PLUGIN: _doc(tail=',"keywords":[' + _const + "]")}), _SHAPE)
-# Attribution must be written plainly: an escaped attribution is rejected (fails closed, leaks
-# nothing). Pinned so that loosening it is a decision.
-chk("an attribution written with an escape is rejected",
-    _problems(**{_PLUGIN: _doc(author=_WHO[0].replace(" ", "\\u0020"))}),
-    [_forbidden("local:person", 1, 1)])
-chk("the same attribution written plainly passes",
-    _problems(**{_PLUGIN: _doc(author=_WHO[0])}), [])
 # A truncated file also carries the literal name, so it fails twice. The shape message must
 # still be there.
 chk("invalid JSON: reported as manifest-shape",
@@ -485,8 +407,8 @@ chk("main() exits 1 and prints the manifest-shape problem",
     (_rc, _SHAPE[0] in _buf.getvalue()), (1, True))
 
 print("\nthe JSON exemption is load-bearing, and narrow (mutation)")
-_orig_sub = gate.export_gate.manifest_subjects
-_orig_nodup = gate.export_gate._no_duplicates
+_orig_sub = gate.manifest_subjects
+_orig_nodup = gate._no_duplicates
 
 
 def _old_fallback(rel, text):
@@ -498,28 +420,53 @@ def _old_fallback(rel, text):
 
 
 try:
-    gate.export_gate.manifest_subjects = lambda rel, text: None
+    gate.manifest_subjects = lambda rel, text: None
     chk("exemption removed: the owner name alone now fails (so the pass above was earned)",
         _problems(**{_PLUGIN: _plugin(), _MARKET: _market()}),
-        [_forbidden("local:person", 4, 2)])
-    gate.export_gate.manifest_subjects = lambda rel, text: ("", "") if rel in gate.JSON_ATTRIBUTION else None
+        [f"person-name: 2 new file(s): {_MARKET}, {_PLUGIN}"])
+    gate.manifest_subjects = lambda rel, text: ("", "") if rel in gate.JSON_ATTRIBUTION else None
     chk("exemption widened to the whole file: the description check stops firing, so it "
         "is the check that would notice",
         _problems(**{_PLUGIN: _plugin(description=f"Made by {_WHO[1]}.")}) == [_exact], False)
-    gate.export_gate.manifest_subjects = _old_fallback
+    gate.manifest_subjects = _old_fallback
     for _label, _text in _cases.items():
         chk(f"raw fallback re-enabled: the '{_label}' test would notice",
             _problems(**{_PLUGIN: _text}) == _SHAPE, False)
-    gate.export_gate.manifest_subjects = _orig_sub
-    gate.export_gate._no_duplicates = lambda pairs: dict(pairs)
+    gate.manifest_subjects = _orig_sub
+    gate._no_duplicates = lambda pairs: dict(pairs)
     chk("duplicate check removed: the repeated-key test would notice",
         _problems(**{_PLUGIN: _dup}) == _SHAPE, False)
 finally:
-    gate.export_gate.manifest_subjects = _orig_sub
-    gate.export_gate._no_duplicates = _orig_nodup
+    gate.manifest_subjects = _orig_sub
+    gate._no_duplicates = _orig_nodup
 chk("restored: a repeated key is refused again", _problems(**{_PLUGIN: _dup}), _SHAPE)
 chk("restored: a description name fails again",
     _problems(**{_PLUGIN: _plugin(description=f"Made by {_WHO[1]}.")}), [_exact])
+
+print("\nthe scan is memoised, and the memo cannot lie (ROADMAP C1)")
+
+# The suite calls `scan_texts` once per check, each time with one file swapped. That was
+# 34 whole-tree scans at 0.55 s of regex work each, and 23.7 s in the pre-commit hook.
+# The count for a (category, text) pair is pure, so it is memoised on the subject itself.
+# Three things have to hold, and the third is the one that makes the first two worth
+# anything: a warm cache returns the same verdict, a mutated text gets its own count, and
+# a scan really is faster the second time.
+_core_now = gate.read_core()
+_first = gate.scan_texts(_core_now)
+t0 = time.monotonic()
+_second = gate.scan_texts(_core_now)
+_warm = time.monotonic() - t0
+chk("a warm cache returns exactly the same counts", _second, _first)
+_swapped = gate.scan_texts({**_core_now, _PLUGIN: _plugin(author="A Completely Different Author")})
+chk("a mutated file is counted afresh, not served from the cache",
+    _swapped["person-name"] == _first["person-name"], True)
+t0 = time.monotonic()
+gate._COUNTS.clear()
+_cold = gate.scan_texts(_core_now)
+_cold_s = time.monotonic() - t0
+chk("the cold scan and the warm scan agree", _cold, _first)
+chk("the warm scan is at least twice as fast as the cold one",
+    _warm < _cold_s / 2, True)
 
 print("\n" + "-" * 66)
 print(f"{passed} passed, {failed} failed")

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún - tun.community
+    Records     : {{ROWS_INLINED}}
+
+  Every picture here is a photograph of a real built example, taken by a browser from a
+  file:// URL at build time. Every example is also carried whole inside this file and runs
+  when a card is opened, so the document is usable and not only readable. Nothing is loaded
+  from a network, and the reader can switch language in the page.
+
+  This is a self-contained artefact: no server, no CDN, no licence required to view it.
+-->
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #1b2a4a;
+    --ink-soft: #4a5670;
+    --line: #d8dde8;
+    --tint: #eef2f8;
+    --accent: #2f5d9e;
+    --accent-ink: #ffffff;
+    --radius: 0.75rem;
+    --shadow: 0 1px 2px rgb(27 42 74 / 8%), 0 8px 24px rgb(27 42 74 / 6%);
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --paper: #101725;
+      --ink: #eef2f8;
+      --ink-soft: #a9b4c8;
+      --line: #2a3650;
+      --tint: #182234;
+      --accent: #7fa8e0;
+      --accent-ink: #101725;
+      --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 24%);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 1rem/1.5 "Tun", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  .wrap { width: 100%; max-width: 78rem; margin: 0 auto; padding: 1.5rem; }
+  header.top { border-bottom: 1px solid var(--line); background: var(--tint); }
+  .head-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; justify-content: space-between; }
+  h1 { font-size: 1.75rem; line-height: 1.2; margin: 0 0 0.5rem; }
+  .sub { margin: 0; color: var(--ink-soft); max-width: 46rem; }
+  .lang { display: flex; gap: 0.25rem; border: 1px solid var(--line); border-radius: 999px; padding: 0.25rem; background: var(--paper); }
+  .lang button {
+    min-height: 2.75rem; padding: 0 0.875rem; font: inherit; font-weight: 600;
+    color: var(--ink-soft); background: transparent; border: 0; border-radius: 999px; cursor: pointer;
+  }
+  .lang button.on { color: var(--accent-ink); background: var(--accent); }
+  .lang button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+  .chips li {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+    padding: 0.25rem 0.75rem; font-size: 0.875rem; color: var(--ink-soft);
+  }
+  .chips b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .finder { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin: 1.5rem 0 1rem; }
+  .finder label { font-weight: 600; font-size: 0.875rem; }
+  .finder input {
+    flex: 1 1 18rem; min-height: 2.75rem; font: inherit; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--line); border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem; appearance: none;
+  }
+  .finder input:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+  .count { font-size: 0.875rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .grid { display: grid; gap: 1rem; grid-template-columns: 1fr; margin: 0 0 3rem; padding: 0; list-style: none; }
+  @media (min-width: 40rem) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64rem) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  .card {
+    display: flex; flex-direction: column; background: var(--paper);
+    border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .card[hidden] { display: none; }
+  .shot {
+    display: block; width: 100%; min-height: 2.75rem; padding: 0; border: 0;
+    border-bottom: 1px solid var(--line); background: var(--tint); cursor: zoom-in;
+  }
+  .shot img { display: block; width: 100%; height: auto; }
+  .body { padding: 0.875rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .body h2 { font-size: 1rem; line-height: 1.3; margin: 0; }
+  .body h2 span { color: var(--ink-soft); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .body p { margin: 0; font-size: 0.875rem; color: var(--ink-soft); }
+  .kind { font-size: 0.875rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  details { font-size: 0.875rem; }
+  details summary { cursor: pointer; color: var(--ink-soft); min-height: 2.75rem; display: flex; align-items: center; }
+  details code { display: block; white-space: pre-wrap; word-break: break-word; background: var(--tint); border-radius: 0.375rem; padding: 0.5rem; margin-top: 0.25rem; font-size: 0.875rem; }
+  .things { border-top: 1px solid var(--line); padding-top: 2.5rem; }
+  .things-h { font-size: 1.25rem; line-height: 1.3; margin: 0 0 1rem; }
+  .cols { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+  @media (min-width: 40rem) { .cols { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64rem) { .cols { grid-template-columns: repeat(4, 1fr); } }
+  .cols h3 { font-size: 0.875rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--accent); margin: 0 0 0.5rem; }
+  .cols ul {
+    margin: 0; padding: 0 0.25rem 0 0; list-style: none; font-size: 0.875rem;
+    color: var(--ink-soft); max-height: 20rem; overflow: auto; overscroll-behavior: contain;
+  }
+  .cols li { padding: 0.25rem 0; border-bottom: 1px solid var(--line); word-break: break-word; }
+  footer { border-top: 1px solid var(--line); padding: 1.5rem 0 3rem; color: var(--ink-soft); font-size: 0.875rem; }
+  footer p { margin: 0 0 0.5rem; }
+  dialog {
+    width: min(96vw, 78rem); max-height: 94vh; padding: 0; border: 1px solid var(--line);
+    border-radius: var(--radius); background: var(--paper); color: var(--ink);
+  }
+  dialog::backdrop { background: rgb(16 23 37 / 72%); }
+  dialog iframe { display: block; width: 100%; height: min(82vh, 48rem); border: 0; background: #fff; }
+  .close { position: sticky; top: 0; display: flex; justify-content: flex-end; padding: 0.5rem; background: var(--paper); }
+  .close button {
+    min-height: 2.75rem; min-width: 2.75rem; font: inherit; font-weight: 600;
+    color: var(--accent-ink); background: var(--accent);
+    border: 0; border-radius: 0.5rem; cursor: pointer; padding: 0 1rem;
+  }
+  .none { padding: 2rem 0; color: var(--ink-soft); }
+  @media print {
+    .finder, .close, .lang { display: none; }
+    .card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="head-row">
+      <div>
+        <h1>{{TITLE}}</h1>
+        <p class="sub" data-i18n="footer_how">{{T:footer_how}}</p>
+      </div>
+      <div class="lang" role="group" aria-label="{{T:lang_label}}">
+        <button type="button" data-lang="nb">{{T:lang_nb}}</button>
+        <button type="button" data-lang="en">{{T:lang_en}}</button>
+      </div>
+    </div>
+    <ul class="chips">{{CHIPS}}</ul>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="finder">
+    <label for="q" data-i18n="filter_label">{{T:filter_label}}</label>
+    <input id="q" type="search" autocomplete="off" placeholder="{{T:filter_placeholder}}">
+    <span class="count" id="count" data-i18n="count_all" role="status" aria-live="polite">{{T:count_all}}</span>
+  </div>
+  <ul class="grid" id="grid">{{CARDS}}</ul>
+  <p class="none" id="none" data-i18n="no_match" hidden>{{T:no_match}}</p>
+</main>
+
+<section class="wrap things">
+  <h2 class="things-h" data-i18n="things_heading">{{T:things_heading}}</h2>
+  <div class="cols">{{THINGS}}</div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p data-i18n="footer_how">{{T:footer_how}}</p>
+    <p data-i18n="footer_trace">{{T:footer_trace}}</p>
+    <p data-i18n="live_note">{{T:live_note}}</p>
+  </div>
+</footer>
+
+<dialog id="viewer" aria-label="{{T:viewer_label}}">
+  <div class="close"><button type="button" id="shut" data-i18n="close">{{T:close}}</button></div>
+  <iframe id="big" title="{{T:viewer_label}}" referrerpolicy="no-referrer"
+          sandbox="allow-scripts allow-popups allow-downloads"></iframe>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+  var T = {{LANG_JSON}};
+  var lang = {{START_LANG}};
+  var q = document.getElementById("q");
+  var cards = Array.prototype.slice.call(document.querySelectorAll("#grid .card"));
+  var count = document.getElementById("count");
+  var none = document.getElementById("none");
+  var total = cards.length;
+  var one = {{COUNT_ONE_JS}};
+  var many = {{COUNT_MANY_JS}};
+
+  function apply() {
+    var term = q.value.trim().toLowerCase();
+    var shown = 0;
+    cards.forEach(function (card) {
+      var hay = card.getAttribute("data-search") || "";
+      var hit = !term || hay.indexOf(term) !== -1;
+      card.hidden = !hit;
+      if (hit) { shown += 1; }
+    });
+    none.hidden = shown !== 0;
+    count.textContent = (shown === total)
+      ? many.replace("{n}", String(shown))
+      : one.replace("{n}", String(shown)).replace("{t}", String(total));
+  }
+
+  function setLang(next) {
+    if (!T[next]) { return; }
+    lang = next;
+    document.documentElement.lang = T[next].html_lang;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (el) {
+      var key = el.getAttribute("data-i18n");
+      if (T[next][key] !== undefined) { el.textContent = T[next][key]; }
+    });
+    q.placeholder = T[next].filter_placeholder;
+    big.title = T[next].viewer_label;
+    one = T[next].count_one;
+    many = T[next].count_many;
+    Array.prototype.forEach.call(document.querySelectorAll(".lang button"), function (b) {
+      var on = b.getAttribute("data-lang") === next;
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      if (on) { b.classList.add("on"); } else { b.classList.remove("on"); }
+    });
+    try {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, "", "#" + next);
+      }
+    } catch (e) { /* opaque origin: the choice still applies, it just cannot be linked */ }
+    apply();
+  }
+
+  q.addEventListener("input", apply);
+  q.addEventListener("search", apply);
+
+  var viewer = document.getElementById("viewer");
+  var big = document.getElementById("big");
+  var shut = document.getElementById("shut");
+
+  function decode(b64) {
+    var bin = atob(b64);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i += 1) { bytes[i] = bin.charCodeAt(i); }
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".shot"), function (btn) {
+    btn.addEventListener("click", function () {
+      var card = btn.closest(".card");
+      var payload = card ? card.getAttribute("data-live") : "";
+      if (!payload) { return; }
+      big.srcdoc = decode(payload);
+      if (typeof viewer.showModal === "function") { viewer.showModal(); }
+      // Give the frame the keyboard. A deck inside it advances on an arrow key, but only
+      // once that key is delivered to its own document, and a key pressed with the focus
+      // still on the page behind it goes nowhere. A reader would click first; this does it
+      // for them.
+      try { big.focus(); } catch (e) { /* focus is a courtesy, not the feature */ }
+    });
+  });
+
+  shut.addEventListener("click", function () { viewer.close(); });
+  viewer.addEventListener("close", function () { big.srcdoc = ""; });
+  viewer.addEventListener("click", function (e) { if (e.target === viewer) { viewer.close(); } });
+  // Escape has to work from the page as well as from the frame. Once the frame holds the
+  // keyboard an Escape pressed there belongs to the artefact, so the page cannot see it; in
+  // that case the Close button and the backdrop are the way out, and both are always there.
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && viewer.open) { viewer.close(); }
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".lang button"), function (b) {
+    b.addEventListener("click", function () { setLang(b.getAttribute("data-lang")); });
+  });
+
+  var fromHash = (window.location.hash || "").replace("#", "");
+  setLang(T[fromHash] ? fromHash : lang);
+})();
+</script>
+</body>
+</html>

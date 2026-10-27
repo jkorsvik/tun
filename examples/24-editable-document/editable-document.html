@@ -16,7 +16,7 @@
   Beslutningsnotat: Eierskap til møteromsbookingen (oppdiktet eksempel)
   PROVENANCE  (do not delete, this is how output gets traced back)
     Source data : none. Synthetic memo: every name, unit and number is invented
-    Built       : 2026-10-10
+    Built       : 2026-10-24
     Requested by: maintainer
     Built by    : RAIWork
     Repo        : tun
@@ -35,16 +35,17 @@
   --palette-primary:         #2B4C7E;  
   --palette-primary-dark:    #1B3559;  
   --palette-primary-darkest: #0E1C2E;  
+  --palette-primary-on-dark: #9CC0E8;  
   --palette-accent:          #B8860B;  
   --palette-accent-light:    #E8D48B;  
   --palette-on-dark:         #F7F5EF;  
 }
 :root{
-  --status-negative:          #C9372C; 
-  --status-negative-bg:       #fbeded; 
-  --status-positive:          #1F7A5C; 
-  --status-positive-bg-25:    #d7ece3; 
-  --status-positive-bg-12:    #eaf5f0; 
+  --status-negative:          #dc2a2a; 
+  --status-negative-bg:       #fdeeee; 
+  --status-positive:          #007b5e; 
+  --status-positive-bg-25:    #e9f8f4; 
+  --status-positive-bg-12:    #f4fbf9; 
   --status-neutral:           #737373; 
 }
 :root,
@@ -55,11 +56,22 @@
   --bg:         var(--palette-surface);
   --panel:      #f8f8f8;               
   --brand:      var(--palette-primary);        
+  --on-brand:   var(--palette-surface);
   --brand-dark: var(--palette-primary-dark);    
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
   --series-2:   var(--palette-accent);     
+  --cat-1: #2F5D9E;   
+  --cat-2: #1a8f66;   
+  --cat-3: #1B2A4A;   
+  --cat-4: #5f8f89;   
+  --cat-5: #dc2a2a;   
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
   --bad-bg:var(--palette-surface);
 }
 :root{
@@ -78,8 +90,11 @@ a:focus-visible,button:focus-visible{outline:.1875rem solid var(--brand);outline
 .mark{font-weight:700;letter-spacing:.04em}
 .lbl{font-size:.875rem;opacity:.9;border-left:.0625rem solid currentColor;padding-left:1rem}
 .tools{margin-left:auto;display:flex;gap:.5rem}
-.tools button{font:inherit;font-size:.875rem;font-weight:600;color:var(--palette-on-dark);background:transparent;
-  border:.0625rem solid currentColor;border-radius:.25rem;padding:.375rem .875rem;cursor:pointer}
+  /* 44 px is the touch minimum docs/11 sets. These controls sat at 35 px
+     on a phone: tall enough to look right, too small to hit with a thumb. */
+.tools button{font:inherit;font-size:.875rem;font-weight:600;color:var(--palette-on-dark);
+  background:transparent;border:.0625rem solid currentColor;border-radius:.25rem;
+  padding:.375rem .875rem;cursor:pointer;min-height:2.75rem}
 .tools button[aria-pressed="true"]{background:var(--palette-on-dark);color:var(--brand-dark)}
 .tools button[disabled]{opacity:.45;cursor:default}
 
@@ -94,7 +109,7 @@ body.editing .sheet{outline:.125rem dashed var(--brand);outline-offset:.375rem}
 body.editing .sheet :is(p,li,td,th,h1,h2,h3,dd):hover{background:var(--edit-tint)}
 
 .mock{font-size:.875rem;color:var(--muted);border:.0625rem dashed var(--muted);border-radius:.25rem;padding:.5rem .75rem;margin:0 0 1.5rem}
-.kicker{font-size:.8125rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin:0 0 .5rem}
+.kicker{font-size:.875rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin:0 0 .5rem}
 h1{font-size:1.875rem;line-height:1.25;color:var(--brand-dark);margin:0 0 1.5rem}
 h2{font-size:1.3125rem;color:var(--brand-dark);margin:3rem 0 .75rem;padding-top:1rem;border-top:.125rem solid var(--brand)}
 h3{font-size:1.0625rem;margin:1.75rem 0 .5rem}
@@ -114,16 +129,16 @@ p{margin:0 0 .75rem}
 .tw{overflow-x:auto;margin:.75rem 0 1.25rem}
 table{border-collapse:collapse;width:100%;font-size:.9375rem}
 th,td{text-align:left;vertical-align:top;padding:.625rem .75rem;border-bottom:.0625rem solid var(--line)}
-thead th{font-size:.8125rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);border-bottom:.125rem solid var(--brand-dark);white-space:nowrap}
+thead th{font-size:.875rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);border-bottom:.125rem solid var(--brand-dark);white-space:nowrap}
 .k{font-weight:700;color:var(--brand);margin-right:.375rem}
 .m td,.m th{text-align:center;padding:.5rem .25rem} .m th:first-child{text-align:left;padding-left:.75rem}
-.s{display:inline-block;padding:.125rem .5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;white-space:nowrap}
+.s{display:inline-block;padding:.125rem .5rem;border-radius:.75rem;font-size:.875rem;font-weight:600;white-space:nowrap}
 .s-pos{background:var(--ok-bg);color:var(--ok)} .s-neg{background:var(--bad-bg);color:var(--bad)} .s-mid{background:var(--panel);color:var(--muted)}
 .note{font-size:.875rem;color:var(--muted)}
 .vedtak{background:var(--brand-dark);color:var(--palette-on-dark);border-radius:.25rem;padding:1.5rem 1.75rem}
 .vedtak ol{margin:0;padding-left:1.375rem} .vedtak li{margin:.5rem 0}
 .vedtak .fill{color:var(--ink)}
-footer{max-width:54rem;margin:0 auto;padding:0 1.5rem 2.5rem;font-size:.8125rem;color:var(--muted)}
+footer{max-width:54rem;margin:0 auto;padding:0 1.5rem 2.5rem;font-size:.875rem;color:var(--muted)}
 
 @media (max-width:40rem){
   .top .in{flex-wrap:wrap;padding:.75rem 1.25rem;row-gap:.75rem}
@@ -131,11 +146,11 @@ footer{max-width:54rem;margin:0 auto;padding:0 1.5rem 2.5rem;font-size:.8125rem;
   main{padding:0 0 2.5rem} .sheet{padding:1.75rem 1.25rem;border-radius:0;border-left:0;border-right:0}
   h1{font-size:1.5625rem}
   .meta{grid-template-columns:1fr;gap:0} .meta dd{margin-bottom:.5rem}
-  .m .full{display:none} .m td,.m th{padding:.5rem .0625rem} .m .s{font-size:.6875rem;padding:.125rem .25rem}
+  .m .full{display:none} .m td,.m th{padding:.5rem .0625rem} .m .s{font-size:.875rem;padding:.125rem .25rem}
   .stack thead{display:none}
   .stack tr{display:block;padding:.75rem 0;border-bottom:.0625rem solid var(--line)}
   .stack th,.stack td{display:block;border:0;padding:.125rem 0}
-  .stack td::before{content:attr(data-label);display:block;font-size:.75rem;font-weight:600;text-transform:uppercase;color:var(--muted);margin-top:.375rem}
+  .stack td::before{content:attr(data-label);display:block;font-size:.875rem;font-weight:600;text-transform:uppercase;color:var(--muted);margin-top:.375rem}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @page{size:A4;margin:18mm 16mm}

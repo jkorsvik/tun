@@ -1,0 +1,51 @@
+# Strings for templates/onepager.html and tools/build_onepager.py.
+# Format: see tools/i18n.py. Norwegian first because the artefact's reader is Norwegian
+# unless --lang says otherwise. English values may not contain quote characters.
+
+[nb]
+kind = Ett ark
+standfirst = {period} · {shown} av {total} kategorier vist
+aria_kpis = Nøkkeltall
+aria_chart = Fordeling
+aria_moved = Hva som endret seg
+kpi_total = Sum {measure}
+kpi_change = Endring
+kpi_categories = Kategorier
+across_periods = over {n} perioder
+kpi_largest = Største
+vs_previous = mot {period}
+change_none = ingen periode å måle mot
+largest_share = {share} av totalen
+chart_title = {dimension} i {period}
+moved_title = Hva som endret seg
+moved_line = {name}: {before} til {after} ({pct})
+moved_none = Ingen kategori flyttet seg merkbart mot forrige periode.
+moved_missing = Forrige periode finnes ikke i dataene, så ingen endring kan vises.
+period_missing = {measure} er tomt i den siste perioden.
+source_line = Kilde: {source} · {rows} rader, {cols} kolonner
+provenance_line = Uttrekk {extracted} · bygget {built} · bestilt av {who}
+made_with = Laget med Tún — tun.community. Ingen Power BI-lisens, ingen arbeidsflate, ingen admin-godkjenning.
+
+[en]
+kind = One pager
+standfirst = {period} · {shown} of {total} categories shown
+aria_kpis = Key figures
+aria_chart = Distribution
+aria_moved = What moved
+kpi_total = Total {measure}
+kpi_change = Change
+kpi_categories = Categories
+across_periods = across {n} periods
+kpi_largest = Largest
+vs_previous = against {period}
+change_none = no earlier period to measure against
+largest_share = {share} of the total
+chart_title = {dimension} in {period}
+moved_title = What moved
+moved_line = {name}: {before} to {after} ({pct})
+moved_none = No category moved noticeably against the previous period.
+moved_missing = The previous period is not in the data, so no change can be shown.
+period_missing = {measure} is empty in the last period.
+source_line = Source: {source} · {rows} rows, {cols} columns
+provenance_line = Extracted {extracted} · built {built} · requested by {who}
+made_with = Made with Tún — tun.community. No Power BI licence, no workspace, no admin approval.

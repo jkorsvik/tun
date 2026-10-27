@@ -1,0 +1,65 @@
+# Strings for templates/distribution.html and tools/build_distribution.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shows the shape of one measure: how many cases sit in each interval, where the
+# median is, and how long the tail is. The words here are the ones a reader needs to read a
+# bar and to check it against the table underneath.
+
+[nb]
+html_lang = nb
+caption = Hver stolpe er ett intervall av {measure}, og høyden er antall saker i det. Tallet over hver stolpe er det samme tallet skrevet ut, og tabellen under har alle intervallene med grensene sine.
+caption_p90 = Medianen er verdien i midten når sakene sorteres. p90 er verdien 90 prosent av sakene ligger på eller under.
+head_shape = Hva tallene sier
+head_table = Intervallene bak bildet
+table_caption = Antall saker i hvert intervall, per gruppe. Summen nederst skal være lik antall saker på siden.
+col_bucket = Intervall
+col_total = Totalt
+row_total = Totalt
+legend_bar = Saker per intervall
+legend_median = Median
+median_label = median
+svg_title = Fordeling
+svg_desc = {measure}: {n} saker i {buckets} intervaller, median {median}.
+sub_line = {rows} saker · {buckets} intervaller fra {lo} til {hi}
+shape_line = {n} saker · median {median} · middel {mean} · p90 {p90} · største {max}
+shape_one = {share} prosent av sakene ligger i intervallet {lo} til {hi}, og den største er {max}.
+shape_spread = Fordelingen er spredt: det største intervallet har {share} prosent, og den største er {max}.
+shape_single = Alle {n} sakene har samme verdi: {value}.
+shape_skew = Gjennomsnittet ({mean}) er {factor} ganger medianen, så noen få saker drar tallet opp.
+withheld_head = Grupper som ikke er tegnet
+withheld_line = {group}: {n} saker, under grensen på {min}. Tallene er ikke skjult, de står i kilden; grensen er satt av den som bygde siden.
+footer_a = Selvstendig fil: alle radene er regnet ut på forhånd, og ingenting hentes når den åpnes.
+footer_b = Ingen server, ingen innlogging, ingen skript. Intervallene er et presentasjonsvalg, ikke en egenskap ved dataene.
+footer_built = Bygget
+source_line = {name} — {rows} saker
+dropped = {n} rader er holdt utenfor fordi målingen er tom.
+buckets_note = {buckets} intervaller, bredde {width}
+
+[en]
+html_lang = en
+caption = Each bar is one interval of {measure}, and the height is the number of cases in it. The number above each bar is that same number written out, and the table below holds every interval with its edges.
+caption_p90 = The median is the middle value once the cases are sorted. p90 is the value 90 per cent of the cases sit at or below.
+head_shape = What the numbers say
+head_table = The intervals behind the picture
+table_caption = Count of cases in each interval, per group. The sum at the bottom must equal the number of cases on the page.
+col_bucket = Interval
+col_total = Total
+row_total = Total
+legend_bar = Cases per interval
+legend_median = Median
+median_label = median
+svg_title = Distribution
+svg_desc = {measure}: {n} cases in {buckets} intervals, median {median}.
+sub_line = {rows} cases · {buckets} intervals from {lo} to {hi}
+shape_line = {n} cases · median {median} · mean {mean} · p90 {p90} · largest {max}
+shape_one = {share} per cent of the cases sit in the interval {lo} to {hi}, and the largest is {max}.
+shape_spread = The cases are spread out: the biggest interval holds {share} per cent, and the largest is {max}.
+shape_single = All {n} cases share one value: {value}.
+shape_skew = The mean ({mean}) is {factor} times the median, so a few cases pull the figure up.
+withheld_head = Groups not drawn
+withheld_line = {group}: {n} cases, under the floor of {min}. The numbers are not hidden, they are in the source; the floor is a choice made by whoever built the page.
+footer_a = Self-contained file: every count is worked out in advance, and nothing is fetched when it opens.
+footer_b = No server, no sign-in, no script. The intervals are a presentation choice, not a property of the data.
+footer_built = Built
+source_line = {name} — {rows} cases
+dropped = {n} rows are left out because the measure is empty.
+buckets_note = {buckets} intervals, width {width}

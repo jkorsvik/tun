@@ -92,7 +92,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--graph-token", required=True,
                     help="delegated Graph access token with Files.ReadWrite")
-    ap.add_argument("--folder", default="tun-probe")
+    ap.add_argument("--folder", default="rai-probe")
     ap.add_argument("--keep", action="store_true", help="do not delete the fixtures")
     args = ap.parse_args()
     tok = args.graph_token

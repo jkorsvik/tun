@@ -1,5 +1,7 @@
 # Git hygiene when a repo has touched real data
 
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
 Lessons from one incident in this project (September 2026). A working copy held real
 records from a pilot. Some of that material reached the shared history. Cleaning it up
 took a history rewrite, and one copy is still out of reach. Nothing here is specific to
@@ -86,3 +88,5 @@ refs agreed with themselves, and a push through the rename redirect succeeded wi
 warning. So a green push is no proof that you are working on the current repository.
 Before you act on old notes, resolve the repository by its forge identity and fetch the
 branch tips again with `git ls-remote`.
+
+Before any go-public step, the preconditions and what is deliberately still open: [publication readiness](20-publication-readiness.md).

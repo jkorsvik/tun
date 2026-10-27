@@ -1,0 +1,58 @@
+# Strings for templates/showcase.html.
+# One entry per line, "key = value", everything after the first "= " is the value.
+# An `en` value never contains a quote, a backslash or a backtick (tests/test_i18n.py).
+# Bokmål, like the rest of the artefact chrome; the prose beside each card stays English.
+
+[nb]
+html_lang = nb
+filter_label = Finn et eksempel
+filter_placeholder = Skriv et ord, en type eller et verktøy
+count_all = {n} eksempler
+count_one = {n} av {t} eksempler
+count_many = {n} eksempler
+no_match = Ingen eksempler passer. Prøv et kortere ord.
+viewer_label = Forhåndsvisning av eksempelet
+close = Lukk
+footer_how = Hver fil er en egen, selvstendig HTML-fil. Den åpnes fra en delt mappe, uten server og uten lisens.
+footer_trace = Hver fil bærer sitt eget opphav: kjeldedata, uttrekkstid, byggetid og hvem som ba om den.
+card_command = Byggekommando
+things_heading = Alt annet i repositoriet
+live_note = Klikk for å bruke eksempelet slik en mottaker gjør.
+chip_examples = Eksempler
+chip_builders = Byggere
+chip_with_command = Med kommando
+chip_suites = Tester
+col_builders = Byggere
+col_skills = Ferdigheter
+col_suites = Tester
+col_docs = Dokumenter
+lang_nb = Norsk
+lang_en = English
+lang_label = Språk
+
+[en]
+html_lang = en
+filter_label = Find an example
+filter_placeholder = Type a word, a kind or a tool
+count_all = {n} examples
+count_one = {n} of {t} examples
+count_many = {n} examples
+no_match = No example matches. Try a shorter word.
+viewer_label = Preview of the example
+close = Close
+footer_how = Every file is its own self-contained HTML file. It opens from a shared folder, with no server and no licence.
+footer_trace = Every file carries its own provenance: source data, extract time, build time and who asked for it.
+card_command = Build command
+things_heading = Everything else in the repository
+live_note = Click to use the example the way a recipient does.
+chip_examples = Examples
+chip_builders = Builders
+chip_with_command = With a command
+chip_suites = Suites
+col_builders = Builders
+col_skills = Skills
+col_suites = Suites
+col_docs = Docs
+lang_nb = Norsk
+lang_en = English
+lang_label = Language

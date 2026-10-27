@@ -1,0 +1,72 @@
+# Strings for templates/smallmultiples.html and tools/build_smallmultiples.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shows one small panel per group, all drawn on one shared scale, so the reader can
+# compare the shapes instead of comparing two different axes.
+
+[nb]
+html_lang = nb
+svg_title = Småflater
+svg_desc = {panels} paneler over {periods} perioder, alle tegnet på én skala fra {low} til {high}.
+sub_line = {panels} grupper, {periods} perioder ({first} til {last}), alle på én skala
+caption = Hvert panel er én gruppe, og alle panelene bruker samme skala: {low} nederst, {high} øverst. Tallene står i hvert panel, så bildet er ikke den eneste lesningen.
+scroll_hint = Dra sidelengs i bildet for å se alle gruppene.
+summary_line = {panels} paneler på én skala. Høyest ligger {top} med {topv}, lavest {bottom} med {bottomv}. Størst bevegelse har {mover}, med {swing} mellom sin laveste og sin høyeste periode.
+summary_flat = {panels} paneler, og alle ender på samme verdi, {value}. Da er forskjellen mellom gruppene i forløpet, ikke i nivået.
+gaps_none = Ingen periode mangler i noen gruppe: hver linje er sammenhengende.
+gaps_line = {n} periode(r) i {panels} panel(er) har ingen rad i dataene. De er tegnet som brudd, ikke som null.
+order_name = Panelene står i navnerekkefølge. Bytt med --order latest eller --order change.
+order_latest = Panelene er sortert etter siste verdi, høyest først. Rekkefølgen er en påstand om hvem som ligger øverst nå, ikke om hvem som har beveget seg.
+order_change = Panelene er sortert etter endring fra første til siste periode, størst først. En gruppe som har falt mye kan stå over en som ligger høyere.
+truncate_head = Aksen starter ikke på null
+truncate_line = Den nederste linjen i hvert panel er {low}, ikke null. En liten bevegelse ser da stor ut. Det er et valg, ikke en måling, og det står her fordi det ikke skal være til å overse.
+head_table = Tallene bak bildet
+table_caption = Hver rad er én gruppe. «Perioder» viser hvor mange perioder gruppen faktisk har en rad for, av {{COL_PERIODS}} på aksen.
+col_group = Gruppe
+col_first = Første
+col_latest = Siste
+col_delta = Endring
+col_min = Lavest
+col_max = Høyest
+col_periods = Perioder
+plus = +{value}
+minus = −{value}
+unchanged = 0
+source_line = Kilde: {name} · {rows} rader
+skipped = {n} rad(er) uten gruppe, periode eller tall er ikke tegnet
+footer_a = Hvert panel er én gruppe. Alle panelene bruker samme skala, og skalaen står skrevet i hvert panel: gir du hvert panel sin egen akse, ser en gruppe som beveger seg mellom 4 og 8 lik ut som en som beveger seg mellom 400 og 800.
+footer_b = Manglende periode er et brudd i linjen, ikke en null. Filen har ingen skript: et filter ville lagt rutenettet på nytt, og rutenettet er påstanden.
+footer_built = Bygget
+
+[en]
+scroll_hint = Drag sideways in the picture to see every group.
+html_lang = en
+svg_title = Small multiples
+svg_desc = {panels} panels over {periods} periods, all drawn on one scale from {low} to {high}.
+sub_line = {panels} groups, {periods} periods ({first} to {last}), all on one scale
+caption = Each panel is one group, and every panel uses the same scale: {low} at the bottom, {high} at the top. The numbers are in each panel, so the picture is not the only reading.
+summary_line = {panels} panels on one scale. {top} is highest with {topv}, {bottom} lowest with {bottomv}. The widest movement is {mover}, at {swing} between its lowest and highest period.
+summary_flat = {panels} panels, and all of them end on the same value, {value}. The difference between the groups is then in the path, not in the level.
+gaps_none = No period is missing in any group: every line is unbroken.
+gaps_line = {n} period(s) in {panels} panel(s) have no row in the data. They are drawn as a break, not as zero.
+order_name = The panels are in name order. Change it with --order latest or --order change.
+order_latest = The panels are sorted by latest value, highest first. That order is a claim about who is highest now, not about who has moved.
+order_change = The panels are sorted by the change from the first to the last period, largest first. A group that fell a long way can sit above one that is higher.
+truncate_head = The axis does not start at zero
+truncate_line = The bottom rule in every panel is {low}, not zero. A small movement then looks large. That is a choice, not a measurement, and it is stated here because it must not be easy to miss.
+head_table = The numbers behind the picture
+table_caption = Each row is one group. “Periods” shows how many periods the group actually has a row for, out of {{COL_PERIODS}} on the axis.
+col_group = Group
+col_first = First
+col_latest = Latest
+col_delta = Change
+col_min = Lowest
+col_max = Highest
+col_periods = Periods
+plus = +{value}
+minus = −{value}
+unchanged = 0
+source_line = Source: {name} · {rows} rows
+skipped = {n} row(s) with no group, period or number are not drawn
+footer_a = Each panel is one group. Every panel uses the same scale, and the scale is written in every panel: give each panel its own axis and a group that moves between 4 and 8 looks exactly like one that moves between 400 and 800.
+footer_b = A missing period is a break in the line, not a zero. The file has no script: a filter would re-lay the grid, and the grid is the claim.
+footer_built = Built

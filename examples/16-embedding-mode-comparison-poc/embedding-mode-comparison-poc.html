@@ -7,22 +7,15 @@
   under terms of your choice, provided the Origin Notice is preserved.
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<!--
-  PROVENANCE
-    Source data : none, synthetic demonstration
-    Repo        : tun
-    Made with   : Tún — tun.community
-    Generator   : examples/16-embedding-mode-comparison-poc/build_embedding_comparison_poc.py
--->
 <html lang="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>16 — Embedding-modus sammenligning</title>
+<title>16 — Embedding-modus sammenligning (issue #39)</title>
 <style>
 :root{
   --ink:#182430; --ink2:#5b6b7a; --line:#d8dee5; --bg:#f4f6f9; --panel:#fff;
-  --ok:#1F7A5C; --ok-bg:#eaf5f0;  /* Moss on the 25% tint was 4.25:1 */ --bad:#C9372C; --bad-bg:#fbeded;
+  --ok:#007b5e; --ok-bg:#e9f8f4; --bad:#dc2a2a; --bad-bg:#fdeeee;
   --warn:#9a3412; --warn-bg:#fff7ed;
 }
 *{box-sizing:border-box;}
@@ -53,9 +46,9 @@ footer{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid 
 <main>
 <h1>16 — Embedding-modus sammenligning</h1>
 <div class="intro">
-  Diagnoseverktøy, ikke et designmønster å kopiere. Bygget for å feilsøke ett
-  symptom: en fil viste
-  feilaktig "ingen data funnet" åpnet via SharePoints
+  Diagnoseverktøy, ikke et designmønster å kopiere. Bygget etter et ekte brudd
+  (<a href="https://example.com/tun/issues/39">issue #39</a>,
+  15. sept. 2026): en fil viste feilaktig "ingen data funnet" åpnet via SharePoints
   innebygde filforhåndsvisning (enkeltklikk "hurtigvisning" i dokumentbiblioteket
   — ikke nedlasting, ikke <code>/preview</code> embed.aspx-vieweren fra rad 4).
   <br><br>
@@ -65,7 +58,7 @@ footer{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid 
   Alle fire ruter viser IDENTISK tekstinnhold; kun embedding-metoden og
   linjeformateringen i JavaScript-en varierer.
   <br><br>
-  <strong>Oppdatering:</strong> ruteforsøket under viste at BÅDE rute A
+  <strong>Oppdatering, samme kveld:</strong> ruteforsøket under viste at BÅDE rute A
   og B kjører helt fint — flerlinjes strengsammensetting var aldri årsaken (den
   første, forhastede konklusjonen er tilbakevist, se rad 23 i
   <code>docs/01-tenant-constraints.md</code>). Bisecting av selve sideskallet
@@ -76,7 +69,8 @@ footer{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid 
   forhåndsvisning — bruk et JavaScript-klikklytter i stedet, (3)
   <code>position:sticky</code> og <code>position:fixed</code> er begge upålitelige
   der — bruk et ikke-rullende app-skall med én dedikert rullende beholder i
-  stedet.
+  stedet. Full historikk: <code>en kollega-kollega/saksrom</code>
+  <code>docs/04-hosting-og-dedup.md</code> Trinn E–H.
 </div>
 <div class="grid">
 
@@ -98,7 +92,7 @@ footer{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid 
     <span class="tag safe">Alltid trygt</span>
     <h2>C — Embedded, ingen JavaScript nødvendig</h2>
     <div class="status ok">&#10003; Statisk HTML — krever ingen script</div>
-    <div class="content">Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning; den mistanken er senere tilbakevist (se rad 23 i tenant-constraints.md).
+    <div class="content">Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning 15. september 2026; den mistanken er tilbakevist samme kveld (se rad 23 i tenant-constraints.md).
 
 Andre avsnitt følger her. Hvis dette avsnittet vises i alle fire rutene, virker ingenting av det denne siden tester å skille mellom — se README.md.</div>
   </div>
@@ -119,12 +113,13 @@ Andre avsnitt følger her. Hvis dette avsnittet vises i alle fire rutene, virker
 </footer>
 
 <!-- ====== Rute A: embedded, ettlinjes ====== -->
-<script>window.PANEL_A_DATA = "Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning; den mistanken er senere tilbakevist (se rad 23 i tenant-constraints.md).\n\nAndre avsnitt følger her. Hvis dette avsnittet vises i alle fire rutene, virker ingenting av det denne siden tester å skille mellom — se README.md.";</script>
+<script>window.PANEL_A_DATA = "Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning 15. september 2026; den mistanken er tilbakevist samme kveld (se rad 23 i tenant-constraints.md).\n\nAndre avsnitt følger her. Hvis dette avsnittet vises i alle fire rutene, virker ingenting av det denne siden tester å skille mellom — se README.md.";</script>
 
 <!-- ====== Rute B: embedded, flerlinjes strengsammensetting (den bekreftede risikoen) ====== -->
 <script>
 window.PANEL_B_DATA =
-    "Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning; den mistanken er senere tilbakevist (se rad 23 i tenant-constraints.md).\n\nAndre avsnitt følger her. " +
+    "Dette er identisk eksempeltekst i alle fire rutene under, satt sammen av flere avsnitt — opprinnelig valgt fordi flerlinjes strengsammensetting mistenktes å knekke embedded data i SharePoints innebygde forhåndsvisning 15. " +
+    "september 2026; den mistanken er tilbakevist samme kveld (se rad 23 i tenant-constraints.md).\n\nAndre avsnitt følger her. " +
     "Hvis dette avsnittet vises i alle fire rutene, virker ingenting av det denne siden tester å skille mellom — se README.md.";
 </script>
 
@@ -141,7 +136,7 @@ function paint(id, statusId, value) {
     st.textContent = "\u2713 JavaScript kj\u00f8rte, data lastet korrekt";
     st.className = "status ok";
   } else {
-    st.textContent = "\u2717 Data IKKE lastet \u2014 samme symptom som i den opprinnelige feilen";
+    st.textContent = "\u2717 Data IKKE lastet \u2014 samme symptom som issue #39";
     st.className = "status fail";
   }
 }

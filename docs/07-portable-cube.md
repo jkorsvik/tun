@@ -1,6 +1,8 @@
 # The Portable Cube — how Tier 1 stopped caring about row count
 
-**Status:** measured end to end. Every number below came from a run,
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
+**Status:** measured end to end on 2026-09-04. Every number below came from a run,
 not an estimate. Reproduce with `examples/03-cube-dashboard/`.
 
 ---
@@ -35,9 +37,9 @@ So ship exactly that: one cell per combination. A cube.
   4 000 000 rows                        115 200 cells
   ──────────────                        ─────────────
   region  kategori  kanal  …  belop     region × kategori × kanal × alder × måned
-  Oslo    Sport     Nett   …  433.15      10   ×    12    ×   5   ×   6   ×  32
-  Viken   Mat       Butikk …  128.90
-  Oslo    Sport     Nett   …  902.00    each cell: sum(belop), sum(antall), count
+  Oslo    Sport     Vipps  …  433.15      10   ×    12    ×   5   ×   6   ×  32
+  Viken   Bensin    Kort   …  128.90
+  Oslo    Sport     Vipps  …  902.00    each cell: sum(belop), sum(antall), count
   … 4 000 000 more                      → answers ANY filter combination exactly
 ```
 
@@ -154,7 +156,10 @@ Be honest about this with stakeholders; the cube trades flexibility for portabil
   compiled in. A question the cube was not built for needs a rebuild.
 - **No row-level detail.** There is no "show me the underlying transactions" drill.
   The rows are gone. If a viewer needs to see individual records, this is the wrong
-  tool.
+  tool. What a reader *can* take with them is the view they are looking at: the cube
+  exports its aggregated cells as CSV, under the filters that are applied, with the
+  source, the build stamp and the selection written into the file. Filtered numbers
+  leave the page; rows never do, because the page never had them.
 - **Additive measures only.** `sum` and `count` compose over cells. `avg` is derived
   as `sum / count` in the browser, which is correct. **Distinct counts and medians do
   not compose** and the builder rejects them rather than producing a plausible lie.

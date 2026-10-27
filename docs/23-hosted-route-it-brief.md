@@ -1,12 +1,14 @@
 # 23. The hosted route, and the questions only IT can answer
 
+**Reader:** user — you want an artefact out of your own data and do not intend to change the toolkit.
+
 > **Status: DIRECTION, not measured, not approved.** Written up from an internal brief
 > drafted in September 2026 to open the conversation with IT architecture and security.
 > Nothing on this page has been built or probed. Whether the brief was ever sent is not
 > recorded here.
 
 Every other page in this repository is about an artefact that is a **file**: standalone,
-paired or connected (see [the generic artifact model](08-generic-artifact-model.md)). This
+paired or connected (see [the generic artefact model](08-generic-artifact-model.md)). This
 page is about the one route that is **not** a file pattern at all: a small web application,
 hosted on a real `https://` origin, that signs the reader in and reads their OneDrive or
 SharePoint files through Microsoft Graph on their behalf.

@@ -8,8 +8,9 @@
 """
 build_topbar_demo.py — generates topbar-pattern-demo.html
 
-A generated (never hand-written), self-contained HTML file that proves the
-neutral topbar interaction pattern (docs/09-usability-and-navigation-principles.md) —
+Demo required by issue #15, section 6: a generated (never hand-written),
+self-contained HTML file that proves the neutral topbar interaction pattern
+described there —
 
   1. non-scrolling topbar (app shell, NOT position:fixed — see row 26 note below)
   2. hamburger -> overlay + drop-down menu (not a sidebar)
@@ -17,11 +18,12 @@ neutral topbar interaction pattern (docs/09-usability-and-navigation-principles.
   4. fullscreen button (⛶) -> requestFullscreen()/exitFullscreen()
 
 Deliberately neutral: no Eksempel AS brand colours, no logo, no "Internt dokument"
-pill. Brand styling is out of scope for this demo on purpose. The palette below is greyscale plus one generic slate accent,
+pill. That is issue #15's explicit scope boundary — Eksempel AS styling is a separate,
+later issue. The palette below is greyscale plus one generic slate accent,
 chosen only to make focus/hover states visible, not to imply any brand.
 
 This file exists to be sent as a real Teams message/link to a phone, so
-the mobile-open hypotheses (does it work when opened from Teams on a phone?) can be tested against
+issue #15 section 5's mobile-open hypotheses can actually be tested against
 reality instead of staying theoretical. It is not a dashboard: no rows, no
 data, no filters — same reasoning as examples/04-generic-standalone-demo/,
 kept deliberately free of dashboard vocabulary so the interaction pattern can
@@ -67,21 +69,13 @@ CLOSE_BTN = '<button class="close-btn" onclick="closeAll()" aria-label="Lukk">�
 sections_html = "\n".join(
     f'  <section id="{sid}" class="page" style="display:{"block" if i == 0 else "none"}">\n'
     f'    <h2>{title}</h2>\n    <p>{body}</p>\n'
-    f'    <p style="color:var(--muted);font-size:.85rem">'
+    f'    <p style="color:var(--muted);font-size:.875rem">'
     f'Fyll-innhold for å teste scroll mot fast toppfelt.<br>' + ("Lorem ipsum. " * 40) + '</p>\n'
     f'  </section>'
     for i, (sid, title, body) in enumerate(SECTIONS)
 )
 
 HTML = f"""<!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="nb">
 <head>
 <meta charset="utf-8">
@@ -94,14 +88,13 @@ HTML = f"""<!DOCTYPE html>
   PROVENANCE
     Source data : none — this is an interaction-pattern demo, not a report
     Built       : {BUILT}
-    Requested by: the product owner
-    Built by    : RAIWork, as the topbar pattern demo
+    Requested by: en kollega
+    Built by    : RAIWork, as the demo required by issue #15 section 6
     Repo        : tun
-    Made with   : Tún — tun.community
     Generator   : examples/07-topbar-pattern-demo/build_topbar_demo.py
   ----------------------------------------------------------------------------
-  Proves the topbar pattern (fixed topbar, hamburger->overlay menu,
-  info panel, fullscreen toggle). The mobile/Teams open-path risk is
+  Proves issue #15 sections 1-4 (fixed topbar, hamburger->overlay menu,
+  info panel, fullscreen toggle). Section 5 (mobile/Teams open-path risk) is
   NOT provable by this file alone -- it needs a human to open this exact file
   from a real Teams message on a real phone. That is the reason this demo
   exists as a shareable single file rather than only a description.
@@ -120,7 +113,7 @@ HTML = f"""<!DOCTYPE html>
      overflow:hidden on html as well as body, because the absolutely-positioned overlays
      still add to body's scrollHeight while hidden and would otherwise give the document
      its own scrollbar on a short viewport. Gated by tools/verify_standalone_core.py and
-     exercised by tools/verify_app_shell.py. */
+     exercised by tools/verify_app_shell.py (#50). */
   html,body{{height:100%;overflow:hidden}}
   body{{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);
     display:flex;flex-direction:column;height:100vh;height:100dvh;position:relative}}
@@ -136,12 +129,14 @@ HTML = f"""<!DOCTYPE html>
   .icon-btn{{
     background:transparent;border:none;color:#fff;font-size:1.25rem;line-height:1;
     padding:.4rem .6rem;border-radius:.25rem;cursor:pointer;touch-action:manipulation;
+    /* 44 px is the touch minimum docs/11 sets; the icon was 33 px. */
+    min-width:2.75rem;min-height:2.75rem;
   }}
   .icon-btn:hover, .icon-btn:focus-visible{{background:rgba(255,255,255,.15)}}
 
   /* No topbar compensation needed any more: the header is a flex sibling, not an
-     overlay, so it cannot cover anything. The earlier "set padding-top in
-     EVERY breakpoint" rule existed only to work around the fixed header and is now moot. */
+     overlay, so it cannot cover anything. Issue #15 §1's "set padding-top in EVERY
+     breakpoint" rule existed only to work around the fixed header and is now moot. */
   main{{padding:var(--sp-3) var(--sp-4) var(--sp-4);max-width:48rem;margin:0 auto}}
   @media (max-width:600px){{
     main{{padding-top:var(--sp-2);padding-left:var(--sp-2);padding-right:var(--sp-2)}}
@@ -215,13 +210,14 @@ HTML = f"""<!DOCTYPE html>
 <div id="info-panel" role="dialog" aria-label="Om denne siden">
   {CLOSE_BTN}
   <h3>Hva denne siden viser</h3>
-  <p>En generert demo av topbar-mønsteret: fast toppfelt, hamburgermeny,
+  <p>En generert demo av topbar-mønsteret fra issue #15: fast toppfelt, hamburgermeny,
   denne info-knappen, og fullskjerm-knappen til høyre. Ingen ekte data.</p>
   <h3>Datakilde / oppdateringsfrekvens</h3>
   <p>Ingen datakilde — statisk demofil, bygget én gang av generatoren og ikke ment å
   oppdateres med nye tall.</p>
   <h3>Laget av</h3>
-  <p>RAIWork, som bevis-artefakt for topbar-mønsteret.</p>
+  <p>RAIWork, på forespørsel fra en kollega, som kravsatt bevis-artefakt for
+  issue #15 §6.</p>
 </div>
 
 <div id="scroll-area">
@@ -286,7 +282,7 @@ HTML = f"""<!DOCTYPE html>
     // Never let this throw to the page/host: many in-app WebViews (Teams,
     // Outlook mobile) either lack requestFullscreen entirely or reject its
     // Promise, and an uncaught error here surfaced as a visible "Script
-    // error" banner to the user in Teams-on-mobile testing --
+    // error" banner to the user in Teams-on-mobile testing for issue #15 --
     // even though hamburger/info (plain click handlers, no browser APIs)
     // worked fine in the same environment. Isolate the failure to this
     // control only.
@@ -314,7 +310,7 @@ HTML = f"""<!DOCTYPE html>
 
   // Feature-detect once at load: if this environment cannot go fullscreen at
   // all (confirmed on at least one mobile Teams in-app browser during
-  // manual testing), disable the button instead of leaving a control that
+  // issue #15 testing), disable the button instead of leaving a control that
   // does nothing -- or worse, one whose click handler can throw.
   (function() {{
     var btn = document.getElementById('fs-btn');

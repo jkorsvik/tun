@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Saker i ko, per enhet og uke</title>
+<!--
+  Saker i ko, per enhet og uke
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Kilde: Syntetisk eksempeldata (ko.csv) · 84 rader
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Driftsavdelingen
+    Made with   : Tún - tun.community
+    Records     : 84 values, one per group and period drawn
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: one small panel per group, all drawn on the same vertical scale, so the
+  reader compares the shape of one group's path with another's.
+
+  What it is NOT: a ranking, or a claim about why one group moves differently from another. It
+  draws the numbers it was given, on one scale, with the scale written on the page.
+
+  There is no script in this file. A filter would re-lay the grid, and the grid is the claim
+  being made.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+:root{
+  /* The panel's own gridlines. They are template-local rather than --rule, which the seam
+     already uses for a UI rule: these are chart marks, and a grey chosen to sit quietly on a
+     white panel is invisible on a dark one. The dashed top rule is the scale's ceiling, so it
+     has to stay a step stronger than the others in both themes. */
+  --sm-rule:#c9d6d5;--sm-rule-top:#8fb3ae;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a scaled-down
+   drawing is text under the floor. Below that the box pans, and the page never does. */
+.figure svg{display:block;width:100%;height:auto;min-width:56rem}
+.sm-box{fill:none;stroke:var(--line);stroke-width:1}
+.sm-name{fill:var(--ink);font-size:14px;font-weight:600}
+.sm-latest{fill:var(--muted);font-size:14px;font-weight:600}
+.sm-axis{fill:var(--muted);font-size:14px}
+.sm-rule{stroke:var(--sm-rule);stroke-width:1}
+.sm-rule-top{stroke:var(--sm-rule-top);stroke-width:1;stroke-dasharray:4 3}
+.sm-line{fill:none;stroke:var(--brand);stroke-width:2.5;stroke-linejoin:round;
+  stroke-linecap:round}
+.sm-dot{fill:var(--brand)}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.gaps{margin:.5rem 0 0;font-size:.9375rem;line-height:1.5}
+/* Only shown where the drawing cannot fit: a phone sees one column of panels and must be
+   told that the grid continues sideways, or it reads three groups and stops. */
+.hint{display:none;margin:.5rem 0 0;color:var(--muted);font-size:.875rem;line-height:1.5}
+@media (max-width:56rem){.hint{display:block}}
+.order{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.warn{margin:1rem 0 0;padding:.75rem 1rem;background:var(--bad-soft);border-radius:.5rem;
+  border:1px solid var(--bad);font-size:.9375rem;line-height:1.5}
+.warn h2{margin:0 0 .25rem;font-size:1rem;line-height:1.5rem;color:var(--bad)}
+.warn p{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  .warn{background:#fff}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band inverts. The gridlines and the scale ceiling need values that
+     read on a dark panel; the ceiling stays a step stronger than the grid. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    :root{--sm-rule:#2a4d5c;--sm-rule-top:#5f9aa8}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Saker i ko, per enhet og uke</h1>
+  <p class="sub">9 grupper, 10 perioder (2026-W24 til 2026-W33), alle på én skala</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 834 474" role="img" aria-labelledby="sm-t sm-d" preserveAspectRatio="xMinYMin meet">
+<title id="sm-t">Småflater</title>
+<desc id="sm-d">9 paneler over 10 perioder, alle tegnet på én skala fra 0 til 172.</desc>
+<g class="sm-panel" data-group="Enhet Fjell">
+<rect class="sm-box" x="44.0" y="0.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="56.0" y="20.0">Enhet Fjell</text>
+<text class="sm-latest" x="282.0" y="20.0" text-anchor="end">21</text>
+<line class="sm-rule-top" x1="56.0" y1="30.0" x2="282.0" y2="30.0"/>
+<line class="sm-rule" x1="56.0" y1="118.0" x2="282.0" y2="118.0"/>
+<polyline class="sm-line" points="156.4,110.3 181.6,109.8 206.7,109.3 231.8,108.3 256.9,107.8 282.0,107.3"/>
+<circle class="sm-dot" data-p="2026-W28" data-v="15" cx="156.4" cy="110.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="16" cx="181.6" cy="109.8" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="17" cx="206.7" cy="109.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="19" cx="231.8" cy="108.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="20" cx="256.9" cy="107.8" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="21" cx="282.0" cy="107.3" r="2.5"/>
+</g>
+<text class="sm-axis" x="36.0" y="35.0" text-anchor="end">172</text>
+<text class="sm-axis" x="36.0" y="123.0" text-anchor="end">0</text>
+<g class="sm-panel" data-group="Enhet Innafor">
+<rect class="sm-box" x="314.0" y="0.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="326.0" y="20.0">Enhet Innafor</text>
+<text class="sm-latest" x="552.0" y="20.0" text-anchor="end">33</text>
+<line class="sm-rule-top" x1="326.0" y1="30.0" x2="552.0" y2="30.0"/>
+<line class="sm-rule" x1="326.0" y1="118.0" x2="552.0" y2="118.0"/>
+<polyline class="sm-line" points="326.0,110.3 351.1,109.3 376.2,108.3 401.3,107.3 426.4,106.2 451.6,105.2 476.7,104.2 501.8,103.2 526.9,102.1 552.0,101.1"/>
+<circle class="sm-dot" data-p="2026-W24" data-v="15" cx="326.0" cy="110.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W25" data-v="17" cx="351.1" cy="109.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W26" data-v="19" cx="376.2" cy="108.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W27" data-v="21" cx="401.3" cy="107.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W28" data-v="23" cx="426.4" cy="106.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="25" cx="451.6" cy="105.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="27" cx="476.7" cy="104.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="29" cx="501.8" cy="103.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="31" cx="526.9" cy="102.1" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="33" cx="552.0" cy="101.1" r="2.5"/>
+</g>
+<g class="sm-panel" data-group="Enhet Kyst">
+<rect class="sm-box" x="584.0" y="0.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="596.0" y="20.0">Enhet Kyst</text>
+<text class="sm-latest" x="822.0" y="20.0" text-anchor="end">69</text>
+<line class="sm-rule-top" x1="596.0" y1="30.0" x2="822.0" y2="30.0"/>
+<line class="sm-rule" x1="596.0" y1="118.0" x2="822.0" y2="118.0"/>
+<polyline class="sm-line" points="596.0,83.2 621.1,86.3 646.2,89.9"/>
+<polyline class="sm-line" points="721.6,94.0 746.7,91.4 771.8,88.3 796.9,84.7 822.0,82.7"/>
+<circle class="sm-dot" data-p="2026-W24" data-v="68" cx="596.0" cy="83.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W25" data-v="62" cx="621.1" cy="86.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W26" data-v="55" cx="646.2" cy="89.9" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="47" cx="721.6" cy="94.0" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="52" cx="746.7" cy="91.4" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="58" cx="771.8" cy="88.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="65" cx="796.9" cy="84.7" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="69" cx="822.0" cy="82.7" r="2.5"/>
+</g>
+<g class="sm-panel" data-group="Enhet Midt">
+<rect class="sm-box" x="44.0" y="158.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="56.0" y="178.0">Enhet Midt</text>
+<text class="sm-latest" x="282.0" y="178.0" text-anchor="end">25</text>
+<line class="sm-rule-top" x1="56.0" y1="188.0" x2="282.0" y2="188.0"/>
+<line class="sm-rule" x1="56.0" y1="276.0" x2="282.0" y2="276.0"/>
+<polyline class="sm-line" points="56.0,263.2 81.1,264.2 106.2,264.2 131.3,263.2 156.4,263.7 181.6,264.2 206.7,263.2 231.8,263.7 256.9,264.2 282.0,263.2"/>
+<circle class="sm-dot" data-p="2026-W24" data-v="25" cx="56.0" cy="263.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W25" data-v="23" cx="81.1" cy="264.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W26" data-v="23" cx="106.2" cy="264.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W27" data-v="25" cx="131.3" cy="263.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W28" data-v="24" cx="156.4" cy="263.7" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="23" cx="181.6" cy="264.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="25" cx="206.7" cy="263.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="24" cx="231.8" cy="263.7" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="23" cx="256.9" cy="264.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="25" cx="282.0" cy="263.2" r="2.5"/>
+</g>
+<text class="sm-axis" x="36.0" y="193.0" text-anchor="end">172</text>
+<text class="sm-axis" x="36.0" y="281.0" text-anchor="end">0</text>
+<g class="sm-panel" data-group="Enhet Nord">
+<rect class="sm-box" x="314.0" y="158.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="326.0" y="178.0">Enhet Nord</text>
+<text class="sm-latest" x="552.0" y="178.0" text-anchor="end">141</text>
+<line class="sm-rule-top" x1="326.0" y1="188.0" x2="552.0" y2="188.0"/>
+<line class="sm-rule" x1="326.0" y1="276.0" x2="552.0" y2="276.0"/>
+<polyline class="sm-line" points="326.0,194.1 351.1,189.5 376.2,188.0 401.3,189.5 426.4,194.1 451.6,200.3 476.7,205.4 501.8,208.5 526.9,207.4 552.0,203.9"/>
+<circle class="sm-dot" data-p="2026-W24" data-v="160" cx="326.0" cy="194.1" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W25" data-v="169" cx="351.1" cy="189.5" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W26" data-v="172" cx="376.2" cy="188.0" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W27" data-v="169" cx="401.3" cy="189.5" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W28" data-v="160" cx="426.4" cy="194.1" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="148" cx="451.6" cy="200.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="138" cx="476.7" cy="205.4" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="132" cx="501.8" cy="208.5" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="134" cx="526.9" cy="207.4" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="141" cx="552.0" cy="203.9" r="2.5"/>
+</g>
+<g class="sm-panel" data-group="Enhet Ost">
+<rect class="sm-box" x="584.0" y="158.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="596.0" y="178.0">Enhet Ost</text>
+<text class="sm-latest" x="822.0" y="178.0" text-anchor="end">43</text>
+<line class="sm-rule-top" x1="596.0" y1="188.0" x2="822.0" y2="188.0"/>
+<line class="sm-rule" x1="596.0" y1="276.0" x2="822.0" y2="276.0"/>
+<polyline class="sm-line" points="596.0,232.0 621.1,234.6 646.2,236.1 671.3,239.7 696.4,241.2 721.6,244.8 746.7,245.3 771.8,249.9 796.9,252.0 822.0,254.0"/>
+<circle class="sm-dot" data-p="2026-W24" data-v="86" cx="596.0" cy="232.0" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W25" data-v="81" cx="621.1" cy="234.6" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W26" data-v="78" cx="646.2" cy="236.1" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W27" data-v="71" cx="671.3" cy="239.7" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W28" data-v="68" cx="696.4" cy="241.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="61" cx="721.6" cy="244.8" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="60" cx="746.7" cy="245.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="51" cx="771.8" cy="249.9" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="47" cx="796.9" cy="252.0" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="43" cx="822.0" cy="254.0" r="2.5"/>
+</g>
+<g class="sm-panel" data-group="Enhet Sor">
+<rect class="sm-box" x="44.0" y="316.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="56.0" y="336.0">Enhet Sor</text>
+<text class="sm-latest" x="282.0" y="336.0" text-anchor="end">85</text>
+<line class="sm-rule-top" x1="56.0" y1="346.0" x2="282.0" y2="346.0"/>
+<line class="sm-rule" x1="56.0" y1="434.0" x2="282.0" y2="434.0"/>
+<polyline class="sm-line" points="56.0,418.7 81.1,415.1 106.2,412.0 131.3,409.4 156.4,407.4 181.6,403.3 206.7,400.2 231.8,398.2 256.9,395.1 282.0,390.5"/>
+<circle class="sm-dot" data-p="2026-W24" data-v="30" cx="56.0" cy="418.7" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W25" data-v="37" cx="81.1" cy="415.1" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W26" data-v="43" cx="106.2" cy="412.0" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W27" data-v="48" cx="131.3" cy="409.4" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W28" data-v="52" cx="156.4" cy="407.4" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="60" cx="181.6" cy="403.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="66" cx="206.7" cy="400.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="70" cx="231.8" cy="398.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="76" cx="256.9" cy="395.1" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="85" cx="282.0" cy="390.5" r="2.5"/>
+</g>
+<text class="sm-axis" x="36.0" y="351.0" text-anchor="end">172</text>
+<text class="sm-axis" x="36.0" y="439.0" text-anchor="end">0</text>
+<g class="sm-panel" data-group="Enhet Utkant">
+<rect class="sm-box" x="314.0" y="316.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="326.0" y="336.0">Enhet Utkant</text>
+<text class="sm-latest" x="552.0" y="336.0" text-anchor="end">43</text>
+<line class="sm-rule-top" x1="326.0" y1="346.0" x2="552.0" y2="346.0"/>
+<line class="sm-rule" x1="326.0" y1="434.0" x2="552.0" y2="434.0"/>
+<polyline class="sm-line" points="326.0,398.2 351.1,399.7 376.2,401.3 401.3,402.8 426.4,404.3 451.6,405.9 476.7,407.4 501.8,408.9 526.9,410.5 552.0,412.0"/>
+<circle class="sm-dot" data-p="2026-W24" data-v="70" cx="326.0" cy="398.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W25" data-v="67" cx="351.1" cy="399.7" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W26" data-v="64" cx="376.2" cy="401.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W27" data-v="61" cx="401.3" cy="402.8" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W28" data-v="58" cx="426.4" cy="404.3" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="55" cx="451.6" cy="405.9" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="52" cx="476.7" cy="407.4" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="49" cx="501.8" cy="408.9" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="46" cx="526.9" cy="410.5" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="43" cx="552.0" cy="412.0" r="2.5"/>
+</g>
+<g class="sm-panel" data-group="Enhet Vest">
+<rect class="sm-box" x="584.0" y="316.0" width="250" height="132" rx="6"/>
+<text class="sm-name" x="596.0" y="336.0">Enhet Vest</text>
+<text class="sm-latest" x="822.0" y="336.0" text-anchor="end">49</text>
+<line class="sm-rule-top" x1="596.0" y1="346.0" x2="822.0" y2="346.0"/>
+<line class="sm-rule" x1="596.0" y1="434.0" x2="822.0" y2="434.0"/>
+<polyline class="sm-line" points="596.0,398.7 621.1,397.2 646.2,400.2 671.3,406.9 696.4,414.6 721.6,420.7 746.7,423.8 771.8,422.2 796.9,416.6 822.0,408.9"/>
+<circle class="sm-dot" data-p="2026-W24" data-v="69" cx="596.0" cy="398.7" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W25" data-v="72" cx="621.1" cy="397.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W26" data-v="66" cx="646.2" cy="400.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W27" data-v="53" cx="671.3" cy="406.9" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W28" data-v="38" cx="696.4" cy="414.6" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W29" data-v="26" cx="721.6" cy="420.7" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W30" data-v="20" cx="746.7" cy="423.8" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W31" data-v="23" cx="771.8" cy="422.2" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W32" data-v="34" cx="796.9" cy="416.6" r="2.5"/>
+<circle class="sm-dot" data-p="2026-W33" data-v="49" cx="822.0" cy="408.9" r="2.5"/>
+</g>
+<text class="sm-axis" x="0" y="466">2026-W24</text>
+<text class="sm-axis" x="834" y="466" text-anchor="end">2026-W33</text>
+</svg>
+    <figcaption>Hvert panel er én gruppe, og alle panelene bruker samme skala: 0 nederst, 172 øverst. Tallene står i hvert panel, så bildet er ikke den eneste lesningen.</figcaption>
+  </figure>
+  <p class="hint">Dra sidelengs i bildet for å se alle gruppene.</p>
+
+  <p class="summary">9 paneler på én skala. Høyest ligger Enhet Nord med 141, lavest Enhet Fjell med 21. Størst bevegelse har Enhet Sor, med 55 mellom sin laveste og sin høyeste periode.</p>
+  <p class="gaps">6 periode(r) i 2 panel(er) har ingen rad i dataene. De er tegnet som brudd, ikke som null.</p>
+  <p class="order">Panelene står i navnerekkefølge. Bytt med --order latest eller --order change.</p>
+
+
+  <h2 id="tbl-h">Tallene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Hver rad er én gruppe. «Perioder» viser hvor mange perioder gruppen faktisk har en rad for, av 10 på aksen.</caption>
+    <thead><tr>
+      <th scope="col">Gruppe</th>
+      <th scope="col" class="num">Første</th>
+      <th scope="col" class="num">Siste</th>
+      <th scope="col" class="num">Endring</th>
+      <th scope="col" class="num">Lavest</th>
+      <th scope="col" class="num">Høyest</th>
+      <th scope="col" class="num">Perioder</th>
+    </tr></thead>
+    <tbody>
+      <tr><th scope="row">Enhet Fjell</th><td class="num">15</td><td class="num">21</td><td class="num">+6</td><td class="num">15</td><td class="num">21</td><td class="num">6/10</td></tr>
+      <tr><th scope="row">Enhet Innafor</th><td class="num">15</td><td class="num">33</td><td class="num">+18</td><td class="num">15</td><td class="num">33</td><td class="num">10/10</td></tr>
+      <tr><th scope="row">Enhet Kyst</th><td class="num">68</td><td class="num">69</td><td class="num">+1</td><td class="num">47</td><td class="num">69</td><td class="num">8/10</td></tr>
+      <tr><th scope="row">Enhet Midt</th><td class="num">25</td><td class="num">25</td><td class="num">0</td><td class="num">23</td><td class="num">25</td><td class="num">10/10</td></tr>
+      <tr><th scope="row">Enhet Nord</th><td class="num">160</td><td class="num">141</td><td class="num">−19</td><td class="num">132</td><td class="num">172</td><td class="num">10/10</td></tr>
+      <tr><th scope="row">Enhet Ost</th><td class="num">86</td><td class="num">43</td><td class="num">−43</td><td class="num">43</td><td class="num">86</td><td class="num">10/10</td></tr>
+      <tr><th scope="row">Enhet Sor</th><td class="num">30</td><td class="num">85</td><td class="num">+55</td><td class="num">30</td><td class="num">85</td><td class="num">10/10</td></tr>
+      <tr><th scope="row">Enhet Utkant</th><td class="num">70</td><td class="num">43</td><td class="num">−27</td><td class="num">43</td><td class="num">70</td><td class="num">10/10</td></tr>
+      <tr><th scope="row">Enhet Vest</th><td class="num">69</td><td class="num">49</td><td class="num">−20</td><td class="num">20</td><td class="num">72</td><td class="num">10/10</td></tr>
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>Hvert panel er én gruppe. Alle panelene bruker samme skala, og skalaen står skrevet i hvert panel: gir du hvert panel sin egen akse, ser en gruppe som beveger seg mellom 4 og 8 lik ut som en som beveger seg mellom 400 og 800.</p>
+  <p>Manglende periode er et brudd i linjen, ikke en null. Filen har ingen skript: et filter ville lagt rutenettet på nytt, og rutenettet er påstanden.</p>
+  <p>Kilde: Syntetisk eksempeldata (ko.csv) · 84 rader · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

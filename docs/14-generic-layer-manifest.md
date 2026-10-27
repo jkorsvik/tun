@@ -1,5 +1,7 @@
 # Generic-layer manifest — what an external repo may vendor
 
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
 **Read this before copying anything from this repo into another one.** It exists because
 `docs/08-generic-artifact-model.md` decided *that* external tools should vendor the
 generic layer rather than restate it in prose; this file is the concrete list of *what*
@@ -14,8 +16,9 @@ here, no matter how reusable it looks at first glance.
 
 | File | What it is | Generic because |
 |---|---|---|
+| `tools/build_size.py` | The Tier 1 size budget: warn above 20 MB, fail above 50 MB, applied by every builder | The numbers come from what a document store and a mail gateway accept, not from dashboard vocabulary |
 | `tools/verify_standalone_core.py` | Verification: self-contained, size budget, unsubstituted `{{PLACEHOLDER}}` tokens, provenance block present, no literal `<script` text outside real script tags (docs/01 row 25), no `:target`-driven visibility (row 24), no scroll-persistent `sticky`/`fixed` positioning (row 26), console-clean render, screenshot | None of these checks reference dashboard DOM (`.kpi`, `.bar`, `#tbl`, `.chip`) — they check the *file*, not a template |
-| `plugins/eksempel/tokens/palette.css` | Eksempel AS brand colour tokens (Blue, Navy, etc.), invented for the fictional example brand | Colour values, not layout or component markup — usable by any Eksempel-AS-branded artefact |
+| `plugins/<your-brand>/tokens/palette.css` | Eksempel AS brand colour tokens (blue, Emerald, etc.), sourced from the Eksempel AS brandbook via `tun-presentation`'s SKILL.md | Colour values, not layout or component markup — usable by any Eksempel AS-branded artefact |
 | `tools/tokens/status-semantic.css` | Positive/negative/neutral status colours, WCAG-checked against white | Same reasoning — a status colour is not dashboard-specific, any artefact showing a delta or health state needs one |
 | `tools/tokens/theme-light.css` | Maps generic chrome roles (`--bg`, `--panel`, `--ink`, `--muted`, `--line`, `--brand`) onto the tokens above | The role names are generic UI chrome, not dashboard vocabulary |
 | `templates/_generic-provenance-block.html` | The provenance HTML-comment template, extracted from `templates/single-file-dashboard.html`, with the one dashboard-only line (`Rows inlined`) replaced by a free-form `{{ARTIFACT_SPECIFIC_LINE}}` a specialisation fills in | Every generated standalone artefact needs traceability, not just dashboards — see `AGENTS.md` rule "Provenance is mandatory" |
@@ -34,7 +37,7 @@ here, no matter how reusable it looks at first glance.
   a moving target.
 - Anything under `skills/tun-*` — those are this project's own RAIWork skills.
 
-## Vendoring convention
+## Vendoring convention (mirrors `prosessflyt-verktoy`'s existing pattern)
 
 An external repo that wants some of the files above:
 
@@ -45,9 +48,9 @@ An external repo that wants some of the files above:
    about generalising it here instead.
 3. Add a `VERSION.txt` inside `vendor/tun/` recording:
    ```
-   <commit-sha> (<your-forge>/<owner>/tun, <date>)
+   <commit-sha> (https://example.com/tun, <date>)
    ```
-   This repo has no tags yet, so pin to a commit SHA,
+   This repo has no tags yet (unlike `prosessflyt-verktoy`), so pin to a commit SHA,
    not a version number, until that changes.
 4. Re-sync manually when needed — there is no automation, deliberately (see `docs/08`,
    "External consumers": a submodule or live dependency would remove the drift but
@@ -57,4 +60,5 @@ An external repo that wants some of the files above:
 
 ## Change log
 
-- Manifest created at adoption of `docs/08-generic-artifact-model.md`.
+- 2026-09-10 — manifest created at adoption of `docs/08-generic-artifact-model.md`.
+  Initial vendoring consumer: `prosessflyt-verktoy`.

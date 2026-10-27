@@ -1,0 +1,58 @@
+# Strings for templates/timeline.html and tools/build_timeline.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# A timeline is a picture of when things happen, with the numbers behind it in a table.
+# The words here are the ones a reader needs to read a bar and to check it against a row.
+
+[nb]
+html_lang = nb
+caption = Hver linje er en rad fra kilden, plassert etter sin egen start og slutt på én tidsakse. Tabellen under har de samme tallene.
+head_table = Radene bak bildet
+table_caption = Samme rader som på tidslinjen, i samme rekkefølge. Her står datoene.
+col_task = Rad
+col_start = Start
+col_end = Slutt
+col_days = Dager
+col_group = Gruppe
+col_owner = Ansvarlig
+col_status = Status
+legend_today = I dag
+legend_row = Rad fra kilden
+svg_title = Tidslinje
+svg_desc = {n} rader fra {from} til {to}, hver plassert etter sin egen start og slutt.
+sub_line = {rows} rader · {from} til {to}
+footer_a = Selvstendig fil: alle radene ligger i filen, og ingenting hentes når den åpnes.
+footer_b = Ingen server, ingen innlogging.
+footer_built = Bygget
+unknown = ikke oppgitt
+source_line = {name} — {rows} rader, {from} til {to}
+ticks_days = dagsmerker
+ticks_weeks = ukemerker
+ticks_months = månedsmerker
+ticks_quarters = kvartalsmerker
+
+[en]
+html_lang = en
+caption = Each line is a row from the source, placed by its own start and end on one time axis. The table below holds the same numbers.
+head_table = The rows behind the picture
+table_caption = The same rows as on the timeline, in the same order. Here the dates are written out.
+col_task = Row
+col_start = Start
+col_end = End
+col_days = Days
+col_group = Group
+col_owner = Owner
+col_status = Status
+legend_today = Today
+legend_row = Row from the source
+svg_title = Timeline
+svg_desc = {n} rows from {from} to {to}, each placed by its own start and end.
+sub_line = {rows} rows · {from} to {to}
+footer_a = Self-contained file: every row is in the file, and nothing is fetched when it opens.
+footer_b = No server, no sign-in.
+footer_built = Built
+unknown = not stated
+source_line = {name} — {rows} rows, {from} to {to}
+ticks_days = day ticks
+ticks_weeks = week ticks
+ticks_months = month ticks
+ticks_quarters = quarter ticks

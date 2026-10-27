@@ -5,7 +5,6 @@
   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
   under terms of your choice, provided the Origin Notice is preserved.
   SPDX-License-Identifier: AGPL-3.0-or-later
-  Made with Tún, tun.community
 -->
 <figure class="lv" aria-label="Idéen på ett bilde, med roller du kan velge og en avspilling steg for steg">
 <input class="lv-r" type="radio" name="lv-lens" id="lv-all" checked>
@@ -17,6 +16,7 @@
 <input class="lv-r" type="radio" name="lv-host" id="lv-h-sp" aria-label="SharePoint">
 <input class="lv-r" type="radio" name="lv-host" id="lv-h-od" aria-label="OneDrive">
 <input class="lv-r" type="radio" name="lv-host" id="lv-h-teams" aria-label="Teams">
+<input class="lv-r" type="radio" name="lv-host" id="lv-h-conf" aria-label="Confluence">
 <input class="lv-r" type="radio" name="lv-host" id="lv-h-mail" aria-label="E-post">
 <input class="lv-r" type="radio" name="lv-host" id="lv-h-usb" aria-label="Minnepinne">
 <input class="lv-r" type="radio" name="lv-host" id="lv-h-sky" aria-label="Sky">
@@ -36,7 +36,7 @@
     <path d="M0,532 C120,518 210,546 330,534 C450,522 540,550 660,538 C780,526 880,550 1000,538 L1000,650 L0,650 Z" fill="#e9eeeb"/>
     <path d="M0,532 C120,518 210,546 330,534 C450,522 540,550 660,538 C780,526 880,550 1000,538" fill="none" stroke="#9db3aa" stroke-width="2"/>
     <text x="26" y="578" class="t-cap">VERTEN ER VALGFRI</text>
-    <text x="26" y="603" class="t-b"><tspan class="h-sp">SharePoint</tspan> · <tspan class="h-od">OneDrive</tspan> · <tspan class="h-teams">Teams</tspan> · <tspan class="h-sky">GCP</tspan> · <tspan class="h-sky">Azure</tspan> · <tspan class="h-sky">AWS</tspan></text>
+    <text x="26" y="603" class="t-b"><tspan class="h-sp">SharePoint</tspan> · <tspan class="h-od">OneDrive</tspan> · <tspan class="h-teams">Teams</tspan> · <tspan class="h-conf">Confluence</tspan> · <tspan class="h-sky">GCP</tspan> · <tspan class="h-sky">Azure</tspan> · <tspan class="h-sky">AWS</tspan></text>
     <text x="26" y="626" class="t-b"><tspan class="h-sky">Cloudflare</tspan> · <tspan class="h-sky">Vercel</tspan> · <tspan class="h-sky">Firebase</tspan> · <tspan class="h-usb">en minnepinne</tspan> · <tspan class="h-mail">en e-post</tspan></text>
   </g>
 
@@ -143,7 +143,7 @@
     <path d="M0,716 C80,706 150,730 230,720 C300,712 350,728 400,720 L400,860 L0,860 Z" fill="#e9eeeb"/>
     <path d="M0,716 C80,706 150,730 230,720 C300,712 350,728 400,720" fill="none" stroke="#9db3aa" stroke-width="2"/>
     <text x="20" y="760" class="t-cap">VERTEN ER VALGFRI</text>
-    <text x="20" y="786" class="t-b"><tspan class="h-sp">SharePoint</tspan> · <tspan class="h-od">OneDrive</tspan> · <tspan class="h-teams">Teams</tspan></text>
+    <text x="20" y="786" class="t-b"><tspan class="h-sp">SharePoint</tspan> · <tspan class="h-od">OneDrive</tspan> · <tspan class="h-teams">Teams</tspan> · <tspan class="h-conf">Confluence</tspan></text>
     <text x="20" y="810" class="t-b"><tspan class="h-sky">GCP</tspan> · <tspan class="h-sky">Azure</tspan> · <tspan class="h-sky">AWS</tspan> · <tspan class="h-sky">Cloudflare</tspan></text>
     <text x="20" y="834" class="t-b"><tspan class="h-sky">Vercel</tspan> · <tspan class="h-sky">Firebase</tspan> · <tspan class="h-usb">minnepinne</tspan> · <tspan class="h-mail">e-post</tspan></text>
   </g>
@@ -238,6 +238,7 @@
   </g>
 </svg>
 </div>
+<p class="lv-hint">Dra sidelengs i bildet for å se hele.</p>
 
 <p class="lv-cap" aria-hidden="true">
   <span class="c1">1 · Du skriver en oppskrift i Markdown.</span>
@@ -287,12 +288,13 @@
   <div class="lv-p lv-p-host">
     <h3>Verten</h3>
     <p class="lv-hosts" role="group" aria-label="Velg en vert">
-      <label for="lv-h-sp">SharePoint</label><label for="lv-h-od">OneDrive</label><label for="lv-h-teams">Teams</label><label for="lv-h-mail">E-post</label><label for="lv-h-usb">Minnepinne</label><label for="lv-h-sky">Sky</label>
+      <label for="lv-h-sp">SharePoint</label><label for="lv-h-od">OneDrive</label><label for="lv-h-teams">Teams</label><label for="lv-h-conf">Confluence</label><label for="lv-h-mail">E-post</label><label for="lv-h-usb">Minnepinne</label><label for="lv-h-sky">Sky</label>
     </p>
     <p class="lv-ht lv-ht-none">Velg en vert. Hver linje sier hva som er målt der, og når.</p>
     <p class="lv-ht lv-ht-sp">Lenken til selve filen laster den ned. I forhåndsvisningen kjører filen, men ingenting kan lastes ned eller skrives ut fra den. Målt 2026-10-08.</p>
     <p class="lv-ht lv-ht-od">Fra en synkronisert mappe åpnes filen fra disk og virker fullt. En OneDrive-lenke i en e-post virket på PC, men på mobil reagerte ingenting. Målt september 2026, på én telefon.</p>
     <p class="lv-ht lv-ht-teams">En lenke limt inn i en melding og åpnet fra forhåndsvisningskortet virket på PC og mobil. Den rene tekstlenken under kortet viste kildekoden. Målt september 2026.</p>
+    <p class="lv-ht lv-ht-conf">En fil i Atlassian Artifacts kjører i en sandkasse, alene og inne i en Confluence-side. Data i en fil ved siden av lastes ikke der, og ingenting kan lagres mellom besøk. En publisert fil kan alle i organisasjonen åpne med lenken. Målt 2026-10-13.</p>
     <p class="lv-ht lv-ht-mail">Et vedlegg i e-postappens forhåndsvisning på iPhone kjørte ikke kode, men den statiske siden sto og kunne leses. Bygg filen så den virker uten kode. Målt 2026-09-28.</p>
     <p class="lv-ht lv-ht-usb">Lastet ned og åpnet fra disk, uten nett, virket filen på PC og mobil. Det er grunntilfellet. Alt annet er en bonus.</p>
     <p class="lv-ht lv-ht-sky">Et statisk nettsted serverer filen som den er, slik som denne siden. Mål det som faktisk leveres: et kantnettverk kan legge et skript inn i siden uten at du ser det.</p>

@@ -1,5 +1,7 @@
 # Way of Working
 
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
 Short on purpose. These are the habits that keep this project simple, portable and
 trustworthy — plus the two power tools worth knowing.
 
@@ -45,9 +47,10 @@ trustworthy — plus the two power tools worth knowing.
    no `git push origin HEAD:main`, no "it's just a typo fix". A pull request is how a
    change becomes reviewable; a direct push skips the only review this repo has.
 
-   This is a rule because the failure is silent. A `git add` on the wrong branch, or in a
-   shared clone, can sweep unrelated files onto `main`, and nobody notices until after the
-   merge.
+   This is a rule because it has already gone wrong twice, both times silently. Commit
+   `0517006` untracked `work/` and `uv.lock` *after* they were swept onto `main` by a
+   `git add` on the wrong branch, and a parallel session's scratch directory was once
+   committed and merged from a shared clone. Neither was noticed until after the merge.
 
    Enforced locally by two hooks, both enabled by `python3 setup.py --hooks`:
 
@@ -62,28 +65,34 @@ trustworthy — plus the two power tools worth knowing.
    Two honest limits. `--no-verify` bypasses both, and a hook only protects a clone that
    ran `setup.py --hooks`; a fresh clone has no protection at all until it does.
    **Branch protection on the forge is the real control**, because it applies to every
-   clone and to the web UI. Check whether `main` is protected on your forge; if it is not,
-   the hooks are the only thing there is.
+   clone and to the web UI. As of this writing `main` is *not* protected
+   (`GET /repos/.../branches/main/protection` → 404 "Branch not protected"), so the hooks
+   are currently the only thing there is.
 
 ## Tooling preferences
 
 - **Python → `uv`. JS → `bun`. Never `pip`, never `npm`.** Not a preference — a rule.
-- **Public registries (PyPI, npm) are the default package source.** No internal mirror
-  is assumed.
+- **Eksempel AS Nexus is configured as an extra package source** in `pyproject.toml` and
+  `bunfig.toml`. Internal, fast, and works when public registries are blocked.
+  (Verified from a Eksempel AS laptop. It does *not* work from GitHub CI runners — those are
+  outside the network.)
 - The Tier 1 path needs neither tool — `tools/` is stdlib-only on purpose. A
   prerequisite is a failure on the main path.
 
-## Two gates: the pre-commit hook before the commit, CI on every pull request
+## CI runs only on the public repository. Here, the pre-commit hook is the whole gate.
 
-`.github/workflows/gates.yml` runs every gate on GitHub-hosted runners for each pull
-request, including every documented example check in Chromium, Firefox and WebKit. Its
-job carries `if: github.server_url == 'https://github.com'`, so on a host without hosted
-runners it shows as skipped, never as green, and never waits for a runner. A workflow that
-never executes but reports success would be worse than none, because it looks like a gate.
-Where runners may be disabled, probe that rather than assume it: a run that no runner
-picks up produces zero steps and no logs, and it still shows up in the run list.
+GHE Actions runners are org-disabled for this repo (see `docs/08-generic-artifact-model.md`).
+This was probed, not assumed: run `00000000`, job `probe`, `runs-on: ubuntu-latest`, ran for
+three seconds, produced zero steps and no logs, because no runner ever picked it up. The
+repo has 0 registered runners. Every other workflow run in its history is GitHub Pages,
+which uses its own builder.
 
-CI sees a mistake only after the push. The hook stops it before the commit:
+`.github/workflows/gates.yml` runs every gate on GitHub-hosted runners, for the public
+repository. Its job carries `if: github.server_url == 'https://github.com'`, so on this host
+it shows as skipped, never as green, and never waits for a runner. A workflow that never
+executes but reports success would be worse than none, because it looks like a gate.
+
+What exists instead:
 
 ```
 python3 setup.py --hooks     # once per clone — sets core.hooksPath to tools/hooks
@@ -96,8 +105,9 @@ only when their inputs are staged — the verify-tool and skill-installer suites
 `core.hooksPath` keeps the hooks tracked in the repo, so a pull updates them and there is no
 copy in `.git/hooks` to go stale.
 
-Two of these are about data rather than layout. Real cases stay local and never enter
-git; only method, scripts, templates and tests on synthetic data belong here.
+Two of these are about data rather than layout, and they exist because of a specific
+accident: one `git add -A` put a real survey export on main, including respondent e-mail
+addresses. See `docs/20-publication-readiness.md`.
 
 ```
 python3 tools/check_no_real_data.py   # redacted detail for the data gate
@@ -111,8 +121,8 @@ Two consequences worth saying out loud:
 - **`--no-verify` has nothing behind it.** On a repo with CI, bypassing a hook means the
   server still checks. Here it means nothing checks.
 
-If a gate ever needs to run server-side, the route is an in-network runner, not a public
-hosted runner such as `ubuntu-latest`.
+If a gate ever needs to run server-side, the route is an ephemeral in-VPC runner
+(the `actions-runners` pattern), not `ubuntu-latest`.
 
 ## `hotshot` — the full pipeline in one word
 

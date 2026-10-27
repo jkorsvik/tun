@@ -83,8 +83,9 @@ needs only Python. You can run the tree gates by hand at any time:
 python3 tools/check_tree.py
 ```
 
-CI runs every gate on each pull request (`.github/workflows/gates.yml`). The hook catches
-the same mistakes earlier, before the commit, but only in a clone that turned it on.
+The public repository runs every gate on each pull request
+(`.github/workflows/gates.yml`). The internal host has no runners, so there the hook is the
+whole gate, and it only protects a clone that turned it on.
 
 ## Pull requests
 

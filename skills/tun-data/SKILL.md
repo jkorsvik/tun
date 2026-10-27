@@ -1,10 +1,13 @@
 ---
 name: tun-data
 description: Refresh the data in an existing standalone dashboard, or add a new data source to it. Converts Excel to a usable format, re-extracts from the source, and rebuilds the file in place so existing share links keep working. Use when dashboard numbers are stale, someone asks to update or refresh a dashboard, or wants to point it at different data.
-license: AGPL-3.0-or-later
 ---
 
 # Refresh or repoint a dashboard's data
+
+**Tier and cost, for the first reply:** Tier 1, no approvals and no licence. A refresh
+writes new numbers into a folder that already has its audience; the cost is that the old
+numbers are replaced, so rebuild rather than hand-edit.
 
 **Check first whether the user even needs you.** A paired dashboard can be updated with no
 tooling at all, and if that fits, say so instead of doing it for them — it makes them
@@ -30,7 +33,7 @@ raw CSV between backticks:
 window.DASHBOARD_CSV = `Maaned,Region,Belop
 2026-01,Oslo,1500000
 2026-02,Bergen,2500000`;
-window.DASHBOARD_META = {generated:"2026-03-01", source:"manuelt vedlikeholdt", rows:2};
+window.DASHBOARD_META = {generated:"2026-09-04", source:"manuelt vedlikeholdt", rows:2};
 ```
 
 Paste the new CSV between the backticks, save. That's the whole update.
@@ -103,6 +106,8 @@ python3 tools/build_dashboard.py \
   --out <same/path/dashboard.html>
 ```
 
+On Windows, `python3` is `py -3`: `python3` is not a command there unless the Microsoft Store alias is installed. The rest of the line is the same.
+
 Overwriting the same path is deliberate: the share link keeps working and SharePoint
 keeps the old version in its version history.
 
@@ -127,10 +132,10 @@ Copy over the published copy (`tun-publish`), same path. Then tell the user what
 the new "as of" date is, because that is the only thing that visibly changed.
 
 **Published in Atlassian Artifacts?** Then a refresh is a new version on the same
-artifact: follow `tun-publish`, *Destination C*, steps 2 to 7, and pass the artifact's
+published copy: follow `tun-publish`, *Destination C*, steps 2 to 7, and pass the published file's
 `id` (the path segment after `/artifacts/` in its link) to `publishArtifact`. The link,
 the shares and any Confluence embed stay as they are. The no-tooling routes above do not
-apply there: an artifact is one file, so a swapped `data.js` never reaches it.
+apply there: the published copy is one file, so a swapped `data.js` never reaches it.
 
 ## Adding a new data source
 

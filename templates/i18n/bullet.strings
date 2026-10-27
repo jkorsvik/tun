@@ -1,0 +1,73 @@
+# Strings for templates/bullet.html and tools/build_bullet.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# One row per unit: a value, a target, and the gap between them, on a shared axis.
+
+[nb]
+html_lang = nb
+svg_title = Verdi mot mål
+svg_desc = {n} enheter, hver med verdien av {value} og målet i {target}, tegnet på én akse.
+sub_line = {n} enheter mot mål, der {direction} er bedre
+dir_up = høyere
+dir_down = lavere
+caption = Én rad per enhet. Den fargerike linjen er verdien, den loddrette streken er målet, og tallet til høyre er verdien, målet og avviket mellom dem.
+summary_line = {n} enheter: {behind} ligger bak målet, {at} står på det og {ahead} ligger foran.
+summary_worst = Lengst bak ligger {label}, {gap} fra målet.
+summary_none = Ingen ligger bak målet.
+summary_target_note = Målet er hentet fra {note}.
+summary_no_target_note = Målets opphav er ikke oppgitt; si hvor det kommer fra, så kan noen være uenig i målet i stedet for i bildet.
+note_direction = Retningen er oppgitt, ikke gjettet: en økning er godt for dekning og dårlig for ventetid, og en side som ikke vet hvilken vei som er bedre, kan ikke si hvem som ligger bak.
+note_target = Målet er en beslutning, ikke en måling. Streken viser hvor grensen ble satt, og tabellen viser hva avviket er, så en leser kan være uenig i målet og ikke i regnestykket.
+note_gap = Avviket er et tall med fortegn i samme enhet som målet, og fortegnet betyr hvor langt foran eller bak målet enheten ligger. Fargen oppsummerer, tallet svarer.
+note_zero = Aksen starter på null når alle verdiene er positive, fordi en søyle som er kuttet i bunnen, overdriver forskjellen. Er det negative verdier i uttrekket, ligger null inne i aksen, og det ser en leser.
+note_order = Radene står {rule}.
+order_gap = sortert etter avvik, lengst bak øverst
+order_name = sortert etter navn
+head_table = Tallene bak bildet
+table_caption = Én rad per enhet: verdi, mål, avvik med fortegn, og om enheten ligger foran, på eller bak målet.
+col_label = Enhet
+col_value = Verdi
+col_target = Mål
+col_gap = Avvik
+col_state = Status
+state_ahead = foran målet
+state_behind = bak målet
+state_at = på målet
+source_line = Kilde: {name} · {rows} rader
+footer_a = Bildet sammenligner hver enhet med sitt eget mål på én felles akse. Det sier ikke hvorfor en enhet ligger bak, og en rød linje er ikke en forklaring.
+footer_b = Verdi, mål og avvik står i tabellen, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.
+footer_built = Bygget
+
+[en]
+html_lang = en
+svg_title = Value against target
+svg_desc = {n} units, each with the value of {value} and the target in {target}, drawn on one axis.
+sub_line = {n} units against target, where {direction} is better
+dir_up = higher
+dir_down = lower
+caption = One row per unit. The coloured line is the value, the upright mark is the target, and the figures on the right are the value, the target and the gap between them.
+summary_line = {n} units: {behind} sit behind the target, {at} sit on it and {ahead} are ahead.
+summary_worst = Furthest behind is {label}, {gap} from the target.
+summary_none = None sit behind the target.
+summary_target_note = The target comes from {note}.
+summary_no_target_note = The origin of the target is not stated; say where it comes from, so a reader can disagree with the target rather than with the picture.
+note_direction = The direction is stated, not guessed: a rise is good for coverage and bad for waiting time, and a page that does not know which way is better cannot say who is behind.
+note_target = A target is a decision, not a measurement. The mark shows where the boundary was set and the table shows the gap, so a reader can disagree with the target and not with the arithmetic.
+note_gap = The gap is a signed number in the unit of the target, and the sign says how far ahead or behind the unit sits. The colour summarises; the number answers.
+note_zero = The axis starts at zero when every value is positive, because a bar cut off at the bottom overstates a difference. When the extract holds negative values, zero sits inside the axis, and a reader can see that.
+note_order = The rows are {rule}.
+order_gap = sorted by gap, furthest behind first
+order_name = sorted by name
+head_table = The numbers behind the picture
+table_caption = One row per unit: value, target, the gap with its sign, and whether the unit is ahead, on or behind the target.
+col_label = Unit
+col_value = Value
+col_target = Target
+col_gap = Gap
+col_state = State
+state_ahead = ahead of target
+state_behind = behind target
+state_at = on target
+source_line = Source: {name} · {rows} rows
+footer_a = The picture compares each unit with its own target on one shared axis. It does not say why a unit is behind, and a red line is not an explanation.
+footer_b = Value, target and gap are in the table, so the picture can be checked instead of trusted. The file carries no script.
+footer_built = Built

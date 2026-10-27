@@ -28,6 +28,10 @@
   --palette-primary:         #2B4C7E;  /* primary data colour, links, focus */
   --palette-primary-dark:    #1B3559;  /* header background */
   --palette-primary-darkest: #0E1C2E;  /* darkest surface */
+  --palette-primary-on-dark: #9CC0E8;  /* primary data colour on a dark surface: 6.54:1 on
+                                          #1B3559, 9.08:1 on #0E1C2E. A lightened slate, not
+                                          an inversion: the hue is kept so a chart's primary
+                                          series is recognisably the same series in both themes */
   --palette-accent:          #B8860B;  /* secondary series, decorative only */
   --palette-accent-light:    #E8D48B;  /* highlight on dark */
   --palette-on-dark:         #F7F5EF;  /* text on a dark surface */

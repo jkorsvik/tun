@@ -24,7 +24,7 @@ ImportError deterministically, so the negative path is tested either way.
 
 Scope is deliberately this one property. The wider gate work — telling a local sidecar
 apart from a remote dependency, and not counting a commented-out tag as either — is
-covered by its own 26-assertion suite.
+still open on PR #28 with its own 26-assertion suite.
 
 Stdlib only, like the rest of the repo. Touches nothing outside a temp directory.
 

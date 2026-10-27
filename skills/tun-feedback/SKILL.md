@@ -53,6 +53,8 @@ python3 tools/tun_feedback.py append --skill tun-new --kind bug --severity mediu
   --artefact <path> --dry-run
 ```
 
+On Windows, `python3` is `py -3`: `python3` is not a command there unless the Microsoft Store alias is installed. The rest of the line is the same.
+
 Paste the printed record into the reply in full. Then run the same command without
 `--dry-run`. Write only what the user typed: name, e-mail and machine name stay out unless
 they wrote them into the text themselves. The tool adds the OS and the Tún version. The

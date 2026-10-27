@@ -1,8 +1,7 @@
 # 17 — A day board for an organisation that runs three régimes with three owners
 
-A pupil-transport day overview for **Eksempelskolen** in **Eksempelkommune**, built as a
-Tier 1 **paired** artefact: `oversikt.html` plus a sibling `data.js`. The scenario is
-invented. Both names are fictional, and no real school or municipality is behind it.
+A pupil-transport day overview for **Eksempelskolen** in **Eksempelkommune**, both
+fictional, built as a Tier 1 **paired** artefact: `oversikt.html` plus a sibling `data.js`.
 
 The example exists to answer a harder question than "can we draw a table". The
 organisation runs **three transport régimes with three different owners**, and an
@@ -10,9 +9,8 @@ overview that flattens them into one list is wrong no matter how good it looks. 
 plus the fact that the file is a *view* while the real editor lives elsewhere, is what is
 being demonstrated.
 
-It is also the repository's only example written as if for a **third party**: in the
-scenario the board belongs to someone whose brand this repository does not have. That
-matters for branding and provenance, which is why §5 exists.
+It is also the repository's only example whose subject is **not** a tenant of the
+platform this repository serves. That turns out to matter, and it is why §5 exists.
 
 ## All data is synthetic, and the build proves it
 
@@ -83,7 +81,7 @@ Verified by mutation, not by argument:
 | `Dato` | ISO `åååå-mm-dd` in the file, displayed `dd.mm.åååå` (docs/11 §9) |
 | `ElevKode` | `ELEV-01` … `ELEV-14`. Synthetic, never initials |
 | `Retning` | `Til skole` \| `Fra skole` \| `Fra SFO` |
-| `Ordning` | `Grunnskole drosje` \| `langdagSFO TT-kort` \| `VGS TT-kort` |
+| `Ordning` | `1-10 drosjesentral` \| `heldagsSFO TT-kort` \| `VGS TT-kort` |
 | `Planlagt` | `tt:mm` |
 | `Bil` | `OT-nn` / `TT-nn`, or `Ikke bestilt` / `Avventer TT-kort` |
 | `Ledsager` | `Ja` \| `Nei` \| `Vurderes` |
@@ -110,6 +108,12 @@ python3 examples/17-multi-regime-day-board/build_day_board.py
 #   uv sync --extra verify && uv run playwright install chromium
 uv run python tools/verify_dashboard.py examples/17-multi-regime-day-board/oversikt.html
 uv run python examples/17-multi-regime-day-board/verify_day_board.py
+
+# The chart is one drawing scaled to the card, so below a tablet its axis labels are
+# smaller than the 14 px floor; at 1024 px and wider every text clears it, and the
+# overflow and touch checks run at every viewport regardless.
+uv run --extra verify python tools/verify_viewports.py \
+  examples/17-multi-regime-day-board/oversikt.html --text-floor 14 --text-floor-above 1024
 ```
 
 Last run: repo gate **PASS**, example verifier **91 checks, 0 failures**.
@@ -169,9 +173,8 @@ plugin's, and not the core one either.
 
 docs/22 describes two cases: core ships a neutral palette in
 `tools/tokens/palette-neutral.css`, and a brand plugin may provide its own. Both assume
-the artefact belongs to the organisation whose repository this is. **In this scenario it
-does not.** It is built for a third party whose brand this repository does not have, which
-is the general case for anyone who uses the toolkit on someone else's behalf.
+the artefact belongs to the organisation whose repository this is. **This artefact does
+not.** It belongs to a municipality that is not a tenant of this platform.
 
 So loading either palette would dress one organisation's artefact in another
 organisation's colours. That is a licensing question wearing a styling question's
@@ -195,9 +198,9 @@ leaving a visible gap.
 
 ### How the leak check avoids going stale
 
-The obvious way to write this check is to list one brand's hex values inline. That is
-wrong twice over: it goes stale the moment a palette is edited, and it only ever tests the
-one brand somebody typed out.
+The obvious way to write this check is to list one organisation's hex values inline. The
+earlier version did, with nine of them, and it was wrong twice over: it goes stale the
+moment a palette is edited, and it only ever tests the one brand somebody typed out.
 
 `palette_values()` reads every palette the repository ships instead — `tools/tokens/*.css`
 and `plugins/*/tokens/*.css` — and asserts that none of their non-greyscale values appears
@@ -229,15 +232,17 @@ and reward silence.
 - **Row-level access control.** Everyone who can open the file sees all 84 rows. If
   different readers must see different pupils, this pattern is the wrong tool and the
   answer is a real reporting product with a security model.
-- **Any other tenant's constraints.** Every row in `docs/01-tenant-constraints.md` was
-  measured against one tenant. A different organisation runs a different tenant with
-  different settings. So **nothing in the quirk log is known to hold for a third party.**
-  Re-measure before promising anything, rather than assuming the constraints travel.
+- **Any real tenant's constraints.** Every row in `docs/01-tenant-constraints.md` was
+  measured against the tenant this repository's authors can reach. Eksempelkommune is
+  fictional, and a real municipality would be running a different tenant with different
+  settings. So **nothing in the quirk log is known to hold for the organisation in this
+  example.** Re-measure before promising anything, rather than assuming the constraints
+  travel.
 
 ## Open items
 
 1. The palette slot holds placeholders. A real rollout replaces those nine values, and
-   nothing else in the stylesheet, from the owner's own brand guidelines.
+   nothing else in the stylesheet, from the tenant's own design manual.
 2. Mobile is reviewed at 390 px from screenshots, not on a physical device.
 3. The source for the régime tables is fictional. A real deployment must re-derive those
    six columns from the organisation's own published routines, and keep the "says

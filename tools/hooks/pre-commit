@@ -11,14 +11,17 @@
 # Why this exists
 # ---------------
 # Rows 24 and 26 of docs/01-tenant-constraints.md were measured against the real tenant,
-# written down, and then broken by four shipped files. The checks that would have
+# written down, and then broken by four shipped files (#50). The checks that would have
 # caught them already existed in tools/verify_standalone_core.py. Nothing ran them. This
 # is the thing that runs them.
 #
-# It is NOT a substitute for CI. CI (.github/workflows/gates.yml) runs every gate on each
-# pull request; this hook stops a mistake earlier, before the commit, and protects only
-# clones that ran `setup.py --hooks`. Treat a green commit as evidence about this machine,
-# not about the repo.
+# It is NOT a substitute for CI. The public repository runs every gate on each pull request
+# (.github/workflows/gates.yml), but this host has no CI to fall back on: GHE Actions
+# runners are org-disabled (docs/08-generic-artifact-model.md), and the probe that proved
+# it is a probe run — job `probe`, labels ["ubuntu-latest"], three seconds, zero steps,
+# no runner ever picked it up. So this hook is the only automatic gate that exists here,
+# and it protects only clones that ran `setup.py --hooks`. Treat a green commit as
+# evidence about this machine, not about the repo.
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel)
@@ -87,37 +90,12 @@ echo "pre-commit: tenant-constraint gates"
 # --- always: fast (well under a second) and covers every tracked file -----------------
 # check_tree.py runs the real-data gate as well as the row gates, so there is one command
 # here rather than two that could drift apart.
-run "tree gates (rows 24/25/26, data, core/plugin boundary)" \
-    "$PY" tools/check_tree.py --quiet
-
-run "gate unit tests + mutation pass" \
-    "$PY" tests/test_row_24_26_checks.py
-run "real-data gate tests + mutation pass" \
-    "$PY" tests/test_no_real_data_gate.py
-run "core/plugin boundary tests" \
-    "$PY" tests/test_core_boundary_gate.py
-# The hooks check themselves: pre-push once shipped without its execute bit, which git
-# ignores in silence. Asserting the mode in the index is the only reliable signal.
-run "hooks are live (executable, and still refusing)" \
-    "$PY" tests/test_hooks_are_live.py
-run "token contract (slots, discovery, load order)" \
-    "$PY" tests/test_token_contract.py
-run "licence headers (the Exception covers only files that state it)" \
-    "$PY" tests/test_licence_headers.py
-run "findings index (every row still points at its text)" \
-    "$PY" tests/test_findings_index.py
-run "builder provenance (no OS user name, documented commands pass a role)" \
-    "$PY" tests/test_builder_provenance.py
-run "cube reproducibility (same data, same bytes, any Python build)" \
-    "$PY" tests/test_cube_reproducible.py
-# A strict harness drops a skill whose frontmatter is not strict YAML, in silence.
-run "skill frontmatter (Agent Skills spec, strict YAML)" \
-    "$PY" tests/test_skill_frontmatter.py
-# Every built example must carry the Origin Notice, or the Exception does not cover it.
-run "origin notice (every built example names Tún and tun.community)" \
-    "$PY" tests/test_origin_notice.py
-run "export-clean gate tests (denylist, manifests, binaries)" \
-    "$PY" tests/test_export_clean_gate.py
+# The always-on set lives in tools/check_all.py, next to the full list (ROADMAP C1, C3):
+# the same eleven gates as before, run at the same time instead of one after another.
+# The list is named there rather than here so a suite cannot be added to `tests/` and
+# silently left out of the hook, and check_all.py refuses to start if one of the eleven
+# has gone missing.
+run "always-on gates (11 suites, in parallel)" "$PY" tools/check_all.py --fast
 
 # --- only when their inputs are staged, to keep the hook worth running ----------------
 if printf '%s\n' "$STAGED" | grep -q '^tools/'; then
@@ -130,6 +108,10 @@ if printf '%s\n' "$STAGED" | grep -qE '^(setup\.py|skills/)'; then
     run "skill installer (setup.py or skills/ changed)" "$PY" tests/test_skill_links.py
     run "setup.py browser probe (setup.py or skills/ changed)" \
         "$PY" tests/test_setup_browser_probe.py
+    # The suite that walks setup.py's first run was not here at all: a change to what the
+    # first run installs passed the hook with nothing checking it. It finishes in under a
+    # second, so it costs less to run than to notice missing.
+    run "setup.py first run (setup.py or skills/ changed)" "$PY" tests/test_setup_first_run.py
 fi
 
 # --- state the gap rather than paper over it ------------------------------------------
@@ -151,8 +133,8 @@ pre-commit: BLOCKED — a gate failed.
   Fix the file, or if the failure is genuinely accepted debt, add it to KNOWN_DEBT
   in tools/tree_scan.py with a reason and an issue reference.
 
-  'git commit --no-verify' bypasses this. It is a real option: CI still checks the
-  pull request, but only after the push.
+  'git commit --no-verify' bypasses this. It is a real option, but on the internal host
+  no CI stands behind it, so nothing else catches the mistake before it reaches main.
 MSG
     exit 1
 fi

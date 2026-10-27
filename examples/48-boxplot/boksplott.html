@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Saksbehandlingstid per enhet</title>
+<!--
+  Saksbehandlingstid per enhet
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (saksbehandlingstid.csv)
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Fagavdelingen
+    Made with   : Tún - tun.community
+    Records     : 341 observations, drawn as one box per group
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: the spread of one measure across many groups, on one axis, with the
+  number of observations printed beside each group.
+
+  What it is NOT: a picture of any single group's shape. A box hides whether a group is one
+  peak or two, and the page says so.
+
+  There is no script in this file.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:58rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:58rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a scaled-down
+   drawing is text under the floor. Below that the box pans, and the page never does. */
+.figure svg{display:block;width:100%;height:auto;min-width:47.5rem}
+.bx-grid{stroke:var(--rule);stroke-width:1}
+.bx-tick{fill:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.bx-axis-title{fill:var(--ink);font-size:14px;font-weight:600}
+.bx-name{fill:var(--ink);font-size:14px}
+/* The box is the quartile range, the median is a line inside it, and the whisker is a bare
+   line with caps, so the three readings are three shapes and not three shades. */
+.bx-box{fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5}
+.bx-median{stroke:var(--brand-dark);stroke-width:3}
+.bx-whisker{stroke:var(--brand);stroke-width:1.5}
+.bx-cap{stroke:var(--brand);stroke-width:1.5}
+.bx-outlier{fill:var(--brand);stroke:var(--panel);stroke-width:1}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.notes{margin:.75rem 0 0;padding-left:1.25rem;font-size:.9375rem;line-height:1.5}
+.notes li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+footer{max-width:58rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark is a SCREEN choice and paper is white, so this block is scoped to screen: without
+     the guard it would come after the print rule above and paint the ink light on a printed
+     white page. --brand-dark is the darkest surface in the dark theme, so the median line and
+     the band that reads white-on-ocean in light both need the theme's own ink. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    .bx-median{stroke:var(--ink)}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Saksbehandlingstid per enhet</h1>
+  <p class="sub">8 grupper, 341 observasjoner av Dager</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 760 400" role="img" aria-labelledby="bx-t bx-d">
+<title id="bx-t">Boksplott</title>
+<desc id="bx-d">8 grupper, fordelingen av Dager i hver, tegnet på én akse.</desc>
+<line class="bx-grid" x1="168.00" y1="26" x2="168.00" y2="354"/>
+<text class="bx-tick" x="168.00" y="374" text-anchor="middle">4,24</text>
+<line class="bx-grid" x1="307.50" y1="26" x2="307.50" y2="354"/>
+<text class="bx-tick" x="307.50" y="374" text-anchor="middle">16,12</text>
+<line class="bx-grid" x1="447.00" y1="26" x2="447.00" y2="354"/>
+<text class="bx-tick" x="447.00" y="374" text-anchor="middle">28,00</text>
+<line class="bx-grid" x1="586.50" y1="26" x2="586.50" y2="354"/>
+<text class="bx-tick" x="586.50" y="374" text-anchor="middle">39,88</text>
+<line class="bx-grid" x1="726.00" y1="26" x2="726.00" y2="354"/>
+<text class="bx-tick" x="726.00" y="374" text-anchor="middle">51,76</text>
+<text class="bx-name" x="156" y="59.00" text-anchor="end">Øst</text>
+<line class="bx-whisker" x1="188.67" y1="54.00" x2="235.64" y2="54.00"/>
+<line class="bx-cap" x1="188.67" y1="48.00" x2="188.67" y2="60.00"/>
+<line class="bx-cap" x1="235.64" y1="48.00" x2="235.64" y2="60.00"/>
+<rect class="bx-box" data-group="Øst" x="200.41" y="44.00" width="23.48" height="20"/>
+<line class="bx-median" x1="212.15" y1="44.00" x2="212.15" y2="64.00"/>
+<circle class="bx-outlier" data-group="Øst" cx="376.55" cy="54.00" r="3"/>
+<text class="bx-name" x="156" y="99.00" text-anchor="end">Nord</text>
+<line class="bx-whisker" x1="200.41" y1="94.00" x2="247.38" y2="94.00"/>
+<line class="bx-cap" x1="200.41" y1="88.00" x2="200.41" y2="100.00"/>
+<line class="bx-cap" x1="247.38" y1="88.00" x2="247.38" y2="100.00"/>
+<rect class="bx-box" data-group="Nord" x="212.15" y="84.00" width="23.48" height="20"/>
+<line class="bx-median" x1="223.89" y1="84.00" x2="223.89" y2="104.00"/>
+<circle class="bx-outlier" data-group="Nord" cx="411.77" cy="94.00" r="3"/>
+<circle class="bx-outlier" data-group="Nord" cx="423.52" cy="94.00" r="3"/>
+<circle class="bx-outlier" data-group="Nord" cx="435.26" cy="94.00" r="3"/>
+<text class="bx-name" x="156" y="139.00" text-anchor="end">Trøndelag</text>
+<line class="bx-whisker" x1="212.15" y1="134.00" x2="270.86" y2="134.00"/>
+<line class="bx-cap" x1="212.15" y1="128.00" x2="212.15" y2="140.00"/>
+<line class="bx-cap" x1="270.86" y1="128.00" x2="270.86" y2="140.00"/>
+<rect class="bx-box" data-group="Trøndelag" x="220.96" y="124.00" width="38.16" height="20"/>
+<line class="bx-median" x1="241.51" y1="124.00" x2="241.51" y2="144.00"/>
+<circle class="bx-outlier" data-group="Trøndelag" cx="423.52" cy="134.00" r="3"/>
+<circle class="bx-outlier" data-group="Trøndelag" cx="470.48" cy="134.00" r="3"/>
+<text class="bx-name" x="156" y="179.00" text-anchor="end">Vest</text>
+<line class="bx-whisker" x1="212.15" y1="174.00" x2="270.86" y2="174.00"/>
+<line class="bx-cap" x1="212.15" y1="168.00" x2="212.15" y2="180.00"/>
+<line class="bx-cap" x1="270.86" y1="168.00" x2="270.86" y2="180.00"/>
+<rect class="bx-box" data-group="Vest" x="235.64" y="164.00" width="35.23" height="20"/>
+<line class="bx-median" x1="247.38" y1="164.00" x2="247.38" y2="184.00"/>
+<circle class="bx-outlier" data-group="Vest" cx="458.74" cy="174.00" r="3"/>
+<circle class="bx-outlier" data-group="Vest" cx="470.48" cy="174.00" r="3"/>
+<circle class="bx-outlier" data-group="Vest" cx="470.48" cy="174.00" r="3"/>
+<circle class="bx-outlier" data-group="Vest" cx="505.71" cy="174.00" r="3"/>
+<circle class="bx-outlier" data-group="Vest" cx="517.45" cy="174.00" r="3"/>
+<text class="bx-name" x="156" y="219.00" text-anchor="end">Midt</text>
+<line class="bx-whisker" x1="223.89" y1="214.00" x2="294.35" y2="214.00"/>
+<line class="bx-cap" x1="223.89" y1="208.00" x2="223.89" y2="220.00"/>
+<line class="bx-cap" x1="294.35" y1="208.00" x2="294.35" y2="220.00"/>
+<rect class="bx-box" data-group="Midt" x="235.64" y="204.00" width="44.03" height="20"/>
+<line class="bx-median" x1="253.25" y1="204.00" x2="253.25" y2="224.00"/>
+<circle class="bx-outlier" data-group="Midt" cx="458.74" cy="214.00" r="3"/>
+<circle class="bx-outlier" data-group="Midt" cx="517.45" cy="214.00" r="3"/>
+<text class="bx-name" x="156" y="259.00" text-anchor="end">Sør</text>
+<line class="bx-whisker" x1="235.64" y1="254.00" x2="329.58" y2="254.00"/>
+<line class="bx-cap" x1="235.64" y1="248.00" x2="235.64" y2="260.00"/>
+<line class="bx-cap" x1="329.58" y1="248.00" x2="329.58" y2="260.00"/>
+<rect class="bx-box" data-group="Sør" x="259.12" y="244.00" width="58.71" height="20"/>
+<line class="bx-median" x1="306.09" y1="244.00" x2="306.09" y2="264.00"/>
+<circle class="bx-outlier" data-group="Sør" cx="529.20" cy="254.00" r="3"/>
+<circle class="bx-outlier" data-group="Sør" cx="529.20" cy="254.00" r="3"/>
+<circle class="bx-outlier" data-group="Sør" cx="564.42" cy="254.00" r="3"/>
+<text class="bx-name" x="156" y="299.00" text-anchor="end">Innlandet</text>
+<line class="bx-whisker" x1="247.38" y1="294.00" x2="364.80" y2="294.00"/>
+<line class="bx-cap" x1="247.38" y1="288.00" x2="247.38" y2="300.00"/>
+<line class="bx-cap" x1="364.80" y1="288.00" x2="364.80" y2="300.00"/>
+<rect class="bx-box" data-group="Innlandet" x="282.61" y="284.00" width="58.71" height="20"/>
+<line class="bx-median" x1="317.83" y1="284.00" x2="317.83" y2="304.00"/>
+<circle class="bx-outlier" data-group="Innlandet" cx="552.68" cy="294.00" r="3"/>
+<circle class="bx-outlier" data-group="Innlandet" cx="564.42" cy="294.00" r="3"/>
+<circle class="bx-outlier" data-group="Innlandet" cx="599.65" cy="294.00" r="3"/>
+<circle class="bx-outlier" data-group="Innlandet" cx="611.39" cy="294.00" r="3"/>
+<text class="bx-name" x="156" y="339.00" text-anchor="end">Nordvest</text>
+<line class="bx-whisker" x1="270.86" y1="334.00" x2="411.77" y2="334.00"/>
+<line class="bx-cap" x1="270.86" y1="328.00" x2="270.86" y2="340.00"/>
+<line class="bx-cap" x1="411.77" y1="328.00" x2="411.77" y2="340.00"/>
+<rect class="bx-box" data-group="Nordvest" x="329.58" y="324.00" width="70.45" height="20"/>
+<line class="bx-median" x1="353.06" y1="324.00" x2="353.06" y2="344.00"/>
+<circle class="bx-outlier" data-group="Nordvest" cx="623.14" cy="334.00" r="3"/>
+<circle class="bx-outlier" data-group="Nordvest" cx="634.88" cy="334.00" r="3"/>
+<circle class="bx-outlier" data-group="Nordvest" cx="705.33" cy="334.00" r="3"/>
+<text class="bx-axis-title" x="447.00" y="392" text-anchor="middle">Dager</text>
+</svg>
+    <figcaption>Én boks per gruppe på samme akse. Boksen er fra første til tredje kvartil, streken i den er medianen, og halene går til den ytterste observasjonen innenfor 1,5 ganger boksens høyde. Punktene utenfor er enkeltobervasjoner.</figcaption>
+  </figure>
+
+  <p class="summary">8 grupper. Høyest median har Nordvest med 20, lavest Øst med 8. Størst spredning har Nordvest, med en boks på 6. Utenfor halene ligger 23 observasjon(er), fordelt på 8 grupper, og de er tegnet som punkter.</p>
+  <ul class="notes">
+<li>En boks skjuler formen. To grupper med samme median og samme kvartiler kan være én topp eller to, og bildet kan ikke se forskjellen. Er formen spørsmålet, er det distribusjonssiden (build_distribution.py) som gjelder, ikke denne.</li><li>Kvartilene er regnet ved å interpolere mellom de sorterte verdiene. Det finnes flere konvensjoner, og de gir ikke samme tall på små utvalg; denne står her fordi et tall ingen kan gjenskape ikke er et tall.</li><li>Halene er Tukey sine: den ytterste observasjonen innenfor 1,5 ganger kvartilavstanden. Alternativet, minste og største verdi, gjør halen til et variasjonsområde og skjuler nettopp den halen bildet er laget for å vise.</li><li>Radene står sortert etter median, lavest øverst.</li><li>Antall observasjoner står ved hver gruppe i tabellen. En boks over få observasjoner ser lik ut som en over mange, og det er grunnen til at tallet står der.</li>
+  </ul>
+
+  <h2 id="tbl-h">Tallene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Én rad per gruppe: hvor mange observasjoner den har, halene, de tre kvartilene, og hvor mange observasjoner som ligger utenfor.</caption>
+    <thead><tr>
+      <th scope="col">Gruppe</th>
+      <th scope="col" class="num">Antall</th>
+      <th scope="col" class="num">Laveste</th>
+      <th scope="col" class="num">1. kvartil</th>
+      <th scope="col" class="num">Median</th>
+      <th scope="col" class="num">3. kvartil</th>
+      <th scope="col" class="num">Høyeste</th>
+      <th scope="col" class="num">Utenfor</th>
+    </tr></thead>
+    <tbody>
+<tr><td>Øst</td><td class="num">58</td><td class="num">6</td><td class="num">7</td><td class="num">8</td><td class="num">9</td><td class="num">10</td><td class="num">1</td></tr>
+<tr><td>Nord</td><td class="num">46</td><td class="num">7</td><td class="num">8</td><td class="num">9</td><td class="num">10</td><td class="num">11</td><td class="num">3</td></tr>
+<tr><td>Trøndelag</td><td class="num">44</td><td class="num">8</td><td class="num">8,75</td><td class="num">10,5</td><td class="num">12</td><td class="num">13</td><td class="num">2</td></tr>
+<tr><td>Vest</td><td class="num">52</td><td class="num">8</td><td class="num">10</td><td class="num">11</td><td class="num">13</td><td class="num">13</td><td class="num">5</td></tr>
+<tr><td>Midt</td><td class="num">38</td><td class="num">9</td><td class="num">10</td><td class="num">11,5</td><td class="num">13,75</td><td class="num">15</td><td class="num">2</td></tr>
+<tr><td>Sør</td><td class="num">41</td><td class="num">10</td><td class="num">12</td><td class="num">16</td><td class="num">17</td><td class="num">18</td><td class="num">3</td></tr>
+<tr><td>Innlandet</td><td class="num">33</td><td class="num">11</td><td class="num">14</td><td class="num">17</td><td class="num">19</td><td class="num">21</td><td class="num">4</td></tr>
+<tr><td>Nordvest</td><td class="num">29</td><td class="num">13</td><td class="num">18</td><td class="num">20</td><td class="num">24</td><td class="num">25</td><td class="num">3</td></tr>
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>Hver boks er én gruppe, tegnet på samme akse. Bildet sammenligner spredning og nivå mellom grupper; det viser ikke formen på fordelingen i den enkelte gruppen.</p>
+  <p>Kvartiler, haler og antall står i tabellen, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.</p>
+  <p>Kilde: Syntetisk eksempeldata (saksbehandlingstid.csv) · 341 rader · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

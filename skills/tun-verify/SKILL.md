@@ -1,10 +1,12 @@
 ---
 name: tun-verify
 description: Prove a built dashboard actually renders and works before it is shared — opens it in a real browser from a file:// URL, checks it is self-contained, confirms charts and interactivity work, checks the size budget, and produces a screenshot for review. Use before publishing any dashboard, or when checking whether a dashboard file is broken or safe to share.
-license: AGPL-3.0-or-later
 ---
 
 # Verify a dashboard before it ships
+
+**Tier and cost, for the first reply:** none, and no approval. It opens the file in a
+browser on this machine and reads the result; nothing is uploaded and nobody is asked.
 
 This is a **gate, not a formality**. The entire premise of a portable dashboard is that
 it works on *someone else's* machine, opened from *their* folder, with no server. The
@@ -25,6 +27,8 @@ calls it.
 python3 tools/verify_dashboard.py <path-to-dashboard.html>
 python3 tools/verify_dashboard.py <path-to-dashboard.html> --engines all   # + Firefox and WebKit
 ```
+
+On Windows, `python3` is `py -3`: `python3` is not a command there unless the Microsoft Store alias is installed. The rest of the line is the same.
 
 Readers open the file in Edge, Chrome, Safari or Firefox. Use `--engines all` before a
 file goes to a wide audience: it runs every check in Chromium, Firefox and WebKit (Safari's
@@ -71,6 +75,21 @@ is the floor, six is better.
 
 Findings are usually small and real: a `<select>` at 37px tall, a button at 42px. Fix
 the CSS; do not widen the rule.
+
+## Check that it is readable, not only that it fits
+
+```bash
+python3 tools/verify_a11y.py dashboards/<slug>/dash.html
+```
+
+Six rules: `lang` and `<title>` present, one `<h1>` and no skipped heading level, an
+accessible name on every control and meaningful image, WCAG AA text contrast against the
+background actually behind the text, no `aria-hidden` on something focusable, no duplicate
+`id`, no `tabindex` above zero. It prints what it did not check underneath, so a green run
+is not a claim that the page is accessible, only that none of the six fired.
+
+Most findings are one line of CSS. A light grey caption on white, a `<select>` with no
+label, a chart `<svg>` with no name: fix the markup, do not reach for a waiver.
 
 ## After it passes — look at the picture
 
@@ -140,7 +159,7 @@ uv sync --extra verify && uv run playwright install chromium
 uv run playwright install firefox webkit   # only for --engines all
 ```
 
-`uv` only — never `pip`. Sources (PyPI) are in `pyproject.toml`.
+`uv` only — never `pip`. Sources (PyPI + Eksempel AS Nexus) are in `pyproject.toml`.
 
 ## Notes
 

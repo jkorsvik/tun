@@ -1,0 +1,97 @@
+# Strings for templates/waterfall.html and tools/build_waterfall.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shows one change broken into its steps: what the total was, what each part moved
+# it by, and what it is now. The words are the ones a reader needs to read a bar and to add
+# the column up themselves.
+
+[nb]
+html_lang = nb
+caption = Hver stolpe er ett trinn: åpningen, de største endringene, og lukkingen. En stolpe som går opp øker totalen, en som går ned minker den, og tallet over stolpen er endringen selv. Prosenten er trinnet som andel av åpningen.
+caption_pct = Aksen starter ved det laveste nivået i bildet og ikke på null, fordi trinnene er små mot nivået; tallene under bildet sier hvor aksen begynner og slutter.
+head_chain = Trinnene slik bildet leser dem
+chain_caption = Nivået før og etter hvert trinn, i den rekkefølgen de er tegnet. Legg sammen endringene og du får lukkingen.
+head_table = Alle trinnene
+table_caption = Hver bidragsyter med sin egen verdi i begge periodene og endringen mellom dem. Summen nederst skal være lik endringen i åpningen og lukkingen.
+table_note = Alle bidragsyterne står her, også de som er slått sammen til én stolpe i bildet. Kilden har radene.
+table_note_aggregated = {n} bidragsytere er slått sammen til én rad her, fordi listen er over {cap}. De er ikke skjult: de står i kilden, og summen deres er endringen som mangler.
+col_step = Trinn
+col_from = Før
+col_change = Endring
+col_share = Andel
+col_to = Etter
+col_level_before = Nivå før
+col_level_after = Nivå etter
+row_total = Totalt
+open_name = Åpning
+close_name = Lukking
+open_title = Åpning: {value}
+close_title = Lukking: {value}
+step_title = {name}: {delta}
+other_name = Andre ({n} trinn)
+other_title = {n} trinn slått sammen, til sammen {delta}
+other_note = {drawn} trinn er tegnet, {n} er slått sammen til den siste stolpen. Summen deres er nøyaktig, ikke avrundet, så bildet går opp.
+in_other = i Andre
+new = ny
+gone = borte
+flat = uendret
+dash = –
+legend_total = Åpning og lukking
+legend_step = Et trinn
+legend_link = Nivået trinnet starter fra
+colour_neutral = Retningen vises av hvilken vei stolpen går og av fortegnet foran tallet. Fargen sier ingenting om det er bra eller dårlig, for en økning er ikke god eller dårlig i seg selv.
+colour_meaning = Fargen viser hva som er bra: grønt trekker i riktig retning, rødt i feil. Retningen er oppgitt som det gode i bygget.
+identity = {opening} {op} {amount} = {closing}
+sub_line = {measure} per {dim} · {before} mot {after} · {n} trinn
+svg_desc = Bro fra {before} til {after} for {measure} per {dim}: åpning {opening}, lukking {closing}, fordelt på {n} trinn.
+axis_note = Aksen går fra {low} til {high}, ikke fra null. Åpningen er {opening}.
+source_line = {name} — {rows} rader i de to periodene
+dropped = {n} rader i andre perioder er ikke med i broen.
+footer_a = Selvstendig fil: alle tallene er regnet ut på forhånd, og ingenting hentes når den åpnes.
+footer_b = Ingen server, ingen innlogging, ingen skript. Trinnene er summen av radene i kilden, ikke et utvalg.
+footer_built = Bygget
+
+[en]
+html_lang = en
+caption = Each column is one step: the opening, the largest changes, and the closing. A column that goes up raises the total, one that goes down lowers it, and the number above the column is the change itself. The percentage is the step as a share of the opening.
+caption_pct = The axis starts at the lowest level the drawing holds and not at zero, because the steps are small against the level; the figures under the drawing say where the axis begins and ends.
+head_chain = The steps as the drawing reads them
+chain_caption = The level before and after each step, in the order they are drawn. Add the changes up and you get the closing figure.
+head_table = Every step
+table_caption = Each contributor with its own figure in both periods and the change between them. The sum at the bottom must equal the change from the opening to the closing figure.
+table_note = Every contributor is listed here, including the ones summed into one column in the drawing. The source holds the rows.
+table_note_aggregated = {n} contributors are collapsed into one row here, because the list is over {cap}. They are not hidden: they are in the source, and their sum is the change that is missing.
+col_step = Step
+col_from = Before
+col_change = Change
+col_share = Share
+col_to = After
+col_level_before = Level before
+col_level_after = Level after
+row_total = Total
+open_name = Opening
+close_name = Closing
+open_title = Opening: {value}
+close_title = Closing: {value}
+step_title = {name}: {delta}
+other_name = Other ({n} steps)
+other_title = {n} steps summed, {delta} in total
+other_note = {drawn} steps are drawn, {n} are summed into the last column. Their sum is exact, not rounded, so the drawing adds up.
+in_other = in Other
+new = new
+gone = gone
+flat = flat
+dash = –
+legend_total = Opening and closing
+legend_step = One step
+legend_link = The level the step starts from
+colour_neutral = Direction is shown by which way the column goes and by the sign in front of the number. Colour says nothing about whether it is good, because an increase is not good or bad by itself.
+colour_meaning = Colour shows what is good: green moves the right way, red the wrong way. The good direction was declared when the file was built.
+identity = {opening} {op} {amount} = {closing}
+sub_line = {measure} per {dim} · {before} against {after} · {n} steps
+svg_desc = Bridge from {before} to {after} for {measure} per {dim}: opening {opening}, closing {closing}, across {n} steps.
+axis_note = The axis runs from {low} to {high}, not from zero. The opening is {opening}.
+source_line = {name} — {rows} rows across the two periods
+dropped = {n} rows in other periods are not in the bridge.
+footer_a = Self-contained file: every figure is worked out in advance, and nothing is fetched when it opens.
+footer_b = No server, no sign-in, no script. The steps are the sum of the rows in the source, not a selection.
+footer_built = Built

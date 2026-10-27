@@ -1,7 +1,7 @@
 # 14 — Chart-emulering uten JavaScript: hvilke av de tolv diagramtypene tåler det?
 
-Diagnostisk oppfølging av JavaScript-fri standalone HTML
-(`examples/13-js-free-standalone-poc/`). Rører ikke `examples/06-chart-palette-demo/` —
+Diagnostisk oppfølging av [issue #30](https://example.com/tun/issues/30)
+og `examples/13-js-free-standalone-poc/`. Rører ikke `examples/06-chart-palette-demo/` —
 bruker samme datasett og samme Okabe–Ito-palett derfra for ni av de tolv typene (én palett
 er nok til å vurdere selve teknikken), utvidet med tre stolpevarianter examples/06 ikke har
 (vertikal, og gruppert flere-serier i begge retninger). Alle tolv bygges med
@@ -9,7 +9,7 @@ er nok til å vurdere selve teknikken), utvidet med tre stolpevarianter examples
 
 ![Alle tolv diagramtyper](preview.png)
 
-## Hvorfor dette er et annet spørsmål enn i examples/13
+## Hvorfor dette er et annet spørsmål enn i #13
 
 `examples/13` konkluderte at spredningsdiagram+trendlinje **ikke** har en ærlig
 CSS-erstatning — det stemmer fortsatt for *den* filen, fordi grafene der skal kunne
@@ -61,7 +61,7 @@ Skillelinjen som betyr noe er ikke diagramtype, men:
 Tanken er en fremtidig byggeinstruks der en bruker velger, **per diagramtype i sin egen
 rapport**, om den skal emuleres uten JS (statisk CSS/SVG, fungerer garantert i alle
 mottakskontekster) eller kjøres med JavaScript/Chart.js (interaktiv, men avhengig av at
-skript faktisk kjører — se `docs/11-responsiveness-and-browser-support.md` for hvorfor det ikke alltid skjer). Denne filen er
+skript faktisk kjører — se #22/#30 for hvorfor det ikke alltid skjer). Denne filen er
 grunnlaget for den avgjørelsen — ikke selve byggeinstruksen.
 
 ## Reproduser
@@ -69,6 +69,17 @@ grunnlaget for den avgjørelsen — ikke selve byggeinstruksen.
 ```bash
 python3 examples/14-chart-emulation-nojs-poc/build_chart_emulation_poc.py
 python3 tools/verify_standalone_core.py examples/14-chart-emulation-nojs-poc/chart-emulation-nojs-poc.html
+```
+
+Grafene er tegnet i en fast koordinatflate og skaleres med kortet sitt, så
+akseteksten er ikke 14 px på alle bredder: fra 1366 px og opp er den minst 10 px, og
+under det skalerer tegningen med vinduet. Derfor sier filen fra om gulvet sitt, og
+overløp og treffmål sjekkes på alle bredder uansett:
+
+```bash
+python3 tools/verify_viewports.py \
+    examples/14-chart-emulation-nojs-poc/chart-emulation-nojs-poc.html \
+    --text-floor 10 --text-floor-above 1366
 ```
 
 Ingen `verify_js_free_poc.py`-motstykke her — det er ikke noe "JS av vs. JS på" å

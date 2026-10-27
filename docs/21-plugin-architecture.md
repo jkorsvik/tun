@@ -1,7 +1,9 @@
 # 21 — Tiers: core, community, third party
 
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
 Status: architecture note, drawn on paper and transcribed here. The tier names are decided;
-the plugin contract is a proposal. The licence is decided; see `docs/17-licensing.md`.
+the plugin contract is not. Nothing is published, and no licence is adopted.
 
 ## The sketch
 
@@ -45,8 +47,9 @@ were written on.
 
 ## Why this matters more than a tidy-up
 
-Picture a toolkit grown inside one organisation, with that organisation's brand and
-specifics spread through it. The obvious response is to scrub it before publishing.
+There is a Eksempel AS-shaped problem in this repository: trademark artwork in two examples, brand
+colours taken from an SSO-gated brandbook, and the employer named in more than half the tracked
+files. The obvious response is to scrub it before publishing.
 
 The tier model gives a better answer. That material is not contamination to be removed; it is
 **a third-party plugin that was never separated out.** Extracting it is ordinary architecture
@@ -82,7 +85,7 @@ rediscovering it. That is the core tier above, arrived at from the bottom up.
 
 ## What a plugin has to be able to do
 
-Derived from the Eksempel AS example plugin. Each item is a requirement the
+Derived from the Eksempel AS case, which is the only real one we have. Each item is a requirement the
 contract must satisfy, not a design:
 
 - **supply brand tokens**, replacing the palette and typography a template reads at build time
@@ -96,8 +99,8 @@ contract must satisfy, not a design:
 
 Open: whether a plugin may add skills, how versioning and compatibility are expressed, and
 whether substrate adapters are plugins or core. The existing `plugin/manifest.json` is a
-raicode packaging manifest for this repository as a single unit; it conflates core with
-the Eksempel plugin and will have to split.
+raicode packaging manifest for this repository as a single unit, named after the organisation
+and licensed `Internal`; it conflates core with the Eksempel AS plugin and will have to split.
 
 ## Decided: Tún's own skills ship as a plugin
 
@@ -116,7 +119,10 @@ personal dotfiles repository. The plugin replaces the symlink installer. Until i
 
 ## Consequence for publication
 
-Real cases stay local and never enter git; only method, scripts, templates and tests on
-synthetic data belong here. The tier model helps here too: once the Eksempel plugin is
-extracted, most organisation-specific material has moved out of core by construction rather
-than by editing.
+`docs/20-publication-readiness.md` describes categories to clean before publishing. The tier
+model reduces the largest of them: once the Eksempel AS plugin is extracted, most of what category 2
+lists has moved out of core by construction rather than by editing.
+
+The personal-data vector in `docs/20` is unaffected and stays what it is: a private-only
+exposure in the internal repository's pull-request refs, which never travels because the public
+repository will not inherit this history.

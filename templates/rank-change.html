@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún - tun.community
+    Records     : {{ROWS_INLINED}} values, one per group and period drawn
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: one small panel per group, all drawn on the same vertical scale, so the
+  reader compares the shape of one group's path with another's.
+
+  What it is NOT: a ranking, or a claim about why one group moves differently from another. It
+  draws the numbers it was given, on one scale, with the scale written on the page.
+
+  There is no script in this file. A filter would re-lay the grid, and the grid is the claim
+  being made.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+{{TOKEN_CSS}}
+:root{
+  /* The flat-line stroke. It is template-local rather than --rule, which the seam already
+     uses for a UI rule: this is a chart mark, and it has to stay visible on a dark panel. */
+  --rc-flat-line:#c9d6d5;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: 61.25rem is the viewBox's 980 units at 16 px, so the
+   drawing's 14-unit text lands on 14 px and never below it. A narrower box would scale the
+   whole picture down and take the text under the floor with it, which no contrast rule sees.
+   Below that width the box pans, and the page never does. */
+.figure svg{display:block;width:100%;height:auto;min-width:61.25rem}
+.rc-head{fill:var(--ink);font-size:14px;font-weight:600}
+.rc-rank{fill:var(--muted);font-size:14px}
+.rc-name{fill:var(--ink);font-size:14px}
+.rc-value{fill:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.rc-mark{fill:var(--muted);font-size:14px;font-style:italic}
+/* One colour per direction, and the same colour for the same meaning everywhere on the page:
+   a climb is not "good" and a fall is not "bad" until the page is told which way is which. */
+.rc-up{fill:none;stroke:var(--brand);stroke-width:2;stroke-linecap:round}
+.rc-down{fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;
+  stroke-dasharray:5 3}
+.rc-flat{fill:none;stroke:var(--rc-flat-line);stroke-width:1.5}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.gaps{margin:.5rem 0 0;font-size:.9375rem;line-height:1.5}
+/* Only shown where the drawing cannot fit: a phone sees one column of panels and must be
+   told that the grid continues sideways, or it reads three groups and stops. */
+.hint{display:none;margin:.5rem 0 0;color:var(--muted);font-size:.875rem;line-height:1.5}
+@media (max-width:56rem){.hint{display:block}}
+.order{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.warn{margin:1rem 0 0;padding:.75rem 1rem;background:var(--warn-soft);border-radius:.5rem;
+  border:1px solid var(--bad);font-size:.9375rem;line-height:1.5}
+.warn h2{margin:0 0 .25rem;font-size:1rem;line-height:1.5rem;color:var(--bad)}
+.warn p{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  .warn{background:#fff}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band inverts; the flat connector needs a lighter grey for the same
+     reason the line does. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    :root{--rc-flat-line:#5f7a86}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>{{TITLE}}</h1>
+  <p class="sub">{{SUBTITLE}}</p>
+</div></header>
+<main>
+  <figure class="figure">
+{{SVG}}
+    <figcaption>{{CAPTION}}</figcaption>
+  </figure>
+  <p class="hint">{{T:scroll_hint}}</p>
+
+  <p class="summary">{{MOVEMENT}}</p>
+  <p class="gaps">{{TIES}}</p>
+
+  <h2 id="tbl-h">{{T:head_table}}</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>{{T:table_caption}}</caption>
+    <thead><tr>
+      <th scope="col">{{T:col_entity}}</th>
+      <th scope="col" class="num">{{T:col_before_value}}</th>
+      <th scope="col" class="num">{{T:col_before_rank}}</th>
+      <th scope="col" class="num">{{T:col_after_value}}</th>
+      <th scope="col" class="num">{{T:col_after_rank}}</th>
+      <th scope="col" class="num">{{T:col_value_delta}}</th>
+      <th scope="col" class="num">{{T:col_rank_delta}}</th>
+    </tr></thead>
+    <tbody>
+{{TABLE_ROWS}}
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>{{T:footer_a}}</p>
+  <p>{{T:footer_b}}</p>
+  <p>{{SOURCE_LINE}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p>
+  <p>{{FEEDBACK_BLOCK}}</p>
+</footer>
+</body>
+</html>

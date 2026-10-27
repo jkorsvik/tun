@@ -8,8 +8,8 @@
 """
 build_chart_emulation_poc.py — generates chart-emulation-nojs-poc.html
 
-Diagnostic companion to examples/06-chart-palette-demo/ and to JavaScript-free
-standalone HTML (examples/13-js-free-standalone-poc/). Renders the SAME nine Chart.js chart
+Diagnostic companion to examples/06-chart-palette-demo/ and issue #30
+(Javascript-løs standalone HTML). Renders the SAME nine Chart.js chart
 types from that demo's "Kategorisk" tab — bar, pie, doughnut, polar area,
 line, area, radar, scatter, bubble — using the SAME synthetic dataset and
 ONE palette (Okabe–Ito, the colour-vision-deficiency-safe qualitative
@@ -19,7 +19,7 @@ version to fall back FROM here. Every pixel is decided by this Python
 script at build time and baked into static CSS (conic-gradient, div
 widths) or static inline SVG (path/polygon/circle coordinates).
 
-WHY THIS EXISTS: that earlier POC drew one hard line — "no honest
+WHY THIS EXISTS: issue #30's POC drew one hard line — "no honest
 CSS-only substitute exists for a scatter+trendline chart" — and declared
 it uncrossable. That conclusion is correct for a chart whose DATA is only
 known at runtime (user input, a live filter, a fetch). It stops being
@@ -27,8 +27,8 @@ true the moment the data is already known when the file is generated:
 Python can do the same coordinate math a browser's JS would have done,
 and bake the answer into a static SVG path. This file exists to find out,
 chart type by chart type, whether that theoretical point holds up when
-actually built and looked at — not to re-litigate examples/13's scatter
-finding, which is about a different (runtime-unknown-data) case.
+actually built and looked at — not to re-litigate #13's scatter finding,
+which is about a different (runtime-unknown-data) case.
 
 STATUS: exploratory/diagnostic, like examples/06 and examples/13. Grades
 each of the nine chart types by eye (see README.md's table) so a later
@@ -56,7 +56,7 @@ BUILT = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
 # Light theme only — this POC is about chart-type feasibility, not
-# re-proving the theme toggle (that is the job of examples 05 and 13).
+# re-proving the theme toggle (that's #05/#13's job).
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 import tun_tokens  # noqa: E402
 
@@ -509,14 +509,6 @@ BADGE_LABEL = {"ok": "Anbefales som standard", "caution": "Mulig, gjør det valg
 # literal { } that an f-string would need doubled).
 # ---------------------------------------------------------------------------
 TEMPLATE = """<!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="nb">
 <head>
 <meta charset="utf-8">
@@ -527,10 +519,9 @@ TEMPLATE = """<!DOCTYPE html>
   PROVENANCE
     Source data : none — same synthetic regional counts as examples/06-chart-palette-demo/
     Built       : __BUILT__
-    Companion to: examples/06-chart-palette-demo/, examples/13-js-free-standalone-poc/
+    Companion to: issue #30, examples/06-chart-palette-demo/, examples/13-js-free-standalone-poc/
     Built by    : RAIWork
     Repo        : tun
-    Made with   : Tún — tun.community
     Generator   : examples/14-chart-emulation-nojs-poc/build_chart_emulation_poc.py
   STATUS: exploratory/diagnostic POC. ZERO script elements in this file — see
   the generator's module docstring for why that's possible for all nine
@@ -543,7 +534,7 @@ __TOKEN_CSS__
 
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
+    font-family:"Eksempel AS",-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
     font-size:1rem;line-height:1.5}
   header{background:var(--brand-dark);color:var(--palette-on-dark);padding:1.25rem 2rem}
   header h1{margin:0;font-size:1.4rem;font-weight:500}

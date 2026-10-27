@@ -1,5 +1,7 @@
 # 22 — The plugin contract
 
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
 Status: contract proposal, derived from the one real case.
 
 | capability | state |
@@ -15,8 +17,8 @@ earlier version of this document stated the slot validation as fact while no cod
 it, which is worse than omitting it: a contract is read as a guarantee, so the failure it
 claimed to prevent stayed possible and nobody looked for it.
 
-`docs/21-plugin-architecture.md` names the three tiers and argues why the Eksempel AS
-material is a plugin rather than contamination. This document says what a plugin actually is.
+`docs/21-plugin-architecture.md` names the three tiers and argues why the Eksempel AS material is a
+plugin rather than contamination. This document says what a plugin actually is.
 
 ## The rule the contract exists to serve
 
@@ -28,17 +30,25 @@ capability; it is core.
 
 ## Derived from the real case, not invented
 
-The Eksempel plugin is the only real consumer, so the contract is exactly what extracting it
+The Eksempel AS plugin is the only real consumer, so the contract is exactly what extracting it
 requires. The token layering in this repository already pointed at the answer:
 
 | File | Kind | Verdict |
 |---|---|---|
-| `plugins/eksempel/tokens/palette.css` (formerly under `tools/tokens/`) | raw palette, `--eksempel-*` | brand-specific, leaves core |
+| `tools/tokens/eksempel-brand-2026.css` | raw palette, `--eksempel-*` | brand IP, leaves core |
 | `tools/tokens/theme-light.css`, `theme-dark.css` | semantic roles: `--ink`, `--bg`, `--brand` | core, but they referenced the raw palette |
 | `tools/tokens/status-semantic.css` | `--status-*` | already brand-free, stays |
 
-Measured: the theme files reference **eight** of the nineteen raw palette values. Eight is
-therefore the size of the seam, not nineteen.
+Measured: the theme files reference **nine** of the twenty raw palette values. Nine is
+therefore the size of the seam, not twenty.
+
+The ninth was added on 2026-10-25, and the reason is worth keeping because it shows how the
+seam grows: `tools/check_token_contrast.py` measured the dark theme and found `--brand` at
+1.43:1 against its own background. The cause was structural, not a bad hex — the primary
+colour is chosen to read on white, and no amount of re-picking it makes it read on a dark
+surface while it stays the same colour. Core's theme file genuinely needs a light-on-dark
+primary, so by the seam's own rule ("every slot core's theme files actually consume is
+required") the slot belongs in the contract rather than as a literal inside `theme-dark.css`.
 
 **Core defines semantic roles. A plugin supplies the palette those roles map onto.**
 
@@ -107,13 +117,13 @@ design principle 1 in `docs/00-vision.md` and it is not negotiable by a plugin.
 
 ### 1. `tokens`
 
-A CSS file defining the eight required palette slots. Validated by
+A CSS file defining the nine required palette slots. Validated by
 `tun_tokens.validate_palette()`: a palette omitting one fails the build rather than producing
 an artefact with an unresolved `var()`, which CSS renders as *nothing* — an invisible or
 wrong colour that would pass every other gate in this repository.
 
-The eight are a measured seam, not a design: they are exactly the palette values core's
-theme files consume, out of the nineteen the brand defines. `tests/test_token_contract.py`
+The nine are a measured seam, not a design: they are exactly the palette values core's
+theme files consume, out of the twenty the brand defines. `tests/test_token_contract.py`
 asserts that this list, the two shipped palettes, and the `var(--palette-*)` references in
 `theme-light.css` and `theme-dark.css` all agree, so the seam cannot drift from the code.
 
@@ -123,6 +133,7 @@ asserts that this list, the two shipped palettes, and the `var(--palette-*)` ref
 --palette-primary          primary data colour, links, focus
 --palette-primary-dark     header background
 --palette-primary-darkest  darkest surface
+--palette-primary-on-dark  primary data colour and links, read on a dark surface
 --palette-accent           secondary series, decorative only
 --palette-accent-light     highlight on dark
 --palette-on-dark          text on a dark surface
@@ -144,8 +155,9 @@ A plugin names its assets in an `assets` map, beside `tokens`:
 `<svg>` in the SVG namespace with a `viewBox` and `role="img"` plus an `aria-label`, and it
 fetches nothing and runs nothing (no external `href`, no remote `url()` or `@import`, no
 `<script>`, no `on*` handler, no `<foreignObject>`, no `<set>` or `<animate>` that rewrites an
-`href`). `plugins/tun` is the first plugin with a map. A plugin may list `assets` in `provides`
-without a map when its artwork lives inline in its own examples.
+`href`). `plugins/tun` is the first plugin with a map. `plugins/<your-brand>` lists `assets` in
+`provides` without a map, because its artwork predates the map and lives inline in its
+examples.
 
 ### 3. `templates`
 
@@ -200,7 +212,8 @@ extras. A plugin may add a *new* substrate; it may not change how an existing on
 3. With `plugins/` empty, every build succeeds and every gate passes.
 4. Core contains no organisation name, design-system name, internal host or person name.
 
-Invariant 4 is the hardest to satisfy in a toolkit grown inside one organisation, so it
-ships as an exact-set debt list that may only shrink, in the manner `tools/tree_scan.py`
-already uses for row 25. A ratchet converts a large rewrite into reviewable increments; a
-big-bang edit of the same scope is unreviewable and would be merged without being read.
+Invariant 4 is the one that cannot be satisfied today: the organisation appears in 14 of 19
+docs, 36 of 69 example files, 5 of 12 skills and 7 of 16 tool files. So it ships as an
+exact-set debt list that may only shrink, in the manner `tools/tree_scan.py` already uses for
+row 25. A ratchet converts a 133-file rewrite into reviewable increments; a big-bang edit of
+the same scope is unreviewable and would be approved without being read.

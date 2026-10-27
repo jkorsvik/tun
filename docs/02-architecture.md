@@ -1,5 +1,7 @@
 # Architecture — Three Delivery Tiers
 
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
 Each tier is a complete, shippable way to deliver a dashboard. They differ in
 **capability** and in **governance cost**. Start at Tier 1 always; escalate only
 when a requirement forces it.
@@ -113,12 +115,12 @@ Teams tab, next to other content — rather than being opened as a file.
 - **Governance cost:** **high and unavoidable.** Requires a built `.sppkg`, upload
   to the tenant app catalog, and a **SharePoint admin approval** — per package, and
   again for each API permission. This cannot be shipped without a developer and an admin.
-- **Status:** ⚠️ **unvalidated in the measured tenant.** Whether an SPFx package gets through admin review there,
+- **Status:** ⚠️ **unvalidated at Eksempel AS.** Whether SPFx packages are approvable here,
   and the lead time, is an open question and gates this tier entirely. See the open
   assumptions in the constraints doc.
 
 > Do not promise Tier 2 to a stakeholder until someone has landed one `.sppkg` in
-> the tenant's app catalog end-to-end. Until then it is a design, not a capability.
+> the Eksempel AS app catalog end-to-end. Until then it is a design, not a capability.
 
 ---
 
@@ -184,7 +186,7 @@ blocked from reading a sibling file. So the payload has to be JavaScript. It can
 ## Choosing a mode
 
 ```
-Will it go OUTSIDE the organisation, or must it survive with no folder at all?
+Will it go OUTSIDE Eksempel AS, or must it survive with no folder at all?
    └─ YES → BUNDLED. One file, data inlined. Attach it to an email.
    └─ NO  ↓
 

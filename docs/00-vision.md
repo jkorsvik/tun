@@ -1,8 +1,10 @@
 # Vision — Dashboards as Documents
 
+**Reader:** user — you want an artefact out of your own data and do not intend to change the toolkit.
+
 ## The problem
 
-Sharing an interactive dashboard inside the organisation currently means a chain of prerequisites
+Sharing an interactive dashboard inside Eksempel AS currently means a chain of prerequisites
 before anyone can look at a chart:
 
 - a **licence** for the author *and* every viewer (Pro or PPU, per user, per month)
@@ -20,7 +22,7 @@ static, un-drillable, stale the moment they're sent.
 
 > A dashboard should be **a document**, not a service.
 
-Everyone at the organisation already knows how to share a document. They know where the folder
+Everyone at Eksempel AS already knows how to share a document. They know where the folder
 is, who can see it, how to send a link, how it syncs to their laptop, and that it
 still opens on a train with no wifi. That machinery — permissions, versioning,
 audit, sensitivity labels, DLP, sync, search — already exists in SharePoint and
@@ -48,7 +50,7 @@ over-engineered for the job:
 - one-off analyses that need to stay explorable, not be flattened to slides
 - anything currently distributed as "Excel with a pivot table" or "PNG in a deck"
 - anything shared with people who do not and will not have a Power BI licence
-- **anything that has to go outside the organisation** — a partner, an auditor, a counterparty.
+- **anything that has to go outside Eksempel AS** — a partner, an auditor, a counterparty.
   Power BI simply cannot do this; a self-contained file can be attached to an email.
   See the external-sharing section in `01-tenant-constraints.md`, including the
   caveat that a file you have sent cannot be revoked.
@@ -150,7 +152,7 @@ moment, and should say which moment.
 2. **Portable by default, live by exception.** Inlined data is the default because
    it always works. Live data (Tier 3) is opt-in and costs governance.
 3. **Never defeat a security control.** `Content-Disposition: attachment` is an XSS
-   control in a corporate document store. Route around it; do not break it.
+   control in a tenant's document store. Route around it; do not break it.
 4. **Zero admin dependency on the happy path.** If the common case needs a tenant
    admin, we have built the wrong thing. Tier 1 needs nobody's approval.
 5. **Honest about RLS.** See above. This is the one that gets someone fired.
@@ -160,3 +162,5 @@ moment, and should say which moment.
 7. **Measure the tenant, don't trust the docs.** Every constraint in this repo was
    probed. Microsoft's documentation was materially incomplete on the two facts
    that mattered most (Range requests, and what actually happens to `.html`).
+
+Worked examples of the same method, by pattern: [what was built](27-what-was-built.md).

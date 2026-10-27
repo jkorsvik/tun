@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fremdrift per tiltak</title>
+<!--
+  Fremdrift per tiltak
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (fremdrift.csv)
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Prosjektkontoret
+    Made with   : Tún - tun.community
+    Records     : 12 tasks, a planned and an actual bar per task
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: the plan against what happened, per task, on one date axis, with the
+  difference printed as a signed number of days.
+
+  What it is NOT: a claim about how much work remains.
+
+  There is no script in this file.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:62rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:62rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a scaled-down
+   drawing is text under the floor. Below that the box pans, and the page never does. */
+.figure svg{display:block;width:100%;height:auto;min-width:51.25rem}
+.gt-grid{stroke:var(--rule);stroke-width:1}
+.gt-tick{fill:var(--muted);font-size:14px}
+.gt-name{fill:var(--ink);font-size:14px}
+.gt-slip{fill:var(--ink);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.gt-slip-head{fill:var(--muted);font-size:14px}
+.gt-state{fill:var(--muted);font-size:14px;font-style:italic}
+/* The plan is an outline and the actual is a fill, so the two readings are two shapes rather
+   than two shades: the comparison survives a printout, a projector and a colour-vision
+   difference. */
+.gt-plan{fill:none;stroke:var(--brand);stroke-width:1.5;stroke-dasharray:4 3}
+.gt-actual{fill:var(--brand)}
+.gt-running{fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5;stroke-dasharray:3 2}
+/* Today is information, not a verdict: a rule in the muted ink, dashed, so it
+   reads as a reference line and never as an alarm. */
+.gt-today{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2 3}
+.gt-today-label{fill:var(--muted);font-size:14px}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.notes{margin:.75rem 0 0;padding-left:1.25rem;font-size:.9375rem;line-height:1.5}
+.notes li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{max-width:62rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);
+  font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:48rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark is a SCREEN choice and paper is white, so this block is scoped to screen: without
+     the guard it would come after the print rule above and paint the ink light on a printed
+     white page. --brand-dark is the darkest surface in the dark theme, so the band that reads
+     white-on-ocean in light needs the theme's own ink. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Fremdrift per tiltak</h1>
+  <p class="sub">12 tiltak, 01.06.2026 til 13.11.2026</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 820 656" role="img" aria-labelledby="gt-t gt-d">
+<title id="gt-t">Fremdrift mot plan</title>
+<desc id="gt-d">12 tiltak fra 01.06.2026 til 13.11.2026, med en planlagt og en faktisk linje per tiltak. Planen er merket med kolonnen Planstart.</desc>
+<line class="gt-grid" x1="210.00" y1="48" x2="210.00" y2="612"/>
+<text class="gt-tick" x="210.00" y="42" text-anchor="middle">jun 26</text>
+<line class="gt-grid" x1="304.55" y1="48" x2="304.55" y2="612"/>
+<text class="gt-tick" x="304.55" y="42" text-anchor="middle">jul 26</text>
+<line class="gt-grid" x1="402.24" y1="48" x2="402.24" y2="612"/>
+<text class="gt-tick" x="402.24" y="42" text-anchor="middle">aug 26</text>
+<line class="gt-grid" x1="499.94" y1="48" x2="499.94" y2="612"/>
+<text class="gt-tick" x="499.94" y="42" text-anchor="middle">sep 26</text>
+<line class="gt-grid" x1="594.48" y1="48" x2="594.48" y2="612"/>
+<text class="gt-tick" x="594.48" y="42" text-anchor="middle">okt 26</text>
+<line class="gt-grid" x1="692.18" y1="48" x2="692.18" y2="612"/>
+<text class="gt-tick" x="692.18" y="42" text-anchor="middle">nov 26</text>
+<line class="gt-today" x1="673.27" y1="48" x2="673.27" y2="612"/>
+<text class="gt-today-label" x="678.27" y="14">i dag</text>
+<text class="gt-name" x="198" y="87.00" text-anchor="end">Behovsavklaring</text>
+<rect class="gt-plan" data-task="Behovsavklaring" x="210.00" y="71.00" width="34.67" height="9"/>
+<rect class="gt-actual" data-task="Behovsavklaring" x="210.00" y="86.00" width="31.52" height="9"/>
+<text class="gt-slip" x="804" y="87.00" text-anchor="end">−1</text>
+<text class="gt-name" x="198" y="133.00" text-anchor="end">Datakartlegging</text>
+<rect class="gt-plan" data-task="Datakartlegging" x="232.06" y="117.00" width="56.73" height="9"/>
+<rect class="gt-actual" data-task="Datakartlegging" x="235.21" y="132.00" width="75.64" height="9"/>
+<text class="gt-slip" x="804" y="133.00" text-anchor="end">+7</text>
+<text class="gt-name" x="198" y="179.00" text-anchor="end">Løsningsskisse</text>
+<rect class="gt-plan" data-task="Løsningsskisse" x="276.18" y="163.00" width="56.73" height="9"/>
+<rect class="gt-actual" data-task="Løsningsskisse" x="320.30" y="178.00" width="47.27" height="9"/>
+<text class="gt-slip" x="804" y="179.00" text-anchor="end">+11</text>
+<text class="gt-name" x="198" y="225.00" text-anchor="end">Sikkerhetsvurdering</text>
+<rect class="gt-plan" data-task="Sikkerhetsvurdering" x="320.30" y="209.00" width="56.73" height="9"/>
+<rect class="gt-actual" data-task="Sikkerhetsvurdering" x="326.61" y="224.00" width="50.42" height="9"/>
+<text class="gt-slip" x="804" y="225.00" text-anchor="end">0</text>
+<text class="gt-name" x="198" y="271.00" text-anchor="end">Prototyp</text>
+<rect class="gt-plan" data-task="Prototyp" x="364.42" y="255.00" width="100.85" height="9"/>
+<rect class="gt-actual" data-task="Prototyp" x="386.48" y="270.00" width="122.91" height="9"/>
+<text class="gt-slip" x="804" y="271.00" text-anchor="end">+14</text>
+<text class="gt-name" x="198" y="317.00" text-anchor="end">Datamodell</text>
+<rect class="gt-plan" data-task="Datamodell" x="452.67" y="301.00" width="78.79" height="9"/>
+<rect class="gt-actual" data-task="Datamodell" x="455.82" y="316.00" width="69.33" height="9"/>
+<text class="gt-slip" x="804" y="317.00" text-anchor="end">−2</text>
+<text class="gt-name" x="198" y="363.00" text-anchor="end">Brukertest runde 1</text>
+<rect class="gt-plan" data-task="Brukertest runde 1" x="474.73" y="347.00" width="34.67" height="9"/>
+<rect class="gt-actual" data-task="Brukertest runde 1" x="518.85" y="362.00" width="12.61" height="9"/>
+<text class="gt-slip" x="804" y="363.00" text-anchor="end">+7</text>
+<text class="gt-name" x="198" y="409.00" text-anchor="end">Integrasjon</text>
+<rect class="gt-plan" data-task="Integrasjon" x="518.85" y="393.00" width="78.79" height="9"/>
+<rect class="gt-actual" data-task="Integrasjon" x="540.91" y="408.00" width="100.85" height="9"/>
+<text class="gt-slip" x="804" y="409.00" text-anchor="end">+14</text>
+<text class="gt-name" x="198" y="455.00" text-anchor="end">Brukertest runde 2</text>
+<rect class="gt-plan" data-task="Brukertest runde 2" x="607.09" y="439.00" width="34.67" height="9"/>
+<rect class="gt-actual gt-running" data-task="Brukertest runde 2" x="651.21" y="454.00" width="22.06" height="9"/>
+<text class="gt-slip" x="804" y="455.00" text-anchor="end">pågår</text>
+<text class="gt-name" x="198" y="501.00" text-anchor="end">Opplæring</text>
+<rect class="gt-plan" data-task="Opplæring" x="651.21" y="485.00" width="34.67" height="9"/>
+<rect class="gt-actual gt-running" data-task="Opplæring" x="673.27" y="500.00" width="2.00" height="9"/>
+<text class="gt-slip" x="804" y="501.00" text-anchor="end">pågår</text>
+<text class="gt-name" x="198" y="547.00" text-anchor="end">Produksjonssetting</text>
+<rect class="gt-plan" data-task="Produksjonssetting" x="695.33" y="531.00" width="12.61" height="9"/>
+<text class="gt-state" x="699.33" y="554.00">ikke startet</text>
+<text class="gt-slip" x="804" y="547.00" text-anchor="end"></text>
+<text class="gt-name" x="198" y="593.00" text-anchor="end">Overlevering</text>
+<rect class="gt-plan" data-task="Overlevering" x="717.39" y="577.00" width="12.61" height="9"/>
+<text class="gt-state" x="721.39" y="600.00">ikke startet</text>
+<text class="gt-slip" x="804" y="593.00" text-anchor="end"></text>
+<text class="gt-slip-head" x="804" y="42" text-anchor="end">Avvik</text>
+</svg>
+    <figcaption>Per tiltak: den øvre linjen er det som var planlagt, den nedre er det som skjedde. Tallet til høyre er hvor mange dager tiltaket ble ferdig etter planen, med fortegn.</figcaption>
+  </figure>
+
+  <p class="summary">12 tiltak, 5 ferdig etter planen. Verst er Prototyp, 14 dager over. 2 pågår og 2 er ikke startet.</p>
+  <ul class="notes">
+<li>To linjer per tiltak på samme akse: øverst det som var planlagt, nederst det som skjedde. En andre akse ville fått tre dager til å se ut som tre uker.</li><li>Avviket er et tall med fortegn, ikke en farge. Pluss betyr ferdig etter planen, minus før. En farge er en stemning; tallet er svaret, og det står både ved linjen og i tabellen.</li><li>Et tiltak uten sluttdato er ikke tegnet som en linje. Det er enten ikke startet eller pågår, og de to står med hvert sitt ord: en linje på null dager ville lest som ferdig i tide.</li><li>Radene står sortert etter planlagt start, og ved lik start i den rekkefølgen de kom i uttrekket. Rekkefølgen er en påstand om planen, derfor står den her.</li><li>Datoer leses bare som ÅÅÅÅ-MM-DD. Godtar byggeren også 03.04, må den gjette om kilden mente mars eller april, og en plan som er en måned feil er verre enn en som ikke bygges.</li>
+  </ul>
+
+  <h2 id="tbl-h">Datoene og avviket</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Én rad per tiltak: planlagt start og slutt, faktisk start og slutt, avviket i dager, og hvilken tilstand tiltaket er i.</caption>
+    <thead><tr>
+      <th scope="col">Tiltak</th>
+      <th scope="col" class="num">Planlagt start</th>
+      <th scope="col" class="num">Planlagt slutt</th>
+      <th scope="col" class="num">Faktisk start</th>
+      <th scope="col" class="num">Faktisk slutt</th>
+      <th scope="col" class="num">Avvik</th>
+      <th scope="col">Tilstand</th>
+    </tr></thead>
+    <tbody>
+<tr><td>Behovsavklaring</td><td class="num">01.06.2026</td><td class="num">12.06.2026</td><td class="num">01.06.2026</td><td class="num">11.06.2026</td><td class="num">−1</td><td>ferdig før planen</td></tr>
+<tr><td>Datakartlegging</td><td class="num">08.06.2026</td><td class="num">26.06.2026</td><td class="num">09.06.2026</td><td class="num">03.07.2026</td><td class="num">+7</td><td>ferdig etter planen</td></tr>
+<tr><td>Løsningsskisse</td><td class="num">22.06.2026</td><td class="num">10.07.2026</td><td class="num">06.07.2026</td><td class="num">21.07.2026</td><td class="num">+11</td><td>ferdig etter planen</td></tr>
+<tr><td>Sikkerhetsvurdering</td><td class="num">06.07.2026</td><td class="num">24.07.2026</td><td class="num">08.07.2026</td><td class="num">24.07.2026</td><td class="num">0</td><td>ferdig i tide</td></tr>
+<tr><td>Prototyp</td><td class="num">20.07.2026</td><td class="num">21.08.2026</td><td class="num">27.07.2026</td><td class="num">04.09.2026</td><td class="num">+14</td><td>ferdig etter planen</td></tr>
+<tr><td>Datamodell</td><td class="num">17.08.2026</td><td class="num">11.09.2026</td><td class="num">18.08.2026</td><td class="num">09.09.2026</td><td class="num">−2</td><td>ferdig før planen</td></tr>
+<tr><td>Brukertest runde 1</td><td class="num">24.08.2026</td><td class="num">04.09.2026</td><td class="num">07.09.2026</td><td class="num">11.09.2026</td><td class="num">+7</td><td>ferdig etter planen</td></tr>
+<tr><td>Integrasjon</td><td class="num">07.09.2026</td><td class="num">02.10.2026</td><td class="num">14.09.2026</td><td class="num">16.10.2026</td><td class="num">+14</td><td>ferdig etter planen</td></tr>
+<tr><td>Brukertest runde 2</td><td class="num">05.10.2026</td><td class="num">16.10.2026</td><td class="num">19.10.2026</td><td class="num">–</td><td class="num">–</td><td>pågår</td></tr>
+<tr><td>Opplæring</td><td class="num">19.10.2026</td><td class="num">30.10.2026</td><td class="num">26.10.2026</td><td class="num">–</td><td class="num">–</td><td>pågår</td></tr>
+<tr><td>Produksjonssetting</td><td class="num">02.11.2026</td><td class="num">06.11.2026</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td>ikke startet</td></tr>
+<tr><td>Overlevering</td><td class="num">09.11.2026</td><td class="num">13.11.2026</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td>ikke startet</td></tr>
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>Bildet sammenligner planen med det som skjedde, per tiltak, på én datoakse. Det sier ingenting om hvor mye arbeid som gjenstår, bare hvor datoene ligger.</p>
+  <p>Alle datoer og alle avvik står i tabellen, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.</p>
+  <p>Kilde: Syntetisk eksempeldata (fremdrift.csv) · 12 rader · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

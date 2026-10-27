@@ -10,8 +10,9 @@
    Tún brand tokens
    ==========================================================================
    Source : the public site's own :root block, tun.community
-            (see AGENTS.md §8 for why the site is never copied into
-            this repo). Four colours are
+            (eksempelgård-penthouse/testserver/stacks/tun-site/web/index.html,
+            private testmiljø repo — see docs/18-naming.md and AGENTS.md §8 for
+            why that stack is never copied into this repo). Four colours are
             taken verbatim from there:
 
               --ink      #0d2b21   Tún mørkegrønn, fra logoen (body text; the
@@ -37,7 +38,7 @@
 
    See plugins/tun/README.md for the derivation of every slot, the WCAG
    contrast table, and why "tokens" is the only capability this plugin
-   provides (unlike a company brand plugin, which may also provide "assets").
+   provides (unlike plugins/<your-brand>, which also provides "assets").
    ========================================================================== */
 :root{
   --tun-ink:              #0d2b21;  /* direct: site --ink */
@@ -55,10 +56,20 @@
                                         (channel-wise lerp, t=0.55). A tint of
                                         the accent made with the palette's own
                                         paper colour, not with white. */
+  --tun-secondary-light:  #6cac96;  /* derived: --tun-secondary with HSL
+                                        lightness raised to 55% (same hue
+                                        159°, same saturation 27.9%,
+                                        L 21.8% -> 55.0%) — the same derivation
+                                        rule as --tun-ink-darkest, applied
+                                        upward. The primary colour as read on a
+                                        dark surface: --tun-secondary itself is
+                                        chosen for paper and measures 1.55:1 on
+                                        --tun-ink. This measures 5.76:1 on ink
+                                        and 6.95:1 on ink-darkest. */
 }
 
 /* ==========================================================================
-   Plugin seam: the eight semantic palette slots core asks for.
+   Plugin seam: the nine semantic palette slots core asks for.
    See docs/22-plugin-contract.md and tools/tun_tokens.py::REQUIRED_SLOTS.
    ========================================================================== */
 :root{
@@ -67,6 +78,7 @@
   --palette-primary:         var(--tun-secondary);
   --palette-primary-dark:    var(--tun-ink);
   --palette-primary-darkest: var(--tun-ink-darkest);
+  --palette-primary-on-dark: var(--tun-secondary-light);
   --palette-accent:          var(--tun-accent);
   --palette-accent-light:    var(--tun-accent-tint);
   --palette-on-dark:         var(--tun-paper);

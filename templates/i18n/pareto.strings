@@ -1,0 +1,59 @@
+# Strings for templates/pareto.html and tools/build_pareto.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# Sorted bars plus a cumulative line: which few categories make up most of the total.
+
+[nb]
+html_lang = nb
+svg_title = Pareto
+svg_desc = {n} kategorier av {value}, sortert etter størrelse, med hvor stor del av totalen de utgjør til sammen. Terskelen er {threshold} prosent.
+sub_line = {n} kategorier, til sammen {total}
+caption = Søylene er sortert etter størrelse, størst først. Linjen viser hvor stor del av totalen som er dekket når en leser fra venstre, og den har sin egen akse til høyre i prosent. Terskelen på {threshold} prosent står i tabellen.
+cumulative_axis = kumulert
+folded_label = Andre ({n})
+summary_line = {n} kategorier til sammen {total}. De {vital} største dekker {threshold} prosent eller mer.
+summary_biggest = Størst er {label} med {value}, som er {share} prosent av totalen.
+summary_folded = De {n} minste er slått sammen til én søyle etter de {drawn} største, og tallet deres er med i totalen.
+summary_merged = {n} navn forekom mer enn én gang i uttrekket og er summert per navn.
+note_sort = Søylene er sortert etter størrelse, størst først, fordi sorteringen er selve påstanden. Et Pareto-diagram i kilderekkefølge er et søylediagram med en linje over, og sier ingenting om hvilke få som betyr mest.
+note_cumulative = Linjen er kumulativ og ender på hundre prosent av det som er tegnet. Hvert punkt står i tabellen, så en leser kan kontrollere hvor kneet er i stedet for å gjette det fra bildet.
+note_axes = Det er to akser, og de er merket hver for seg: søylene i kategorienes egen enhet, linjen i prosent til høyre. En leser som tar linjen mot venstre akse, får et tall som ikke betyr noe.
+note_fold = Kategoriene utenfor de øverste er slått sammen til én søyle som bærer antallet sitt i navnet. Ingenting er droppet, og totalen er den samme som i uttrekket.
+note_shares = Prosentene er avrundet med største rest, så kolonnen summerer til nøyaktig hundre komma null. Avrunding per tall gir 99,9 og en leser som tror de har regnet feil.
+head_table = Tallene bak bildet
+table_caption = Én rad per tegnet kategori: verdi, andel av totalen, og kumulert andel. Prosentkolonnen summerer til {sum}.
+col_label = Kategori
+col_value = Verdi
+col_share = Andel
+col_cumulative = Kumulert
+source_line = Kilde: {name} · {rows} kategorier
+footer_a = Bildet viser hvilke kategorier som bærer totalen, ikke hvorfor de er store. En lang søyle er et faktum, ikke en forklaring.
+footer_b = Verdier, andeler og kumulert andel står i tabellen, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.
+footer_built = Bygget
+
+[en]
+html_lang = en
+svg_title = Pareto
+svg_desc = {n} categories of {value}, sorted by size, with how much of the total they make up together. The threshold is {threshold} percent.
+sub_line = {n} categories, {total} in total
+caption = The bars are sorted by size, largest first. The line shows how much of the total is covered when reading from the left, and it has its own axis on the right in percent. The {threshold} percent threshold is stated in the table.
+cumulative_axis = cumulative
+folded_label = Other ({n})
+summary_line = {n} categories totalling {total}. The largest {vital} cover {threshold} percent or more.
+summary_biggest = Largest is {label} at {value}, which is {share} percent of the total.
+summary_folded = The smallest {n} are folded into one bar after the largest {drawn}, and their number is included in the total.
+summary_merged = {n} names appeared more than once in the extract and were summed per name.
+note_sort = The bars are sorted by size, largest first, because the sort is the claim. A Pareto diagram in source order is a bar chart with a line drawn over it, and says nothing about which few matter most.
+note_cumulative = The line is cumulative and ends at one hundred percent of what is drawn. Every point is in the table, so a reader can check where the knee is instead of guessing it from the picture.
+note_axes = There are two axes and they are labelled separately: the bars in the unit of the categories, the line in percent on the right. A reader who reads the line against the left axis gets a number that means nothing.
+note_fold = The categories outside the top are folded into one bar that carries its count in its name. Nothing is dropped, and the total is the one from the extract.
+note_shares = The percentages are rounded by largest remainder, so the column sums to exactly one hundred point zero. Rounding each number on its own gives 99,9 and a reader who thinks they added up wrong.
+head_table = The numbers behind the picture
+table_caption = One row per drawn category: value, share of the total, and cumulative share. The percentage column sums to {sum}.
+col_label = Category
+col_value = Value
+col_share = Share
+col_cumulative = Cumulative
+source_line = Source: {name} · {rows} categories
+footer_a = The picture shows which categories carry the total, not why they are large. A long bar is a fact, not an explanation.
+footer_b = Values, shares and cumulative share are in the table, so the picture can be checked instead of trusted. The file carries no script.
+footer_built = Built

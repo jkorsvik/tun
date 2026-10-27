@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hvor ble henvendelsene av</title>
+<!--
+  Hvor ble henvendelsene av
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (kanaler.csv)
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Kundesenteret
+    Made with   : Tún - tun.community
+    Records     : 11 flows between nodes
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: where a quantity went between stages, with every node balanced and every
+  flow printed.
+
+  What it is NOT: a reason, and not a drawing of a network that does not balance.
+
+  There is no script in this file.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:60rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:60rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a scaled-down
+   drawing is text under the floor. Below that the box pans, and the page never does. */
+.figure svg{display:block;width:100%;height:auto;min-width:53.75rem}  /* 860 units */
+.sk-flow{fill:var(--brand);fill-opacity:.42}
+.sk-flow:hover{fill-opacity:.62}
+.sk-node{fill:var(--brand-dark)}
+/* A halo in the panel colour, because a node label sits on top of the ribbons that
+   arrive at it and is unreadable without one. paint-order keeps the stroke behind
+   the glyphs, so the letterforms stay sharp. */
+.sk-label{fill:var(--ink);font-size:14px;paint-order:stroke;
+  stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+.sk-stage{fill:var(--muted);font-size:14px}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.notes{margin:.75rem 0 0;padding-left:1.25rem;font-size:.9375rem;line-height:1.5}
+.notes li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5;
+  margin-bottom:1.5rem}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{max-width:60rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:48rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark is a SCREEN choice and paper is white, so this block is scoped to screen: without
+     the guard it would come after the print rule above and paint the ink light on a printed
+     white page. The node bars take the theme's own ink in dark, because --brand-dark is the
+     darkest surface there and a dark bar on a dark panel disappears. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    .sk-node{fill:var(--ink)}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Hvor ble henvendelsene av</h1>
+  <p class="sub">8 noder, 11 overføringer, til sammen 1 720</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 860 556" role="img" aria-labelledby="sk-t sk-d">
+<title id="sk-t">Overføringningsdiagram</title>
+<desc id="sk-d">8 noder og 11 overføringer av Antall, til sammen 1 720. Hver node har like mye inn som ut, bortsett fra start og slutt.</desc>
+<path class="sk-flow" data-src="Telefon" data-dst="Svart" data-value="620" data-y0="58.00" data-y1="62.00" data-thick="155.00" d="M22.00,58.00 C222.00,58.00 222.00,62.00 422.00,62.00 L422.00,217.00 C222.00,217.00 222.00,213.00 22.00,213.00 Z"><title>Telefon → Svart: 620</title></path>
+<path class="sk-flow" data-src="Telefon" data-dst="Videresendt" data-value="180" data-y0="213.00" data-y1="359.50" data-thick="45.00" d="M22.00,213.00 C222.00,213.00 222.00,359.50 422.00,359.50 L422.00,404.50 C222.00,404.50 222.00,258.00 22.00,258.00 Z"><title>Telefon → Videresendt: 180</title></path>
+<path class="sk-flow" data-src="Chat" data-dst="Svart" data-value="410" data-y0="264.00" data-y1="217.00" data-thick="102.50" d="M22.00,264.00 C222.00,264.00 222.00,217.00 422.00,217.00 L422.00,319.50 C222.00,319.50 222.00,366.50 22.00,366.50 Z"><title>Chat → Svart: 410</title></path>
+<path class="sk-flow" data-src="Chat" data-dst="Videresendt" data-value="60" data-y0="366.50" data-y1="404.50" data-thick="15.00" d="M22.00,366.50 C222.00,366.50 222.00,404.50 422.00,404.50 L422.00,419.50 C222.00,419.50 222.00,381.50 22.00,381.50 Z"><title>Chat → Videresendt: 60</title></path>
+<path class="sk-flow" data-src="Epost" data-dst="Videresendt" data-value="240" data-y0="387.50" data-y1="419.50" data-thick="60.00" d="M22.00,387.50 C222.00,387.50 222.00,419.50 422.00,419.50 L422.00,479.50 C222.00,479.50 222.00,447.50 22.00,447.50 Z"><title>Epost → Videresendt: 240</title></path>
+<path class="sk-flow" data-src="Skjema" data-dst="Svart" data-value="120" data-y0="453.50" data-y1="319.50" data-thick="30.00" d="M22.00,453.50 C222.00,453.50 222.00,319.50 422.00,319.50 L422.00,349.50 C222.00,349.50 222.00,483.50 22.00,483.50 Z"><title>Skjema → Svart: 120</title></path>
+<path class="sk-flow" data-src="Skjema" data-dst="Videresendt" data-value="90" data-y0="483.50" data-y1="479.50" data-thick="22.50" d="M22.00,483.50 C222.00,483.50 222.00,479.50 422.00,479.50 L422.00,502.00 C222.00,502.00 222.00,506.00 22.00,506.00 Z"><title>Skjema → Videresendt: 90</title></path>
+<path class="sk-flow" data-src="Svart" data-dst="Løst" data-value="980" data-y0="62.00" data-y1="62.00" data-thick="245.00" d="M438.00,62.00 C638.00,62.00 638.00,62.00 838.00,62.00 L838.00,307.00 C638.00,307.00 638.00,307.00 438.00,307.00 Z"><title>Svart → Løst: 980</title></path>
+<path class="sk-flow" data-src="Svart" data-dst="Eskalert" data-value="170" data-y0="307.00" data-y1="417.00" data-thick="42.50" d="M438.00,307.00 C638.00,307.00 638.00,417.00 838.00,417.00 L838.00,459.50 C638.00,459.50 638.00,349.50 438.00,349.50 Z"><title>Svart → Eskalert: 170</title></path>
+<path class="sk-flow" data-src="Videresendt" data-dst="Løst" data-value="400" data-y0="359.50" data-y1="307.00" data-thick="100.00" d="M438.00,359.50 C638.00,359.50 638.00,307.00 838.00,307.00 L838.00,407.00 C638.00,407.00 638.00,459.50 438.00,459.50 Z"><title>Videresendt → Løst: 400</title></path>
+<path class="sk-flow" data-src="Videresendt" data-dst="Eskalert" data-value="170" data-y0="459.50" data-y1="459.50" data-thick="42.50" d="M438.00,459.50 C638.00,459.50 638.00,459.50 838.00,459.50 L838.00,502.00 C638.00,502.00 638.00,502.00 438.00,502.00 Z"><title>Videresendt → Eskalert: 170</title></path>
+<rect class="sk-node" data-node="Chat" x="6.00" y="264.00" width="16" height="117.50" rx="2"/>
+<text class="sk-label" x="30.00" y="327.75" text-anchor="start">Chat</text>
+<rect class="sk-node" data-node="Epost" x="6.00" y="387.50" width="16" height="60.00" rx="2"/>
+<text class="sk-label" x="30.00" y="422.50" text-anchor="start">Epost</text>
+<rect class="sk-node" data-node="Eskalert" x="838.00" y="417.00" width="16" height="85.00" rx="2"/>
+<text class="sk-label" x="830.00" y="464.50" text-anchor="end">Eskalert</text>
+<rect class="sk-node" data-node="Løst" x="838.00" y="62.00" width="16" height="345.00" rx="2"/>
+<text class="sk-label" x="830.00" y="239.50" text-anchor="end">Løst</text>
+<rect class="sk-node" data-node="Skjema" x="6.00" y="453.50" width="16" height="52.50" rx="2"/>
+<text class="sk-label" x="30.00" y="484.75" text-anchor="start">Skjema</text>
+<rect class="sk-node" data-node="Svart" x="422.00" y="62.00" width="16" height="287.50" rx="2"/>
+<text class="sk-label" x="414.00" y="210.75" text-anchor="end">Svart</text>
+<rect class="sk-node" data-node="Telefon" x="6.00" y="58.00" width="16" height="200.00" rx="2"/>
+<text class="sk-label" x="30.00" y="163.00" text-anchor="start">Telefon</text>
+<rect class="sk-node" data-node="Videresendt" x="422.00" y="359.50" width="16" height="142.50" rx="2"/>
+<text class="sk-label" x="414.00" y="435.75" text-anchor="end">Videresendt</text>
+<text class="sk-stage" x="2.00" y="34" text-anchor="start">Trinn 1</text>
+<text class="sk-stage" x="430.00" y="34" text-anchor="middle">Trinn 2</text>
+<text class="sk-stage" x="826.00" y="34" text-anchor="end">Trinn 3</text>
+</svg>
+    <figcaption>Hver bånd er en kollega, og bredden er mengden. Båndet har samme bredde ved begge ender, og hele bildet bruker én skala, så en node som tar imot mindre, er synlig kortere. Tallene står i tabellene.</figcaption>
+  </figure>
+
+  <p class="summary">8 noder i 11 overføringer: 4 starter, 2 slutter, og 1 720 er mengden som går inn. Største enkeltoverføring er Svart til Løst med 980. Hver node i midten har like mye inn som ut; det er kontrollert til siste enhet.</p>
+  <ul class="notes">
+<li>En kollega som ikke går opp, er pynt. Byggeren regner inn og ut for hver node, og stopper hvis en node midt i bildet ikke har like mye inn som ut: da ser det ut som om mengder oppstår eller forsvinner mellom to trinn.</li><li>Hele bildet bruker én skala. En skala per trinn ville latt et bånd betyde én ting i den ene enden og noe annet i den andre, uten at noe på siden sa det.</li><li>Trinnene er regnet ut som lengste vei fra en startnode, og en syklus blir avvist: kan mengden komme tilbake til et tidligere trinn, finnes det ingen trinn, og en tegning med trinn ville dikte opp en rekkefølge.</li><li>Bare positive overføringer. En kollega på null tegner en hårfin strek ingen kan se, og en negativ har ingen bredde i det hele tatt.</li><li>Hver kollega står i tabellen med mengde og andel, og hver node med hvor mye som kom inn og gikk ut. En leser kan legge sammen en kolonne i stedet for å tro på en bredde.</li>
+  </ul>
+
+  <h2 id="fl-h">Overføringene</h2>
+  <table aria-labelledby="fl-h">
+    <caption>Én rad per kollega, største først, med andel av den samlede mengden.</caption>
+    <thead><tr>
+      <th scope="col">Fra</th>
+      <th scope="col">Til</th>
+      <th scope="col" class="num">Mengde</th>
+      <th scope="col" class="num">Andel</th>
+    </tr></thead>
+    <tbody>
+<tr><td>Svart</td><td>Løst</td><td class="num">980</td><td class="num">57,0</td></tr>
+<tr><td>Telefon</td><td>Svart</td><td class="num">620</td><td class="num">36,0</td></tr>
+<tr><td>Chat</td><td>Svart</td><td class="num">410</td><td class="num">23,8</td></tr>
+<tr><td>Videresendt</td><td>Løst</td><td class="num">400</td><td class="num">23,3</td></tr>
+<tr><td>Epost</td><td>Videresendt</td><td class="num">240</td><td class="num">14,0</td></tr>
+<tr><td>Telefon</td><td>Videresendt</td><td class="num">180</td><td class="num">10,5</td></tr>
+<tr><td>Svart</td><td>Eskalert</td><td class="num">170</td><td class="num">9,9</td></tr>
+<tr><td>Videresendt</td><td>Eskalert</td><td class="num">170</td><td class="num">9,9</td></tr>
+<tr><td>Skjema</td><td>Svart</td><td class="num">120</td><td class="num">7,0</td></tr>
+<tr><td>Skjema</td><td>Videresendt</td><td class="num">90</td><td class="num">5,2</td></tr>
+<tr><td>Chat</td><td>Videresendt</td><td class="num">60</td><td class="num">3,5</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="nd-h">Nodene</h2>
+  <table aria-labelledby="nd-h">
+    <caption>Én rad per node: hvilket trinn den står i, og hvor mye som kom inn og gikk ut. En node midt i bildet har de samme to tallene.</caption>
+    <thead><tr>
+      <th scope="col">Node</th>
+      <th scope="col" class="num">Trinn</th>
+      <th scope="col" class="num">Inn</th>
+      <th scope="col" class="num">Ut</th>
+    </tr></thead>
+    <tbody>
+<tr><td>Telefon</td><td class="num">1</td><td class="num">0</td><td class="num">800</td></tr>
+<tr><td>Chat</td><td class="num">1</td><td class="num">0</td><td class="num">470</td></tr>
+<tr><td>Epost</td><td class="num">1</td><td class="num">0</td><td class="num">240</td></tr>
+<tr><td>Skjema</td><td class="num">1</td><td class="num">0</td><td class="num">210</td></tr>
+<tr><td>Svart</td><td class="num">2</td><td class="num">1 150</td><td class="num">1 150</td></tr>
+<tr><td>Videresendt</td><td class="num">2</td><td class="num">570</td><td class="num">570</td></tr>
+<tr><td>Eskalert</td><td class="num">3</td><td class="num">340</td><td class="num">0</td></tr>
+<tr><td>Løst</td><td class="num">3</td><td class="num">1 380</td><td class="num">0</td></tr>
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>Bildet viser hvor mengden gikk, ikke hvorfor. En bred kollega er et faktum, ikke en forklaring.</p>
+  <p>Alle overføringer, andeler og nodetotaler står i tabellene, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.</p>
+  <p>Kilde: Syntetisk eksempeldata (kanaler.csv) · 11 overføringer · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,60 @@
+name: pages
+
+# Publishes the showcase as the site's front page, with every built example kept at its
+# own path. A reader who wants to explore clicks a card; a reader who wants one artefact
+# to itself opens its file directly, and both work because the site is the repository's
+# own built output, not a second build of it.
+#
+# Nothing here compiles anything. The examples are committed as built artefacts on
+# purpose (see docs/12-maintainability-conventions.md), so the site is an assembly step
+# and a copy. If an example is broken, it is broken in the repository, and the verify
+# gates are what catch that, not this workflow.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Assemble the site
+        run: |
+          set -eu
+          test -f examples/54-showcase/oversikt.html
+          mkdir -p _site
+          cp examples/54-showcase/oversikt.html _site/index.html
+          cp -r examples _site/examples
+          cp -r docs _site/docs
+          cp README.md LICENSE COPYING.ARTEFACT-EXCEPTION AUTHORS.md _site/
+          # A reader should not need a Markdown viewer to read the licence or the README.
+          for f in README LICENSE COPYING.ARTEFACT-EXCEPTION AUTHORS; do
+            test -f "_site/$f.md" && cp "_site/$f.md" "_site/$f.txt" || true
+          done
+          touch _site/.nojekyll
+          echo "site: $(find _site -type f | wc -l) files, $(du -sh _site | cut -f1)"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

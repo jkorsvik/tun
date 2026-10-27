@@ -1,0 +1,68 @@
+# Strings for templates/scatter.html and tools/build_scatter.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shows one point per unit in a plane of two measures, so the reader can see whether
+# the two move together, and how much of the plane is empty.
+
+[nb]
+html_lang = nb
+svg_title = Spredning
+svg_desc = {n} punkter: {x} mot {y}. Hvert punkt er én enhet.
+sub_line = {n} enheter, {x} mot {y}
+caption = Hvert punkt er én enhet, målt på to akser samtidig. Et punkt som ligger langt unna de andre er ikke en feil: det er den enheten bildet ble laget for å finne.
+axes_note = Aksene spenner over verdiene i dataene med litt luft i kantene, ikke fra null. Det er et valg: med null i bunnen ville forskjellene blitt presset sammen til en stripe. Tallene langs aksene er runde hakk, og de faktiske ytterpunktene står i setningen over.
+labels_names = Hvert punkt har navnet sitt ved seg, og navnet står også i tabellen.
+labels_numbers = Navnene står i tabellen, ikke på bildet: {n} punkter er flere enn det er plass til. Hvert punkt har nummeret sitt.
+labels_off = Navnene står bare i tabellen. Hvert punkt har nummeret sitt.
+summary_line = {n} enheter. {x} går fra {xlow} til {xhigh}, {y} fra {ylow} til {yhigh}. Høyest på {y} ligger {ytop} med {ytopv}, lavest {ybot} med {ybotv}.
+summary_flat = Bare {niff} unike punkt(er): flere enheter har samme verdi på begge aksene, og de ligger oppå hverandre i bildet. Tabellen viser hvor mange.
+summary_overlap = {n} punkt(er) deler plass med et annet punkt i bildet. Alle står i tabellen.
+trend_on = Den stiplede linjen er minste kvadraters tilpasning: r = {r} over {n} punkter. En linje gjennom en sky er et sammendrag av dette utvalget, ikke en mekanisme, og ikke et anslag.
+trend_strong = r = {r} er nær ±1, så punktene følger hverandre tett her. Det sier ingenting om hvilken av dem som beveger den andre.
+trend_weak = r = {r} er nær null, så de to målene følger hverandre svakt i dette utvalget. En sammenheng kan finnes uten å være lineær.
+head_table = Tallene bak bildet
+table_caption = Én rad per enhet. Nr er nummeret punktet har i bildet, så en rad kan finnes igjen.
+col_no = Nr
+col_label = Enhet
+col_x = {x}
+col_y = {y}
+col_group = Gruppe
+legend_group = Gruppe
+source_line = Kilde: {name} · {rows} rader
+skipped = {n} rad(er) uten navn eller uten tall i begge kolonnene er ikke tegnet.
+footer_a = Hvert punkt er én enhet målt på to akser. Bildet viser om de to målene følger hverandre i dette utvalget; det viser ikke hva som påvirker hva, og en enhet som ligger alene kan være den mest interessante eller den mest feilregistrerte.
+footer_b = Aksene spenner over dataene og er merket med runde hakk, ikke med null: les tallene før du leser avstanden. Filen har ingen skript.
+footer_built = Bygget
+plus = +{value}
+minus = −{value}
+
+[en]
+html_lang = en
+svg_title = Scatter
+svg_desc = {n} points: {x} against {y}. Each point is one unit.
+sub_line = {n} units, {x} against {y}
+caption = Each point is one unit, measured on two axes at once. A point far from the others is not a defect: it is the unit the picture was made to find.
+axes_note = The axes span the values in the data with a little air at the edges, not from zero. That is a choice: with zero at the bottom the differences would be pressed into a stripe. The numbers along the axes are round ticks, and the actual extremes are in the sentence above.
+labels_names = Each point carries its own name, and the name is in the table too.
+labels_numbers = The names are in the table, not on the picture: {n} points is more than there is room for. Each point carries its number.
+labels_off = The names are only in the table. Each point carries its number.
+summary_line = {n} units. {x} runs from {xlow} to {xhigh}, {y} from {ylow} to {yhigh}. Highest on {y} is {ytop} at {ytopv}, lowest {ybot} at {ybotv}.
+summary_flat = Only {niff} unique point(s): several units share both values and sit on top of one another. The table shows how many.
+summary_overlap = {n} point(s) share a place with another point in the picture. All of them are in the table.
+trend_on = The dashed line is a least-squares fit: r = {r} over {n} points. A line through a cloud is a summary of this sample, not a mechanism, and not a forecast.
+trend_strong = r = {r} is near ±1, so the points track each other closely here. It says nothing about which of them moves the other.
+trend_weak = r = {r} is near zero, so the two measures track each other weakly in this sample. A relationship can exist without being linear.
+head_table = The numbers behind the picture
+table_caption = One row per unit. No is the number the point carries in the picture, so a row can be found again.
+col_no = No
+col_label = Unit
+col_x = {x}
+col_y = {y}
+col_group = Group
+legend_group = Group
+source_line = Source: {name} · {rows} rows
+skipped = {n} row(s) with no name or no number in either column are not drawn.
+footer_a = Each point is one unit measured on two axes. The picture shows whether the two measures track each other in this sample; it does not show what influences what, and a unit standing alone may be the most interesting or the most mis-recorded.
+footer_b = The axes span the data and are labelled with round ticks, not zero: read the numbers before you read the distance. The file carries no script.
+footer_built = Built
+plus = +{value}
+minus = −{value}

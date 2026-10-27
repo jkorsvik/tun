@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Saker: tre svar og en inngang</title>
+<!--
+  Saker: tre svar og en inngang
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Made by     : tools/build_index.py, from the provenance block of each file listed
+    Folder      : 34-folder-index
+    Built       : 2026-10-24 10:00
+    Requested by: Innsikt
+    Made with   : Tún - tun.community
+    Lists       : 3 artefact(s) with a provenance block, 0 without
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: the page a reader lands on. A folder of built dashboards, registers and
+  comparisons has no order and no introduction; a reader who is handed it sees a list of
+  file names and picks one. This is the missing front page: what each file answers, where
+  its numbers came from, when it was built, and for whom.
+
+  What it is NOT: a copy of their content, and not a live view. Every fact on this page is
+  read out of the built file's own provenance block, which is the point: a file that cannot
+  say where it came from is listed separately rather than silently dropped or described by
+  guesswork.
+
+  There is no script in this file. A page whose whole job is a list of links does not need
+  one, and a page that needs no script cannot be broken by a host that refuses to run one.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:64rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:64rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--brand);
+  border-radius:.25rem;padding:1rem 1.25rem}
+.card h3{margin:0;font-size:1.0625rem;line-height:1.5rem;font-weight:600}
+.card h3 a{color:var(--brand-dark);text-decoration:underline;text-underline-offset:.15em}
+.card h3 a:hover{color:var(--brand)}
+.card p{margin:.25rem 0 0;font-size:.9375rem;line-height:1.5}
+.facts{margin:.5rem 0 0;display:grid;grid-template-columns:auto 1fr;gap:.125rem .75rem;
+  font-size:.875rem;line-height:1.5;color:var(--muted)}
+.facts dt{font-weight:600;color:var(--ink)}
+.facts dd{margin:0}
+.card.bare{border-left-color:var(--muted)}
+.note{margin:0 0 .75rem;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.empty{background:var(--panel);border:1px solid var(--line);border-radius:.25rem;
+  padding:1rem 1.25rem;font-size:.9375rem}
+footer{max-width:64rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows are the two
+   places this page picks a slot by its LIGHT role, and that role inverts.
+
+   1. THE HEADER BAND fills with --brand-dark and writes --on-brand on it. In light that is
+      dark teal under white: a band, with a title on it. In dark, --brand-dark is the
+      darkest surface and --on-brand is --bg, so the two are both dark and the title
+      measures 1.39:1. The pair theme-dark.css does define is a --brand fill carrying
+      --on-brand, so the band uses that pair here and stays a band.
+   2. THE CARD LINK is --brand-dark on a --panel card: dark teal on white in light, and the
+      same colour as the card in dark, 1.00:1. --brand is the slot the theme keeps for a
+      readable colour on a dark surface, which is what a link has to be. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) header{background:var(--brand);color:var(--on-brand)}
+  :root:not([data-theme]) .card h3 a{color:var(--brand)}
+  :root:not([data-theme]) .card h3 a:hover{color:var(--ink)}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .card{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Saker: tre svar og en inngang</h1>
+  <p class="sub">34-folder-index · 3 filer med opphavsblokk</p>
+</div></header>
+<main>
+  <h2 id="built">Filene i denne mappen</h2>
+  <p class="note">Hvert kort er lest ut av filens egen opphavsblokk. Klikk på tittelen for å åpne filen.</p>
+  <ul class="list">
+    <li class="card">
+      <h3><a href="saker-dashboard.html">Saker per team og maned</a></h3>
+      <dl class="facts"><dt>Kilde</dt><dd>Syntetisk eksempeldata (saker.csv)</dd><dt>Bygget</dt><dd>2026-10-24 10:00 UTC</dd><dt>For</dt><dd>Innsikt</dd><dt>Størrelse</dt><dd>45 kB</dd></dl>
+    </li>
+    <li class="card">
+      <h3><a href="saker-register.html">Sakene selv</a></h3>
+      <dl class="facts"><dt>Kilde</dt><dd>Syntetisk eksempeldata (saker.csv) — 12 rader, 5 kolonner</dd><dt>Bygget</dt><dd>2026-10-24 10:00</dd><dt>For</dt><dd>Innsikt</dd><dt>Størrelse</dt><dd>27 kB</dd></dl>
+    </li>
+    <li class="card">
+      <h3><a href="saker-sammenligning.html">Belop per team: september mot oktober</a></h3>
+      <dl class="facts"><dt>Kilde</dt><dd>Syntetisk eksempeldata (saker.csv)</dd><dt>Bygget</dt><dd>2026-10-24 10:00</dd><dt>For</dt><dd>Innsikt</dd><dt>Størrelse</dt><dd>20 kB</dd></dl>
+    </li>
+  </ul>
+
+</main>
+<footer>
+  <p>Selvstendig fil: ingen skript, ingen server, og ingenting hentes når den åpnes.</p>
+  <p>Kortene er lest ut av provenance-blokken i hver fil. En fil som ikke kan redegjøre for seg selv, står i sin egen liste.</p>
+  <p>Bygget 2026-10-24 10:00 · Mappe 34-folder-index</p>
+</footer>
+</body>
+</html>

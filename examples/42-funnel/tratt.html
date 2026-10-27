@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Søknader gjennom behandlingen</title>
+<!--
+  Søknader gjennom behandlingen
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (soknader.csv) — 400 saker
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Saksbehandlingen
+    Made with   : Tún - tun.community
+    Records     : 400 distinct records, one row per stage each reached
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: one bar per stage, its width proportional to how many records reached it,
+  with both conversion rates and the number lost since the previous stage printed beside it.
+
+  What it is NOT: a process description, or a claim about why records fall out. It counts the
+  cohort that passes through the stages it was given. The stages are declared by whoever built
+  the file, never inferred from the data.
+
+  There is no script in this file. A filter would re-lay the drawing, and the drawing is the
+  claim being made.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a
+   scaled-down drawing is text under the floor. Below that the box pans. */
+.figure svg{display:block;width:100%;height:auto;min-width:62.5rem}
+.fn-bar{fill:var(--brand)}
+.fn-count{fill:var(--ink);font-size:14px;font-weight:600}
+.fn-fig{fill:var(--muted);font-size:14px}
+.fn-head{fill:var(--muted);font-size:14px;font-weight:600}
+.fn-name{fill:var(--ink);font-size:14px}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.worst{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.warn{margin:1rem 0 0;padding:.75rem 1rem;background:var(--bad-soft);border-radius:.5rem;
+  border:1px solid var(--bad);font-size:.9375rem;line-height:1.5}
+.warn h2{margin:0 0 .25rem;font-size:1rem;line-height:1.5rem;color:var(--bad)}
+.warn p{margin:.25rem 0}
+.warn ul{margin:.25rem 0 0;padding-left:1.25rem}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tfoot th,tfoot td{font-weight:600;background:var(--brand-soft);border-bottom:0}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* The drawing keeps a readable minimum and the figure scrolls sideways inside its own
+     box: a phone may pan a picture, but the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band that reads white-on-ocean in light would be dark on dark. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+  }
+table{display:block;max-width:100%;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Søknader gjennom behandlingen</h1>
+  <p class="sub">4 trinn, Mottatt til Utbetalt · 400 saker</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 1000 282" role="img" aria-labelledby="fn-t fn-d" preserveAspectRatio="xMinYMin meet">
+<title id="fn-t">Tratt</title>
+<desc id="fn-d">Tratt fra Mottatt til Utbetalt i 4 trinn: 400 inn, 210 ut.</desc>
+<text class="fn-head" x="560" y="16" text-anchor="end">Antall</text>
+<text class="fn-head" x="700" y="16" text-anchor="end">Av første</text>
+<text class="fn-head" x="984" y="16" text-anchor="end">Av forrige · tapt</text>
+<rect class="fn-bar" x="16" y="34" width="496.0" height="34"><title>Mottatt: 400 saker, 100,0 % av første trinn</title></rect>
+<text class="fn-count" x="560" y="57.0" text-anchor="end">400</text>
+<text class="fn-fig" x="700" y="57.0" text-anchor="end">100,0 %</text>
+<text class="fn-name" x="16" y="83.0">Mottatt</text>
+<rect class="fn-bar" x="16" y="96" width="416.6" height="34"><title>Vurdert: 336 saker, 84,0 % av første trinn</title></rect>
+<text class="fn-count" x="560" y="119.0" text-anchor="end">336</text>
+<text class="fn-fig" x="700" y="119.0" text-anchor="end">84,0 %</text>
+<text class="fn-fig" x="984" y="119.0" text-anchor="end">84,0 % · −64</text>
+<text class="fn-name" x="16" y="145.0">Vurdert</text>
+<rect class="fn-bar" x="16" y="158" width="349.7" height="34"><title>Innstilt: 282 saker, 70,5 % av første trinn</title></rect>
+<text class="fn-count" x="560" y="181.0" text-anchor="end">282</text>
+<text class="fn-fig" x="700" y="181.0" text-anchor="end">70,5 %</text>
+<text class="fn-fig" x="984" y="181.0" text-anchor="end">83,9 % · −54</text>
+<text class="fn-name" x="16" y="207.0">Innstilt</text>
+<rect class="fn-bar" x="16" y="220" width="260.4" height="34"><title>Utbetalt: 210 saker, 52,5 % av første trinn</title></rect>
+<text class="fn-count" x="560" y="243.0" text-anchor="end">210</text>
+<text class="fn-fig" x="700" y="243.0" text-anchor="end">52,5 %</text>
+<text class="fn-fig" x="984" y="243.0" text-anchor="end">74,5 % · −72</text>
+<text class="fn-name" x="16" y="269.0">Utbetalt</text>
+</svg>
+    <figcaption>Hver stolpe er ett trinn, og bredden er antall saker som nådde det. Tallet til høyre er antallet, andelen av Mottatt, andelen av trinnet før, og hvor mange som falt fra siden forrige trinn. Bare bredden bærer antallet. Høyde og areal er holdt konstante, fordi to skalerte dimensjoner gjør et fall på 50 prosent til et tap på 75 prosent areal.</figcaption>
+  </figure>
+
+  <p class="worst">Det største fallet er mellom Innstilt og Utbetalt: 72 saker, 25,5 % av dem som nådde Innstilt.</p>
+
+  <h2 id="tbl-h">Tallene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Hvert trinn med antall, andel av første trinn, andel av trinnet før, og antall tapt siden forrige trinn.</caption>
+    <thead><tr>
+      <th scope="col">Trinn</th>
+      <th scope="col" class="num">Antall</th>
+      <th scope="col" class="num">Av første</th>
+      <th scope="col" class="num">Av forrige</th>
+      <th scope="col" class="num">Tapt</th>
+    </tr></thead>
+    <tbody>
+      <tr><th scope="row">Mottatt</th><td class="num">400</td><td class="num">100,0 %</td><td class="num">–</td><td class="num">–</td></tr>
+      <tr><th scope="row">Vurdert</th><td class="num">336</td><td class="num">84,0 %</td><td class="num">84,0 %</td><td class="num">64</td></tr>
+      <tr><th scope="row">Innstilt</th><td class="num">282</td><td class="num">70,5 %</td><td class="num">83,9 %</td><td class="num">54</td></tr>
+      <tr><th scope="row">Utbetalt</th><td class="num">210</td><td class="num">52,5 %</td><td class="num">74,5 %</td><td class="num">72</td></tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="row">Fra første til siste</th>
+        <td class="num">400 &rarr; 210</td>
+        <td class="num">52,5 %</td>
+        <td class="num">–</td>
+        <td class="num">–</td>
+      </tr>
+    </tfoot>
+  </table>
+</main>
+<footer>
+  <p>Selvstendig fil: alle tallene er regnet ut på forhånd, og ingenting hentes når den åpnes.</p>
+  <p>Ingen server, ingen innlogging, ingen skript. Trinnene er oppgitt av den som bygde siden, ikke gjettet fra dataene.</p>
+  <p>Syntetisk eksempeldata (soknader.csv) — 400 saker · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

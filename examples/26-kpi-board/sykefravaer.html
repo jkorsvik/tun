@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sykefravaer per enhet</title>
+<!--
+  ============================================================================
+  This is the dashboard specialisation of templates/_generic-provenance-block.html
+  (docs/14-generic-layer-manifest.md) — the "Rows inlined" line below is this
+  template's version of that block's generic ARTIFACT_SPECIFIC_LINE slot. Named
+  without braces deliberately: this is prose about the generic template, not a
+  live placeholder in this one, and the verifier's placeholder scan cannot tell
+  the two apart if this sentence itself uses double braces around that name —
+  that exact mismatch failed every dashboard built after the docs/14 split.
+  Sykefravaer per enhet
+  ----------------------------------------------------------------------------
+  PROVENANCE  (do not delete — this is how numbers get traced back)
+    Source data : Syntetiske data, 144 rader (8 enheter, 18 maneder)
+    Extracted   : 2026-10-24 10:00 UTC
+    Built       : 2026-10-24 10:00 UTC
+    Requested by: HR
+    Built by    : Tún skill `tun-new`
+    Repo        : tun
+    Made with   : Tún — tun.community
+    Rows inlined: 144
+  ----------------------------------------------------------------------------
+  This is a Tier 1 portable dashboard: fully self-contained, no server, no CDN,
+  no licence required to view. It works offline and from a OneDrive-synced folder.
+
+  ⚠ SECURITY: all data below is readable by anyone who can open this file.
+     There is NO row-level security. If different viewers must see different
+     rows, this file must not exist — use Power BI with RLS instead.
+  ============================================================================
+-->
+<style>
+  /* ==========================================================================
+     The brand design tokens — brand palette
+     Source: https://design.example.com/uilib/usage/customisation/colors/
+     Values are the authoritative brand hex codes.
+
+     WHY hardcoded values and not the design system CSS package:
+       This file must stay self-contained (no CDN, works offline, opens from a
+       OneDrive-synced folder). Importing the design system package or its stylesheet would
+       break that. So we inline only the token VALUES we use.
+       The newer `--tun-color-*` design tokens are still beta and resolve
+       through the design system CSS, so they are not usable here yet.
+     ========================================================================== */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+  :root{
+    /* Colours come from the seam above. These are the only values this template
+       still declares itself, and they are spacing, not colour. */
+    --sp-1:0.5rem; --sp-2:1rem; --sp-3:1.5rem; --sp-4:2rem;
+  }
+  *{box-sizing:border-box}
+  /* Accessibility (docs/09-usability-and-navigation-principles.md §1/§5, WCAG 2.2 2.1.1
+     and 2.4.7): a visible focus ring for keyboard users, and reduced motion honoured for
+     anyone who has asked their OS for it. Confirmed cheap and safe to add — an
+     independently built, unrelated dashboard benchmarked in html-sammenligning
+     (2026-09-11) has both with no visible downside. */
+  :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms!important;animation-iteration-count:1!important;
+      transition-duration:.01ms!important;scroll-behavior:auto!important}
+  }
+  /* The Eksempel AS typeface is used when present on the machine (it is on managed
+     devices). It is deliberately NOT loaded from the design system's font CDN — that would
+     add a remote dependency and break offline use. Graceful system fallback. */
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Eksempel AS",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-size:1rem;line-height:1.5}
+  header{background:var(--brand);color:var(--on-brand);padding:var(--sp-3) var(--sp-4)}
+  header h1{margin:0;font-size:1.5rem;line-height:2rem;font-weight:500}
+  header .meta{opacity:.85;font-size:.875rem;line-height:1.5rem;margin-top:var(--sp-1)}
+  main{padding:var(--sp-3) var(--sp-4);max-width:90rem;margin:0 auto}
+  .controls{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:flex-end;
+    background:var(--panel);padding:var(--sp-2);border-radius:.25rem;margin-bottom:var(--sp-3)}
+  .controls label{display:block;font-size:.875rem;line-height:1rem;text-transform:uppercase;
+    letter-spacing:.04em;color:var(--muted);margin-bottom:.25rem}
+  /* 44 px is the touch minimum docs/11 sets, and touch is an equal input
+     method: a control that is fine with a mouse is still a miss with a thumb.
+     The height comes from min-height rather than padding so it holds at every
+     font size the page may be read at. */
+  .controls select,.controls input,.controls button{padding:var(--sp-1) .625rem;
+    border:1px solid var(--line);border-radius:.25rem;font-size:.875rem;
+    line-height:1.5rem;background:var(--bg);min-width:10rem;font-family:inherit;
+    color:var(--ink);min-height:2.75rem}
+  /* Safari ignores padding, border and min-height on a native <select>: measured
+     160x22 in WebKit against 44 px in Chromium, on the same rule, because the
+     native control paints itself. appearance:none hands the box back to us, and
+     the chevron below replaces the one the native control drew. Without this the
+     44 px touch minimum above exists in Chromium only. */
+  .controls select{-webkit-appearance:none;appearance:none;padding-right:1.75rem;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right .5rem center;
+    background-size:.75rem .5rem}
+  .controls button{min-width:auto;cursor:pointer}
+  .controls button:hover{border-color:var(--brand);color:var(--brand)}
+  .dropbar{display:flex;gap:var(--sp-2);align-items:center;justify-content:space-between;
+    flex-wrap:wrap;border:1px dashed var(--line);border-radius:.25rem;
+    padding:.75rem var(--sp-2);margin-bottom:var(--sp-3);font-size:.875rem;
+    color:var(--muted);transition:background .15s,border-color .15s}
+  .dropbar.over{background:var(--brand-soft);border-color:var(--brand);
+    color:var(--on-brand-soft)}
+  .dropbar strong{color:var(--ink)}
+  .dropbar button{padding:.5rem .9rem;border:1px solid var(--line);
+    border-radius:.25rem;background:var(--bg);font-family:inherit;
+    font-size:.875rem;cursor:pointer;color:var(--ink);min-height:2.75rem}
+  .dropbar button:enabled:hover{border-color:var(--brand);color:var(--brand)}
+  .dropbar button:disabled{opacity:.45;cursor:default}
+  .linklike{color:var(--brand);text-decoration:underline;cursor:pointer}
+  @media print{.dropbar{display:none}}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(17rem,100%),1fr));
+    gap:var(--sp-2);margin-bottom:var(--sp-3)}
+  .kpi{min-width:0;background:var(--panel);border-left:.25rem solid var(--brand);
+    padding:var(--sp-2);border-radius:.25rem}
+  .kpi .label{font-size:.875rem;line-height:1rem;text-transform:uppercase;
+    letter-spacing:.04em;color:var(--muted)}
+  .kpi .value{font-size:2rem;line-height:2.5rem;font-weight:500;
+    color:var(--brand-dark);margin-top:.25rem;font-variant-numeric:tabular-nums}
+  /* NOTE (html-sammenligning, 2026-09-11): renderKpis() below does not currently
+     emit a .delta element at all — these three rules are dead CSS, not a live a11y bug.
+     Kept ready in the icon+text shape already proven in examples/05-theme-toggle-demo/
+     (WCAG 2.2 1.4.1 — colour must never be the only signal) so that whoever wires an
+     actual period-over-period delta into renderKpis() inherits the right pattern instead
+     of a colour-only one. Do not render `<div class="delta up">` with only a colour — pair
+     it with the arrow + text, e.g. `<div class="delta up">&#9650; opp 6,2 %</div>`. */
+  .kpi .delta{font-size:.875rem;margin-top:.25rem;display:inline-flex;align-items:center;
+    gap:.3rem;padding:.1rem .4rem;border-radius:.2rem}
+  .kpi .delta.up{color:var(--ok);background:var(--ok-bg)}
+  .kpi .delta.down{color:var(--bad-ink);background:var(--bad-soft)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(26rem,100%),1fr));gap:var(--sp-3)}
+  .card{border:1px solid var(--line);border-radius:.25rem;padding:var(--sp-2);
+    background:var(--bg)}
+  .card h2{margin:0 0 var(--sp-2);font-size:1rem;line-height:1.5rem;font-weight:500}
+  svg{width:100%;height:auto;display:block;overflow:visible}
+  .axis{stroke:var(--line);stroke-width:1}
+  .axis-label{font-size:.875rem;fill:var(--muted)}
+  .bar{fill:var(--brand);transition:fill .15s}
+  /* Hover is a second colour for the same bar. --brand-dark, which this used, is the
+     darkest surface in the dark theme: the bar would vanish under the pointer. */
+  .bar:hover{fill:var(--series-2)}
+  .gridline{stroke:var(--line);stroke-width:1}
+  .line-path{fill:none;stroke:var(--series-2);stroke-width:2.5;
+    stroke-linejoin:round;stroke-linecap:round}
+  .dot{fill:var(--series-2)}
+  table{width:100%;border-collapse:collapse;font-size:.875rem;line-height:1.5rem}
+  th,td{text-align:left;padding:var(--sp-1) .625rem;border-bottom:1px solid var(--line);
+    max-width:15rem;word-wrap:break-word;overflow-wrap:break-word}
+  th{font-size:.875rem;line-height:1rem;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--muted);white-space:nowrap;position:sticky;top:0;
+    background:var(--bg);padding:0}
+  /* Sorting is a control, so it is a button: a click target on a <th> is invisible to
+     a keyboard and to a screen reader (WCAG 2.1.1, docs/09 section 1). The button
+     inherits the header's type and paints its own focus ring; aria-sort on the <th>
+     carries the state, and the caret beside the label is decoration only.
+     min-height is 2.75rem because this is now a real target: 44 px is the thumb
+     floor docs/11 sets for every control, and a table header is no exception. */
+  th button{font:inherit;font-size:.875rem;line-height:1rem;text-transform:inherit;
+    letter-spacing:inherit;color:inherit;background:none;border:0;width:100%;
+    min-height:2.75rem;padding:var(--sp-1) .625rem;text-align:inherit;cursor:pointer;
+    display:flex;align-items:center;gap:.25rem;white-space:nowrap}
+  th.num button{justify-content:flex-end}
+  th button:hover{color:var(--brand)}
+  th button:focus-visible{outline:.125rem solid var(--brand);outline-offset:-.125rem}
+  th[aria-sort="ascending"] button,th[aria-sort="descending"] button{color:var(--ink)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:var(--brand-soft)}
+  .table-wrap{max-height:26rem;overflow:auto}
+  footer{padding:var(--sp-2) var(--sp-4);color:var(--muted);font-size:.875rem;
+    line-height:1.5rem;border-top:1px solid var(--line);margin-top:var(--sp-4)}
+  .tooltip{position:fixed;background:var(--ink);color:var(--bg);
+    padding:.375rem .5rem;border-radius:.25rem;font-size:.875rem;pointer-events:none;
+    opacity:0;transition:opacity .12s;z-index:99;white-space:nowrap}
+  .empty{color:var(--muted);font-style:italic;padding:var(--sp-4);text-align:center}
+  /* Without scripting — Quick Look on iOS and macOS, or a viewer that blocks it — every
+     JS-rendered part of this page is an empty box. So the build writes the highest-value
+     facts into the markup itself, and a canary class on <html> decides which view shows
+     (docs/11 section 3c: a warning above empty boxes still reads as broken). The numbers
+     are computed at build time from the same rows the script gets, so the two agree. */
+  .nojs{display:none}
+  html:not(.js) .nojs{display:block}
+  html:not(.js) #kpis,html:not(.js) .grid,html:not(.js) .table-wrap,
+  html:not(.js) .controls,html:not(.js) .dropbar,
+  html:not(.js) main>section.card{display:none}
+  .nojs-lead{margin:0 0 var(--sp-3);max-width:52rem;line-height:1.5rem}
+  .nojs-facts{display:flex;flex-wrap:wrap;gap:var(--sp-4);margin:0 0 var(--sp-4)}
+  .nojs-facts div{min-width:9rem}
+  .nojs-facts dt{font-size:.875rem;line-height:1.5rem;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.04em}
+  .nojs-facts dd{margin:0;font-size:1.75rem;line-height:2rem;font-weight:700;
+    font-variant-numeric:tabular-nums}
+  .nojs h2{font-size:.875rem;line-height:1.5rem;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.04em;margin:0 0 var(--sp-1)}
+  .nojs table{width:100%;border-collapse:collapse;font-size:.875rem;line-height:1.5rem}
+  .nojs th,.nojs td{text-align:left;padding:var(--sp-1) .625rem;
+    border-bottom:1px solid var(--line)}
+  .nojs td.num,.nojs th.num{text-align:right;font-variant-numeric:tabular-nums}
+  @media print{header{background:#fff;color:var(--ink)}.controls{display:none}}
+
+  /* Dark. The seam carries every declaration; this is the one place where a role that reads
+     on white inverts once the surface behind it goes dark. --brand-dark is the darkest
+     surface in the dark theme, so a KPI figure lettered with it disappears into its own card
+     (measured 1.00:1). It becomes --brand there, the light-on-dark teal. */
+  @media screen and (prefers-color-scheme: dark){
+    .kpi .value{color:var(--brand)}
+  }
+</style>
+</head>
+<body>
+<script>document.documentElement.className+=" js"</script>
+<header>
+  <h1>Sykefravaer per enhet</h1>
+  <div class="meta" id="meta"></div>
+</header>
+
+<main>
+  <!-- Without the canary class above, this section is the page. It carries numbers the
+       build already computed, so a reader in a viewer that blocks scripting sees facts
+       rather than an apology. -->
+  <section class="nojs" id="nojs">
+    <p class="nojs-lead">Koden kjører ikke her. Filtrene og diagrammene trenger den, men tallene under ble regnet ut da filen ble laget og gjelder hele datasettet.</p>
+    <dl class="nojs-facts"><div><dt>Total</dt><dd>10 454,3</dd></div><div><dt>Antall rader</dt><dd>144</dd></div><div><dt>Unike</dt><dd>8</dd></div></dl>
+    <h2>De første radene i filen</h2>
+    <table>
+      <thead><tr><th class="">Enhet</th><th class="">Maaned</th><th class="num">Sykefravaersdager</th></tr></thead>
+      <tbody><tr><td class="">Enhet nord</td><td class="">2025-01</td><td class="num">66,2</td></tr><tr><td class="">Enhet nord</td><td class="">2025-02</td><td class="num">68,1</td></tr><tr><td class="">Enhet nord</td><td class="">2025-03</td><td class="num">47,9</td></tr><tr><td class="">Enhet nord</td><td class="">2025-04</td><td class="num">61,7</td></tr><tr><td class="">Enhet nord</td><td class="">2025-05</td><td class="num">53,7</td></tr><tr><td class="">Enhet nord</td><td class="">2025-06</td><td class="num">58</td></tr><tr><td class="">Enhet nord</td><td class="">2025-07</td><td class="num">56,2</td></tr><tr><td class="">Enhet nord</td><td class="">2025-08</td><td class="num">48,6</td></tr></tbody>
+    </table>
+  </section>
+  <section class="controls" id="controls"><!-- filters injected by init() --></section>
+  <section class="dropbar" id="dropbar">
+    <span><strong>Oppdatere tallene?</strong> Dra en CSV-fil hit
+      &mdash; eller <label for="pick" class="linklike">velg fil</label>.
+      <input type="file" id="pick" accept=".csv,.tsv,.txt,.json" hidden>
+    </span>
+    <button type="button" id="export" disabled>Lagre datafil (data.js)</button>
+  </section>
+  <section class="kpis" id="kpis"></section>
+  <section class="grid">
+    <div class="card"><h2 id="chart1-title">Sykefravaersdager per Enhet</h2><svg id="chart1" viewBox="0 0 640 300"></svg></div>
+    <div class="card"><h2 id="chart2-title">Sykefravaersdager over Maaned</h2><svg id="chart2" viewBox="0 0 640 300"></svg></div>
+  </section>
+  <section class="card" style="margin-top:1.5rem">
+    <h2 id="details-title">Detaljer <span id="rowcount" style="font-weight:400;color:var(--muted);font-size:.875rem"></span></h2>
+    <div class="table-wrap" role="region" aria-labelledby="details-title" tabindex="0"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+  </section>
+</main>
+
+<footer>
+  Selvstendig dashboard laget med Tún &middot; ingen Power BI-lisens kreves &middot;
+  bygget 2026-10-24 10:00 UTC fra Syntetiske data, 144 rader (8 enheter, 18 maneder).<br>
+  <span id="footnote"></span>
+</footer><p style="margin:0;padding:0 1.5rem 1.5rem;font-size:.875rem"><a id="tun-feedback" href="mailto:hei@tun.community?subject=Tilbakemelding%3A%20Sykefravaer%20per%20enhet&amp;body=Hva%20skjedde%3F%0D%0A%0D%0A%0D%0AHva%20forventet%20du%3F%0D%0A%0D%0A%0D%0A--%20%C3%98yeblikksbilde%2C%20lagt%20inn%20automatisk.%20Fjern%20det%20du%20ikke%20vil%20sende.%20--%0D%0AArtefakt%3A%20Sykefravaer%20per%20enhet%0D%0ABygget%3A%202026-10-24%2010%3A00%20UTC%0D%0AKilde%3A%20Syntetiske%20data%2C%20144%20rader%20%288%20enheter%2C%2018%20maneder%29%0D%0AJavaScript%3A%20nei" style="color:inherit;display:inline-flex;align-items:center;min-height:2.75rem;padding:0 .5rem;margin-left:-.5rem">Gi tilbakemelding</a></p><script>
+(function () {
+  "use strict";
+  // Filled in by tools/feedback_link.py. The static href above already works with
+  // JavaScript off; this script only swaps in a richer snapshot when it can run.
+  var C = {"base": "mailto:hei@tun.community", "keys": ["subject", "body"], "crlf": true, "subject": "Tilbakemelding: Sykefravaer per enhet", "head": "Hva skjedde?\n\n\nHva forventet du?\n\n\n-- Øyeblikksbilde, lagt inn automatisk. Fjern det du ikke vil sende. --\nArtefakt: Sykefravaer per enhet\nBygget: 2026-10-24 10:00 UTC\nKilde: Syntetiske data, 144 rader (8 enheter, 18 maneder)\n"};
+  var errors = 0;
+  window.addEventListener("error", function () { errors++; });
+  window.addEventListener("unhandledrejection", function () { errors++; });
+
+  function view() {
+    var h = location.hostname, where =
+      location.protocol === "file:" ? "lokal fil" :
+      /-my\.sharepoint\.com$/i.test(h) ? "OneDrive" :
+      /\.sharepoint\.com$/i.test(h) ? "SharePoint" : "ukjent";
+    var framed;
+    try { framed = window.top !== window.self; } catch (e) { framed = true; }
+    return framed ? where + ", i en ramme" : where;
+  }
+
+  function href() {
+    var live = [
+      ["Protokoll", location.protocol.replace(":", "")],
+      ["Visning", view()],
+      ["Nettleser", navigator.userAgent],
+      ["Vindu", innerWidth + "x" + innerHeight + " @" + (window.devicePixelRatio || 1) + "x"],
+      ["JavaScript", "ja"],
+      ["Skriptfeil", String(errors)]
+    ];
+    var body = C.head + live.map(function (f) { return f[0] + ": " + f[1]; }).join("\n");
+    if (C.crlf) body = body.replace(/\n/g, "\r\n");
+    return C.base + (C.base.indexOf("?") < 0 ? "?" : "&") + C.keys[0] + "=" + encodeURIComponent(C.subject)
+      + "&" + C.keys[1] + "=" + encodeURIComponent(body);
+  }
+
+  var a = document.getElementById("tun-feedback");
+  if (!a) return;
+  // Rebuilt on every approach, so the error count is the one at the moment of use.
+  ["focus", "mouseenter", "pointerdown", "click"].forEach(function (ev) {
+    a.addEventListener(ev, function () { a.href = href(); });
+  });
+  a.href = href();
+})();
+</script>
+<div class="tooltip" id="tip"></div>
+
+<!-- ===========================================================================
+     DATA
+     Either inlined below (bundled mode) or loaded from a sibling data.js
+     (paired mode). Both set window.DASHBOARD_DATA, so there is one code path.
+
+     Paired mode is the interesting one: data.js is a separate file in the same
+     folder. OneDrive/SharePoint syncs it, so updating the data updates every
+     copy of the dashboard — no rebuild, no republish, no server.
+     A script element with a src attribute works from a file:// page; fetch()
+     does not. That is why the data is a .js file assigning a global, not a
+     .json file. Worded without the literal tag: this comment ships inside every
+     built dashboard, and stray tag text renders visibly in the SharePoint
+     preview (docs/01-tenant-constraints.md row 25).
+     =========================================================================== -->
+<script>
+window.DASHBOARD_DATA=[{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-01","Ansatte":24,"Sykefravaersdager":66.2},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-02","Ansatte":24,"Sykefravaersdager":68.1},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-03","Ansatte":24,"Sykefravaersdager":47.9},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-04","Ansatte":24,"Sykefravaersdager":61.7},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-05","Ansatte":24,"Sykefravaersdager":53.7},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-06","Ansatte":24,"Sykefravaersdager":58},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-07","Ansatte":24,"Sykefravaersdager":56.2},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-08","Ansatte":24,"Sykefravaersdager":48.6},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-09","Ansatte":24,"Sykefravaersdager":52.9},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-10","Ansatte":24,"Sykefravaersdager":49.8},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-11","Ansatte":24,"Sykefravaersdager":71.5},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2025-12","Ansatte":24,"Sykefravaersdager":57.8},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2026-01","Ansatte":24,"Sykefravaersdager":62.3},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2026-02","Ansatte":24,"Sykefravaersdager":70.6},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2026-03","Ansatte":24,"Sykefravaersdager":60.1},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2026-04","Ansatte":24,"Sykefravaersdager":56.9},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2026-05","Ansatte":24,"Sykefravaersdager":60.1},{"Enhet":"Enhet nord","Seksjon":"Kundeservice","Maaned":"2026-06","Ansatte":24,"Sykefravaersdager":48.1},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-01","Ansatte":24,"Sykefravaersdager":70.6},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-02","Ansatte":24,"Sykefravaersdager":72.6},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-03","Ansatte":24,"Sykefravaersdager":49.5},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-04","Ansatte":24,"Sykefravaersdager":57.2},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-05","Ansatte":24,"Sykefravaersdager":43.9},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-06","Ansatte":24,"Sykefravaersdager":59.6},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-07","Ansatte":24,"Sykefravaersdager":48.3},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-08","Ansatte":24,"Sykefravaersdager":52.5},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-09","Ansatte":24,"Sykefravaersdager":45.4},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-10","Ansatte":24,"Sykefravaersdager":44.1},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-11","Ansatte":24,"Sykefravaersdager":56.7},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2025-12","Ansatte":24,"Sykefravaersdager":53.4},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2026-01","Ansatte":24,"Sykefravaersdager":66},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2026-02","Ansatte":24,"Sykefravaersdager":70.3},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2026-03","Ansatte":24,"Sykefravaersdager":57.6},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2026-04","Ansatte":24,"Sykefravaersdager":50.5},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2026-05","Ansatte":24,"Sykefravaersdager":57.6},{"Enhet":"Enhet sor","Seksjon":"Kundeservice","Maaned":"2026-06","Ansatte":24,"Sykefravaersdager":46.7},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-01","Ansatte":31,"Sykefravaersdager":66.7},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-02","Ansatte":31,"Sykefravaersdager":72},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-03","Ansatte":31,"Sykefravaersdager":49.3},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-04","Ansatte":31,"Sykefravaersdager":39.5},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-05","Ansatte":31,"Sykefravaersdager":38.3},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-06","Ansatte":31,"Sykefravaersdager":38.9},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-07","Ansatte":31,"Sykefravaersdager":48},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-08","Ansatte":31,"Sykefravaersdager":53},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-09","Ansatte":31,"Sykefravaersdager":37.2},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-10","Ansatte":31,"Sykefravaersdager":40.9},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-11","Ansatte":31,"Sykefravaersdager":66.1},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2025-12","Ansatte":31,"Sykefravaersdager":57.6},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2026-01","Ansatte":31,"Sykefravaersdager":73},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2026-02","Ansatte":31,"Sykefravaersdager":71.7},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2026-03","Ansatte":31,"Sykefravaersdager":43.2},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2026-04","Ansatte":31,"Sykefravaersdager":45},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2026-05","Ansatte":31,"Sykefravaersdager":37.1},{"Enhet":"Enhet ost","Seksjon":"Kundeservice","Maaned":"2026-06","Ansatte":31,"Sykefravaersdager":45.3},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-01","Ansatte":42,"Sykefravaersdager":99.1},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-02","Ansatte":42,"Sykefravaersdager":100.7},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-03","Ansatte":42,"Sykefravaersdager":81.8},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-04","Ansatte":42,"Sykefravaersdager":77.2},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-05","Ansatte":42,"Sykefravaersdager":78.7},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-06","Ansatte":42,"Sykefravaersdager":103},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-07","Ansatte":42,"Sykefravaersdager":85},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-08","Ansatte":42,"Sykefravaersdager":101.4},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-09","Ansatte":42,"Sykefravaersdager":97.1},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-10","Ansatte":42,"Sykefravaersdager":97.6},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-11","Ansatte":42,"Sykefravaersdager":124.7},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2025-12","Ansatte":42,"Sykefravaersdager":95.3},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2026-01","Ansatte":42,"Sykefravaersdager":108.1},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2026-02","Ansatte":42,"Sykefravaersdager":111.7},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2026-03","Ansatte":42,"Sykefravaersdager":86.2},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2026-04","Ansatte":42,"Sykefravaersdager":75.7},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2026-05","Ansatte":42,"Sykefravaersdager":76.1},{"Enhet":"Enhet vest","Seksjon":"Kundeservice","Maaned":"2026-06","Ansatte":42,"Sykefravaersdager":91.5},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-01","Ansatte":55,"Sykefravaersdager":123.8},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-02","Ansatte":55,"Sykefravaersdager":123.2},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-03","Ansatte":55,"Sykefravaersdager":83.1},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-04","Ansatte":55,"Sykefravaersdager":57.8},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-05","Ansatte":55,"Sykefravaersdager":63.6},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-06","Ansatte":55,"Sykefravaersdager":80.1},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-07","Ansatte":55,"Sykefravaersdager":83.3},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-08","Ansatte":55,"Sykefravaersdager":87.7},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-09","Ansatte":55,"Sykefravaersdager":58.4},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-10","Ansatte":55,"Sykefravaersdager":94},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-11","Ansatte":55,"Sykefravaersdager":93.1},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2025-12","Ansatte":55,"Sykefravaersdager":67.8},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2026-01","Ansatte":55,"Sykefravaersdager":121.4},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2026-02","Ansatte":55,"Sykefravaersdager":89.4},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2026-03","Ansatte":55,"Sykefravaersdager":90},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2026-04","Ansatte":55,"Sykefravaersdager":90.4},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2026-05","Ansatte":55,"Sykefravaersdager":89.1},{"Enhet":"Skade nord","Seksjon":"Skade","Maaned":"2026-06","Ansatte":55,"Sykefravaersdager":91.9},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-01","Ansatte":55,"Sykefravaersdager":115.2},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-02","Ansatte":55,"Sykefravaersdager":97.9},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-03","Ansatte":55,"Sykefravaersdager":84.8},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-04","Ansatte":55,"Sykefravaersdager":73.7},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-05","Ansatte":55,"Sykefravaersdager":69.8},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-06","Ansatte":55,"Sykefravaersdager":64},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-07","Ansatte":55,"Sykefravaersdager":52.6},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-08","Ansatte":55,"Sykefravaersdager":85.9},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-09","Ansatte":55,"Sykefravaersdager":65.7},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-10","Ansatte":55,"Sykefravaersdager":60.5},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-11","Ansatte":55,"Sykefravaersdager":84.6},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2025-12","Ansatte":55,"Sykefravaersdager":71.7},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2026-01","Ansatte":55,"Sykefravaersdager":116.9},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2026-02","Ansatte":55,"Sykefravaersdager":94.5},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2026-03","Ansatte":55,"Sykefravaersdager":79.8},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2026-04","Ansatte":55,"Sykefravaersdager":75.7},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2026-05","Ansatte":55,"Sykefravaersdager":68.6},{"Enhet":"Skade sor","Seksjon":"Skade","Maaned":"2026-06","Ansatte":55,"Sykefravaersdager":73.9},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-01","Ansatte":24,"Sykefravaersdager":70},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-02","Ansatte":24,"Sykefravaersdager":71.7},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-03","Ansatte":24,"Sykefravaersdager":60.1},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-04","Ansatte":24,"Sykefravaersdager":57.2},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-05","Ansatte":24,"Sykefravaersdager":60.8},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-06","Ansatte":24,"Sykefravaersdager":63.4},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-07","Ansatte":24,"Sykefravaersdager":59.7},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-08","Ansatte":24,"Sykefravaersdager":64.4},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-09","Ansatte":24,"Sykefravaersdager":56.2},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-10","Ansatte":24,"Sykefravaersdager":71.4},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-11","Ansatte":24,"Sykefravaersdager":81.3},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2025-12","Ansatte":24,"Sykefravaersdager":57.8},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2026-01","Ansatte":24,"Sykefravaersdager":72.8},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2026-02","Ansatte":24,"Sykefravaersdager":82},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2026-03","Ansatte":24,"Sykefravaersdager":58.4},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2026-04","Ansatte":24,"Sykefravaersdager":68.4},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2026-05","Ansatte":24,"Sykefravaersdager":56.7},{"Enhet":"Verksted","Seksjon":"Bil","Maaned":"2026-06","Ansatte":24,"Sykefravaersdager":66.5},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-01","Ansatte":55,"Sykefravaersdager":97.9},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-02","Ansatte":55,"Sykefravaersdager":111.7},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-03","Ansatte":55,"Sykefravaersdager":63.4},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-04","Ansatte":55,"Sykefravaersdager":76.2},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-05","Ansatte":55,"Sykefravaersdager":82},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-06","Ansatte":55,"Sykefravaersdager":77.3},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-07","Ansatte":55,"Sykefravaersdager":89.7},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-08","Ansatte":55,"Sykefravaersdager":74.5},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-09","Ansatte":55,"Sykefravaersdager":70.2},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-10","Ansatte":55,"Sykefravaersdager":82.4},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-11","Ansatte":55,"Sykefravaersdager":103.2},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2025-12","Ansatte":55,"Sykefravaersdager":77.3},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2026-01","Ansatte":55,"Sykefravaersdager":117.5},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2026-02","Ansatte":55,"Sykefravaersdager":108.4},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2026-03","Ansatte":55,"Sykefravaersdager":83.8},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2026-04","Ansatte":55,"Sykefravaersdager":80.3},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2026-05","Ansatte":55,"Sykefravaersdager":98.5},{"Enhet":"Stab","Seksjon":"Stab","Maaned":"2026-06","Ansatte":55,"Sykefravaersdager":90.6}];
+window.DASHBOARD_META={"generated": "2026-10-24 10:00 UTC", "source": "Syntetiske data, 144 rader (8 enheter, 18 maneder)", "rows": 144};
+</script>
+<script>
+const DATA = window.DASHBOARD_DATA || [];
+const DATA_META = window.DASHBOARD_META || {};
+
+const META = {
+  dimension:   "Enhet",   // primary categorical column (bar chart, filter)
+  timeColumn:  "Maaned",        // ordered column for the line chart ("" to disable)
+  measure:     "Sykefravaersdager",     // numeric column being summed
+  filters:     ["Seksjon", "Enhet"],  // e.g. ["Region","Produkt"]
+  numberFormat: new Intl.NumberFormat("nb-NO",{maximumFractionDigits:0})
+};
+
+/* ---------- tiny helpers ---------------------------------------------------- */
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => META.numberFormat.format(n);
+// Data is text, never markup. Every value from the data (cells, column names, filter
+// values, a data.js source line) goes through esc() before it is written as HTML.
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, ch =>
+  ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[ch]);
+// A measure value as a number, or null when the cell is empty or not a number. Null is
+// left out of every aggregate: summing it as 0 moves the average and draws a bar or a
+// point that the data does not have.
+const val = (v) => {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+const valued = (rows, col) => rows.filter(r => val(r[col]) !== null);
+const sum = (rows, col) => rows.reduce((a, r) => a + (val(r[col]) ?? 0), 0);
+const uniq = (rows, col) => [...new Set(rows.map(r => r[col]))]
+  .filter(v => v !== undefined && v !== null && v !== "").sort();
+
+function groupSum(rows, key, measure) {
+  const m = new Map();
+  for (const r of valued(rows, measure)) m.set(r[key], (m.get(r[key]) || 0) + val(r[measure]));
+  return [...m.entries()].map(([k, v]) => ({ key: k, value: v }));
+}
+
+/* ---------- state ---------------------------------------------------------- */
+let activeFilters = {};
+let sortState = { col: META.measure, dir: -1 };
+
+function visibleRows() {
+  return LIVE.filter(r => Object.entries(activeFilters)
+    .every(([c, v]) => v === "__ALL__" || String(r[c]) === v));
+}
+
+/* ---------- tooltip ------------------------------------------------------- */
+const tip = $("tip");
+function showTip(e, text) {
+  tip.textContent = text; tip.style.opacity = 1;
+  tip.style.left = (e.clientX + 12) + "px"; tip.style.top = (e.clientY - 8) + "px";
+}
+function hideTip() { tip.style.opacity = 0; }
+
+/* ---------- chart size ----------------------------------------------------- */
+/* Draw in the card's own pixels, so 11 px text stays 11 px. A fixed 640-wide
+   viewBox scaled to a 330 px phone card drew it at 6 px. */
+function chartSize(svg) {
+  const w = Math.round(svg.getBoundingClientRect().width) || 640;
+  const W = Math.max(280, w), H = 300;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  return [W, H];
+}
+
+/* ---------- SVG bar chart -------------------------------------------------- */
+function barChart(svgId, data, opts) {
+  const svg = $(svgId); const [W, H] = chartSize(svg);
+  const m = { t: 12, r: 16, b: 72, l: 72 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  svg.innerHTML = "";
+  if (!data.length) { svg.innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">Ingen data</text>`; return; }
+
+  data = [...data].sort((a, b) => b.value - a.value).slice(0, opts.limit || 12);
+  const max = Math.max(...data.map(d => d.value), 1);
+  const bw = iw / data.length;
+  const ns = "http://www.w3.org/2000/svg";
+  const el = (t, a) => { const n = document.createElementNS(ns, t);
+    for (const k in a) n.setAttribute(k, a[k]); return n; };
+  // Under an upright bar a name is cut after 16 characters and drawn at an angle. When
+  // a name is longer than that, lay the bars out sideways: each name gets the card's width.
+  if (data.some(d => String(d.key).length > 16)) return sideBars(svg, W, H, data, max, el);
+
+  // y gridlines + labels
+  for (let i = 0; i <= 4; i++) {
+    const y = m.t + ih - (ih * i / 4);
+    svg.appendChild(el("line", { class: "gridline", x1: m.l, x2: m.l + iw, y1: y, y2: y }));
+    const t = el("text", { class: "axis-label", x: m.l - 8, y: y + 4, "text-anchor": "end" });
+    t.textContent = fmt(max * i / 4); svg.appendChild(t);
+  }
+  svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
+
+  const labelNodes = [];
+  data.forEach((d, i) => {
+    const h = Math.max((d.value / max) * ih, 1);
+    const x = m.l + i * bw + bw * 0.15, y = m.t + ih - h;
+    const rect = el("rect", { class: "bar", x, y, width: bw * 0.7, height: h, rx: 2 });
+    rect.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
+    rect.addEventListener("mouseleave", hideTip);
+    svg.appendChild(rect);
+    const lbl = el("text", { class: "axis-label", x: m.l + i * bw + bw / 2,
+      y: m.t + ih + 16, "text-anchor": "end",
+      transform: `rotate(-35 ${m.l + i * bw + bw / 2} ${m.t + ih + 16})` });
+    lbl.textContent = String(d.key).length > 16 ? String(d.key).slice(0, 15) + "…" : d.key;
+    svg.appendChild(lbl);
+    labelNodes.push(lbl);
+  });
+  // Angled names collide long before they are 16 characters: five region names
+  // on a phone overlap from 14 px up. So the check is the geometry it just
+  // drew, not a character count. An SVG inside a hidden card measures zero, and
+  // a zero-size box never overlaps anything, so there the same comparison runs
+  // on the font's own metrics instead — the chart is drawn hidden on every
+  // first paint, and a fallback that only worked when visible would miss it.
+  if (labelsCollide(svg, labelNodes)) { svg.innerHTML = ""; return sideBars(svg, W, H, data, max, el); }
+}
+
+// labelsCollide reports whether two of these angled labels share pixels.
+function labelsCollide(svg, nodes) {
+  const visible = svg.getBoundingClientRect().width > 0;
+  if (visible) {
+    const boxes = nodes.map(n => n.getBoundingClientRect());
+    return boxes.some((a, i) => boxes.slice(i + 1).some(b =>
+      Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+      Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1));
+  }
+  const cs = getComputedStyle(nodes[0]);
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = cs.fontSize + " " + cs.fontFamily;
+  const angle = 35 * Math.PI / 180, lineHeight = parseFloat(cs.fontSize) * 1.15;
+  const boxes = nodes.map(n => {
+    const w = ctx.measureText(n.textContent).width;
+    const x = parseFloat(n.getAttribute("x")), y = parseFloat(n.getAttribute("y"));
+    // The rotated glyph box: the text runs up-left from the anchor, and the
+    // line's height leans out to the right of it.
+    return { left: x - w * Math.cos(angle), right: x + lineHeight * Math.sin(angle),
+             top: y - w * Math.sin(angle), bottom: y + lineHeight * Math.cos(angle) };
+  });
+  return boxes.some((a, i) => boxes.slice(i + 1).some(b =>
+    Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+    Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1));
+}
+
+function sideBars(svg, W, H, data, max, el) {
+  const width = t => t.getComputedTextLength() || t.textContent.length * 6.5;
+  const labels = data.map(d => {
+    const t = el("text", { class: "axis-label", "text-anchor": "end" });
+    t.textContent = d.key; svg.appendChild(t); return t;
+  });
+  // The name column is as wide as the longest name, up to 45 % of the chart. A name
+  // that is wider still (on a phone) is cut, and keeps its full text as a tooltip.
+  const lw = Math.min(Math.round(W * 0.45), Math.max(...labels.map(width)));
+  labels.forEach((t, i) => {
+    const full = String(data[i].key);
+    if (width(t) <= lw) return;
+    for (let n = full.length - 1; n > 1 && width(t) > lw; n--) t.textContent = full.slice(0, n) + "…";
+    const title = el("title", {}); title.textContent = full; t.appendChild(title);
+  });
+
+  const m = { t: 8, r: 32, b: 28, l: lw + 16 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, rowH = ih / data.length;
+  const bh = Math.min(rowH * 0.7, 28);
+  // Up to four steps on the value axis, fewer when the numbers would touch (a phone).
+  const probe = el("text", { class: "axis-label" }); probe.textContent = fmt(max);
+  svg.appendChild(probe);
+  const steps = Math.max(1, Math.min(4, Math.floor(iw / (width(probe) + 16))));
+  probe.remove();
+  for (let i = 0; i <= steps; i++) {
+    const x = m.l + iw * i / steps;
+    svg.appendChild(el("line", { class: "gridline", x1: x, x2: x, y1: m.t, y2: m.t + ih }));
+    const t = el("text", { class: "axis-label", x, y: m.t + ih + 18, "text-anchor": "middle" });
+    t.textContent = fmt(max * i / steps); svg.appendChild(t);
+  }
+  svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l, y1: m.t, y2: m.t + ih }));
+
+  data.forEach((d, i) => {
+    const mid = m.t + i * rowH + rowH / 2;
+    const rect = el("rect", { class: "bar", x: m.l, y: mid - bh / 2, rx: 2, height: bh,
+      width: Math.max((d.value / max) * iw, 1) });
+    rect.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
+    rect.addEventListener("mouseleave", hideTip);
+    svg.appendChild(rect);
+    labels[i].setAttribute("x", m.l - 8); labels[i].setAttribute("y", mid + 4);
+  });
+}
+
+/* ---------- SVG line chart ------------------------------------------------- */
+function lineChart(svgId, data) {
+  const svg = $(svgId); const [W, H] = chartSize(svg);
+  const m = { t: 12, r: 16, b: 48, l: 64 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  svg.innerHTML = "";
+  if (data.length < 2) { svg.innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">For få punkter</text>`; return; }
+
+  const max = Math.max(...data.map(d => d.value), 1);
+  const ns = "http://www.w3.org/2000/svg";
+  const el = (t, a) => { const n = document.createElementNS(ns, t);
+    for (const k in a) n.setAttribute(k, a[k]); return n; };
+  const X = i => m.l + (iw * i / (data.length - 1));
+  const Y = v => m.t + ih - (ih * v / max);
+
+  for (let i = 0; i <= 4; i++) {
+    const y = m.t + ih - (ih * i / 4);
+    svg.appendChild(el("line", { class: "gridline", x1: m.l, x2: m.l + iw, y1: y, y2: y }));
+    const t = el("text", { class: "axis-label", x: m.l - 8, y: y + 4, "text-anchor": "end" });
+    t.textContent = fmt(max * i / 4); svg.appendChild(t);
+  }
+  svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
+  svg.appendChild(el("path", { class: "line-path",
+    d: data.map((d, i) => `${i ? "L" : "M"}${X(i)},${Y(d.value)}`).join(" ") }));
+
+  data.forEach((d, i) => {
+    const c = el("circle", { class: "dot", cx: X(i), cy: Y(d.value), r: 4 });
+    c.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
+    c.addEventListener("mouseleave", hideTip);
+    svg.appendChild(c);
+  });
+  // Every period label, then as many as fit. The first is start-anchored and
+  // the last end-anchored so neither hangs outside the drawing, which means the
+  // labels' own boxes decide what fits, not the distance between their x
+  // values: at 292 px four quarters look 70 px apart and still overlap by 16,
+  // because the first one starts at the axis and runs right.
+  const nodes = data.map((d, i) => {
+    const anchor = i === data.length - 1 ? "end" : (i === 0 ? "start" : "middle");
+    const t = el("text", { class: "axis-label", x: X(i), y: m.t + ih + 18, "text-anchor": anchor });
+    t.textContent = d.key; svg.appendChild(t); return t;
+  });
+  fitLabels(el, svg, nodes);
+}
+
+// fitLabels removes the labels that would touch, and always keeps the last one
+// so the reader can see where the line ends. Widths come from the font through
+// a canvas: a hidden SVG reports zero for everything inside it, and every chart
+// is drawn once while its card is hidden.
+function fitLabels(el, svg, nodes) {
+  if (nodes.length < 2) return;
+  const probe = el("text", { class: "axis-label" }); probe.textContent = "0"; svg.appendChild(probe);
+  const cs = getComputedStyle(probe);
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = cs.fontSize + " " + cs.fontFamily;
+  svg.removeChild(probe);
+  const box = n => {
+    const w = ctx.measureText(n.textContent).width, x = parseFloat(n.getAttribute("x"));
+    const a = n.getAttribute("text-anchor");
+    if (a === "start") return { l: x, r: x + w };
+    if (a === "end") return { l: x - w, r: x };
+    return { l: x - w / 2, r: x + w / 2 };
+  };
+  const pad = 6, touches = (a, b) => a.l < b.r + pad && b.l < a.r + pad;
+  const keep = [];
+  nodes.slice(0, -1).forEach(n => {
+    if (!keep.length || !touches(box(n), box(keep[keep.length - 1]))) keep.push(n);
+    else n.remove();
+  });
+  const last = nodes[nodes.length - 1];
+  while (keep.length && touches(box(last), box(keep[keep.length - 1]))) keep.pop().remove();
+}
+
+/* ---------- KPIs ---------------------------------------------------------- */
+function renderKpis(rows) {
+  const total = sum(rows, META.measure);
+  const dims = uniq(rows, META.dimension).length;
+  const n = valued(rows, META.measure).length;
+  const avg = n ? total / n : 0;
+  const cards = [
+    { label: "Sum Sykefravaersdager", value: fmt(total) },
+    { label: "Snitt per Maaned", value: fmt((p => p ? total / p : 0)(uniq(valued(rows, META.measure), META.timeColumn).length)) },
+    { label: "Rader i tabellen", value: fmt(rows.length) },
+    { label: "Enhet (antall)", value: fmt(dims) }
+  ];
+  $("kpis").innerHTML = cards.map(c =>
+    `<div class="kpi"><div class="label">${c.label}</div><div class="value">${c.value}</div></div>`).join("");
+}
+
+/* ---------- table --------------------------------------------------------- */
+function renderTable(rows) {
+  const cols = rows.length ? Object.keys(rows[0]) : [];
+  // Numeric if any row has a number there: rows[0] may be empty.
+  const numCols = new Set(cols.filter(c => rows.some(r => typeof r[c] === "number")));
+  const isNum = c => numCols.has(c);
+  // aria-sort only on the column that is sorted: "none" on the rest, which is what the
+  // attribute means, and the caret is aria-hidden because aria-sort already says it.
+  $("tbl").querySelector("thead").innerHTML = "<tr>" + cols.map(c => {
+    const on = sortState.col === c;
+    return `<th class="${isNum(c) ? "num" : ""}" data-col="${esc(c)}"`
+      + ` aria-sort="${on ? (sortState.dir < 0 ? "descending" : "ascending") : "none"}">`
+      + `<button type="button" data-col="${esc(c)}">${esc(c)}`
+      + (on ? `<span aria-hidden="true">${sortState.dir < 0 ? "\u25be" : "\u25b4"}</span>` : "")
+      + `</button></th>`;
+  }).join("") + "</tr>";
+
+  const sorted = [...rows].sort((a, b) => {
+    const x = a[sortState.col], y = b[sortState.col];
+    if (typeof x === "number" && typeof y === "number") return (x - y) * sortState.dir;
+    return String(x ?? "").localeCompare(String(y ?? ""), "nb") * sortState.dir;
+  }).slice(0, 500);
+
+  $("tbl").querySelector("tbody").innerHTML = sorted.map(r => "<tr>" + cols.map(c =>
+    `<td class="${isNum(c) ? "num" : ""}">${
+      typeof r[c] === "number" ? fmt(r[c]) : esc(r[c])}</td>`).join("") + "</tr>").join("");
+
+  $("rowcount").textContent = `(viser ${Math.min(sorted.length, 500)} av ${rows.length})`;
+  $("tbl").querySelectorAll("th button").forEach(btn => btn.onclick = () => {
+    const c = btn.dataset.col;
+    sortState = { col: c, dir: sortState.col === c ? -sortState.dir : -1 };
+    renderTable(visibleRows());
+  });
+}
+
+/* ---------- filters ------------------------------------------------------- */
+function renderControls() {
+  $("controls").innerHTML = META.filters.map(c => `<div>
+      <label for="f_${esc(c)}">${esc(c)}</label>
+      <select id="f_${esc(c)}" data-col="${esc(c)}">
+        <option value="__ALL__">Alle</option>
+        ${uniq(LIVE, c).map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("")}
+      </select></div>`).join("")
+    + `<div><label>&nbsp;</label><button id="reset" type="button">Nullstill</button></div>`;
+
+  META.filters.forEach(c => {
+    activeFilters[c] = "__ALL__";
+    $(`f_${c}`).onchange = e => { activeFilters[c] = e.target.value; render(); };
+  });
+  const rb = $("reset");
+  if (rb) rb.onclick = () => { META.filters.forEach(c => {
+    activeFilters[c] = "__ALL__"; $(`f_${c}`).value = "__ALL__"; }); render(); };
+}
+
+/* ---------- CSV in, data.js out -------------------------------------------
+   Lets someone update the numbers with no tooling at all:
+     drag a CSV onto the dashboard  ->  see it render
+     click "Lagre datafil"          ->  get a data.js
+     drop that in the SharePoint folder  ->  everyone is updated
+   ------------------------------------------------------------------------- */
+function parseNum(v){
+  if (typeof v === "number") return v;
+  if (typeof v !== "string") return null;
+  let t = v.trim().replace(/\u00a0/g, "").replace(/ /g, "");
+  if (!t) return null;
+  if (t.includes(",") && t.includes(".")) t = t.replace(/\./g, "").replace(",", ".");
+  else if (t.includes(",")) t = t.replace(",", ".");
+  t = t.replace(/%$/, "");
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}
+
+function parseCSV(text){
+  const lines = text.replace(/\r\n?/g, "\n").split("\n").filter(l => l.trim() !== "");
+  if (!lines.length) return [];
+  const guess = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length
+    ? ";" : ((lines[0].match(/\t/g) || []).length ? "\t" : ",");
+  const split = (line) => {           // handles "quoted, fields"
+    const out = []; let cur = "", q = false;
+    for (let i = 0; i < line.length; i++){
+      const c = line[i];
+      if (q){
+        if (c === '"' && line[i+1] === '"'){ cur += '"'; i++; }
+        else if (c === '"'){ q = false; }
+        else cur += c;
+      } else if (c === '"'){ q = true; }
+      else if (c === guess){ out.push(cur); cur = ""; }
+      else cur += c;
+    }
+    out.push(cur); return out.map(x => x.trim());
+  };
+  const head = split(lines[0]);
+  const rows = lines.slice(1).map(l => {
+    const cells = split(l), o = {};
+    head.forEach((h, i) => o[h] = cells[i] !== undefined ? cells[i] : "");
+    return o;
+  });
+  // a column becomes numeric only if EVERY non-empty value parses (same rule as the builder,
+  // so an ID column that looks numeric survives as text). Empty stays null, never 0.
+  for (const col of head){
+    const vals = rows.map(r => r[col]).filter(v => v !== "" && v != null);
+    if (vals.length && vals.every(v => parseNum(v) !== null))
+      rows.forEach(r => r[col] = r[col] === "" ? null : parseNum(r[col]));
+  }
+  return rows;
+}
+
+// data.js may carry either JSON (window.DASHBOARD_DATA) or raw CSV
+// (window.DASHBOARD_CSV) — the latter is hand-editable in Notepad.
+let LIVE = (typeof window.DASHBOARD_CSV === "string" && window.DASHBOARD_CSV.trim())
+  ? parseCSV(window.DASHBOARD_CSV)
+  : DATA.slice();
+function loadRows(rows, label){
+  if (!rows.length){ alert("Fant ingen rader i filen."); return; }
+  const missing = [META.dimension, META.measure].filter(c => !(c in rows[0]));
+  if (missing.length){
+    alert("Filen mangler kolonnen(e): " + missing.join(", ") +
+          "\nFant: " + Object.keys(rows[0]).join(", "));
+    return;
+  }
+  LIVE = rows;
+  DATA_META.generated = new Date().toISOString().slice(0, 16).replace("T", " ");
+  DATA_META.source = label;
+  document.getElementById("export").disabled = false;
+  renderControls(); render();
+  const el = document.getElementById("meta");
+  if (el) el.innerHTML = `${esc(label)} &middot; lest lokalt ${DATA_META.generated} &middot; ` +
+    `${fmt(rows.length)} rader &middot; <strong>ikke lagret ennå</strong>`;
+}
+
+function readFile(file){
+  const r = new FileReader();
+  r.onload = () => {
+    const txt = String(r.result);
+    try {
+      loadRows(file.name.toLowerCase().endsWith(".json") ? JSON.parse(txt) : parseCSV(txt),
+               file.name);
+    } catch (e) { alert("Klarte ikke lese filen: " + e.message); }
+  };
+  r.readAsText(file, "utf-8");
+}
+
+(function wireDrop(){
+  const bar = $("dropbar"); if (!bar) return;
+  const stop = e => { e.preventDefault(); e.stopPropagation(); };
+  ["dragenter","dragover"].forEach(ev => document.addEventListener(ev, e => {
+    stop(e); bar.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => document.addEventListener(ev, e => {
+    stop(e); if (ev === "dragleave" && e.relatedTarget) return; bar.classList.remove("over"); }));
+  document.addEventListener("drop", e => {
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) readFile(f);
+  });
+  $("pick").onchange = e => { if (e.target.files[0]) readFile(e.target.files[0]); };
+
+  $("export").onclick = () => {
+    // backticks / ${ would break a template literal, so ship JSON — always safe
+    const body =
+      "// Datafil for dette dashboardet. Bytt ut denne filen for å oppdatere tallene.\n" +
+      "// Generert " + new Date().toISOString() + " fra " + (DATA_META.source || "ukjent kilde") + "\n" +
+      "window.DASHBOARD_DATA=" + JSON.stringify(LIVE) + ";\n" +
+      "window.DASHBOARD_META=" + JSON.stringify({
+        generated: DATA_META.generated, source: DATA_META.source, rows: LIVE.length }) + ";\n";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([body], { type: "text/javascript" }));
+    a.download = "data.js"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+})();
+
+/* ---------- render loop --------------------------------------------------- */
+function renderCharts(rows) {
+  barChart("chart1", groupSum(rows, META.dimension, META.measure), { limit: 12 });
+  if (META.timeColumn) {
+    const byTime = groupSum(rows, META.timeColumn, META.measure)
+      .sort((a, b) => String(a.key).localeCompare(String(b.key), "nb"));
+    lineChart("chart2", byTime);
+  } else {
+    const [W] = chartSize($("chart2"));
+    $("chart2").innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">Ingen tidskolonne</text>`;
+  }
+}
+
+function render() {
+  const rows = visibleRows();
+  renderKpis(rows);
+  renderCharts(rows);
+  renderTable(rows);
+}
+
+/* Redraw the charts, not the table, when a chart card changes width.
+   Watch the cards themselves, not only window "resize": a host can give the frame its
+   size without ever firing resize (measured in an Atlassian Artifacts embed inside a
+   Confluence page, docs/29). The charts would then keep the width they were drawn at
+   while the frame was still 0 x 0. Only a change of width redraws, so the height change a
+   redraw causes cannot loop. */
+let resizeFrame = 0;
+const queueChartRedraw = () => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(() => renderCharts(visibleRows()));
+};
+addEventListener("resize", queueChartRedraw);
+if (typeof ResizeObserver === "function") {
+  const seenW = new WeakMap();
+  const chartObserver = new ResizeObserver(entries => {
+    const widthChanged = entries.some(e => {
+      const w = Math.round(e.contentRect.width), was = seenW.get(e.target);
+      seenW.set(e.target, w);
+      return was !== undefined && w !== was;
+    });
+    if (widthChanged) queueChartRedraw();
+  });
+  ["chart1", "chart2"].forEach(id => chartObserver.observe($(id)));
+}
+
+(function footNote(){
+  const el = document.getElementById("footnote"); if (!el) return;
+  el.innerHTML = "bundled" === "paired"
+    ? 'Dataene ligger i <code>data.js</code> ved siden av denne filen. Bytt den ut, og alle ser nye tall.'
+    : 'Tallene er bygget inn i denne filen. Oppdater dem med <code>tun-data</code>.';
+})();
+
+/* ---------- header meta (freshness comes from the DATA, not the shell) ----- */
+(function renderMeta(){
+  const asOf = DATA_META.generated || "2026-10-24 10:00 UTC";
+  const src  = DATA_META.source || "Syntetiske data, 144 rader (8 enheter, 18 maneder)";
+  const mode = "bundled";
+  const rows = LIVE.length ? fmt(LIVE.length) : "0";
+  const note = mode === "paired"
+    ? '<strong>oppdateres n\u00e5r datafilen synkes</strong>'
+    : '<strong>fast \u00f8yeblikksbilde</strong>';
+  const el = document.getElementById("meta");
+  if (el) el.innerHTML = `${esc(src)} &middot; data per ${esc(asOf)} &middot; ${rows} rader &middot; ${note}`;
+})();
+
+/* ---------- init ---------------------------------------------------------- */
+if (!Array.isArray(LIVE) || !LIVE.length) {
+  document.querySelector("main").innerHTML =
+    '<p class="empty">Ingen data ble bygget inn i denne filen.</p>';
+} else {
+  renderControls();
+  render();
+}
+</script>
+</body>
+</html>

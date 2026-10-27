@@ -1,17 +1,19 @@
 # Paired-mode data contract — what `dash.html` and `data.js` actually exchange today
 
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
 **Status: as-built, not a proposal.** Documents what `tun-new --mode paired` and
-`tun-data` actually produce and read, correcting the original contract proposal,
-which specified a fuller contract before any of it was implemented. Where the proposal and
-the real code differ,
+`tun-data` actually produce and read, correcting issue #6 — which specified a
+fuller contract before any of it was implemented. Where #6 and the real code differ,
 the real code wins; this document is not a redesign, it's a correction.
 
-The multi-block idea in the original proposal (several independently-typed data units
-per dashboard) never got built and is being pursued separately. This document only covers the single-table contract that exists today.
+The multi-block idea in #6's original context (several independently-typed data units
+per dashboard) never got built and is being pursued separately — see the "Flerblokk-
+dashboard" issue. This document only covers the single-table contract that exists today.
 
 ---
 
-## 1. The interface — actual global names, not the proposed ones
+## 1. The interface — actual global names, not #6's proposed ones
 
 - `window.DASHBOARD_DATA` — a JSON array of row objects, **or**
 - `window.DASHBOARD_CSV` — raw CSV text, deliberately hand-editable in Notepad (see
@@ -24,10 +26,10 @@ per dashboard) never got built and is being pursued separately. This document on
   file can only be read as loaded code, not as fetched data, from `file://`).
 - Load order: plain `<script>` tag order in the HTML — `data.js` is written before the
   reading code in the document, so it has already run by the time `DASHBOARD_DATA` is
-  read. The proposal suggested a `data:ready` event as a fallback if load order ever
+  read. #6 point 1 proposed a `data:ready` event as a fallback if load order ever
   couldn't be guaranteed; never needed, because it always can be.
 
-## 2. No schema version field — the proposal's ask was only half built
+## 2. No schema version field — #6 point 2's ask was only half built
 
 `SCHEMA_VERSION` does not exist anywhere in the codebase. What does exist is narrower and
 only covers one of the two paths data can enter the page:
@@ -35,28 +37,28 @@ only covers one of the two paths data can enter the page:
 - **Dragging a new CSV onto an open dashboard** (`loadRows()` in
   `templates/single-file-dashboard.html`) checks that the dimension and measure columns
   are present and **alerts visibly** if they're missing, naming exactly which columns and
-  what was found instead. This matches the proposal's actual goal ("fail visibly instead of
+  what was found instead. This matches #6 point 2's actual goal ("fail visibly instead of
   drawing a chart with the wrong numbers").
 - **The initial page load** (reading `window.DASHBOARD_DATA` when `data.js` loads at
   open-time) has **no equivalent check**. A `data.js` written by a future, buggy
   generator with the wrong columns would fail silently or render an empty chart, not
   alert. This is a real, currently-open gap, not a design decision.
 
-## 3. Freshness is read out of the data — built, matches the proposal exactly
+## 3. Freshness is read out of the data — built, matches #6 point 3 exactly
 
 `DASHBOARD_META.generated`, `.source` and `.rows` are read live and displayed; nothing in
-`dash.html` hardcodes a date. Confirmed in `examples/02-paired-dashboard/` (swapping `data.js` changed the
-displayed date without touching the shell).
+`dash.html` hardcodes a date. Confirmed in the worked example from issue #1 (swapping
+`data.js` changed the displayed date without touching the shell).
 
-## 4. Chart-ready shape — the opposite of what the proposal asked for, and that's fine
+## 4. Chart-ready shape — the opposite of what #6 point 4 asked for, and that's fine
 
-The proposal asked for `data.js` to either match Chart.js's shape directly or hand `dash.html` a
+#6 asked for `data.js` to either match Chart.js's shape directly or hand `dash.html` a
 thin, fixed intermediate format, with "no domain interpretation in the shell." What's
 actually built does the reverse: `data.js` carries raw rows (JSON or CSV), and
 `dash.html` does the dimension/measure/filter interpretation itself, entirely at render
 time. This works today because the interpretation is generic (group-by-column,
 sum-a-measure) rather than domain-specific — but it does mean `data.js` is not a
-self-describing contract the way the proposal envisioned. Worth revisiting only if a future block
+self-describing contract the way #6 envisioned. Worth revisiting only if a future block
 type needs data pre-shaped in a way generic grouping can't produce.
 
 ## 5. Filters are half data-driven, half fixed at build time
@@ -68,25 +70,25 @@ type needs data pre-shaped in a way generic grouping can't produce.
   currently loaded (`Array.from(new Set(rows.map(...))).sort()`), so a new `data.js` with
   a new region shows that region without a rebuild.
 
-This is a narrower claim than the proposal ("filter dimensions are listed by data.js
+This is a narrower claim than #6 point 5 ("filter dimensions are listed by data.js
 itself") — the dimensions are fixed at build time, only their values are live.
 
-## 6. "No data" state — built, matches the proposal
+## 6. "No data" state — built, matches #6 point 6
 
 `templates/single-file-dashboard.html` shows a literal "Ingen data" state (both for an
 empty chart and for a dashboard built with zero rows). No silent stale/empty chart.
 
-## 7. No cache-buster — not implemented
+## 7. No cache-buster — #6 point 7 is not implemented
 
 `<script src="./data.js"></script>` — no `?v=<timestamp>` query parameter anywhere in
 `examples/02-paired-dashboard/` or the templates. Browser caching of `data.js` after a
-swap is therefore an open risk the proposal correctly anticipated but nothing has closed.
+swap is therefore an open risk #6 correctly anticipated but nothing has closed.
 
 ## 8. Size guidance — built, but as one shared budget, not a paired-specific one
 
 `tools/build_dashboard.py` enforces the Tier 1 budget (warn >20 MB, fail >50 MB,
 `docs/02-architecture.md`) uniformly — there is no separate, smaller recommended
-ceiling for paired mode specifically, the way the proposal suggested there should be
+ceiling for paired mode specifically, the way #6 point 8 suggested there should be
 before pointing to cube mode.
 
 ## 9. Multiple audiences, same contract, different folders — built as a rule, not paired-specific
@@ -119,7 +121,7 @@ ways that do work:
 
 - the reader drops or picks the file by hand, read with `FileReader` (row 17), or
 - the reader grants the folder with `showDirectoryPicker`, which is **connected**, with every
-  cost [the generic artifact model](08-generic-artifact-model.md) lists (row 19).
+  cost [the generic artefact model](08-generic-artifact-model.md) lists (row 19).
 
 A paired multi-block design would have to wrap each block in its own `.js` sidecar, or
 generate one sidecar that carries all four. That choice is open.

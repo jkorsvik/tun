@@ -1,0 +1,64 @@
+# Strings for templates/register.html and tools/build_register.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# A register is a list of rows, not a chart: the words here are the ones a reader
+# uses when they want the list itself — search, sort, page, and the count.
+
+[nb]
+html_lang = nb
+num_locale = nb-NO
+dec = ,
+all = Alle
+reset = Nullstill
+search_label = Søk i listen
+search_placeholder = Skriv et ord eller et tall
+search_hint = Søket ser i alle kolonnene som vises. Tøm feltet for å se alt.
+page_size = Rader per side
+sort_hint = Klikk på en kolonneoverskrift for å sortere. Klikk en gang til for å snu rekkefølgen. På en smal skjerm bruker du Sorter etter over listen.
+sort_label = Sorter etter
+sort_asc = Stigende
+sort_desc = Synkende
+rows_shown = {shown} av {total} rader
+rows_empty = Ingen rader med dette søket.
+group_rows = {n} rader
+group_rows_one = 1 rad
+rows_total = Rader
+cols_total = Kolonner
+footer_a = Selvstendig fil: radene ligger i filen, og ingenting hentes når den åpnes
+footer_b = Ingen server, ingen innlogging
+footer_built = Bygget
+source_line = {name} — {rows} rader, {cols} kolonner
+nojs_head = Uten skript
+nojs_body = Denne filen viser de første {shown} av {total} radene uten skript. Alt ligger i filen, men søk, sortering og de øvrige sidene tegnes av skriptet når det kjører.
+prev = Forrige
+next = Neste
+aria_table = Register
+
+[en]
+html_lang = en
+num_locale = en-GB
+dec = .
+all = All
+reset = Reset
+search_label = Search the list
+search_placeholder = Type a word or a number
+search_hint = The search looks in every column shown. Clear the field to see everything.
+page_size = Rows per page
+sort_hint = Click a column heading to sort. Click it again to reverse the order. On a narrow screen, use Sort by above the list.
+sort_label = Sort by
+sort_asc = Ascending
+sort_desc = Descending
+rows_shown = {shown} of {total} rows
+rows_empty = No rows match this search.
+group_rows = {n} rows
+group_rows_one = 1 row
+rows_total = Rows
+cols_total = Columns
+footer_a = Self-contained file: the rows are inside it, and nothing is fetched when it opens
+footer_b = No server, no sign-in
+footer_built = Built
+source_line = {name} — {rows} rows, {cols} columns
+nojs_head = Without script
+nojs_body = This file shows the first {shown} of {total} rows with no script. Everything is in the file, but search, sorting and the other pages are drawn by the script when it runs.
+prev = Previous
+next = Next
+aria_table = Register

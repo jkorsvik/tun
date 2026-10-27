@@ -1,5 +1,7 @@
 # The Skill Tree
 
+**Reader:** user — you want an artefact out of your own data and do not intend to change the toolkit.
+
 The skill tree turns the architecture into something a **non-developer can drive by
 talking**. Each skill is one verb in the sentence *"take this data, make a dashboard,
 check it, put it somewhere people can see it."*
@@ -48,13 +50,14 @@ check it, put it somewhere people can see it."*
 | Skill | One-liner | Who runs it | Status |
 |---|---|---|---|
 | **`tun-help`** | Router. Describes what you want in plain language, picks the skill, explains the tier and its cost. | anyone, first | ✅ built |
-| **`tun-new`** | Scaffold a new single-file dashboard from an Excel/CSV/query. Picks charts, inlines data, applies the organisation's styling. Two modes: inline the **rows**, or inline a **dense cube** for millions of rows ([`07-portable-cube.md`](07-portable-cube.md)). | anyone | ✅ built |
+| **`tun-new`** | Scaffold a new single-file dashboard from an Excel/CSV/query. Picks charts, inlines data, applies Eksempel AS styling. Two modes: inline the **rows**, or inline a **dense cube** for millions of rows ([`07-portable-cube.md`](07-portable-cube.md)). | anyone | ✅ built |
 | **`tun-data`** | Add a data source to an existing dashboard, or refresh its snapshot from source. | anyone | ✅ built |
 | **`tun-verify`** | Open the file in a real headless browser, confirm it renders and JS runs, screenshot it, check the size budget. **Gate before publish.** | anyone (auto) | ✅ built |
 | **`tun-publish`** | Upload to a SharePoint library or OneDrive folder, set/confirm permissions, produce a shareable link, draft the announcement. | anyone | ✅ built |
 | **`tun-feedback`** | Record feedback on a skill or a built file to a local log, and file it as an issue after a yes. Builders take `--feedback-to` for a link inside the file. | anyone | ✅ built |
 | **`tun-powerbi-escape`** | Get a report out of Power BI. Answers the "but it needs RLS/refresh/alerts" objections instead of sending it back. | anyone | ✅ built |
 | **`tun-process`** | Draw a process as a swimlane diagram from a short interview, with improvement points flagged. One static HTML file. | anyone | ✅ built |
+| **`tun-review`** | Close the loop: a reader comments on a row inside the file and hands back one text block; `tools/read_review.py` finds the row and shows the file's number beside theirs. `--annotate` on the rows builder, and the block can be written by hand when scripting is off ([`31-review-roundtrip.md`](31-review-roundtrip.md)). | anyone, after someone has read the file | ✅ built (`tools/read_review.py`, example 36) |
 | **`dashboard-embed`** | Tier 2. Build an SPFx web part to render in-page. Explains the admin approval chain up front. | with a developer | 🔶 planned — blocked on SPFx approvability |
 | **`dashboard-bigdata`** | Tier 3. Convert a large dataset to Parquet, wire DuckDB-WASM over Range requests. | with a developer | 🔶 planned — needs `dashboard-embed` |
 | **`tenant-probe`** | Re-run the tenant constraint probe and diff against the documented findings. | quarterly / on breakage | ✅ script built (`probe/tenant-probe.py`) |
@@ -72,7 +75,7 @@ only by whoever built the tooling. They are not optional.
 2. **Every skill states its tier and its governance cost in its first reply.**
    "This is Tier 1 — no approvals needed, you can share it today" or
    "This is Tier 2 — it needs a SharePoint admin to approve a package first, which
-   we have not yet done here." Never let someone discover the approval chain at
+   we have not yet done at Eksempel AS." Never let someone discover the approval chain at
    the end.
 
 3. **The who-sees-what question is in `tun-new`, `tun-help` and
@@ -98,14 +101,14 @@ only by whoever built the tooling. They are not optional.
 The tree does not need to be built at once. Priority reflects what unblocks a
 first real user fastest:
 
-- **Phase 1 (unblocks a first user):** `tun-new` → `tun-verify` → `tun-publish`.
+- **Phase 1 (unblocks Tunkallen):** `tun-new` → `tun-verify` → `tun-publish`.
   With these three, Tier 1 works end to end and someone can ship a real dashboard.
 - **Phase 2 (makes it stick):** `tun-help`, `tun-data`. Discovery and
   refresh — the difference between a demo and a habit.
 - **Phase 3 (proves the replacement claim):** `tun-powerbi-escape`. Needed before anyone
   will believe the Power BI framing.
 - **Phase 4 (extends the ceiling):** `dashboard-embed`, `dashboard-bigdata`. Blocked
-  on validating that an SPFx package gets through tenant admin review. Note the row-count ceiling was **already**
+  on validating SPFx approvability at Eksempel AS. Note the row-count ceiling was **already**
   lifted inside Tier 1 by cube mode (4 M rows in 0.81 MB, measured); what Phase 4 adds
   is in-page embedding and row-level detail over huge tables, not scale per se.
 - **Continuous:** `tenant-probe`.

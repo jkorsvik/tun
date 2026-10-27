@@ -1,0 +1,91 @@
+KPI,Periode,Verdi,Mal,Retning,Enhet
+Kundetilfredshet,2025-10,74,78,opp,poeng
+Kundetilfredshet,2025-11,75,78,opp,poeng
+Kundetilfredshet,2025-12,75,78,opp,poeng
+Kundetilfredshet,2026-01,76,78,opp,poeng
+Kundetilfredshet,2026-02,75,78,opp,poeng
+Kundetilfredshet,2026-03,76,78,opp,poeng
+Kundetilfredshet,2026-04,77,78,opp,poeng
+Kundetilfredshet,2026-05,78,78,opp,poeng
+Kundetilfredshet,2026-06,78,78,opp,poeng
+Kundetilfredshet,2026-07,80,78,opp,poeng
+Kundetilfredshet,2026-08,78,78,opp,poeng
+Kundetilfredshet,2026-09,81,78,opp,poeng
+Kundetilfredshet,2026-10,80,78,opp,poeng
+Saksbehandlingstid,2025-10,"4,2","5,0",ned,dager
+Saksbehandlingstid,2025-11,"4,1","5,0",ned,dager
+Saksbehandlingstid,2025-12,"4,6","5,0",ned,dager
+Saksbehandlingstid,2026-01,"4,6","5,0",ned,dager
+Saksbehandlingstid,2026-02,"4,2","5,0",ned,dager
+Saksbehandlingstid,2026-03,"4,6","5,0",ned,dager
+Saksbehandlingstid,2026-04,"5,0","5,0",ned,dager
+Saksbehandlingstid,2026-05,"5,1","5,0",ned,dager
+Saksbehandlingstid,2026-06,"5,0","5,0",ned,dager
+Saksbehandlingstid,2026-07,"5,4","5,0",ned,dager
+Saksbehandlingstid,2026-08,"5,9","5,0",ned,dager
+Saksbehandlingstid,2026-09,"6,2","5,0",ned,dager
+Saksbehandlingstid,2026-10,"5,9","5,0",ned,dager
+Svartid telefoni,2025-10,36,40,ned,sekund
+Svartid telefoni,2025-11,36,40,ned,sekund
+Svartid telefoni,2025-12,33,40,ned,sekund
+Svartid telefoni,2026-01,34,40,ned,sekund
+Svartid telefoni,2026-02,35,40,ned,sekund
+Svartid telefoni,2026-03,37,40,ned,sekund
+Svartid telefoni,2026-04,45,40,ned,sekund
+Svartid telefoni,2026-05,34,40,ned,sekund
+Svartid telefoni,2026-06,49,40,ned,sekund
+Svartid telefoni,2026-07,45,40,ned,sekund
+Svartid telefoni,2026-08,46,40,ned,sekund
+Svartid telefoni,2026-09,51,40,ned,sekund
+Svartid telefoni,2026-10,48,40,ned,sekund
+Digital andel,2025-10,67,80,opp,prosent
+Digital andel,2025-11,70,80,opp,prosent
+Digital andel,2025-12,69,80,opp,prosent
+Digital andel,2026-01,71,80,opp,prosent
+Digital andel,2026-02,74,80,opp,prosent
+Digital andel,2026-03,73,80,opp,prosent
+Digital andel,2026-04,74,80,opp,prosent
+Digital andel,2026-05,76,80,opp,prosent
+Digital andel,2026-06,75,80,opp,prosent
+Digital andel,2026-07,76,80,opp,prosent
+Digital andel,2026-08,80,80,opp,prosent
+Digital andel,2026-09,81,80,opp,prosent
+Digital andel,2026-10,82,80,opp,prosent
+Avvik lukket innen frist,2025-10,90,95,opp,prosent
+Avvik lukket innen frist,2025-11,86,95,opp,prosent
+Avvik lukket innen frist,2025-12,96,95,opp,prosent
+Avvik lukket innen frist,2026-01,92,95,opp,prosent
+Avvik lukket innen frist,2026-02,89,95,opp,prosent
+Avvik lukket innen frist,2026-03,90,95,opp,prosent
+Avvik lukket innen frist,2026-04,96,95,opp,prosent
+Avvik lukket innen frist,2026-05,96,95,opp,prosent
+Avvik lukket innen frist,2026-06,95,95,opp,prosent
+Avvik lukket innen frist,2026-07,90,95,opp,prosent
+Avvik lukket innen frist,2026-08,93,95,opp,prosent
+Avvik lukket innen frist,2026-09,97,95,opp,prosent
+Avvik lukket innen frist,2026-10,90,95,opp,prosent
+Sykefravær,2025-10,"4,2","4,5",ned,prosent
+Sykefravær,2025-11,"4,7","4,5",ned,prosent
+Sykefravær,2025-12,"4,4","4,5",ned,prosent
+Sykefravær,2026-01,"5,2","4,5",ned,prosent
+Sykefravær,2026-02,"4,2","4,5",ned,prosent
+Sykefravær,2026-03,"4,9","4,5",ned,prosent
+Sykefravær,2026-04,"4,9","4,5",ned,prosent
+Sykefravær,2026-05,"4,9","4,5",ned,prosent
+Sykefravær,2026-06,"4,4","4,5",ned,prosent
+Sykefravær,2026-07,"5,7","4,5",ned,prosent
+Sykefravær,2026-08,"4,3","4,5",ned,prosent
+Sykefravær,2026-09,"4,8","4,5",ned,prosent
+Sykefravær,2026-10,"5,7","4,5",ned,prosent
+Antall klager,2025-10,109,120,ned,antall
+Antall klager,2025-11,130,120,ned,antall
+Antall klager,2025-12,120,120,ned,antall
+Antall klager,2026-01,142,120,ned,antall
+Antall klager,2026-02,137,120,ned,antall
+Antall klager,2026-03,145,120,ned,antall
+Antall klager,2026-04,96,120,ned,antall
+Antall klager,2026-05,122,120,ned,antall
+Antall klager,2026-06,123,120,ned,antall
+Antall klager,2026-08,124,120,ned,antall
+Antall klager,2026-09,117,120,ned,antall
+Antall klager,2026-10,143,120,ned,antall

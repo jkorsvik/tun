@@ -39,85 +39,41 @@ from __future__ import annotations
 import argparse
 import array
 import base64
-import csv
 import datetime as dt
+import html
 import json
 import pathlib
 import struct
 import sys
 import zlib
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import build_size  # noqa: E402
+import build_stamp  # noqa: E402
+import feedback_link  # noqa: E402
+import i18n  # noqa: E402
+import tun_core  # noqa: E402
+import tun_tokens  # noqa: E402
+from tun_tokens import strip_css_comments  # noqa: E402
+from tun_core import NOT_STATED, die, number_or_zero  # noqa: E402
+
 TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "cube-dashboard.html"
 # The strings table is named, not derived from TEMPLATE: a test points TEMPLATE at a copy.
 STRINGS = "cube-dashboard"
 
-# Colours come from tools/tun_tokens.py, never from the template. The cube template
-# defines its own neutral greys and uses only the palette slots, so no theme file is
-# inlined (core_files=()).
-TOOLS_DIR = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(TOOLS_DIR))
-import feedback_link  # noqa: E402
-import i18n  # noqa: E402
-import tun_tokens  # noqa: E402
-
 # Bounds the browser's decoded footprint: cells x measures x 4 bytes.
 MAX_CELLS_DEFAULT = 2_000_000
-SIZE_WARN_MB = 20  # keep in step with docs/02-architecture.md
 
 TIME_GRAINS = ("month", "quarter", "year", "day", "week")
 INT32_MAX = 2_147_483_647
 
-# What the provenance block says when nobody named a requester. Never fall back to the
-# OS user name: it put the builder's login into every committed artefact (#45).
-# A role is what the block wants; pass one with --requested-by.
-NOT_STATED = "not stated"
-
-
-def die(msg: str) -> "None":
-    print(f"error: {msg}", file=sys.stderr)
-    raise SystemExit(2)
+# NOT_STATED, die and the numeric parse are tun_core's: one home for five builders.
 
 
 # --------------------------------------------------------------------------- input
-def load_rows(path: pathlib.Path) -> list[dict]:
-    suffix = path.suffix.lower()
-    if suffix == ".json":
-        rows = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(rows, list):
-            die(f"{path.name}: expected a JSON array of objects")
-        return rows
-    if suffix in (".csv", ".tsv", ".txt"):
-        delim = "\t" if suffix == ".tsv" else ","
-        with path.open(newline="", encoding="utf-8-sig") as fh:
-            sample = fh.read(64 * 1024)
-            fh.seek(0)
-            if suffix != ".tsv":
-                try:
-                    delim = csv.Sniffer().sniff(sample, delimiters=",;\t|").delimiter
-                except csv.Error:
-                    delim = ","
-            return list(csv.DictReader(fh, delimiter=delim))
-    die(f"{path.name}: unsupported input. Use .csv, .tsv or .json "
-        f"(convert .xlsx/.parquet first — see the tun-data skill)")
-
-
-def to_number(raw) -> float:
-    """Tolerant numeric parse: handles '1 234,56', '1,234.56', '', None."""
-    if raw is None:
-        return 0.0
-    if isinstance(raw, (int, float)):
-        return float(raw)
-    s = str(raw).strip().replace("\u00a0", "").replace(" ", "")
-    if not s:
-        return 0.0
-    if "," in s and "." in s:
-        s = s.replace(",", "") if s.rindex(".") > s.rindex(",") else s.replace(".", "").replace(",", ".")
-    elif "," in s:
-        s = s.replace(",", ".")
-    try:
-        return float(s)
-    except ValueError:
-        return 0.0
+# ONE numeric reading for the cube and the dashboard. The cube always wants a float, and an
+# unreadable cell in a measure counts as nothing rather than dropping the row from its cell.
+to_number = number_or_zero
 
 
 _BUCKET_MEMO: "dict[tuple, str]" = {}
@@ -288,13 +244,22 @@ def main() -> int:
     ap.add_argument("--data", required=True, type=pathlib.Path)
     ap.add_argument("--out", required=True, type=pathlib.Path)
     ap.add_argument("--title", default="Dashboard")
-    ap.add_argument("--dims", default="", help="comma-separated filterable dimension columns")
+    # --dimension is the dashboard builder's name for the same idea, and a skill
+    # or a person switching between the two should not have to remember which
+    # builder wants the plural. Both spellings are accepted; the plural wins if
+    # both are given.
+    ap.add_argument("--dims", "--dimension", dest="dims", default="",
+                    help="comma-separated filterable dimension columns")
     ap.add_argument("--time", default="", help="date column, becomes the trend axis")
     ap.add_argument("--time-grain", default="month", choices=TIME_GRAINS)
-    ap.add_argument("--measures", default="", help="field:agg[:unit], comma-separated. agg = sum|count")
+    ap.add_argument("--measures", "--measure", dest="measures", default="",
+                    help="field:agg[:unit], comma-separated. agg = sum|count")
     ap.add_argument("--max-cells", type=int, default=MAX_CELLS_DEFAULT)
     ap.add_argument("--requested-by", default="",
                     help="a role, e.g. \"Salgsavdelingen\". Not a person's name.")
+    ap.add_argument("--source", default="",
+                    help="human description of where the data came from; the "
+                         "provenance block names the file when this is omitted")
     ap.add_argument("--feedback-to", default="", metavar="ADDRESS_OR_ISSUE_URL",
                     help=feedback_link.FLAG_HELP)
     i18n.add_lang_argument(ap)
@@ -306,7 +271,7 @@ def main() -> int:
     if not TEMPLATE.exists():
         die(f"template missing: {TEMPLATE}")
 
-    rows = load_rows(args.data)
+    rows = tun_core.read_rows(args.data)
     if not rows:
         die(f"{args.data.name} has no rows")
 
@@ -326,12 +291,12 @@ def main() -> int:
     gz = deterministic_gzip(payload)
     b64 = base64.b64encode(gz).decode("ascii")
 
-    meta.update(title=args.title, built=dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    meta.update(title=args.title, built=build_stamp.naive(),
                 # The raw value: "" when nobody was named, so the footer can leave it out.
                 # Only the provenance comment spells that out as NOT_STATED.
-                requested_by=args.requested_by, source=args.data.name)
+                requested_by=args.requested_by, source=args.source or args.data.name)
 
-    source = i18n.fill(t["source_line"], name=args.data.name, rows=f"{meta['source_rows']:,}",
+    source = i18n.fill(t["source_line"], name=args.source or args.data.name, rows=f"{meta['source_rows']:,}",
                        cells=f"{meta['n']:,}", dims=", ".join(meta["dims"]))
     feedback = ""
     if args.feedback_to:
@@ -341,20 +306,42 @@ def main() -> int:
         except ValueError as exc:
             die(f"--feedback-to: {exc}")
 
-    token_css, token_source = tun_tokens.load_token_css(core_files=())
+    # The static view (ROADMAP A3, docs/11 §3c). Without scripting the cube is never
+    # decoded, so the boot line stayed on screen forever. These are the facts the build
+    # already had, written into the markup for a viewer that blocks JavaScript.
+    def grouped(n: int) -> str:
+        return i18n.group_int(n, args.lang)
 
-    html = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
-            .replace("{{TOKEN_CSS}}", token_css)
+    nojs_facts = "".join(
+        f"<div><dt>{html.escape(label)}</dt><dd>{value}</dd></div>"
+        for label, value in (
+            (t["rows_word"], grouped(meta["source_rows"])),
+            (t["cells"], grouped(meta["n"])),
+            (t["nojs_dims"], grouped(len(meta["dims"]))),
+            (t["nojs_density"], f"{meta['density'] * 100:.0f} %".replace(" %", "%")),
+        ))
+    nojs_dims = "".join(f"<li>{html.escape(d)}</li>" for d in meta["dims"])
+
+    # Nothing the caller types is markup (ROADMAP A0b): every one of these lands in HTML
+    # only — the <title> and the provenance comment — so html.escape is the whole fix.
+    # The tokens are inlined here rather than written into the template, so this page shares
+    # one seam with every other artefact. auto_dark: a reader whose system is dark gets a dark
+    # cube with no script.
+    token_css, _ = tun_tokens.load_token_css(auto_dark=True)
+    page = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
+            .replace("{{TOKEN_CSS}}", strip_css_comments(token_css))
             .replace("{{META}}", json.dumps(meta, ensure_ascii=False))
             .replace("{{DATA}}", b64)
-            .replace("{{TITLE}}", args.title)
-            .replace("{{SOURCE_DESCRIPTION}}", source)
+            .replace("{{NOJS_FACTS}}", nojs_facts)
+            .replace("{{NOJS_DIMS}}", nojs_dims)
+            .replace("{{TITLE}}", html.escape(args.title))
+            .replace("{{SOURCE_DESCRIPTION}}", html.escape(source))
             .replace("{{BUILD_TIMESTAMP}}", meta["built"])
-            .replace("{{REQUESTED_BY}}", args.requested_by or NOT_STATED)
+            .replace("{{REQUESTED_BY}}", html.escape(args.requested_by or NOT_STATED))
             # last, so no later replacement rewrites text inside the block
             .replace("{{FEEDBACK_BLOCK}}", feedback))
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(html, encoding="utf-8")
+    args.out.write_text(page, encoding="utf-8")
 
     mb = args.out.stat().st_size / 1e6
     print(f"source rows   : {meta['source_rows']:,}"
@@ -364,7 +351,6 @@ def main() -> int:
     print(f"gzip          : {len(gz) / 1e6:.2f} MB")
     print(f"base64 inlined: {len(b64) / 1e6:.2f} MB")
     print(f"{args.out.name:14}: {mb:.2f} MB")
-    print(f"palette       : {token_source}")
     if meta["source_rows"]:
         ratio = meta["source_rows"] / max(1, meta["n"])
         if ratio >= 2:
@@ -375,9 +361,9 @@ def main() -> int:
                   f"populated). A dense cube pays off when many rows share a cell. Either drop a "
                   f"dimension / coarsen --time-grain, or inline the rows directly with "
                   f"tools/build_dashboard.py.", file=sys.stderr)
-    if mb > SIZE_WARN_MB:
-        print(f"\nwarning: {mb:.1f} MB exceeds the {SIZE_WARN_MB} MB Tier 1 budget. "
-              f"Coarsen a dimension — see docs/02-architecture.md", file=sys.stderr)
+    # The same budget every builder applies (tools/build_size.py). Above it the
+    # builder fails rather than printing a warning nobody reads in a script.
+    build_size.enforce(args.out)
     print(f"\nverify it renders before sharing:\n  python3 tools/verify_dashboard.py {args.out}")
     return 0
 
