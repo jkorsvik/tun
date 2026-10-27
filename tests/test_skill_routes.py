@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Is every artefact kind reachable from a skill, and do the skills still name real flags?
 
 A builder that no SKILL.md names is an artefact nobody is routed to. It passes every other

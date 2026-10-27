@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Write the synthetic staffing extract behind example 41: hours per task, per quarter.
 
 Deterministic on purpose, so the committed `bemanning.csv` is this script's output and every

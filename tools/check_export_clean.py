@@ -251,12 +251,12 @@ def redact(s: str) -> str:
 #: nothing about identity. What the picture *shows* is checked where it is made: the page it
 #: photographs is scanned as text before the photograph exists. So the payload is blanked,
 #: not decoded, and the blanking preserves length so a reported line number stays usable.
-DATA_IMAGE = re.compile(r"data:image/[A-Za-z0-9.+-]+;base64,[A-Za-z0-9+/=\s]{64,}")
+DATA_PAYLOAD = re.compile(r";base64,[A-Za-z0-9+/=\s]{64,}")
 
 
 def strip_binary_payloads(text: str) -> str:
     """Blank base64 image payloads, preserving offsets."""
-    return DATA_IMAGE.sub(lambda m: "x" * len(m.group(0)), text)
+    return DATA_PAYLOAD.sub(lambda m: "x" * len(m.group(0)), text)
 
 
 def scan(root: pathlib.Path, rules) -> tuple[int, list[tuple[str, str, int, str]]]:

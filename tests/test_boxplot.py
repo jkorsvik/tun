@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """The box plot: five numbers per group, and the tail the box cannot hide.
 
 A box plot is the one shape here whose arithmetic is a *convention*: quartiles, whiskers and

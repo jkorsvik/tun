@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """The scorecard: many measures, one period, with their targets and their history.
 
 A scorecard is the one report where a number is supposed to carry a verdict, so this suite

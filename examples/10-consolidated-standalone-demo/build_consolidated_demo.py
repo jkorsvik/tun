@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+# or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+# COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+# under terms of your choice, provided the Origin Notice is preserved.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 build_consolidated_demo.py — generates consolidated-standalone-demo.html
 

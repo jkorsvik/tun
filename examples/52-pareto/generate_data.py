@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Write the synthetic enquiry extract the Pareto example is built from.
 
 Twenty-two categories of enquiry, of which the first five carry most of the volume and the last

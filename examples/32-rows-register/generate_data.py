@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Generate the synthetic register: 1,200 deviation cases, no real data anywhere.
 
 Seeded, so a rebuild is the same bytes. The shape is the one a register actually gets:

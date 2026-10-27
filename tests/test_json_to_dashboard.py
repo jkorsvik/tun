@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Example 30: the JSON in, the CSV out, and the page built from them agree.
 
 A dashboard whose numbers nobody re-derives is a picture. This suite reads ordrer.json,

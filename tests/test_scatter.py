@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """The scatter: one point per unit, placed where the numbers put it.
 
 A scatter is the one chart in this set whose claim is about a *relationship*, so it fails in

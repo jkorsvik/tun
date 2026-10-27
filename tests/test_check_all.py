@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """`tools/check_all.py` runs every gate in parallel and still tells the truth.
 
 ROADMAP C1 and C3. A runner is a gate about gates, so the ways it can lie are the ways

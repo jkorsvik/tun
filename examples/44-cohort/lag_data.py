@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Generate the synthetic cohort extract. Deterministic: same seed, same file.
 
 No real data of any kind: invented account numbers and invented visit dates. The point of

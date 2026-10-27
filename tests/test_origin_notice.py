@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """The Origin Notice is a licence condition, so it has to be gated.
 
 COPYING.ARTEFACT-EXCEPTION grants the permission that makes Tún useful: a generated

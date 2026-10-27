@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """ordrer.json -> salg.csv, the four columns a dashboard needs.
 
 This is the whole lesson of the example, so it stays short enough to read in one screen and

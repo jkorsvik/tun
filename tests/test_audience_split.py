@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """The audience boundary of examples/29-audience-split, as a gate rather than a promise.
 
 AGENTS.md rule 1: the security boundary is the folder, not a filter expression. Two

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """The funnel: how many reach each declared stage, and where the cohort leaks.
 
 A funnel is easy to draw and easy to draw wrongly. The stages can be inferred instead of

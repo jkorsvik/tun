@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """The composition page: what a total is made of, and where the mix and the level disagree.
 
 A share is a ratio, so it can rise while the figure it describes falls. That is the trap this

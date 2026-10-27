@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 test_token_contract.py — prove tools/tun_tokens.py enforces what docs/22 promises.
 
@@ -219,7 +222,8 @@ if HAVE_PLUGINS:
     discovered_ids = {p.get("id") for p in found}
     # The brand plugin's id, composed: the export excludes that plugin, so an exported tree
     # must not carry its name as text either.
-    _brand = "dn" + "b"
+    # The public tree ships the fictional brand plugin, so that is the one to discover.
+    _brand = "eksempel"
     chk(f"{_brand} and tun are both discovered", {_brand, "tun"}.issubset(discovered_ids), True)
     chk("the manifest is actually parsed, not just located",
         found[0].get("provides"), ["tokens", "assets", "tenant_facts"])

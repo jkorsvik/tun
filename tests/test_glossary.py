@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """One word for one thing, the part a machine can check (ROADMAP B6).
 
 `docs/30-glossary.md` fixes the vocabulary. Half of it is judgement and only a reviewer can

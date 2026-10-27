@@ -1,21 +1,34 @@
 # Strings for templates/showcase.html.
 # One entry per line, "key = value", everything after the first "= " is the value.
 # An `en` value never contains a quote, a backslash or a backtick (tests/test_i18n.py).
+# Bokmål, like the rest of the artefact chrome; the prose beside each card stays English.
 
 [nb]
 html_lang = nb
-filter_label = Finn eit eksempel
-filter_placeholder = Skriv eit ord, ein kind eller eit verktøy
-count_all = {n} eksempel
-count_one = {n} av {t} eksempel
-count_many = {n} eksempel
-no_match = Ingen eksempel passar. Prøv eit kortare ord.
-viewer_label = Førehandsvising av eksempelet
-close = Lat att
-footer_how = Kvar fil er ein eigen, sjølvstendig HTML-fil. Ho opnar frå ei delt mappe, utan tenar og utan lisens.
-footer_trace = Kvar fil ber sitt eige opphav: kjeldedata, uttrekkstid, byggetid og kven som bad om ho.
-card_command = Byggjkommando
-things_heading = Alt anna i repositoriet
+filter_label = Finn et eksempel
+filter_placeholder = Skriv et ord, en type eller et verktøy
+count_all = {n} eksempler
+count_one = {n} av {t} eksempler
+count_many = {n} eksempler
+no_match = Ingen eksempler passer. Prøv et kortere ord.
+viewer_label = Forhåndsvisning av eksempelet
+close = Lukk
+footer_how = Hver fil er en egen, selvstendig HTML-fil. Den åpnes fra en delt mappe, uten server og uten lisens.
+footer_trace = Hver fil bærer sitt eget opphav: kjeldedata, uttrekkstid, byggetid og hvem som ba om den.
+card_command = Byggekommando
+things_heading = Alt annet i repositoriet
+live_note = Klikk for å bruke eksempelet slik en mottaker gjør.
+chip_examples = Eksempler
+chip_builders = Byggere
+chip_with_command = Med kommando
+chip_suites = Tester
+col_builders = Byggere
+col_skills = Ferdigheter
+col_suites = Tester
+col_docs = Dokumenter
+lang_nb = Norsk
+lang_en = English
+lang_label = Språk
 
 [en]
 html_lang = en
@@ -31,3 +44,15 @@ footer_how = Every file is its own self-contained HTML file. It opens from a sha
 footer_trace = Every file carries its own provenance: source data, extract time, build time and who asked for it.
 card_command = Build command
 things_heading = Everything else in the repository
+live_note = Click to use the example the way a recipient does.
+chip_examples = Examples
+chip_builders = Builders
+chip_with_command = With a command
+chip_suites = Suites
+col_builders = Builders
+col_skills = Skills
+col_suites = Suites
+col_docs = Docs
+lang_nb = Norsk
+lang_en = English
+lang_label = Language

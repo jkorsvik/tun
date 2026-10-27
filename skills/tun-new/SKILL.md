@@ -196,6 +196,32 @@ Three things to say to the user before you build one:
 That last point is worth saying out loud: a page that paints every increase green has made
 a judgement on the reader's behalf, and sometimes it is the wrong one.
 
+### When the question is "what have we actually got": build the index
+
+Somebody new to the team, or a reader deciding whether this is worth their time, does not
+want one dashboard. They want to see what exists. `tools/build_showcase.py` reads every
+example's own README, photographs each built artefact in a real browser, and carries each
+one whole inside a single document, so a card opens the running thing rather than a picture
+of it.
+
+```bash
+python3 tools/build_showcase.py \
+    --examples examples \
+    --title "<title>" \
+    --source "the built examples in this repository" \
+    --requested-by "<the role or team that asked>" \
+    --out dashboards/<slug>.html
+```
+
+Three things to say to the user:
+
+- **it is a document, not a dashboard.** It has no KPI cards and no chart marks of its own,
+  so it is verified as a document: the standalone core, the viewport floor, accessibility.
+- **the pages inside it are real.** A paired example keeps its rows in a file beside it, and
+  the builder folds that file in; without it the frame shows an empty dashboard.
+- **both languages travel in it**, and the reader switches in the page, so one file serves a
+  Norwegian and an English reader.
+
 ### When the question is "why did it change": build a waterfall
 
 "What explains the drop from last month", "break it down by unit", "does it add up" — a

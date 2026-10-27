@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """A chart drawn while its frame had no size must redraw once the frame gets one.
 
 Measured 2026-10-12 (docs/29-atlassian-artifacts.md): a Tún file embedded in a Confluence page

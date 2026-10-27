@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 verify_js_free_poc.py — proves the actual claim in issue #30, not just that
 the file renders. Loads js-free-standalone-poc.html TWICE in a real

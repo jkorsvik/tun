@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """test_setup_first_run.py — a stranger's `python3 setup.py` works without RAIWork.
 
 The repo is public. Someone who clones it has no RAIWork, so setup.py must not fail on it,

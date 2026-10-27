@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """The register: a list a reader can search, sort and page, in one self-contained file.
 
 Half of what people share as a spreadsheet is not a chart waiting to happen — it is a list

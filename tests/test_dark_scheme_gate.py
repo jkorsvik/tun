@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Jon-Mikkel Ryen Korsvik
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Is the dark theme measured on the pages that actually have one?
 
 `tools/verify_a11y.py` measured every artefact in the light scheme, and `verify_documented`
@@ -75,6 +78,10 @@ SEAM_PENDING = {
     "templates/onepager.html":
         "an A4 sheet whose @media print rule forces white. Its artefact is on LIGHT_BY_DESIGN "
         "for the same reason, and a dark screen preview would preview something unprintable.",
+    "templates/showcase.html":
+        "an index of other artefacts, not one of them. Its chrome is two surfaces, one "
+        "accent and one line colour, carried inline so the page reads as a catalogue beside "
+        "the pages it lists; it has no chart mark, table row or palette to hand to the seam.",
     "templates/portable-slide-deck.html":
         "a projected deck. Its palette is the design, with .slide.dark chosen per slide by the "
         "author, so following the reader's setting would override that choice everywhere.",
