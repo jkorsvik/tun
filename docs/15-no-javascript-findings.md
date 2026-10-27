@@ -1,17 +1,18 @@
 # 15. The no-JavaScript question — findings, and one falsification
 
-Partial answer to the question "can a standalone HTML file work without
-JavaScript?" ("Javascript-løs standalone HTML"). It does not close the question. It
-changes what the question is about.
+**Reader:** record — a decision or a measurement, kept for why something is the way it is.
+
+Partial answer to issue #30 ("Javascript-løs standalone HTML"). It does not close
+the issue. It changes what the issue is about.
 
 `docs/11-responsiveness-and-browser-support.md` §1 and §3b leave one decision
 open: should a BUNDLED dashboard **require** JavaScript and degrade visibly when
 it fails (§3b's warning pattern), or should it **not need** JavaScript at all
-(the no-JS demos, `examples/13-js-free-standalone-poc/` and
+(#30's demos, `examples/13-js-free-standalone-poc/` and
 `examples/14-chart-emulation-nojs-poc/`)?
 
 The honest answer from the evidence already in this repository: **the question is
-wrongly framed, and one half of the demos' answer is already falsified.**
+wrongly framed, and one half of #30's answer is already falsified.**
 
 ## 1. "No JavaScript" is not one property
 
@@ -51,7 +52,7 @@ fine there (row 25 for the separate script-gating problem).** So:
   is not touched by row 24. It has also not been tested in that surface, so it is
   **unproven there, not proven.**
 - `examples/14`'s static charts involve neither script nor navigation. They are
-  the one part of the no-JS demos that survives intact.
+  the one part of #30 that survives intact.
 
 ## 3. Why the demos could not have caught this
 
@@ -77,7 +78,7 @@ tag is immune to that failure mode, provided it also never types those character
 as prose.
 
 So there is a real argument for script-free construction, and it is not the
-argument the demos made. It is not "JavaScript might be disabled". It is:
+argument #30 made. It is not "JavaScript might be disabled". It is:
 
 - **the tenant may refuse to run scripts for reasons unrelated to your code**
   (row 25, a text scan; row 22, the sharing path on mobile), and
@@ -88,7 +89,7 @@ navigate either.
 
 ## 5. Consequence: what a script-free BUNDLED dashboard may use
 
-Narrower than the demos assumed, still useful:
+Narrower than #30 assumed, still useful:
 
 - **Allowed:** `<input type="checkbox">` / `<input type="radio">` plus `:checked`
   and sibling selectors for menus, panels, theme and — untested but structurally
@@ -104,11 +105,11 @@ radio inputs plus `:checked`, which removes the navigation dependency and the
 visible fragment at the same time. Not done in this document; it is a code change
 and needs its own verification in the preview surface, not in a local browser.
 
-## 6. What is still open
+## 6. What is still open in #30
 
 - Radio-plus-`:checked` page switching has **not** been tested in SharePoint
   inline preview. Until it is, script-free navigation is a hypothesis.
-- Neither template from `tools/` ships any of this. The no-JS demos remain examples.
+- Neither template from `tools/` ships any of this. #30's demos remain examples.
 - The §3b warning pattern and script-free construction are **not** alternatives
   to choose between. §3b is the only option for PAIRED and Tier 2/3. Script-free
   is only available in BUNDLED. Any dashboard that needs live or paired data has
@@ -116,7 +117,7 @@ and needs its own verification in the preview surface, not in a local browser.
 
 ## 7. Documentation drift this exposes
 
-`docs/11` §1 states that the no-JS demos' navigation was "verified to behave identically
+`docs/11` §1 states that #30's navigation was "verified to behave identically
 with JavaScript on or off" and does not mention row 24. Both statements are true;
 together they read as though the mechanism is settled. `docs/11` should carry a
 pointer to row 24 where it describes `:target`, and `examples/13`'s README should

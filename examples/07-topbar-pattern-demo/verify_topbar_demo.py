@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 verify_topbar_demo.py — interaction check for topbar-pattern-demo.html.
 
 tools/verify_standalone_core.py only proves the file is self-contained,
 within size budget, and renders without a console error. It does not click
-anything. This script exists because the topbar pattern's whole point is whether the
+anything. This script exists because issue #15's whole point is whether the
 hamburger/info/fullscreen controls actually respond -- so this specifically:
 
   1. clicks the hamburger button and asserts the nav menu becomes visible
@@ -25,8 +22,8 @@ Every assertion is against real DOM state after a real click in a real
 
     python3 verify_topbar_demo.py
 
-Does NOT test opening from an actual Teams message on
-an actual phone -- that cannot be done from this sandbox. This only proves
+Does NOT test issue #15 section 5 (opening from an actual Teams message on
+an actual phone) -- that cannot be done from this sandbox. This only proves
 the pattern works in a standards-compliant desktop browser engine, which is
 the precondition for that mobile test being worth running at all.
 """
@@ -110,8 +107,8 @@ def main() -> int:
             page.screenshot(path=str(shot_path(HTML, ".interaction-check.png", engine)))
 
             # --- separate page: simulate an environment with NO Fullscreen API at
-            # all (e.g. the in-app WebView Teams-on-mobile testing surfaced,
-            # where document.documentElement.requestFullscreen threw
+            # all (e.g. the in-app WebView Teams-on-mobile testing surfaced for
+            # issue #15, where document.documentElement.requestFullscreen threw
             # an uncaught error that the host app displayed to the user as a
             # "Script error" banner). Confirms the fix actually degrades
             # gracefully instead of merely not being exercised by the happy path

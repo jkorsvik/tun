@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "title": "Tún: standalone artefacts",
   "description": "Turn any data file into an interactive artefact that is just a file: filters, charts, sortable tables, shareable through any substrate with no licence, no workspace and no admin approval. Works offline, opens for anyone who can open the folder, and can be sent outside the organisation. Paired mode keeps a small artefact next to a data file that syncs, so replacing the data updates it for everyone with no rebuild. Includes skills to build, refresh, verify, publish, and move reports off the incumbent tools.",
-  "license": "AGPL-3.0-or-later with the Tún Artefact Exception v1.1 (see COPYING.ARTEFACT-EXCEPTION)",
+  "license": "AGPL-3.0-or-later",
   "tags": [
     "dashboards",
     "reporting",

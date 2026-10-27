@@ -1,8 +1,9 @@
-# 07 — Topbar-mønster: nøytral demo
+# 07 — Topbar-mønster: nøytral demo for issue #15
 
-Beviser topbar-mønsteret fra `docs/09-usability-and-navigation-principles.md`
-(fast toppfelt, hamburger → overlay-meny, info-panel, fullskjerm-knapp) i en
-generert, selvstendig fil — bevisst uten branding.
+Demoen kravsatt i [issue #15](https://example.com/tun/issues/15)
+§6. Beviser sections 1–4 der (fast toppfelt, hamburger → overlay-meny,
+info-panel, fullskjerm-knapp) i en generert, selvstendig fil — bevisst uten
+Eksempel AS-branding, det er et eget, senere issue.
 
 ![Meny åpen](preview-menu-open.png)
 ![Info-panel åpen](preview-info-open.png)
@@ -45,17 +46,17 @@ og sjekker DOM-tilstanden, på en realistisk mobilbredde.
 
 ## Hva denne demoen IKKE beviser
 
-Mobil-åpning (vanskelig å starte navigasjonen når filen åpnes fra en
+Issue #15 §5 (vanskelig å starte navigasjonen når filen åpnes fra en
 Teams-melding/lenke på mobil) er **ikke** testet av dette alene — det kan
 ikke gjøres fra denne sandkassen. Denne demoen beviser at mønsteret
 fungerer i en standard nettlesermotor; det er forutsetningen for at
-mobiltesten (faktisk sende denne filen i en Teams-melding til en telefon) er
+§5-testen (faktisk sende denne filen i en Teams-melding til en telefon) er
 verdt å kjøre, ikke en erstatning for den.
 
-## Første ekte mobiltest — resultat
+## §5, første ekte mobiltest — resultat
 
-En manuell test åpnet en tidligere versjon av denne filen (uten
-`try/catch`-hardingen under) via en Teams-lenke på mobil.
+en kollega testet en tidligere versjon av denne filen (uten
+`try/catch`-hardingen under) ved å åpne en Teams-lenke til den på mobil.
 Resultat, **målt**:
 
 - Hamburgermeny: fungerte.
@@ -64,10 +65,10 @@ Resultat, **målt**:
   ("Noe av innholdet ble ikke lastet inn... Script error. Script error."),
   ikke bare en stille feil i konsollen.
 
-Dette avkrefter hypotesen om at Teams' forhåndsviser ikke
-kjører JavaScript overhodet — scriptet kjørte åpenbart, siden to av tre
-knapper virket. Det bekrefter hypotesen om at Fullscreen-API er dårlig støttet i
-innebygde WebViews, men avdekket samtidig en reell bug i denne demoen:
+Dette avkrefter hypotese 1 fra issue #15 §5 (at Teams' forhåndsviser ikke
+kjører JavaScript overhodet) — scriptet kjørte åpenbart, siden to av tre
+knapper virket. Det bekrefter hypotese 3 (Fullscreen-API dårlig støttet i
+innebygde WebViews), men avdekket samtidig en reell bug i denne demoen:
 `toggleFullscreen()` kalte `requestFullscreen()` ubeskyttet, uten
 feature-detection eller `try/catch`. Når metoden ikke fantes eller kastet i
 den aktuelle WebViewen, ble det en ufanget exception som verten selv fanget
@@ -83,8 +84,7 @@ Fullscreen-API (fjerner `requestFullscreen`/`exitFullscreen` fra prototypen
 før siden lastes) og sjekker at (a) knappen blir deaktivert og (b) et
 tvunget klikk uansett ikke gir noen ufanget feil.
 
-**Ikke logget presist ennå:** enhet er bekreftet — **iPhone**, via en ekte
-Teams-meldingslenke. Fortsatt ukjent: nøyaktig
+**Ikke logget presist ennå:** enhet er nå bekreftet — **iPhone**, testet av en kollega via en ekte Teams-meldingslenke. Fortsatt ukjent: nøyaktig
 Teams-versjon, og om filen ble åpnet i Teams' egen forhåndsviser eller i en
 ekstern nettleser via "Åpne i nettleser". Android er ikke testet. Loggført
 som rad 21 i `docs/01-tenant-constraints.md`, markert som en manuell test,

@@ -1,0 +1,56 @@
+# Strings for templates/composition.html and tools/build_composition.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shows what a total is made of, one column per period, with the level printed above
+# each column because a share hides it.
+
+[nb]
+html_lang = nb
+svg_title = Sammensetning
+svg_desc = Sammensetningen av et totaltall over {periods} perioder, fordelt på {bands} kategorier.
+caption = Hver søyle er én periode delt i kategoriene som utgjør totalen. Andelen står inne i båndet når det er plass, og totalen for perioden står over søylen.
+caption_rounding = Andelene er avrundet med største rest, så de summerer seg til nøyaktig 100,0 i hver søyle.
+head_moves = Der andelen og nivået går hver sin vei
+head_table = Tallene bak bildet
+table_caption = Hver kategori med andel og nivå i hver periode. Andelen står først og nivået under, så en andel kan kontrolleres mot tallet den er en andel av.
+col_cat = Kategori
+row_total = Totalt
+axis_note = Andel av totalen. Nivået står over hver søyle og i tabellen.
+sub_line = {measure} per {cat} · {periods} perioder, {first} til {last} · {bands} bånd
+band_title = {name} i {period}: {share} ({value})
+rest_name = Andre ({n} kategorier)
+in_rest = i Andre
+rest_note = {drawn} kategorier er tegnet, {n} er slått sammen til det siste båndet. Høyden er summen deres, ikke et anslag, og hver av dem står i tabellen.
+move_share_up = {name} økte andelen fra {sharebefore} til {shareafter} mens nivået falt fra {valuebefore} til {valueafter}, fordi totalen falt mer.
+move_share_down = {name} fikk mindre andel, fra {sharebefore} til {shareafter}, mens nivået steg fra {valuebefore} til {valueafter}, fordi totalen steg mer.
+move_none = Ingen kategori har andel og nivå som peker hver sin vei i denne perioden.
+move_single = Med én periode er det ingen endring å sammenligne. Bygg med flere perioder for å se om andel og nivå peker samme vei.
+source_line = {name} — {rows} rader
+footer_a = Selvstendig fil: alle tallene er regnet ut på forhånd, og ingenting hentes når den åpnes.
+footer_b = Ingen server, ingen innlogging, ingen skript. Andeler er avrundet med største rest, så de summerer seg til 100,0.
+footer_built = Bygget
+
+[en]
+html_lang = en
+svg_title = Composition
+svg_desc = The composition of a total across {periods} periods, split into {bands} categories.
+caption = Each column is one period split into the categories that make up its total. The share is printed inside the band where there is room, and the total for the period stands above the column.
+caption_rounding = The shares are rounded by largest remainder, so they add up to exactly 100,0 in every column.
+head_moves = Where the share and the level move apart
+head_table = The numbers behind the picture
+table_caption = Each category with its share and its level in every period. The share comes first and the level under it, so a share can be checked against the figure it is a share of.
+col_cat = Category
+row_total = Total
+axis_note = Share of the total. The level stands above each column and in the table.
+sub_line = {measure} per {cat} · {periods} periods, {first} to {last} · {bands} bands
+band_title = {name} in {period}: {share} ({value})
+rest_name = Other ({n} categories)
+in_rest = in Other
+rest_note = {drawn} categories are drawn, {n} are summed into the last band. Its height is their sum, not an estimate, and each of them is in the table.
+move_share_up = {name} took a bigger share, from {sharebefore} to {shareafter}, while its level fell from {valuebefore} to {valueafter}, because the total fell further.
+move_share_down = {name} took a smaller share, from {sharebefore} to {shareafter}, while its level rose from {valuebefore} to {valueafter}, because the total rose further.
+move_none = No category has a share and a level pointing in opposite directions over this page.
+move_single = With one period there is no change to compare. Build with more periods to see whether share and level move together.
+source_line = {name} — {rows} rows
+footer_a = Self-contained file: every figure is worked out in advance, and nothing is fetched when it opens.
+footer_b = No server, no sign-in, no script. Shares are rounded by largest remainder, so they add up to 100,0.
+footer_built = Built

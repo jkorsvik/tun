@@ -7,11 +7,11 @@ open the folder, with no Power BI licence, no workspace, no capacity and no admi
 <!-- attribution:start -->
 > **Tún is a passion project, credited to the product owner and the maintainer.** <3
 >
-> The idea, the name and the direction are the product owner's; deliberately
-> open-ended. The maintainer builds the plumbing: the awkward platform constraints
-> measured so nobody has to rediscover them, a working template, the gates that keep
-> it honest, and a set of RAIWork skills so building and sharing an artefact is a
-> sentence rather than a project. Scaffolding, not a specification.
+> The idea is Tunkallen's, the name is Tunkallen's, and the direction is his; deliberately
+> open-ended. Jon-Mikkel builds the plumbing: the awkward platform constraints measured
+> so nobody has to rediscover them, a working template, the gates that keep it honest,
+> and a set of RAIWork skills so building and sharing an artefact is a sentence rather
+> than a project. Scaffolding, not a specification.
 >
 > Nobody asked for this and nothing depends on it. That is the point: it exists because
 > sharing a number with a colleague should not cost a licence, a workspace and three
@@ -24,7 +24,7 @@ open the folder, with no Power BI licence, no workspace, no capacity and no admi
 
 ## The idea in one paragraph
 
-Building a dashboard is easy. *Sharing* one is where the organisation loses weeks. It takes licences per
+Building a dashboard is easy. *Sharing* one is where Eksempel AS loses weeks. It takes licences per
 viewer, a workspace, a capacity, a publish step, and still no way to show it to someone
 without a Pro seat. So people fall back to a screenshot in PowerPoint, which is dead on
 arrival. Instead: make the dashboard **a document**. One `.html` file with the data,
@@ -42,11 +42,12 @@ versioning, audit, sync and offline. Reuse that machinery instead of fighting it
 | Internal sharing (SharePoint link) | ✅ works (`scope: organization`) |
 | **External sharing** | ✅ **as a file** (email/attach), but ❌ *not* via SharePoint links (anonymous sharing blocked tenant-wide) |
 | **Cube mode** (millions of rows, one file) | ✅ **working, verified**. 4 M rows → 0.81 MB, 0.10 ms per filter click |
-| **[Portable slide deck](examples/18-portable-slide-deck/README.md)** (synthetic sample deck, one file, offline) | ✅ **working**. Responsive portrait/landscape controls, Chromium/WebKit matrix, guarded fullscreen |
-| In-page embedding (SPFx) | 🔶 designed, **blocked** on an SPFx package getting through tenant admin review |
+| **[Portable slide deck](examples/18-portable-slide-deck/README.md)** (one file, offline) | ✅ **working**. Responsive portrait/landscape controls, Chromium/WebKit matrix, guarded fullscreen |
+| In-page embedding (SPFx) | 🔶 designed, **blocked** on proving SPFx is approvable at Eksempel AS |
 | Tier 3 (Parquet + DuckDB-WASM) | 🔶 designed. HTTP Range **measured and confirmed**, but it **cannot run from a portable file** and needs Tier 2 to host it |
 | Skills | ✅ 9 written (`tun-help`, `-new`, `-data`, `-verify`, `-publish`, `-process`, `-feedback`, `tun-powerbi-escape`, `tun-for-communicators`) |
-| Onboarding | ✅ [written for a new contributor](docs/04-onboarding.md) |
+| Onboarding | ✅ [zero to published, Windows or macOS](docs/04-onboarding.md) |
+| Shapes | ✅ 19 builders, and a chooser: [which shape answers which question](docs/33-artefact-shapes.md) |
 
 ## Try it
 
@@ -100,7 +101,7 @@ downgraded to `application/octet-stream`. Anonymous embed links are blocked. The
 `/preview` endpoint returns SharePoint's own viewer chrome with a Download button, not
 your page.
 
-All of this was **measured against a live enterprise Microsoft 365 tenant**, not read in a doc. Microsoft's
+All of this was **measured against the live Eksempel AS tenant**, not read in a doc. Microsoft's
 documentation was materially incomplete on the two facts that mattered most.
 See **[`docs/01-tenant-constraints.md`](docs/01-tenant-constraints.md)** for the full
 header dumps.
@@ -223,7 +224,7 @@ Two standing rules:
    `python3 probe/tenant-probe.py`.
 3. **Never commit real customer/client data into this repo, not even in scratch form.**
    `work/<task>/` is where a real deliverable gets built; it's gitignored on purpose. See
-   `AGENTS.md` rule 6.
+   `AGENTS.md` rule 6 for what happens when that boundary slips.
 
 See [`ROADMAP.md`](ROADMAP.md) for what's next.
 
@@ -236,12 +237,8 @@ See [`ROADMAP.md`](ROADMAP.md) for what's next.
 
 ## Licence
 
-Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-
 Tún is free software under the **GNU Affero General Public License v3 or later**
-([`LICENSE`](LICENSE)). Every source file says so in its header;
-`tests/test_licence_headers.py` gates that, because the Exception below applies only to
-files that carry the notice.
+([`LICENSE`](LICENSE)).
 
 **Documents you generate are yours.** Tún copies its own markup, CSS and templates into
 every dashboard, deck or report it builds, so without an explicit permission each of those
@@ -264,10 +261,6 @@ fork's improvements reachable. Running an unmodified copy triggers nothing. See
 [`docs/17-licensing.md`](docs/17-licensing.md) for why AGPL was chosen over GPL, and why
 that choice does not by itself achieve attribution.
 
-Documentation, sample data and screenshots are
-[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode). Code, including
-the example builders, is AGPL as its header states. Built example files are Generated
-Artefacts and carry the runtime header and the Origin Notice; tests gate both. Third-party
-components keep their own licences; see [`THIRD-PARTY.md`](THIRD-PARTY.md). The name and
-logo are not covered by the code licence; see [`docs/18-naming.md`](docs/18-naming.md).
+Documentation and examples are CC BY-SA 4.0. The name and logo are not covered by the code
+licence; see [`docs/18-naming.md`](docs/18-naming.md).
 The trademark policy is [`TRADEMARK.md`](TRADEMARK.md).

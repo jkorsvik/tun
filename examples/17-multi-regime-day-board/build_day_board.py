@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-# or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-# COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-# under terms of your choice, provided the Origin Notice is preserved.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 build_day_board.py — generates oversikt.html + data.js for
 examples/17-multi-regime-day-board.
 
-Nothing in the output is hand-written (docs/08-generic-artifact-model.md): the
-markup comes from oversikt.template.html, the rows come
+Nothing in the output is hand-written (docs/08-generic-artifact-model.md, issue
+#4 principle 2): the markup comes from oversikt.template.html, the rows come
 from the table below, and both are written by this script.
 
-The subject is an invented scenario: a fictional school, Eksempelskolen, in a
-fictional municipality, Eksempelkommune, which runs pupil transport under THREE
-régimes with THREE different owners. No real school or municipality is behind
-it. That structure is the point of the example; see README.md.
+The subject is a fictional school, Eksempelskolen, in a fictional municipality,
+Eksempelkommune, which runs pupil transport under THREE régimes with THREE
+different owners. That structure is the point of the example; see README.md.
 
 ALL DATA IS SYNTHETIC, and the build proves it rather than promising it. Every
 value in every column must match its column's allow-list in VOCABULARY below,
@@ -86,7 +79,7 @@ VOCABULARY = {
     "Dato": r"\d{4}-\d{2}-\d{2}",
     "ElevKode": r"ELEV-\d\d",
     "Retning": r"Til skole|Fra skole|Fra SFO",
-    "Ordning": r"Grunnskole drosje|langdagSFO TT-kort|VGS TT-kort",
+    "Ordning": r"1-10 drosjesentral|heldagsSFO TT-kort|VGS TT-kort",
     "Planlagt": r"[0-2]\d:[0-5]\d",
     "Bil": r"(OT|TT)-\d\d|Ikke bestilt|Avventer TT-kort",
     "Ledsager": r"Ja|Nei|Vurderes",
@@ -100,8 +93,8 @@ even the core one.
 That is a deliberate third case, and it is why the example is here. docs/22
 gives two: core ships a neutral palette in tools/tokens/palette-neutral.css,
 and a brand plugin may provide its own. Both assume the artefact belongs to the
-organisation whose repo this is. In this scenario it does not: the board is
-built for a third party with its own brand, which this repository does not have.
+organisation whose repo this is. This one does not. It belongs to a municipality
+that is not a tenant of this platform at all.
 
 So loading EITHER palette would dress one organisation's artefact in another
 organisation's colours: a licensing question wearing a styling question's
@@ -128,7 +121,7 @@ BASE_PALETTE = {
 }
 
 # ONE slot. Every value is a placeholder chosen for measured contrast, and none is
-# any organisation's colour. Inventing a plausible "kommuneblaa" would be inventing
+# any municipality's colour. Inventing a plausible "kommuneblaa" would be inventing
 # a brand, which is worse than leaving the slot visibly unresolved. See README §5.
 TENANT_SLOT_PALETTE = {
     "--primary":            ("#3f4b54", "chart bars, KPI rule, focus accents"),
@@ -159,25 +152,25 @@ CONTRAST_GATE = [
     ("--primary", "--surface", 3.0), ("--line-strong", "--surface", 3.0),
 ]
 
-ORD_GS = "Grunnskole drosje"
-ORD_SFO = "langdagSFO TT-kort"
+ORD_110 = "1-10 drosjesentral"
+ORD_SFO = "heldagsSFO TT-kort"
 ORD_VGS = "VGS TT-kort"
 
 # Which role maintains a row by default. Deliberately different per regime —
 # that difference is the whole point of the example.
-STANDARD_EIER = {ORD_GS: "Skoleadm.", ORD_SFO: "SFO", ORD_VGS: "Skoleadm."}
+STANDARD_EIER = {ORD_110: "Skoleadm.", ORD_SFO: "SFO", ORD_VGS: "Skoleadm."}
 
 DATES = ["2026-09-14", "2026-09-15", "2026-09-16"]
 
 # (ElevKode, Ordning, Ledsager, Bil, [(Retning, Planlagt), ...])
 PUPILS = [
-    ("ELEV-01", ORD_GS, "Nei", "OT-31", [("Til skole", "07:50"), ("Fra skole", "14:10")]),
-    ("ELEV-02", ORD_GS, "Ja", "OT-31", [("Til skole", "07:50"), ("Fra skole", "14:10")]),
-    ("ELEV-03", ORD_GS, "Nei", "OT-32", [("Til skole", "08:00"), ("Fra skole", "14:10")]),
-    ("ELEV-04", ORD_GS, "Vurderes", "OT-32", [("Til skole", "08:00"), ("Fra skole", "14:40")]),
-    ("ELEV-05", ORD_GS, "Ja", "OT-33", [("Til skole", "08:10"), ("Fra skole", "14:40")]),
-    ("ELEV-06", ORD_GS, "Nei", "OT-33", [("Til skole", "08:10"), ("Fra skole", "14:40")]),
-    ("ELEV-07", ORD_GS, "Nei", "OT-34", [("Til skole", "08:20"), ("Fra skole", "15:10")]),
+    ("ELEV-01", ORD_110, "Nei", "OT-31", [("Til skole", "07:50"), ("Fra skole", "14:10")]),
+    ("ELEV-02", ORD_110, "Ja", "OT-31", [("Til skole", "07:50"), ("Fra skole", "14:10")]),
+    ("ELEV-03", ORD_110, "Nei", "OT-32", [("Til skole", "08:00"), ("Fra skole", "14:10")]),
+    ("ELEV-04", ORD_110, "Vurderes", "OT-32", [("Til skole", "08:00"), ("Fra skole", "14:40")]),
+    ("ELEV-05", ORD_110, "Ja", "OT-33", [("Til skole", "08:10"), ("Fra skole", "14:40")]),
+    ("ELEV-06", ORD_110, "Nei", "OT-33", [("Til skole", "08:10"), ("Fra skole", "14:40")]),
+    ("ELEV-07", ORD_110, "Nei", "OT-34", [("Til skole", "08:20"), ("Fra skole", "15:10")]),
     ("ELEV-08", ORD_SFO, "Ja", "TT-51", [("Til skole", "07:50"), ("Fra SFO", "16:10")]),
     ("ELEV-09", ORD_SFO, "Nei", "TT-52", [("Til skole", "08:00"), ("Fra SFO", "16:10")]),
     ("ELEV-10", ORD_SFO, "Vurderes", "TT-53", [("Til skole", "08:10"), ("Fra SFO", "16:40")]),
@@ -197,7 +190,7 @@ OVERRIDES = {
     # Same-day change phoned in to the switchboard; new time not confirmed yet.
     ("2026-09-16", "ELEV-06", "Fra skole"): {"Status": "Venter", "Planlagt": "15:10",
                                              "EndretAv": "Sentralbord"},
-    # langdagSFO: the parents order the taxi themselves, so the school cannot
+    # heldagsSFO: the parents order the taxi themselves, so the school cannot
     # book this one — it can only show that it is not booked.
     ("2026-09-15", "ELEV-10", "Fra SFO"): {"Status": "Venter", "Bil": "Ikke bestilt",
                                            "EndretAv": "Foresatt"},
@@ -251,7 +244,7 @@ def render_palette_css() -> str:
         "",
         "    /* ▼▼▼ TENANT PALETTE SLOT — THE ONLY PLACE COLOUR IS SET ▼▼▼",
         "       Every value below is a NEUTRAL PLACEHOLDER. None of them is any",
-        "       organisation's colour, and inventing one would be inventing a brand.",
+        "       municipality's colour, and inventing one would be inventing a brand.",
         "       Replace these nine values — and nothing else in the stylesheet —",
         "       when a tenant supplies its real palette. build_day_board.py",
         "       re-measures contrast on every build and refuses to ship a pair below",
@@ -293,7 +286,7 @@ def build_rows() -> list[dict]:
 def check_rows(rows: list[dict]) -> None:
     """The example claims coverage; prove it rather than assert it."""
     problems = []
-    for want in (ORD_GS, ORD_SFO, ORD_VGS):
+    for want in (ORD_110, ORD_SFO, ORD_VGS):
         if not any(r["Ordning"] == want for r in rows):
             problems.append(f"no rows for Ordning {want!r}")
     for want in ("Til skole", "Fra skole", "Fra SFO"):

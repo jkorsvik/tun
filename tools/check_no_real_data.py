@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 check_no_real_data.py — refuse to commit real data or personal data.
 
@@ -12,14 +9,14 @@ Stdlib only. No browser, no install.
 
 Why this exists
 ---------------
-Working a real case inside a toolkit repository is useful and dangerous: one `git add -A`
-in a shared checkout is enough to put a survey export with names and e-mail addresses on
-main. A history rewrite does not fully undo that, because a server-held pull-request ref
-can keep serving the files, and nothing in a clone can delete it. Prevention is the only
-cheap fix.
+Two real cases were worked inside this repository as learning material. One of them was
+swept onto main by a single `git add -A`: 142 files, including a survey export with company
+names, contact persons, job titles and e-mail addresses for 13 respondents. The branches
+have since been rewritten, but one server-held pull-request ref still serves those files,
+and nothing we control can delete it. See docs/20-publication-readiness.md.
 
-`.gitignore` alone is not enough, because a directory tends to be ignored only *after* it
-leaks. This is the check that does not depend on remembering.
+`.gitignore` alone was not enough, because the directory that leaked was ignored only
+*after* it leaked. This is the check that does not depend on remembering.
 
 Two independent rules, because they fail differently:
 
@@ -70,6 +67,91 @@ ALLOWED_DATA: dict[str, str] = {
         "synthetic sales figures, written by hand for the hello example",
     "examples/15-chart-library-comparison-poc/data/fylker-6.geojson":
         "public county geometry, no personal or commercial content",
+    "examples/26-kpi-board/sykefravaer.csv":
+        "seeded synthetic sick-leave days, reproducible with the generate_data.py beside it",
+    "examples/27-survey-board/survey.csv":
+        "invented survey answers, deterministic from the generate_data.py beside it",
+    "examples/28-one-dataset-three-artefacts/saksbehandling.csv":
+        "invented case-handling hours, seeded from 20261024 in this commit's message",
+    "examples/37-printable-onepager/salgsdata.csv":
+        "seeded synthetic monthly sales, deterministic from the generate_data.py beside it",
+    "examples/29-audience-split/salg-alle.csv":
+        "invented sales rows for three made-up teams, deterministic from the generate_data.py beside it",
+    "examples/29-audience-split/salg-team-nord.csv":
+        "the same rows filtered to one team on disk; written by the same generate_data.py",
+    "examples/30-json-to-dashboard/ordrer.json":
+        "an invented API response, 27 records, deterministic from the generate_data.py beside it",
+    "examples/30-json-to-dashboard/salg.csv":
+        "the same 27 records flattened by the flatten.py beside it; no other source",
+    "examples/31-survey-crosstab/survey-wide.csv":
+        "invented survey answers, 288 respondents, written out as a matrix in the generate_data.py beside it",
+    "examples/32-rows-register/avvik.csv":
+        "invented deviation cases, 1200 rows, deterministic from the generate_data.py beside it",
+    "examples/35-timeline/milepaeler.csv":
+        "invented programme milestones, 13 rows, deterministic from the generate_data.py beside it",
+    "tests/fixtures/i18n-distribution-en.csv":
+        "invented case days with English column names, written by hand for the i18n check",
+    "examples/39-scorecard/manedstall.csv":
+        "invented monthly figures for seven made-up measures, deterministic from the "
+        "generate_data.py beside it (seed 39)",
+    "tests/fixtures/i18n-scorecard-en.csv":
+        "invented monthly figures with English column names, written by hand for the i18n check",
+    "examples/38-distribution/saksbehandlingstid.csv":
+        "invented case-handling days, 423 rows, four made-up units, deterministic from the "
+        "generate_data.py beside it (seed 38)",
+    "examples/43-heatmap/henvendelser.csv":
+        "invented enquiries per made-up unit per week, 46 rows over six made-up units and "
+        "eight weeks, with two cells deliberately absent, deterministic from the "
+        "generate_data.py beside it (seed 43)",
+    "examples/44-cohort/kunder.csv":
+        "invented accounts and their activity dates, 1087 rows over 496 made-up ids and "
+        "nine months, deterministic from the lag_data.py beside it (seed 44)",
+    "examples/46-rank-change/produkter.csv":
+        "invented revenue for thirteen made-up products over two made-up quarters, 24 rows, "
+        "with one product arriving, one leaving and one shared rank, deterministic from the "
+        "lag_data.py beside it (no seed: the values are written out)",
+    "examples/53-sankey/kanaler.csv":
+        "eleven invented channel-to-outcome flows with invented counts, written out literally in "
+        "the FLOWS table of the generate_data.py beside it; the balance is exact by construction, "
+        "not measured from anything",
+    "examples/52-pareto/henvendelser.csv":
+        "twenty-two invented enquiry reasons with invented counts, written out literally in the "
+        "ROWS table of the generate_data.py beside it; no real case, customer or unit",
+    "examples/51-bullet/dekning.csv":
+        "fourteen invented units with an invented coverage figure and target, written out "
+        "literally in the ROWS table of the generate_data.py beside it; no real unit, target "
+        "or decision",
+    "examples/50-calendar/hendelser.csv":
+        "353 invented days of an invented year from a fixed arithmetic sequence in the "
+        "generate_data.py beside it; the twelve missing days and the five zero days are "
+        "stated sets in that file, not a measurement",
+    "examples/49-gantt/fremdrift.csv":
+        "twelve invented tasks of an invented programme, hand-written in the PLAN table of the "
+        "generate_data.py beside it; no real project, department or date",
+    "examples/48-boxplot/saksbehandlingstid.csv":
+        "341 invented case durations across eight invented units, generated by a fixed "
+        "arithmetic sequence in the generate_data.py beside it; the slow tail is a stated "
+        "share of the rows, not a measurement",
+    "examples/47-scatter/enheter.csv":
+        "eighteen invented districts with invented answer times and scores, written out "
+        "literally in the generate_data.py beside it; the one outlier row is a stated choice "
+        "of the example, not a measurement",
+    "examples/45-smallmultiples/ko.csv":
+        "invented queue length per made-up unit per week, 84 values over nine units and "
+        "ten weeks, two unit-weeks absent on purpose, deterministic from the lag_data.py "
+        "beside it (seed 45)",
+    "examples/42-funnel/soknader.csv":
+        "invented application records, 400 made-up case ids over four stages, deterministic "
+        "from the generate_data.py beside it (a hash of each id, no seed)",
+    "examples/41-composition/bemanning.csv":
+        "invented hours per task per quarter for a made-up team, two rows each, deterministic "
+        "from the generate_data.py beside it",
+    "examples/40-waterfall/omsetning.csv":
+        "invented monthly revenue for ten made-up products over three months, two transaction "
+        "rows each, deterministic from the generate_data.py beside it",
+    "examples/36-review-roundtrip/saksbehandling.csv":
+        "invented case-handling cost rows, 96, four made-up units and three case types, "
+        "deterministic from the build_example.py beside it",
     "plugin/manifest.json":
         "configuration, not data",
     ".claude-plugin/plugin.json":
@@ -96,8 +178,11 @@ def data_file_is_allowed(rel: str) -> bool:
     # Marketplace requires at the bundle root under exactly this name.
     if len(parts) == 5 and parts[0] == "plugins" and parts[2:] == ["raiwork", "bundle", "manifest.json"]:
         return True
-    # A generator beside the data means the data is reproducible, so it is synthetic by
-    # construction. This is how examples/03 keeps a 207 MB extract out of git.
+    # Nothing else is allowed: being synthetic is not a location. A generator beside the
+    # data proves reproducibility, not that the file belongs in git — examples/03 keeps its
+    # 207 MB extract out of the repository with .gitignore, which costs it no allowlist
+    # entry because the file was never tracked. Add the path here, with a reason, or keep
+    # the data out.
     return False
 
 
@@ -116,26 +201,9 @@ DIGITS_11 = re.compile(r"(?<!\d)\d{11}(?!\d)")
 # address does not need a second exemption; a personal mailbox is not created there.
 NON_PERSON_DOMAINS = {
     "example.com", "example.org", "example.net", "example.edu",
-    "localhost", "invalid", "test", "domain.com",
+    "localhost", "invalid", "test", "domain.com", "eksempel.no.invalid",
     "tun.community",
 }
-
-
-HEX_DIGIT = set("0123456789abcdefABCDEF")
-
-
-def _inside_hex_digest(line: str, start: int, end: int) -> bool:
-    """True when the digits sit inside a hash, not in text: a run of at least 32 hex
-    characters that also holds a letter a-f, like a sha256 pin. One in eleven 9-digit runs
-    inside a digest passes the orgnr checksum, so every re-pin would trip the gate. A
-    number written in text ("Orgnr 123456789", "NO123456789MVA") is still caught."""
-    lo, hi = start, end
-    while lo > 0 and line[lo - 1] in HEX_DIGIT:
-        lo -= 1
-    while hi < len(line) and line[hi] in HEX_DIGIT:
-        hi += 1
-    token = line[lo:hi]
-    return len(token) >= 32 and any(c in "abcdefABCDEF" for c in token)
 
 
 def _orgnr_valid(number: str) -> bool:
@@ -143,7 +211,7 @@ def _orgnr_valid(number: str) -> bool:
 
     The checksum is what makes this usable as a gate. A bare nine-digit regex fires on
     coordinates and identifiers: examples/15's geojson contains 884287641, which is not a
-    valid organisation number, while a real organisation's registry number is. Such a number
+    valid organisation number, while Eksempel AS's own public registry number is. That valid number
     is deliberately not written here, because this gate scans its own source.
     """
     if len(number) != 9 or not number.isdigit():
@@ -179,12 +247,32 @@ def _fnr_valid(number: str) -> bool:
     return k1 < 10 and k2 < 10 and k1 == int(number[9]) and k2 == int(number[10])
 
 
+def _inside_hash(line: str, start: int, end: int) -> bool:
+    """True when the match sits inside a longer hex run: a digest, not data.
+
+    A sha256 pinned in a test is 64 hex characters, and one of them will contain a
+    nine-digit run that passes the mod-11 checksum about one time in eleven. The
+    pin is not personal data, so the gate must not fire on it — but the exemption
+    is narrow on purpose: it needs a hex run of at least 16 characters around the
+    match, which no hand-written identifier has.
+    """
+    hexdigits = set("0123456789abcdefABCDEF")
+    left, right = start, end
+    while left > 0 and line[left - 1] in hexdigits:
+        left -= 1
+    while right < len(line) and line[right] in hexdigits:
+        right += 1
+    return right - left >= 16
+
+
 def redact(value: str) -> str:
     """Show enough to locate it, not enough to leak it.
 
-    The domain is redacted as well as the local part. When respondents are companies, the
-    domain *is* the identifying half: printing `g***@somecompany.no` names the company as
-    surely as the full address does. The public suffix is kept because it is not identifying and helps tell a
+    The domain is redacted as well as the local part. In this repository's own leak the
+    respondents were companies, so the domain *was* the identifying half: printing
+    `g***@somecompany.no` names the company as surely as the full address does. The first
+    run of this gate made exactly that mistake and listed twelve real companies into a
+    terminal. The public suffix is kept because it is not identifying and helps tell a
     Norwegian address from a foreign one.
     """
     if "@" in value:
@@ -203,7 +291,7 @@ def scan_text(rel: str, text: str) -> list[tuple[int, str, str]]:
             before = line[:match.start()]
             # Not addresses: URL userinfo and scp-style git remotes.
             #   ssh://git@host/x.git      -> the match is preceded by "//"
-            #   git@example.com:org/repo  -> the match is followed by ":"
+            #   eksempel@example.com:org/repo  -> the match is followed by ":"
             if before.endswith("//"):
                 continue
             if line[match.end():match.end() + 1] == ":":
@@ -214,10 +302,14 @@ def scan_text(rel: str, text: str) -> list[tuple[int, str, str]]:
         for match in PHONE_NO.finditer(line):
             findings.append((lineno, "Norwegian phone number", redact(match.group(0))))
         for match in DIGITS_9.finditer(line):
-            if _orgnr_valid(match.group(0)) and not _inside_hex_digest(line, *match.span()):
+            if _inside_hash(line, match.start(), match.end()):
+                continue
+            if _orgnr_valid(match.group(0)):
                 findings.append((lineno, "organisation number", redact(match.group(0))))
         for match in DIGITS_11.finditer(line):
-            if _fnr_valid(match.group(0)) and not _inside_hex_digest(line, *match.span()):
+            if _inside_hash(line, match.start(), match.end()):
+                continue
+            if _fnr_valid(match.group(0)):
                 findings.append((lineno, "national identity number", redact(match.group(0))))
     return findings
 

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Utredningen: når skjer det</title>
+<!--
+  Utredningen: når skjer det
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (milepaeler.csv) — 13 rader, 17.08.2026 til 29.01.2027
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Programmet
+    Made with   : Tún - tun.community
+    Rows        : 13 rows on the timeline, ukemerker
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: a timeline. One bar per row, positioned by its own start and end on a
+  single time axis, so "when" and "what overlaps" are answered by looking rather than by
+  comparing two date columns by hand.
+
+  What it is NOT: a project plan. There are no dependencies, no critical path, no
+  percentage complete and no resource levelling: those are claims about the future that this
+  file cannot know, and a picture that implies them without holding them is worse than a
+  table. It draws the dates it was given.
+
+  There is no script in this file. A timeline is a picture; the numbers behind the picture
+  are in the table below it, which is also what a screen reader and a printer read. A filter
+  would have to re-lay the drawing, and a re-laid drawing is a second thing to get wrong.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+:root{
+  /* The drawing's three roles, mapped onto the seam rather than onto recalled values. The
+     dark block below re-points --bar: a bar fill chosen for a white panel is invisible on a
+     dark one. --bar-done and --bar-late were declared here and painted nowhere (the builder
+     emits one .tl-bar and no status class), so they are gone rather than themed. */
+  --bar:var(--brand);
+  --grid:var(--rule);
+  /* The today rule and its 14 px label are TEXT as well as a line, so they take the
+     text-safe negative, not --bad: Fire Red on the panel is 4.49:1, under AA. */
+  --today:var(--bad-ink);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a
+   scaled-down drawing is text under the floor. Below that the box pans. */
+.figure svg{display:block;width:100%;height:auto;min-width:62.5rem}
+.tl-grid{stroke:var(--grid);stroke-width:1}
+.tl-axis{stroke:var(--line);stroke-width:1}
+.tl-tick{fill:var(--muted);font-size:14px}
+.tl-task{fill:var(--ink);font-size:14px}
+.tl-sub{fill:var(--muted);font-size:14px}
+.tl-group{fill:var(--brand-dark);font-size:14px;font-weight:600}
+.tl-bar{fill:var(--bar);rx:3}
+.tl-band{fill:var(--brand-soft)}
+.tl-today{stroke:var(--today);stroke-width:2;stroke-dasharray:4 3}
+.tl-today-label{fill:var(--today);font-size:14px;font-weight:600}
+.tl-days{fill:var(--muted);font-size:14px}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+.legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin:.5rem 0 0;padding:0;list-style:none;
+  font-size:.875rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:.375rem}
+.legend .sw{width:1rem;height:.75rem;border-radius:2px;display:inline-block}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* The drawing keeps a readable minimum and the figure scrolls sideways inside its own
+     box: a phone may pan a picture, but the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows is what a
+   drawing cannot inherit.
+
+   1. THE BAR FILL. --bar is the palette's primary, which is chosen to sit on white and is
+      1.43:1 against a dark panel: every row of the drawing would be blank. --palette-accent-
+      light is the slot that exists for a mark on a dark surface, and it clears the 3:1
+      non-text minimum in all three shipped palettes: 11.62:1 neutral, 13.87:1 brand,
+      9.90:1 tun. The red "today" rule keeps its own slot and stays 58.4, 104.3 and 71.1
+      deltaE away from it, so the two never read as one mark.
+   2. THE GROUP HEADING is 14 px SVG text filled with --brand-dark, which in dark is again
+      the darkest surface: the heading would disappear. --brand is the slot for a readable
+      colour on a dark surface, 6.95:1 to 9.08:1 against the panel.
+   3. THE HEADER BAND fills with --brand-dark and writes --on-brand on it: two darks in dark,
+      1.39:1. It uses the pair the theme defines for a brand fill. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){--bar:var(--palette-accent-light)}
+  :root:not([data-theme]) .tl-group{fill:var(--brand)}
+  :root:not([data-theme]) header{background:var(--brand);color:var(--on-brand)}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Utredningen: når skjer det</h1>
+  <p class="sub">13 rader · 17.08.2026 til 29.01.2027</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 1000 516" role="img" aria-labelledby="tl-t tl-d" preserveAspectRatio="xMinYMin meet">
+<title id="tl-t">Tidslinje</title>
+<desc id="tl-d">13 rader fra 17.08.2026 til 29.01.2027, hver plassert etter sin egen start og slutt.</desc>
+<line class="tl-grid" x1="300.0" y1="24" x2="300.0" y2="508"/>
+<text class="tl-tick" x="300.0" y="18" text-anchor="start">uke 34</text>
+<line class="tl-grid" x1="329.0" y1="24" x2="329.0" y2="508"/>
+<line class="tl-grid" x1="358.0" y1="24" x2="358.0" y2="508"/>
+<line class="tl-grid" x1="387.1" y1="24" x2="387.1" y2="508"/>
+<text class="tl-tick" x="387.1" y="18" text-anchor="middle">uke 37</text>
+<line class="tl-grid" x1="416.1" y1="24" x2="416.1" y2="508"/>
+<line class="tl-grid" x1="445.1" y1="24" x2="445.1" y2="508"/>
+<line class="tl-grid" x1="474.1" y1="24" x2="474.1" y2="508"/>
+<text class="tl-tick" x="474.1" y="18" text-anchor="middle">uke 40</text>
+<line class="tl-grid" x1="503.1" y1="24" x2="503.1" y2="508"/>
+<line class="tl-grid" x1="532.1" y1="24" x2="532.1" y2="508"/>
+<line class="tl-grid" x1="561.2" y1="24" x2="561.2" y2="508"/>
+<text class="tl-tick" x="561.2" y="18" text-anchor="middle">uke 43</text>
+<line class="tl-grid" x1="590.2" y1="24" x2="590.2" y2="508"/>
+<line class="tl-grid" x1="619.2" y1="24" x2="619.2" y2="508"/>
+<line class="tl-grid" x1="648.2" y1="24" x2="648.2" y2="508"/>
+<text class="tl-tick" x="648.2" y="18" text-anchor="middle">uke 46</text>
+<line class="tl-grid" x1="677.2" y1="24" x2="677.2" y2="508"/>
+<line class="tl-grid" x1="706.3" y1="24" x2="706.3" y2="508"/>
+<line class="tl-grid" x1="735.3" y1="24" x2="735.3" y2="508"/>
+<text class="tl-tick" x="735.3" y="18" text-anchor="middle">uke 49</text>
+<line class="tl-grid" x1="764.3" y1="24" x2="764.3" y2="508"/>
+<line class="tl-grid" x1="793.3" y1="24" x2="793.3" y2="508"/>
+<line class="tl-grid" x1="822.3" y1="24" x2="822.3" y2="508"/>
+<text class="tl-tick" x="822.3" y="18" text-anchor="middle">uke 52</text>
+<line class="tl-grid" x1="851.3" y1="24" x2="851.3" y2="508"/>
+<line class="tl-grid" x1="880.4" y1="24" x2="880.4" y2="508"/>
+<line class="tl-grid" x1="909.4" y1="24" x2="909.4" y2="508"/>
+<line class="tl-grid" x1="938.4" y1="24" x2="938.4" y2="508"/>
+<line class="tl-grid" x1="967.4" y1="24" x2="967.4" y2="508"/>
+<text class="tl-tick" x="967.4" y="18" text-anchor="end">uke 4</text>
+<rect class="tl-band" x="0" y="30" width="1000" height="26"/>
+<text class="tl-group" x="8" y="48">Utredning</text>
+<text class="tl-task" x="8" y="76">Behovsavklaring</text>
+<rect class="tl-bar" x="300.0" y="63.0" width="78.8" height="16"><title>Behovsavklaring: 17.08.2026 – 04.09.2026</title></rect>
+<text class="tl-days" x="384.8" y="76">19</text>
+<text class="tl-task" x="8" y="106">Datakartlegging</text>
+<rect class="tl-bar" x="329.0" y="93.0" width="107.8" height="16"><title>Datakartlegging: 24.08.2026 – 18.09.2026</title></rect>
+<text class="tl-days" x="442.8" y="106">26</text>
+<text class="tl-task" x="8" y="136">Arkitekturvalg</text>
+<rect class="tl-bar" x="387.1" y="123.0" width="78.8" height="16"><title>Arkitekturvalg: 07.09.2026 – 25.09.2026</title></rect>
+<text class="tl-days" x="471.8" y="136">19</text>
+<text class="tl-task" x="8" y="166">Risikovurdering</text>
+<rect class="tl-bar" x="445.1" y="153.0" width="49.7" height="16"><title>Risikovurdering: 21.09.2026 – 02.10.2026</title></rect>
+<text class="tl-days" x="500.8" y="166">12</text>
+<rect class="tl-band" x="0" y="176" width="1000" height="26"/>
+<text class="tl-group" x="8" y="194">Bygg</text>
+<text class="tl-task" x="8" y="222">Datamodell</text>
+<rect class="tl-bar" x="474.1" y="209.0" width="107.8" height="16"><title>Datamodell: 28.09.2026 – 23.10.2026</title></rect>
+<text class="tl-days" x="587.9" y="222">26</text>
+<text class="tl-task" x="8" y="252">Innlesning</text>
+<rect class="tl-bar" x="503.1" y="239.0" width="165.8" height="16"><title>Innlesning: 05.10.2026 – 13.11.2026</title></rect>
+<text class="tl-days" x="674.9" y="252">40</text>
+<text class="tl-task" x="8" y="282">Tjenestelag</text>
+<rect class="tl-bar" x="532.1" y="269.0" width="194.8" height="16"><title>Tjenestelag: 12.10.2026 – 27.11.2026</title></rect>
+<text class="tl-days" x="733.0" y="282">47</text>
+<text class="tl-task" x="8" y="312">Tilgangsstyring</text>
+<rect class="tl-bar" x="619.2" y="299.0" width="78.8" height="16"><title>Tilgangsstyring: 02.11.2026 – 20.11.2026</title></rect>
+<text class="tl-days" x="704.0" y="312">19</text>
+<text class="tl-task" x="8" y="342">Presentasjonslag</text>
+<rect class="tl-bar" x="677.2" y="329.0" width="136.8" height="16"><title>Presentasjonslag: 16.11.2026 – 18.12.2026</title></rect>
+<text class="tl-days" x="820.0" y="342">33</text>
+<rect class="tl-band" x="0" y="352" width="1000" height="26"/>
+<text class="tl-group" x="8" y="370">Utproving</text>
+<text class="tl-task" x="8" y="398">Test: ytelse</text>
+<rect class="tl-bar" x="764.3" y="385.0" width="20.7" height="16"><title>Test: ytelse: 07.12.2026 – 11.12.2026</title></rect>
+<text class="tl-days" x="791.0" y="398">5</text>
+<text class="tl-task" x="8" y="428">Test: sikkerhet</text>
+<rect class="tl-bar" x="793.3" y="415.0" width="20.7" height="16"><title>Test: sikkerhet: 14.12.2026 – 18.12.2026</title></rect>
+<text class="tl-days" x="820.0" y="428">5</text>
+<text class="tl-task" x="8" y="458">Godkjenning</text>
+<rect class="tl-bar" x="909.4" y="445.0" width="20.7" height="16"><title>Godkjenning: 11.01.2027 – 15.01.2027</title></rect>
+<text class="tl-task" x="8" y="488">Overlevering</text>
+<rect class="tl-bar" x="967.4" y="475.0" width="20.7" height="16"><title>Overlevering: 25.01.2027 – 29.01.2027</title></rect>
+<line class="tl-today" x1="594.3" y1="24" x2="594.3" y2="508"/>
+<text class="tl-today-label" x="594.3" y="511" text-anchor="middle">I dag</text>
+</svg>
+    <figcaption>Hver linje er en rad fra kilden, plassert etter sin egen start og slutt på én tidsakse. Tabellen under har de samme tallene.</figcaption>
+  </figure>
+  <ul class="legend"><li><span class="sw" style="background:var(--today)"></span>I dag</li><li><span class="sw" style="background:var(--bar)"></span>Rad fra kilden</li></ul>
+
+  <h2 id="tbl-h">Radene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Samme rader som på tidslinjen, i samme rekkefølge. Her står datoene.</caption>
+    <thead><tr>
+      <th scope="col">Rad</th>
+      <th scope="col">Start</th>
+      <th scope="col">Slutt</th>
+      <th scope="col" class="num">Dager</th>
+      <th scope="col">Gruppe</th>
+      <th scope="col">Ansvarlig</th>
+      <th scope="col">Status</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>Behovsavklaring</td><td>17.08.2026</td><td>04.09.2026</td><td class="num">19</td><td>Utredning</td><td>Forretning</td><td>Ferdig</td></tr>
+      <tr><td>Datakartlegging</td><td>24.08.2026</td><td>18.09.2026</td><td class="num">26</td><td>Utredning</td><td>Data</td><td>Ferdig</td></tr>
+      <tr><td>Arkitekturvalg</td><td>07.09.2026</td><td>25.09.2026</td><td class="num">19</td><td>Utredning</td><td>Arkitektur</td><td>Ferdig</td></tr>
+      <tr><td>Risikovurdering</td><td>21.09.2026</td><td>02.10.2026</td><td class="num">12</td><td>Utredning</td><td>Risiko</td><td>Pagaende</td></tr>
+      <tr><td>Datamodell</td><td>28.09.2026</td><td>23.10.2026</td><td class="num">26</td><td>Bygg</td><td>Data</td><td>Pagaende</td></tr>
+      <tr><td>Innlesning</td><td>05.10.2026</td><td>13.11.2026</td><td class="num">40</td><td>Bygg</td><td>Data</td><td>Pagaende</td></tr>
+      <tr><td>Tjenestelag</td><td>12.10.2026</td><td>27.11.2026</td><td class="num">47</td><td>Bygg</td><td>Utvikling</td><td>Pagaende</td></tr>
+      <tr><td>Tilgangsstyring</td><td>02.11.2026</td><td>20.11.2026</td><td class="num">19</td><td>Bygg</td><td>Sikkerhet</td><td>Planlagt</td></tr>
+      <tr><td>Presentasjonslag</td><td>16.11.2026</td><td>18.12.2026</td><td class="num">33</td><td>Bygg</td><td>Utvikling</td><td>Planlagt</td></tr>
+      <tr><td>Test: ytelse</td><td>07.12.2026</td><td>11.12.2026</td><td class="num">5</td><td>Utproving</td><td>Test</td><td>Planlagt</td></tr>
+      <tr><td>Test: sikkerhet</td><td>14.12.2026</td><td>18.12.2026</td><td class="num">5</td><td>Utproving</td><td>Sikkerhet</td><td>Planlagt</td></tr>
+      <tr><td>Godkjenning</td><td>11.01.2027</td><td>15.01.2027</td><td class="num">5</td><td>Utproving</td><td>Forretning</td><td>Planlagt</td></tr>
+      <tr><td>Overlevering</td><td>25.01.2027</td><td>29.01.2027</td><td class="num">5</td><td>Utproving</td><td>Programmet</td><td>Planlagt</td></tr>
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>Selvstendig fil: alle radene ligger i filen, og ingenting hentes når den åpnes.</p>
+  <p>Ingen server, ingen innlogging.</p>
+  <p>Syntetisk eksempeldata (milepaeler.csv) — 13 rader, 17.08.2026 til 29.01.2027 · Bygget 2026-10-24 10:00</p>
+</footer>
+</body>
+</html>

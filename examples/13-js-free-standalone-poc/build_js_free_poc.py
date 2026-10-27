@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-# or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-# COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-# under terms of your choice, provided the Origin Notice is preserved.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 build_js_free_poc.py — generates js-free-standalone-poc.html
 
-Proof of concept for JavaScript-free standalone HTML. Tests one
+Proof of concept for issue #30 ("Javascript-løs standalone HTML"). Tests one
 substitution rule against a real, renderable file instead of just describing
 it in prose:
 
@@ -30,12 +24,14 @@ it in prose:
   4. Fullscreen has no honest substitute of ANY kind (there is no CSS way to
      ask the browser to go fullscreen). The button stays `hidden` unless JS
      both runs AND confirms (by actually trying, not just feature-detecting
-     — the lesson already learned in examples/07-topbar-pattern-demo/) that the
+     — the lesson already learned in examples/07-topbar-pattern-demo/ and
+     examples/10-consolidated-standalone-demo/, issue #15/#16) that the
      browsing context actually grants it. No JS, or a rejected request: the
      button is never shown, not just disabled.
 
-Does NOT touch any other example. This is a separate, standalone comparison
-point for the JavaScript-driven examples, not a replacement for them.
+Does NOT touch examples/10-consolidated-standalone-demo/ or any other
+existing file — that JavaScript-driven implementation is left exactly as it
+is; this is a separate, standalone comparison point, not a replacement.
 
 No CDN, no framework, hand-built HTML/CSS/JS only (docs/00-vision.md
 principle 1) — the JS that does exist here is hand-rolled canvas drawing,
@@ -60,7 +56,7 @@ BUILD_DATE = datetime.date.today().isoformat()
 # file concatenates them into one normal <html> document, in the usual
 # head/body/script order.
 STYLE = r"""
-/* ---- tokens (values match plugins/eksempel/tokens/palette.css,
+/* ---- tokens (values match plugins/<your-brand>/tokens/palette.css,
    theme-light.css, theme-dark.css — copied in as plain hex rather than
    read-and-inlined at build time, since this POC uses a different
    activation mechanism (checkbox-hack, not a JS-set [data-theme]
@@ -68,8 +64,8 @@ STYLE = r"""
    than re-deriving a [data-theme] ruleset that would never match). ---- */
 :root{
   --ink:#00141A; --muted:#5b6b70; --line:#ebebeb; --bg:#ffffff; --panel:#f8f8f8;
-  --brand:#2F5D9E; --brand-dark:#1B2A4A; --focus:#ffbf47;
-  --ok:#1F7A5C; --bad:#C9372C;
+  --brand:#006C6C; --brand-dark:#003842; --focus:#ffbf47;
+  --ok:#007b5e; --bad:#dc2a2a;
   --topbar-h:56px; /* single source of truth for header height — everything
     that needs to sit "below the header" (the wrapper below, the info
     panel, the nav menu's top padding) reads this variable instead of
@@ -92,7 +88,7 @@ STYLE = r"""
    100vh flex column with ONE scrolling container. body is position:relative so the
    body-level toggles below can be position:absolute instead of fixed; since body never
    scrolls, that is visually identical and keeps position:fixed out of the file. Gated by
-   tools/verify_standalone_core.py, exercised by tools/verify_app_shell.py. */
+   tools/verify_standalone_core.py, exercised by tools/verify_app_shell.py (#50). */
 html,body{height:100%;overflow:hidden}
 body{margin:0;font-family:"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg);
   line-height:1.5;position:relative}
@@ -103,8 +99,8 @@ a{color:var(--brand)}
 
 /* ---- "limited preview" notice: light red/pink box, visible by default in
    plain HTML/CSS (no JavaScript needed to show it — same rule the
-   js-warning pattern in docs/11-responsiveness-and-browser-support.md §3b
-   already establishes).
+   js-warning pattern in examples/10-consolidated-standalone-demo/ and
+   docs/11-responsiveness-and-browser-support.md §3b already establish).
    Reused in three places: the global banner right under the header (hidden
    the moment ANY JavaScript proves it ran), and inside both chart blocks
    (hidden only once THAT specific chart's canvas has actually drawn
@@ -114,7 +110,7 @@ a{color:var(--brand)}
    both light and dark backgrounds) — a light warning chip on a dark page
    is the same deliberate, conventional pattern tools/tokens/theme-dark.css
    already documents for status colours. */
-.preview-notice{background:#fbeded;border-left:4px solid var(--bad);color:#3d0d0d;
+.preview-notice{background:#fdeeee;border-left:4px solid var(--bad);color:#3d0d0d;
   padding:.7rem .9rem;border-radius:0 4px 4px 0;margin:0 0 1rem;font-size:.92rem}
 .preview-notice strong{display:block;margin-bottom:.15rem}
 
@@ -125,8 +121,8 @@ a{color:var(--brand)}
    colour on the page is read through a variable, nothing is hardcoded a
    second time for dark mode. */
 #theme-toggle:checked ~ #app-root{
-  --ink:#FFF8EE; --muted:#AEC3E3; --line:#2A3F5F; --bg:#1B2A4A; --panel:#101828;
-  --brand:#2F5D9E; --brand-dark:#101828;
+  --ink:#FFFFE8; --muted:#DCE6F5; --line:#1B2A4A; --bg:#003842; --panel:#0F1E26;
+  --brand:#006C6C; --brand-dark:#0F1E26;
 }
 #app-root{background:var(--bg);color:var(--ink);position:relative;
   height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
@@ -138,8 +134,8 @@ a{color:var(--brand)}
    hamburger and the two overlap. No position property: it is the first,
    non-shrinking row of #app-root's flex column (row 26). */
 #topbar{flex:0 0 auto;height:var(--topbar-h);background:var(--brand-dark);
-  color:#FFF8EE;display:flex;align-items:center;gap:.6rem;
-  padding:0 145px 0 56px;z-index:10;transition:height .15s}
+  color:#FFFFE8;display:flex;align-items:center;gap:.6rem;
+  padding:0 156px 0 56px;z-index:10;transition:height .15s}
 #topbar .logo{display:inline-flex;flex:none}
 #topbar .logo svg{fill:currentColor}
 #topbar .title{margin:0;font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;
@@ -162,7 +158,7 @@ a{color:var(--brand)}
   #topbar{align-items:flex-start;padding-top:10px;padding-bottom:10px;
     padding-right:100px} /* only info+theme reserved now, not fullscreen's slot */
   #topbar .title{white-space:normal;overflow:visible;text-overflow:clip;
-    line-height:1.3;font-size:.85rem}
+    line-height:1.3;font-size:.875rem} /* 14 px: .85rem rendered 13.6, under the floor */
   .title-full{display:none}
   .title-short{display:inline}
 }
@@ -184,15 +180,17 @@ a{color:var(--brand)}
    is technically always hovering the checkbox, never the label
    underneath; styling `.toggle-label:hover` directly therefore never
    fires and had to be replaced with the sibling form below. */
-.toggle{position:absolute;top:9px;width:38px;height:38px;opacity:0;z-index:12;cursor:pointer;margin:0}
-.toggle-label{position:absolute;top:9px;width:38px;height:38px;z-index:11;display:flex;
-  align-items:center;justify-content:center;border-radius:4px;cursor:pointer;color:#FFF8EE}
-#menu-toggle,#menu-toggle-label{left:9px}
-#info-toggle,#info-toggle-label{right:9px}
-#theme-toggle,#theme-toggle-label{right:53px}
-#fs-btn{position:absolute;top:9px;right:97px;width:38px;height:38px;z-index:11;
+/* 44x44: docs/11's touch minimum, measured by tools/verify_viewports.py. The offsets are
+   6px, so 6+44+6 = 56 px is still the strip the title's left padding has to clear. */
+.toggle{position:absolute;top:6px;width:44px;height:44px;opacity:0;z-index:12;cursor:pointer;margin:0}
+.toggle-label{position:absolute;top:6px;width:44px;height:44px;z-index:11;display:flex;
+  align-items:center;justify-content:center;border-radius:4px;cursor:pointer;color:#FFFFE8}
+#menu-toggle,#menu-toggle-label{left:6px}
+#info-toggle,#info-toggle-label{right:6px}
+#theme-toggle,#theme-toggle-label{right:56px}
+#fs-btn{position:absolute;top:6px;right:106px;width:44px;height:44px;z-index:11;
   display:flex;align-items:center;justify-content:center;border-radius:4px;
-  background:transparent;border:0;color:#FFF8EE;cursor:pointer}
+  background:transparent;border:0;color:#FFFFE8;cursor:pointer}
 #fs-btn:hover{background:rgba(255,255,255,.12)}
 #menu-toggle:hover + label,#menu-toggle:focus-visible + label,
 #info-toggle:hover + label,#info-toggle:focus-visible + label,
@@ -253,7 +251,7 @@ a{color:var(--brand)}
 #below-header{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
 /* ---- pages: a real radio group, NOT CSS :target ----
-   An earlier revision used CSS `:target`. docs/01-tenant-constraints.md row 24:
+   This used CSS `:target` until #50. docs/01-tenant-constraints.md row 24:
    fragment navigation does not happen at all in SharePoint's inline preview,
    even though JavaScript runs there (row 25) — so `<a href="#page-x">` never
    makes #page-x the :target, the page never switches, and nothing reports an
@@ -308,7 +306,9 @@ canvas{max-width:100%}
 table{border-collapse:collapse;width:100%;margin:1rem 0}
 th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);font-size:.92rem}
 th{color:var(--muted);font-weight:600}
-code{background:var(--panel);padding:.1rem .3rem;border-radius:3px;font-size:.9em}
+/* .9em of a 13 px parent is 11.7 px, under docs/11's 14 px floor. The floor wins
+   over the size relationship: code is text a reader reads, not decoration. */
+code{background:var(--panel);padding:.1rem .3rem;border-radius:3px;font-size:max(.875rem,.9em)}
 
 @media print{ #topbar,.toggle,.toggle-label,.page-radio,#fs-btn,#nav-menu,#info-panel,.overlay{display:none} }
 """
@@ -342,9 +342,9 @@ BODY = r"""
      `hidden` and ONLY becomes visible if JavaScript both runs and confirms,
      by actually trying, that this browsing context grants it — see
      SCRIPT. No JS at all: this stays hidden forever, which is the correct
-     behaviour by design, not a bug. -->
+     behaviour per issue #30, not a bug. -->
 <button id="fs-btn" type="button" hidden aria-pressed="false" title="Fullskjerm">
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path stroke="currentColor"
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path stroke="currentColor"
   stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.5"
   d="m1 15 4.978-4.978M1 11.89V15h3.111m5.911-9.022L15 1m-3.111 0H15v3.111M1 1l4.978 4.978M4.11 1H1v3.111m9.022 5.911L15 15m0-3.111V15h-3.111"/></svg>
 </button>
@@ -356,7 +356,7 @@ BODY = r"""
      landing page is explicit HTML state. -->
 <input type="radio" name="page" id="nav-home" class="page-radio" checked aria-label="Hjem">
 <input type="radio" name="page" id="nav-charts" class="page-radio" aria-label="Grafer: JS-forbedret vs. JS-avhengig">
-<input type="radio" name="page" id="nav-principles" class="page-radio" aria-label="Prinsippene for JavaScript-fri standalone HTML">
+<input type="radio" name="page" id="nav-principles" class="page-radio" aria-label="Prinsippene fra issue #30">
 
 <div id="app-root">
 
@@ -370,8 +370,8 @@ BODY = r"""
     <rect x="74" y="8" width="24" height="66" rx="4" fill="currentColor"/>
   </svg></span>
   <h1 class="title">
-    <span class="title-full">Javascript-løs standalone HTML — POC</span>
-    <span class="title-short">JS-løs standalone HTML — POC</span>
+    <span class="title-full">Javascript-løs standalone HTML — POC (issue #30)</span>
+    <span class="title-short">JS-løs standalone HTML — POC #30</span>
   </h1>
 </header>
 
@@ -379,15 +379,18 @@ BODY = r"""
   <label for="menu-toggle" class="panel-close">✕ Lukk</label>
   <label class="navlink" for="nav-home">Hjem</label>
   <label class="navlink" for="nav-charts">Grafer: JS-forbedret vs. JS-avhengig</label>
-  <label class="navlink" for="nav-principles">Prinsippene for JavaScript-fri standalone HTML</label>
+  <label class="navlink" for="nav-principles">Prinsippene fra issue #30</label>
 </nav>
 
 <div id="info-panel">
   <label for="info-toggle" class="panel-close">✕ Lukk</label>
   <h2 style="margin-top:0;font-size:1.1rem">Om denne siden</h2>
-  <p>Bevis-av-konsept for JavaScript-fri standalone HTML.
+  <p>Bevis-av-konsept for
+  <a href="https://example.com/tun/issues/30" target="_blank" rel="noopener">issue #30</a>.
   Meny, sideskift og dette panelet bruker ingen JavaScript i det hele tatt —
   prøv å skru av JavaScript i nettleseren og se at ingenting endrer seg her.</p>
+  <p>Rører ikke <code>examples/10-consolidated-standalone-demo/</code>, som
+  fortsatt er JavaScript-drevet slik den alltid har vært.</p>
 </div>
 
 <div id="below-header">
@@ -396,8 +399,8 @@ BODY = r"""
      needs no JavaScript to show — the earliest possible inline script element,
      placed immediately after it, is what hides it, and only its OWN
      successful execution proves "some JavaScript ran" (same Layer-B
-     reasoning documented in docs/11-responsiveness-and-browser-support.md
-     §3b: a script being
+     reasoning documented in examples/10-consolidated-standalone-demo/ and
+     docs/11-responsiveness-and-browser-support.md §3b: a script being
      BLOCKED, e.g. by a sandboxed in-app viewer, is not the same thing as
      scripting being formally off, so <noscript> cannot do this job). This
      is deliberately a DIFFERENT, more general signal than the two
@@ -457,9 +460,10 @@ BODY = r"""
 </section>
 
 <section id="page-principles" class="page">
-  <h2>Prinsippene for JavaScript-fri standalone HTML</h2>
-  <div class="callout">Dette er et separat sammenligningspunkt for de
-  JavaScript-drevne eksemplene, ikke en erstatning for dem.</div>
+  <h2>Prinsippene fra issue #30</h2>
+  <div class="callout">Ingenting av dette har rørt den JavaScript-drevne
+  logikken i <code>examples/10-consolidated-standalone-demo/</code> — den
+  står som den er. Dette er et separat sammenligningspunkt.</div>
   <table>
     <tr><th>Situasjon</th><th>Regel</th></tr>
     <tr><td>Usynlig for brukeren om det byttes (navigasjon, paneler, tema)</td>
@@ -475,7 +479,8 @@ BODY = r"""
 
 <section id="page-home" class="page">
   <h2>Javascript-løs standalone HTML</h2>
-  <p>Denne siden beviser mønsteret for JavaScript-fri standalone HTML:
+  <p>Denne siden beviser mønsteret fra
+  <a href="https://example.com/tun/issues/30" target="_blank" rel="noopener">issue #30</a>:
   meny, sideskift, info-panel og tema-bryter over krever ingen JavaScript i
   det hele tatt. De er bygget med <code>&lt;input type="checkbox"&gt;</code> +
   <code>:checked</code> på avkrysningsbokser og radioknapper — ikke som en reserveløsning
@@ -514,7 +519,7 @@ SCRIPT = r"""
     var rowH = (h - padTop - padBottom) / data.length;
     var maxVal = Math.max.apply(null, data.map(function (d) { return d[1]; }));
     var brand = getComputedStyle(document.getElementById('app-root'))
-      .getPropertyValue('--brand').trim() || '#2F5D9E';
+      .getPropertyValue('--brand').trim() || '#006C6C';
     var ink = getComputedStyle(document.getElementById('app-root'))
       .getPropertyValue('--ink').trim() || '#00141A';
     var line = getComputedStyle(document.getElementById('app-root'))
@@ -593,7 +598,7 @@ SCRIPT = r"""
     var intercept = (sumY - slope * sumX) / n;
 
     var brand = getComputedStyle(document.getElementById('app-root'))
-      .getPropertyValue('--brand').trim() || '#2F5D9E';
+      .getPropertyValue('--brand').trim() || '#006C6C';
     var ink = getComputedStyle(document.getElementById('app-root'))
       .getPropertyValue('--ink').trim() || '#00141A';
     var muted = getComputedStyle(document.getElementById('app-root'))
@@ -626,8 +631,9 @@ SCRIPT = r"""
 
   /* ---- 3. Fullscreen: hidden unless JS runs AND an actual request
      succeeds. Feature-detection alone ("does the function exist") is not
-     enough — examples/07-topbar-pattern-demo/ already found a real case
-     where the function exists but a sandboxed viewer
+     enough — examples/07-topbar-pattern-demo/ and
+     examples/10-consolidated-standalone-demo/ already found a real case
+     (issue #15/#16) where the function exists but a sandboxed viewer
      silently rejects it. Reacting only to an actual rejection, and hiding
      — not just disabling — is the same lesson applied one step further. */
   (function enableFullscreenIfItActuallyWorks() {
@@ -653,14 +659,14 @@ SCRIPT = r"""
      control it points at, so there is no zero-JS way to both select a page and
      close the menu in a single tap — a nested interactive element's own
      default action suppresses the outer label's "activate my control"
-     behaviour in every engine (tested in an earlier revision, when the nav items
+     behaviour in every engine (tested during issue #30, when the nav items
      were still <a href="#page-x">). Without JavaScript the menu still fully
      works: the reader closes it with the visible "✕ Lukk" button or the
      hamburger icon, one extra tap. With JavaScript, this closes it for them.
      Core navigation does not depend on this running.
 
      Bound to the page radios' change event, not to the labels' click, since
-     the <a href="#page-x"> nav items were replaced with <label for="nav-x">
+     #50 replaced the <a href="#page-x"> nav items with <label for="nav-x">
      driving a radio group (row 24: fragment navigation does not happen in
      SharePoint's inline preview). `change` on the radio is the real signal —
      it fires for a label click, a direct click on the radio, and keyboard
@@ -685,26 +691,11 @@ PLACEHOLDER_BODY = "<!--__BODY__-->"
 PLACEHOLDER_SCRIPT = "//__SCRIPT__"
 
 DOC = """<!doctype html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
-<!--
-  PROVENANCE
-    Source data : none, synthetic demonstration
-    Repo        : tun
-    Made with   : Tún — tun.community
-    Generator   : examples/13-js-free-standalone-poc/build_js_free_poc.py
--->
 <html lang="nb">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JavaScript-løs standalone HTML — POC</title>
+<title>JavaScript-løs standalone HTML — POC for issue #30</title>
 <style>
 """ + PLACEHOLDER_STYLE + """
 /* The landmark wraps everything, but adds no box: the toggles must stay siblings

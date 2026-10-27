@@ -1,6 +1,3 @@
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 shared_data.py — the single source of truth for data + palette in this POC.
 

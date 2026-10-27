@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="{{T:html_lang}}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}}</title>
@@ -30,64 +22,126 @@
   must agree byte for byte.
 -->
 <style>
-/* Palette, inlined at build time by tools/build_cube_dashboard.py through tools/tun_tokens.py:
-   core's neutral palette (tools/tokens/palette-neutral.css) unless a brand plugin or
-   TUN_PALETTE supplies one. Only the --palette-* slots are used here. */
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
 {{TOKEN_CSS}}
-/* --gr/--gr2 come from the palette. The greys are plain neutrals chosen for this
-   template, not taken from any brand. */
-:root{--gr:var(--palette-primary);--gr2:var(--palette-primary-dark);--ink:#1c1c1c;--mut:#6b7280;--bd:#e3e6e8;--bg:#f7f8f9}
+:root{
+  /* The names this template has always used, pointed at the seam. --ink and --bg are the
+     seam's own names already, so they are not restated. */
+  --gr:var(--brand);--gr2:var(--brand-dark);--mut:var(--muted);--bd:var(--line);
+}
 *{box-sizing:border-box}
 /* Accessibility (docs/09-usability-and-navigation-principles.md §1/§5, WCAG 2.2 2.1.1
    and 2.4.7): visible keyboard focus + reduced motion honoured. Confirmed cheap and safe
-   — an unrelated external dashboard has both with no visible downside. */
+   — an independently built, unrelated dashboard benchmarked in html-sammenligning
+   (2026-09-11) has both with no visible downside. */
 :focus-visible{outline:2px solid var(--gr);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.01ms!important;animation-iteration-count:1!important;
     transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
 body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
-header{background:#fff;border-bottom:1px solid var(--bd);padding:1rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
+header{background:var(--panel);border-bottom:1px solid var(--bd);padding:1rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
 h1{font-size:1.15rem;margin:0;font-weight:650}
-.sub{color:var(--mut);font-size:.8rem}
+.sub{color:var(--mut);font-size:.875rem}
 main{padding:1.25rem 1.5rem;max-width:1400px;margin:0 auto}
-.panel{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem}
-.panel h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 .8rem;font-weight:650}
+.panel{background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem}
+.panel h2{font-size:.875rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 .8rem;font-weight:650}
 .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
-.fg label{display:block;font-size:.72rem;font-weight:650;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}
+.fg label{display:block;font-size:.875rem;font-weight:650;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}
 .chips{display:flex;flex-wrap:wrap;gap:.3rem}
-.chip{border:1px solid var(--bd);background:#fff;border-radius:14px;padding:.2rem .6rem;font-size:.78rem;cursor:pointer;user-select:none;transition:.12s}
+.chip{border:1px solid var(--bd);background:var(--panel);border-radius:14px;padding:.2rem .6rem;font-size:.875rem;cursor:pointer;user-select:none;transition:.12s}
 .chip:hover{border-color:var(--gr)}
-.chip.on{background:var(--gr);border-color:var(--gr);color:#fff}
+.chip.on{background:var(--gr);border-color:var(--gr);color:var(--on-brand)}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
-.kpi{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:.9rem 1rem}
+.kpi{background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:.9rem 1rem}
 .kpi .v{font-size:1.5rem;font-weight:680;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.kpi .l{font-size:.72rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-top:.15rem}
+.kpi .l{font-size:.875rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-top:.15rem}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+/* A five-column table cannot shrink below its own minimum, and WebKit's minimum
+   is 350 px here against Chromium's 342: the page overflowed a 390 px phone by
+   3 px, so the last column was clipped. The scroll container keeps the overflow
+   inside the panel, where a reader can reach it, instead of off the page. */
+#tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{min-width:100%}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-th,td{text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--bd);font-size:.83rem}
-th{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:650}
+th,td{text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--bd);font-size:.875rem}
+th{font-size:.875rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:650}
 td.n,th.n{text-align:right}
 .bar{fill:var(--gr)}.bar:hover{fill:var(--gr2)}
 .dot{pointer-events:all}
 .axis{stroke:var(--bd);stroke-width:1}.gl{stroke:#eef1f2;stroke-width:1}
-.lbl{font-size:10px;fill:var(--mut)}
-.vlbl{font-size:10px;fill:var(--mut);font-variant-numeric:tabular-nums}
-button.rst,select.ms{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.78rem;cursor:pointer;font-family:inherit}
+.lbl{font-size:14px;fill:var(--mut)}
+.vlbl{font-size:14px;fill:var(--mut);font-variant-numeric:tabular-nums}
+/* color: the browser's own button text is CanvasText, which does not follow the theme:
+   black on the dark panel measures 1.22:1. A form control needs its colour stated. */
+button.rst,select.ms{border:1px solid var(--bd);background:var(--panel);color:var(--ink);border-radius:6px;padding:.3rem .7rem;font-size:.875rem;min-height:2.75rem;cursor:pointer;font-family:inherit}
+/* Safari ignores padding, border and min-height on a native <select>, so the
+   44 px minimum above did not exist there. appearance:none plus a chevron drawn
+   as a background hands the box back to the stylesheet. */
+select.ms{-webkit-appearance:none;appearance:none;padding-right:1.75rem;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .5rem center;
+  background-size:.75rem .5rem}
 button.rst:hover{border-color:var(--gr);color:var(--gr)}
 footer{padding:.5rem 1.5rem 2rem;max-width:1400px;margin:0 auto;
-  font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);display:flex;gap:1.1rem;flex-wrap:wrap}
+  font:14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);display:flex;gap:1.1rem;flex-wrap:wrap}
 footer b{color:var(--gr2);font-weight:650}
 #boot{padding:3rem 1.5rem;text-align:center;color:var(--mut)}
+/* Without scripting (Quick Look on iOS and macOS blocks it) the cube never decodes, so
+   this file showed the boot line forever. The build writes the facts it already knew into
+   the markup, and a canary class on <html> decides which view shows: docs/11 §3c. */
+.nojs{display:none}
+html:not(.js) .nojs{display:block;padding:1.5rem}
+html:not(.js) #boot,html:not(.js) #app{display:none}
+.nojs-lead{margin:0 0 1.5rem;max-width:52rem;line-height:1.5rem}
+.nojs-facts{display:flex;flex-wrap:wrap;gap:1.5rem;margin:0 0 1.5rem}
+.nojs-facts div{min-width:9rem}
+.nojs-facts dt{font-size:.875rem;line-height:1.5rem;color:var(--mut);text-transform:uppercase;
+  letter-spacing:.04em}
+.nojs-facts dd{margin:0;font-size:1.75rem;line-height:2rem;font-weight:700;
+  font-variant-numeric:tabular-nums}
+.nojs h2{font-size:.875rem;line-height:1.5rem;color:var(--mut);text-transform:uppercase;
+  letter-spacing:.04em;margin:0 0 .5rem}
+.nojs ul{margin:0;padding-left:1.25rem;line-height:1.5rem}
 #boot.err{color:#b00020}
+/* Print, copied from the dashboard's tested rules (docs/11 §8): the paper copy is
+   the numbers, not the controls. The header keeps #scope, so the applied selection
+   still prints even though the controls do not. */
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows are the two
+   places this page gives a slot a role that inverts.
+
+   --brand-dark is the darkest surface in the dark theme, so it is a fine colour to READ on
+   a white page (the footer's bold run) and a fine colour to darken a bar TOWARDS in light,
+   and invisible at both jobs in dark. --brand is the slot for a readable colour on a dark
+   surface, so both use it here. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) footer b{color:var(--brand)}
+  :root:not([data-theme]) .bar:hover{fill:var(--brand)}
+}
+@media print{header{background:#fff;border-bottom:1px solid var(--bd)}
+  .ms,.rst,.filters{display:none}main{padding:0;max-width:none}
+  .panel{break-inside:avoid;box-shadow:none}}
 </style></head><body>
+<script>document.documentElement.className+=" js"</script>
+<section class="nojs" id="nojs">
+  <!-- Without the canary class above, this is the page: the cube cannot be
+       decoded without scripting, so the build writes the facts it knew. -->
+  <p class="nojs-lead">{{T:nojs_lead}}</p>
+  <dl class="nojs-facts">{{NOJS_FACTS}}</dl>
+  <h2>{{T:nojs_dims}}</h2>
+  <ul>{{NOJS_DIMS}}</ul>
+</section>
 <div id="boot">{{T:boot}}</div>
 <div id="app" hidden>
 <header>
   <h1 id="title"></h1><span class="sub" id="scope"></span>
   <span style="flex:1"></span>
   <select class="ms" id="measure" aria-label="{{T:measure_label}}"></select>
+  <button class="rst" id="csv">{{T:csv_button}}</button>
   <button class="rst" id="reset">{{T:reset}}</button>
 </header>
 <main>
@@ -176,8 +230,10 @@ function rollup(groupDim, mi){
 
 /* ---- SVG ---- */
 const esc = s => String(s).replace(/[<>&"]/g, m => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[m]));
-/* Charts draw in their panel's own pixels, so 10 px text stays 10 px. A fixed
-   560/1120-wide viewBox scaled to a 330 px phone panel drew it at 3 to 6 px.
+/* Charts draw in their panel's own pixels, so the label size is the size a reader
+   gets. A fixed 560/1120-wide viewBox scaled to a 330 px phone panel drew 10 px text
+   at 3 to 6 px; the labels are 14 px now, which is the floor docs/11 §1 sets, so the
+   paddings below are wide enough to hold them.
    measureCharts() reads the real widths after a render; boot and resize redraw
    once when they changed. */
 let barW = 560, lineW = 1120;
@@ -190,7 +246,7 @@ function measureCharts(){
   return changed;
 }
 function barChart(labels, values, unit, name){
-  const rowH = 24, W = barW, padL = 118, padR = 66, H = labels.length*rowH + 8;
+  const rowH = 26, W = barW, padL = 150, padR = 96, H = labels.length*rowH + 8;
   const max = Math.max(...values, 1), bw = W - padL - padR;
   let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${esc(name)}">`;
   labels.forEach((l, i) => { const y = i*rowH + 4, w = Math.max(1, values[i]/max*bw);
@@ -201,7 +257,7 @@ function barChart(labels, values, unit, name){
   return s + "</svg>";
 }
 function lineChart(labels, values, unit, name){
-  const W = lineW, H = 230, padL = 62, padR = 14, padT = 12, padB = 34;
+  const W = lineW, H = 230, padL = 80, padR = 14, padT = 12, padB = 44;
   const n = labels.length, max = Math.max(...values, 1);
   const x = i => padL + (n < 2 ? (W-padL-padR)/2 : i*(W-padL-padR)/(n-1));
   const y = v => H - padB - (v/max)*(H-padT-padB);
@@ -214,16 +270,97 @@ function lineChart(labels, values, unit, name){
   s += `<polygon fill="var(--gr)" opacity=".08" points="${padL},${H-padB} ${pts} ${x(n-1).toFixed(1)},${H-padB}"/>`
     +  `<polyline fill="none" stroke="var(--gr)" stroke-width="2" points="${pts}"/>`;
   if (n <= 60) values.forEach((v,i) => { s += `<circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" `
-    + `fill="#fff" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });
-  const step = Math.ceil(n / Math.max(2, Math.floor((W-padL-padR)/87)));  // 12 labels at 1120
+    + `fill="var(--panel)" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });
+  const step = Math.ceil(n / Math.max(2, Math.floor((W-padL-padR)/104)));  // wider labels at 14 px
   labels.forEach((l,i) => { if (i % step) return;
-    s += `<text class="lbl" x="${x(i).toFixed(1)}" y="${H-padB+16}" text-anchor="middle">${esc(l)}</text>`; });
+    // The first and last labels sit on the axes: centring them hangs half a label
+    // outside the drawing, which at 14 px is visible text cut off.
+    const anchor = i === n-1 ? "end" : (i === 0 ? "start" : "middle");
+    s += `<text class="lbl" x="${x(i).toFixed(1)}" y="${H-padB+16}" text-anchor="${anchor}">${esc(l)}</text>`; });
   return s + "</svg>";
 }
 
 /* ---- {{T:c_build}} ---- */
 const TIME = META.time_dim, CHART_DIMS = D.filter(d => d !== TIME);
 let MI = 0;
+
+/* ---- {{T:c_csv_1}}
+   {{T:c_csv_2}} ---- */
+const SEP = "{{T:dec}}" === "," ? ";" : ",";
+function csvField(v){
+  const s = String(v);
+  return s.indexOf('"') >= 0 || s.indexOf(SEP) >= 0 || /[\r\n]/.test(s)
+    ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+// No thousands separator and the reader's own decimal mark: a spreadsheet given
+// "1 234,5" reads text, and a text column is not why anyone downloads this.
+function csvNumber(v, dp){
+  const n = dp === 0 ? Math.round(v) : Math.round(v * 100) / 100;
+  return String(n).replace(".", "{{T:dec}}");
+}
+function csvSlug(){
+  const iso = META.built.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dotted = META.built.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+  const date = iso ? iso[0] : (dotted ? dotted[3] + "-" + dotted[2] + "-" + dotted[1] : META.built);
+  const clean = v => v.replace(/[\\/:*?"<>|\s]+/g, "-").replace(/^-+|-+$/g, "");
+  return clean("{{T:csv_file}}-" + META.title).slice(0, 60) + "-" + clean(date) + ".csv";
+}
+function csvText(){
+  const meas = META.measures[MI];
+  const name = meas.agg === "count" ? "{{T:count_rows}}" : meas.field;
+  const lines = [];
+  // Provenance travels with the file: a CSV that outlives the page has to say
+  // where it came from and which selection it holds, or the numbers are a claim
+  // with no source.
+  lines.push(csvField("# {{T:csv_source}}: " + META.source));
+  lines.push(csvField("# {{T:csv_built}}: " + META.built
+    + (META.requested_by ? " {{T:p_for}} " + META.requested_by : "")));
+  lines.push(csvField("# {{T:csv_scope}}: " + D.map(d =>
+    d + " = " + (sel[d].size ? [...sel[d]].sort((a,b)=>a-b).map(i => META.labels[d][i]).join(", ")
+                            : "{{T:csv_all}}")).join("; ")));
+  lines.push("");
+  const head = ["{{T:csv_dim}}", "{{T:csv_value}}", name, "{{T:csv_rows}}", "{{T:csv_avg}}"];
+  lines.push(head.map(csvField).join(SEP));
+
+  const base = rollup(TIME || D[0], MI);
+  const dims = (TIME ? [TIME] : []).concat(CHART_DIMS);
+  for (const d of dims){
+    const r = rollup(d, MI);
+    const idx = active(d).sort((a,b) => r.out[b] - r.out[a]);
+    for (const i of idx){
+      if (!r.outN[i]) continue;
+      lines.push([d, META.labels[d][i], name, csvNumber(r.out[i]),
+                  csvNumber(r.outN[i], 0),
+                  csvNumber(r.out[i] / Math.max(1, r.outN[i]))].map(csvField).join(SEP));
+    }
+  }
+  lines.push(["{{T:csv_total}}", "", name, csvNumber(base.tot), csvNumber(base.totN, 0),
+              csvNumber(base.tot / Math.max(1, base.totN))].map(csvField).join(SEP));
+  return "\ufeff" + lines.join("\r\n") + "\r\n";
+}
+function downloadCSV(){
+  const text = csvText();
+  try {
+    const url = URL.createObjectURL(new Blob([text], {type: "text/csv;charset=utf-8"}));
+    const a = document.createElement("a");
+    a.href = url; a.download = csvSlug();
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (err) {
+    // A host that blocks blob downloads gets the text in the page instead, in a
+    // box the reader can select and copy. Never a button that does nothing.
+    const box = document.createElement("div");
+    box.className = "panel"; box.id = "csvFallback";
+    box.innerHTML = "<h2>{{T:csv_copy}}</h2>";
+    const ta = document.createElement("textarea");
+    ta.readOnly = true; ta.rows = 12; ta.style.width = "100%";
+    ta.style.font = '14px ui-monospace,SFMono-Regular,Menlo,monospace';
+    ta.value = text;
+    box.appendChild(ta);
+    document.querySelector("main").prepend(box);
+    ta.focus(); ta.select();
+  }
+}
 
 function buildChrome(){
   document.getElementById("title").textContent = META.title;
@@ -242,6 +379,7 @@ function buildChrome(){
     sel[dim].has(i) ? sel[dim].delete(i) : sel[dim].add(i);
     c.classList.toggle("on"); render();
   });
+  document.getElementById("csv").onclick = downloadCSV;
   document.getElementById("reset").onclick = () => { D.forEach(d => sel[d].clear());
     document.querySelectorAll(".chip.on").forEach(c => c.classList.remove("on")); render(); };
   if (TIME){ document.getElementById("trendPanel").hidden = false;

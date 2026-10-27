@@ -9,15 +9,16 @@ HTML files**, distributed through SharePoint/OneDrive as documents rather than s
 a web app. Positioned as a lighter-weight alternative to Power BI for reporting that only
 ever needed to be a shareable, explorable snapshot.
 
-The direction is open-ended by design. This repo is plumbing that gets out of the
-users' way: measured constraints, a working template, and skills that turn a sentence
-into a shareable dashboard.
+**This is Tunkallen's (en kollega's) project.** He sets the direction; it is open-ended
+by design. This repo is plumbing that gets out of his way — measured constraints, a working
+template, and skills that turn a sentence into a shareable dashboard.
 
-So: when a user wants to go somewhere the current design doesn't support, **the design is what
+So: when he wants to go somewhere the current design doesn't support, **the design is what
 gives way.** Don't defend the architecture — check whether the constraint is real (measure
 it) and then find the route. The only things that don't bend are the two safety rules below.
 
-Users may not have a dev toolchain; many are on Windows. See rule 5.
+He is not set up for local development and does not work in a modern engineering toolchain
+day to day — see rule 5.
 
 ## Non-negotiable rules
 
@@ -33,7 +34,7 @@ The split must happen *before* the data is written. `tun-new`, `tun-help` and
 
 ### 2. Never defeat `Content-Disposition: attachment`
 
-SharePoint forces it on every file. It is an XSS control in a corporate document store. The
+SharePoint forces it on every file. It is an XSS control in a tenant's document store. The
 architecture routes around it (the download *is* the delivery mechanism). Any "clever"
 workaround is defeating a security control — don't, and push back if asked.
 
@@ -45,13 +46,13 @@ human. Assertions cannot see overlapping labels or a number that's wrong by 1000
 
 ### 4. If a tenant constraint changes, update the doc in the same commit
 
-`docs/01-tenant-constraints.md` is empirical. Every row was measured against a live
-enterprise Microsoft 365 tenant. If `probe/tenant-probe.py` reports a divergence, update that doc **and** re-check
+`docs/01-tenant-constraints.md` is empirical. Every row was measured against the live Eksempel AS
+tenant. If `probe/tenant-probe.py` reports a divergence, update that doc **and** re-check
 every architecture decision that depended on the old behaviour, in the same change.
 
 ### 5. Cross-platform, and no toolchain prerequisites
 
-**Everything must run on Windows as well as macOS.** Many users are on Windows. That
+**Everything must run on Windows as well as macOS.** The primary user is on Windows. That
 means: no shell scripts, no `~/Library/...` paths, no `brew`, no assumption that symlinks
 work. `setup.py` and `tools/` are cross-platform stdlib Python — keep them that way, and if
 you add tooling, it goes in Python too.
@@ -79,11 +80,14 @@ responses, a named client's report or deck, anything that isn't synthetic exampl
 must never enter a commit here, not even in a scratch subdirectory, not even briefly.
 
 `work/<task>/` is where a session builds a real deliverable, and it is gitignored for
-exactly this reason (see the comment in `.gitignore`). A `git add -A` in a shared checkout
-can still sweep another task's scratch directory into a commit. Removing it afterwards
-means rewriting history on every branch, and a forge can keep server-side snapshots (for
-example a merged pull request's head ref) that cannot be deleted. It costs nothing to
-avoid up front.
+exactly this reason (see the comment in `.gitignore`). It happened anyway once: a
+`git add -A` run in a checkout that also held a task's `work/øvelse/**` swept ~142
+real files (a client's survey report, its builders, source JSON with survey submissions)
+onto `main`, reachable from every branch. Fixing it after the fact meant rewriting all 16
+branches' history and force-pushing, and even then GitHub Enterprise kept one
+server-side, undeletable snapshot (`refs/pull/53/head` — see
+`docs/17-licensing.md`, blocking item 4). That is a multi-hour cleanup for
+a mistake that costs nothing to avoid up front.
 
 Concretely: before staging anything with `git add -A` or `git add .` in a checkout, check
 `git status` for paths you don't recognize as this project's own — a shared checkout can
@@ -96,9 +100,8 @@ See [`docs/06-way-of-working.md`](docs/06-way-of-working.md). The load-bearing o
 - **Verify, don't assume.** Measure the live system; don't cite a doc for a checkable fact.
 - **Look at the artefact.** A clean build is not evidence. Open it, check a number.
 - **Show before sending.** Anything going to a human is approved in full first.
-- **Python → `uv`, JS → `bun`. Never `pip` or `npm`.** Public registries are the
-  default source in `pyproject.toml` / `bunfig.toml`. The Tier 1 path needs neither tool,
-  by design.
+- **Python → `uv`, JS → `bun`. Never `pip` or `npm`.** Eksempel AS Nexus is an extra source in
+  `pyproject.toml` / `bunfig.toml`. The Tier 1 path needs neither tool, by design.
 - **`hotshot`** for real tooling changes (implement → verify → review → PR). Not for prose
   edits to a `SKILL.md`.
 - **`writing-for-agents`** whenever editing a `SKILL.md` or this file.
@@ -117,21 +120,25 @@ See [`docs/06-way-of-working.md`](docs/06-way-of-working.md). The load-bearing o
   user's language. English for docs and code.
   The builders take `--lang nb|en` (default `nb`); the strings live in `templates/i18n/`
   (docs/12 section 5).
-- **Brand colours come from the active plugin**, never from core. The example brand
-  (fictional Eksempel AS) lives in `plugins/eksempel/tokens/palette.css`; status
-  colours live in `tools/tokens/status-semantic.css`. Do not invent a colour or recall
-  one from memory — read it from those files.
+- **the design system palette** in templates, using the authoritative brand hex values from
+  [design.example.com](https://design.example.com/uilib/usage/customisation/colors/) — blue
+  `#2F5D9E`, purple `#1B2A4A`, purple `#6B3FA0`, dark blue `#1B2A4A`,
+  Fire Red `#dc2a2a`, Success Green `#007b5e`, and the Black 3/8/20/55/80 greys.
+  Do not invent a colour or recall one from memory — look it up.
 
-  Two deliberate choices, both to protect portability:
-  - **No external CSS package is imported.** Only the token *values* in use are
-    inlined. Importing a full package would add a remote dependency and break the
-    offline, self-contained guarantee.
-  - **No webfont is embedded.** The `font-family` stack uses a brand typeface when it
-    is installed locally, but never loads one from a font CDN. Embedding ~150 KB of
-    base64 woff2 in every dashboard is the wrong trade, and redistributing a font
-    inside arbitrary shared files is a licensing question.
+  Two deliberate deviations from the design system, both to protect portability:
+  - **The design system CSS package is not imported.** Only the token *values* we use are
+    inlined. Importing `the design system package` would add a remote dependency and break the
+    offline/self-contained guarantee. The newer `--tun-color-*` design tokens are
+    still beta and resolve through that CSS, so they are not usable here yet.
+  - **The Eksempel AS typeface is not embedded.** `font-family: "Eksempel AS", <system fallback>` uses it
+    when present locally (it is on managed devices) but never loads it from
+    the design system's font CDN. Embedding ~150 KB of base64 woff2 in every dashboard is the
+    wrong trade, and redistributing the font inside arbitrary shared files is a
+    licensing question nobody has answered.
 
-  Spacing: `rem` in 0.5 increments, line-heights on the 8-pixel grid, no raw `px`.
+  Otherwise follow the design system conventions: `rem` in 0.5 increments, line-heights on the
+  8-pixel grid, no raw `px`.
 - **Tier 1 size budget:** warn >20 MB, fail >50 MB. Enforced in `build_dashboard.py`. The
   fix for an over-budget dashboard is pre-aggregation, not raising the limit.
 
@@ -149,9 +156,13 @@ skills/dev/ hotshot, magnus-review, writing-for-agents — how the work gets don
             deliberately stack-agnostic. See skills/README.md for the split.
             Both groups are copied into ~/.raiwork/skills by setup.py (--link to
             symlink instead, only when editing the skills themselves)
-templates/  single-file-dashboard.html (rows), cube-dashboard.html (dense cube).
-            Hand-rolled SVG charts, zero dependencies
-tools/      build_dashboard.py, build_cube_dashboard.py, verify_dashboard.py — stdlib only
+templates/  single-file-dashboard.html (rows), cube-dashboard.html (dense cube),
+            survey-dashboard.html (counted answers), register.html (the list itself),
+            process-diagram.html, portable-slide-deck.html. Hand-rolled, zero dependencies
+tools/      build_dashboard.py, build_cube_dashboard.py, build_survey_dashboard.py,
+            build_register.py, build_process_diagram.py, build_slide_deck.py, and the
+            verifiers — stdlib only. tun_core.py is the one place a table is read, a
+            number is parsed out of a cell, and a build is refused
 probe/      tenant-probe.py — reproducible tenant constraint check
 examples/   working examples + sample data (03 regenerates its own source data)
 ```
@@ -176,10 +187,16 @@ python3 tools/verify_dashboard.py examples/01-hello-dashboard/salg-dashboard.htm
 
 `--source` and `--requested-by` are part of the command, not optional garnish. Without
 them the rebuild silently rewrites the committed example's provenance to `salgsdata.csv`
-and `not stated`, and nothing warns you. Pass a role, not a person's name. One line of the block still moves on
+and `not stated`, and nothing warns you (#45). Pass a role, not a person's name. One line of the block still moves on
 every rebuild: `Extracted` comes from the data file's mtime, and git does not preserve
 mtimes, so in a fresh clone or worktree it reads as the moment you checked out. That is
 the artefact telling the truth about what it was built from, not a defect to chase.
+
+When a rebuild must not differ — a release, a byte-for-byte comparison, two machines
+building the same example — pin the clock instead of chasing the diff: every builder
+honours `SOURCE_DATE_EPOCH`, in UTC, for both stamps (`tools/build_stamp.py` is the one
+place it is read). Prefix any builder command with it and the same bytes come out in
+Oslo and in Auckland. Unset, nothing changes.
 
 Must print `✓ PASS`. Then **look at the screenshot**.
 
@@ -193,9 +210,11 @@ is `chromium`). A reader may open the file in Safari or Firefox, so before you c
 template, a builder or a verify tool, run every documented example check in all three:
 `uv run --extra verify python tools/verify_documented.py` (it needs
 `uv run playwright install chromium firefox webkit`). CI on the public repository runs the
-same command on every pull request.
+same command on every pull request. It also sweeps every verified artefact through
+`tools/verify_a11y.py`, six accessibility rules per artefact; an accessibility defect in
+an example fails there, and the tool prints what it did not check.
 
-Then run the three suites. All are stdlib-only and none touch anything outside a temp
+Then run the suites. All are stdlib-only and none touch anything outside a temp
 directory:
 
 ```bash
@@ -207,7 +226,23 @@ python3 tests/test_process_diagram.py        # spec rules, layout faults injecte
 python3 tests/test_tun_feedback.py           # feedback log helper + --feedback-to on both builders
 python3 tests/test_builder_null_measures.py  # empty measure values, the verify hint; mutate_*.py deletes each fix
 python3 tests/test_dashboard_kpis_and_labels.py  # --kpis/--measure-kind, long bar labels, 3 engines
+python3 tests/test_register.py               # the row register: sort/search/paging, group bands, hostile cell, no-JS
+python3 tests/test_shared_core.py            # one reader, one numeric parse, five builders proven on it
+python3 tests/test_onboarding.py             # the onboarding doc: every command and flag it shows is real
+python3 tests/test_docs_readers.py           # every doc declares its reader, and the index files it that way
+python3 tests/test_a11y_gate.py              # the accessibility verifier fails on a planted defect, and passes the shipped examples
+python3 tests/test_comparison_dashboard.py   # sums, deltas, new/gone, the no-JS view, a hostile key, both languages
+python3 tests/test_folder_index.py           # the folder front page: facts read from each artefact, bare files listed, no script
+python3 tests/test_timeline.py               # the timeline: bars placed by their own dates, picture and table agree, refusals
+python3 tests/test_gate_inputs.py  # every documented verify path and every mutation anchor still resolves
+python3 tests/test_skill_tier_line.py  # every skill states its tier and cost before its first section
 ```
+
+One command runs every suite at once and prints one verdict
+(`python3 tools/check_all.py`; `--no-browser` holds back the thirteen that need Playwright
+and says so; `--fast` runs only the eleven the pre-commit hook runs, which is what the hook
+calls now). It refuses an empty list and a count that changed, so a suite that vanishes is
+loud rather than a shorter green run.
 
 `test_skill_links.py` covers `setup.py`, which decides whether to replace or preserve a
 path in `~/.raiwork/skills`; getting that wrong deletes a skill the user wrote, or
@@ -231,9 +266,9 @@ is safe — the template is the whole product.
   Messages, Mail, and Files all use it when someone taps/opens an `.html` file sent as an
   attachment (not a link). Deliberate Apple security decision, not fixable from inside
   the file. `<noscript>` doesn't help (scripting is still "on" in the spec's eyes, Quick
-  Look just won't run the specific script tags). Full writeup, root-caused, in
-  `docs/11-responsiveness-and-browser-support.md` §3c — read it before touching
-  the `#ingenkode`/canary pattern. **No client data or example content from a real case
+  Look just won't run the specific script tags). Full writeup, root-caused against a real
+  case, in `docs/11-responsiveness-and-browser-support.md` §3c — read it before touching
+  the `#ingenkode`/canary pattern. **No client data or example content from that case
   belongs in this repo** — the pattern and the generic lesson do, the specific dashboard
   never should (see the "Never write a row into a file whose audience should not see it"
   rule above; the same boundary applies to *this* repo's own working tree, not just to
@@ -283,15 +318,37 @@ Don't add them without a conversation:
 
 ## 8. The public page at tun.community is not in this repo
 
-Do not add a copy of it here. Its source lives in a separate repository, with its own
-build and its own checks.
+Do not add a copy of it here. I already did, and it was a mistake worth writing down.
 
-A copy here is worse than no copy. An edge proxy can rewrite HTML in transit: it can
-inject a script into a page that promises none, and strip comment fences such as
-`<!--email_off-->`. A copy taken by fetching the live page holds the *post-edge* bytes,
-not the source. To check what the public actually gets, compare the delivered bytes with
-the source, byte for byte.
+Its source is a Go stdlib static-server stack, with the page `go:embed`'d into a
+`FROM scratch` binary, living in the maintainer's **private testmiljø repository** (stack
+`testserver/stacks/tun-site`, path recorded in project memory). It deploys by cron on a
+self-hosted box: a pull every five minutes plus `docker compose up -d`, reached publicly
+through a Cloudflare tunnel. There is no Cloudflare deploy step and no credential to hold.
+
+That stack already has stronger gates than a copy here could have. `web/page_test.go` runs
+inside the Docker build and fails it if the page grows past 64 KB, gains a script element,
+loses its provenance block, or loses the fence around the interest link.
+`tools/verify-live.sh` fetches the public URL and compares it **byte for byte** with the
+source, because Cloudflare rewrites HTML at the edge and once silently injected
+`email-decode.min.js` into a page that promises no scripts.
+
+The lessons from running it live there too, in that stack's README and tests: a
+content-derived ETag instead of a fixed date (an old `If-Modified-Since` once kept a
+returning reader on the old page), a `308` to HTTPS keyed on `X-Forwarded-Proto`, the
+security headers (`default-src 'none'`, `nosniff`), and which edge features rewrite HTML.
+Read them there. Do not copy them here.
+
+Two things follow:
+
+1. **A copy here is worse than no copy.** Fetching the live page gives you the
+   *post-edge* bytes: Cloudflare strips the `<!--email_off-->` fence, so a copy taken that
+   way has quietly lost the one defence against having its only call to action rewritten.
+   Deploying from such a copy would reintroduce the exact bug that stack documents.
+2. **Edit the page in the testmiljø repo, never here.** Then run its own verifier and
+   `verify-live.sh` afterwards.
 
 What belongs in this repo is the licence the page describes: `LICENSE` and
-`COPYING.ARTEFACT-EXCEPTION`. The page is a public surface, so review what it says about
-that licence before a change goes live.
+`COPYING.ARTEFACT-EXCEPTION`. What the page claims about that licence is a publication
+decision, and the page is a public surface: get the wording approved before pushing, since
+a push deploys it within five minutes with no further confirmation.

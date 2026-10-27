@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún - tun.community
+    Rows        : {{ROWS_INLINED}} rows on the page, {{BUCKET_NOTE}}
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: the shape of one measure across the cases that hold it. Every other
+  artefact the engine builds answers a question about a total. A total says nothing about
+  whether a typical case is typical, and the mean of a lopsided set is a number that is
+  arithmetically right and descriptively wrong. This page shows the bucket counts, the
+  median and the tail, so the reader can see what the mean would have hidden.
+
+  What it is NOT: a model, a trend or a forecast. The buckets are a presentation choice, not
+  a property of the data; the page states the edges it chose, and the table carries the same
+  counts so the picture can be checked instead of trusted. A different bucket width draws a
+  different picture of the same rows, which is why the edges are printed.
+
+  There is no script in this file. A filter would re-lay the drawing, and a re-laid drawing
+  is a second thing to get wrong. What a script would have given you is below the picture:
+  every count, in a table, per bucket and per group.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+{{TOKEN_CSS}}
+:root{
+  /* The median rule is template-local: it is a mark that must stand clear of the bars in
+     both themes, and the seam's --brand-dark is the darkest surface in the dark theme, so a
+     rule drawn with it would disappear into the panel it sits on. */
+  --bar-median:#1B2A4A;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a
+   scaled-down drawing is text under the floor. Below that the box pans. */
+.figure svg{display:block;width:100%;height:auto;min-width:62.5rem}
+.ds-grid{stroke:var(--rule);stroke-width:1}
+.ds-base{stroke:var(--line);stroke-width:1}
+.ds-panel{fill:var(--ink);font-size:14px;font-weight:600}
+.ds-stat{fill:var(--muted);font-size:14px}
+.ds-count{fill:var(--ink);font-size:14px}
+.ds-edge{fill:var(--muted);font-size:14px}
+.ds-bar{fill:var(--brand)}
+.ds-median{stroke:var(--bar-median);stroke-width:2;stroke-dasharray:4 3}
+.ds-median-label{fill:var(--bar-median);font-size:14px;font-weight:600}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.shapes{margin:1rem 0 0;padding-left:1.25rem;font-size:.9375rem}
+.shapes li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tfoot th,tfoot td{font-weight:600;background:var(--brand-soft);border-bottom:0}
+.legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin:.5rem 0 0;padding:0;list-style:none;
+  font-size:.875rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:.375rem}
+.legend .sw{width:1rem;height:.75rem;border-radius:2px;display:inline-block}
+.legend .ln{width:1rem;height:0;border-top:2px dashed var(--bar-median);display:inline-block}
+.withheld{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);
+  border-radius:.5rem;font-size:.875rem;line-height:1.5}
+.withheld p{margin:.25rem 0}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* The drawing keeps a readable minimum and the figure scrolls sideways inside its own
+     box: a phone may pan a picture, but the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band inverts; the median rule takes a light value for the same reason
+     the bars do. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    :root{--bar-median:#d5ece9}
+  }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>{{TITLE}}</h1>
+  <p class="sub">{{SUBTITLE}}</p>
+</div></header>
+<main>
+  <figure class="figure">
+{{SVG}}
+    <figcaption>{{CAPTION}} {{T:caption_p90}}</figcaption>
+  </figure>
+  <ul class="legend">{{LEGEND}}</ul>
+
+  <h2 id="shape-h">{{T:head_shape}}</h2>
+  <ul class="shapes" aria-labelledby="shape-h">
+{{SHAPE_LINES}}
+  </ul>
+{{WITHHELD}}
+  <h2 id="tbl-h">{{T:head_table}}</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>{{T:table_caption}}</caption>
+    <thead><tr>
+      <th scope="col">{{T:col_bucket}}</th>
+{{TABLE_HEAD}}
+    </tr></thead>
+    <tbody>
+{{TABLE_ROWS}}
+    </tbody>
+    <tfoot>
+{{TOTAL_ROW}}
+    </tfoot>
+  </table>
+</main>
+<footer>
+  <p>{{T:footer_a}}</p>
+  <p>{{T:footer_b}}</p>
+  <p>{{SOURCE_LINE}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p>
+  <p>{{FEEDBACK_BLOCK}}</p>
+</footer>
+</body>
+</html>

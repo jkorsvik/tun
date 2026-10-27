@@ -1,0 +1,439 @@
+{
+  "page": 1,
+  "pageSize": 27,
+  "total": 27,
+  "records": [
+    {
+      "id": "ORD-1001",
+      "booked": "2026-01-08",
+      "customer": {
+        "region": "Nord",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 157000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1002",
+      "booked": "2026-01-15",
+      "customer": {
+        "region": "Nord",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 194000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1003",
+      "booked": "2026-01-22",
+      "customer": {
+        "region": "Nord",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 141000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1004",
+      "booked": "2026-01-02",
+      "customer": {
+        "region": "Vest",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 128160,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1005",
+      "booked": "2026-01-09",
+      "customer": {
+        "region": "Vest",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 90000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1006",
+      "booked": "2026-01-16",
+      "customer": {
+        "region": "Vest",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 116640,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1007",
+      "booked": "2026-01-23",
+      "customer": {
+        "region": "Sør",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 109450,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1008",
+      "booked": "2026-01-03",
+      "customer": {
+        "region": "Sør",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 80300,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1009",
+      "booked": "2026-01-10",
+      "customer": {
+        "region": "Sør",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 100650,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1010",
+      "booked": "2026-02-17",
+      "customer": {
+        "region": "Nord",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 130000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1011",
+      "booked": "2026-02-24",
+      "customer": {
+        "region": "Nord",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 167000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1012",
+      "booked": "2026-02-04",
+      "customer": {
+        "region": "Nord",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 204000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1013",
+      "booked": "2026-02-11",
+      "customer": {
+        "region": "Vest",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 108720,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1014",
+      "booked": "2026-02-18",
+      "customer": {
+        "region": "Vest",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 135360,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1015",
+      "booked": "2026-02-25",
+      "customer": {
+        "region": "Vest",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 97200,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1016",
+      "booked": "2026-02-05",
+      "customer": {
+        "region": "Sør",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 94600,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1017",
+      "booked": "2026-02-12",
+      "customer": {
+        "region": "Sør",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 114950,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1018",
+      "booked": "2026-02-19",
+      "customer": {
+        "region": "Sør",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 85800,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1019",
+      "booked": "2026-03-26",
+      "customer": {
+        "region": "Nord",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 193000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1020",
+      "booked": "2026-03-06",
+      "customer": {
+        "region": "Nord",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 140000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1021",
+      "booked": "2026-03-13",
+      "customer": {
+        "region": "Nord",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 177000,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1022",
+      "booked": "2026-03-20",
+      "customer": {
+        "region": "Vest",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 89280,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1023",
+      "booked": "2026-03-27",
+      "customer": {
+        "region": "Vest",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 115920,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1024",
+      "booked": "2026-03-07",
+      "customer": {
+        "region": "Vest",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 142560,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1025",
+      "booked": "2026-03-14",
+      "customer": {
+        "region": "Sør",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Analysator",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 79750,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1026",
+      "booked": "2026-03-21",
+      "customer": {
+        "region": "Sør",
+        "segment": "Bedrift"
+      },
+      "lines": [
+        {
+          "product": "Rapportør",
+          "canal": "Web"
+        }
+      ],
+      "amountNok": 100100,
+      "currency": "NOK"
+    },
+    {
+      "id": "ORD-1027",
+      "booked": "2026-03-01",
+      "customer": {
+        "region": "Sør",
+        "segment": "Offentlig"
+      },
+      "lines": [
+        {
+          "product": "Vaktmester",
+          "canal": "Partner"
+        }
+      ],
+      "amountNok": 70950,
+      "currency": "NOK"
+    }
+  ]
+}

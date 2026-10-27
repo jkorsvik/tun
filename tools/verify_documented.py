@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 verify_documented.py — run every verify command the examples document, in every engine.
 
@@ -97,30 +94,102 @@ def failure_detail(output: str, root: pathlib.Path = ROOT) -> str:
     return "\n      ".join(engine + frames[-4:] + lines[-12:])
 
 
-def run(doc, cwd, argv, engines, tmp: pathlib.Path, n: int) -> tuple[str, str]:
-    """Run one documented command. Returns (status, detail): PASS, FAIL or SKIP."""
+def run(doc, cwd, argv, engines, tmp: pathlib.Path, n: int) -> tuple[str, str, pathlib.Path | None]:
+    """Run one documented command. Returns (status, detail, artefact): PASS, FAIL or SKIP."""
     tool = (cwd / argv[0]).resolve()
     args = list(argv[1:])
     if not tool.is_file():
-        return "FAIL", f"{doc.relative_to(ROOT)} documents {argv[0]}, which does not exist"
+        return "FAIL", f"{doc.relative_to(ROOT)} documents {argv[0]}, which does not exist", None
     artefacts = [a for a in args if a.endswith(".html")]
     if artefacts:
         target = (cwd / artefacts[0]).resolve()
         if ROOT / "examples" not in target.parents:
-            return "SKIP", f"template path {artefacts[0]}"
+            return "SKIP", f"template path {artefacts[0]}", None
         if not target.is_file():
-            return "FAIL", f"{doc.relative_to(ROOT)} documents {artefacts[0]}, which does not exist"
+            return "FAIL", f"{doc.relative_to(ROOT)} documents {artefacts[0]}, which does not exist", None
     elif ROOT / "examples" not in tool.parents:
-        return "SKIP", "no .html argument"          # an example's own verifier knows its file
+        return "SKIP", "no .html argument", None   # an example's own verifier knows its file
     if "--out" in args:                       # keep screenshots out of /tmp and the tree
         set_flag(args, "--out", str(tmp / f"out-{n}"))
     set_flag(args, "--engines", ",".join(engines))
     r = subprocess.run([sys.executable, str(tool), *args], cwd=cwd,
                        capture_output=True, text=True)
+    target = (cwd / artefacts[0]).resolve() if artefacts else None
     if r.returncode != 0:
-        return "FAIL", failure_detail(r.stdout + r.stderr)
+        return "FAIL", failure_detail(r.stdout + r.stderr), target
     tail = (r.stdout + r.stderr).strip().splitlines()
-    return "PASS", tail[-1] if tail else "(no output)"
+    return "PASS", tail[-1] if tail else "(no output)", target
+
+
+VIEWPORTS_TOOL = "verify_viewports.py"
+
+
+def viewport_sweep(artefacts: dict[pathlib.Path, str], engines, tmp: pathlib.Path) -> tuple[int, int]:
+    """docs/11's responsive claim, for every artefact no README already sweeps.
+
+    A README that documents `verify_viewports.py` has already stated the floor that
+    artefact holds (a fitted drawing holds 12 px, a dense slide card 9), so those are
+    left alone: running the default floor over them would contradict the README. Every
+    other verified artefact gets swept here at the default floor, which is how the
+    touch minimum and the text floor stop being documentation only.
+
+    Returns (checked, failed).
+    """
+    tool = ROOT / "tools" / VIEWPORTS_TOOL
+    if not tool.is_file():
+        print(f"\n✗ FAIL: {VIEWPORTS_TOOL} is missing, so the sweep could not run")
+        return 0, 1
+    checked = failed = 0
+    for n, (artefact, doc) in enumerate(sorted(artefacts.items())):
+        if not artefact.is_file():
+            continue
+        out = tmp / f"viewports-{n}"
+        r = subprocess.run([sys.executable, str(tool), str(artefact),
+                            "--engines", ",".join(engines), "--out", str(out), "--quiet"],
+                           cwd=ROOT, capture_output=True, text=True)
+        checked += 1
+        ok = r.returncode == 0
+        failed += 0 if ok else 1
+        print(f"  {'PASS' if ok else 'FAIL'}  {VIEWPORTS_TOOL} {artefact.name}"
+              f"   (floor 14 px, default; documented by {doc})")
+        if not ok:
+            print(f"      {failure_detail(r.stdout + r.stderr)}")
+    return checked, failed
+
+
+A11Y_TOOL = "verify_a11y.py"
+
+
+def a11y_sweep(artefacts: dict[pathlib.Path, str], engines) -> tuple[int, int]:
+    """ROADMAP A10: the accessibility rules, for every verified artefact.
+
+    Same shape as `viewport_sweep`, and for the same reason: the artefacts this gate
+    covers are the ones some README already verifies, so a new example is covered by
+    being documented rather than by being added to a list here. One engine is enough,
+    because none of the six rules is a layout question; `--engines` still passes through
+    so a caller can ask for all three.
+
+    Returns (checked, failed).
+    """
+    tool = ROOT / "tools" / A11Y_TOOL
+    if not tool.is_file():
+        print(f"\n✗ FAIL: {A11Y_TOOL} is missing, so the sweep could not run")
+        return 0, 1
+    checked = failed = 0
+    for artefact, doc in sorted(artefacts.items()):
+        if not artefact.is_file():
+            continue
+        r = subprocess.run([sys.executable, str(tool), str(artefact),
+                            "--engines", "chromium", "--quiet"],
+                           cwd=ROOT, capture_output=True, text=True)
+        checked += 1
+        ok = r.returncode == 0
+        failed += 0 if ok else 1
+        print(f"  {'PASS' if ok else 'FAIL'}  {A11Y_TOOL} {artefact.name}"
+              f"   (chromium, six rules; documented by {doc})")
+        if not ok:
+            print(f"      {failure_detail(r.stdout + r.stderr)}")
+    return checked, failed
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -143,20 +212,35 @@ def main(argv: list[str] | None = None) -> int:
     print(f"\nrunning each in {', '.join(args.engines)}")
     print("─" * 62)
     counts = {"PASS": 0, "FAIL": 0, "SKIP": 0}
+    swept: dict[pathlib.Path, str] = {}
     with tempfile.TemporaryDirectory() as td:
+        tmp = pathlib.Path(td)
         for n, (doc, cwd, words) in enumerate(found):
-            status, detail = run(doc, cwd, words, args.engines, pathlib.Path(td), n)
+            status, detail, artefact = run(doc, cwd, words, args.engines, tmp, n)
             counts[status] += 1
             name = pathlib.Path(words[0]).name
             print(f"  {status}  {name} {pathlib.Path(next((w for w in words if w.endswith('.html')), '?')).name}")
             if status != "PASS":
                 print(f"      {detail}")
+            if artefact and status != "FAIL":
+                swept[artefact] = str(doc.relative_to(ROOT))
+        # A README that documents the viewport tool has stated that artefact's own floor.
+        declared = {art for doc, cwd, words in found
+                    if pathlib.Path(words[0]).name == VIEWPORTS_TOOL
+                    for art in [(cwd / next(w for w in words if w.endswith(".html"))).resolve()]}
+        outstanding = {a: d for a, d in swept.items() if a not in declared}
+        print(f"\nviewports: {len(outstanding)} artefact(s) no README sweeps, at the default floor")
+        checked, vfailed = viewport_sweep(outstanding, args.engines, tmp)
+        print(f"\naccessibility: {len(swept)} verified artefact(s), six rules each")
+        acheked, afailed = a11y_sweep(swept, args.engines)
     print("─" * 62)
-    print(f"{counts['PASS']} passed, {counts['FAIL']} failed, {counts['SKIP']} skipped")
+    print(f"{counts['PASS']} passed, {counts['FAIL']} failed, {counts['SKIP']} skipped; "
+          f"viewports swept {checked}, {vfailed} failed; "
+          f"accessibility swept {acheked}, {afailed} failed")
     if counts["PASS"] == 0:
         print("✗ FAIL: no documented command actually ran")
         return 1
-    return 1 if counts["FAIL"] else 0
+    return 1 if (counts["FAIL"] or vfailed or afailed) else 0
 
 
 if __name__ == "__main__":

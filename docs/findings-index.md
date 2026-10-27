@@ -33,7 +33,7 @@ Internal-only findings (real-case details, server state) are not listed here.
 | F144 F230 | Mutation harness never under a foreground timeout | [`12-maintainability-conventions.md`](12-maintainability-conventions.md) | `Never run an in-place mutation harness under a foreground timeout.` |
 | F516 F626 | Keyboard shortcut standard, evaluated, not adopted | [`09-usability-and-navigation-principles.md`](09-usability-and-navigation-principles.md) | `Keyboard shortcuts: evaluated, not adopted` |
 | F533 F537 F539 | Skills ship as a plugin that replaces the installer | [`21-plugin-architecture.md`](21-plugin-architecture.md) | `Decided: Tún's own skills ship as a plugin` |
-| F348 | The old repository name | [`18-naming.md`](18-naming.md) | `an earlier working name` |
+| F348 | The old repository name | [`18-naming.md`](18-naming.md) | `tun` |
 | F227 | uv missing from a non-login shell | [`05-toolchain.md`](05-toolchain.md) | `may be missing from a non-login shell` |
 | F519 F125 | Block pushes from a clone with real data | [`24-git-hygiene.md`](24-git-hygiene.md) | `Block pushes from a clone that holds real data` |
 | F506 | git add -A in a shared checkout | [`24-git-hygiene.md`](24-git-hygiene.md) | `is a claim about files you do not own` |

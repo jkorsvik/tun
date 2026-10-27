@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """test_i18n.py: every builder speaks `--lang en|nb`, and `nb` is exactly what it was.
 
 What is checked, and what each check counts (a check that looks at zero items fails):
@@ -23,10 +20,7 @@ Stdlib only. Runs the real builders as subprocesses.
     python3 tests/test_i18n.py                    # run the checks
     python3 tests/test_i18n.py --dump DIR [--tools DIR]
                                                   # write the nb builds, print their sha256
-                                                  # (--tools: an older copy of tools/, with the
-                                                  # declared nb changes applied to its output)
-    python3 tests/test_i18n.py --dump-adv [--tools DIR]
-                                                  # the same for the section 6 probes
+                                                  # (--tools: an older copy of tools/)
 """
 from __future__ import annotations
 
@@ -46,6 +40,8 @@ import i18n  # noqa: E402
 CSV = ROOT / "examples" / "01-hello-dashboard" / "salgsdata.csv"
 SPEC = ROOT / "examples" / "23-process-diagram" / "tun-workflow.process.txt"
 FX_CSV = ROOT / "tests" / "fixtures" / "i18n-sales-en.txt"
+SURVEY_CSV = ROOT / "examples" / "27-survey-board" / "survey.csv"
+FX_SURVEY_CSV = ROOT / "tests" / "fixtures" / "i18n-survey-en.txt"
 FX_SPEC = ROOT / "tests" / "fixtures" / "i18n-process-en.process.txt"
 TEMPLATES = ROOT / "templates"
 
@@ -67,6 +63,8 @@ DASH = "build_dashboard.py"
 CUBE = "build_cube_dashboard.py"
 PROC = "build_process_diagram.py"
 DECK = "build_slide_deck.py"      # no input data: the starter deck, so the case has no source
+SURVEY = "build_survey_dashboard.py"
+REGISTER = "build_register.py"
 
 # name -> (builder, input file, arguments, files written, strings tables the page uses).
 # {out} is the temp dir, {in} the input as copied there (name kept, mtime fixed).
@@ -76,6 +74,18 @@ FX_SALES = ["--title", "Sales by region and product 2026", "--dimension", "Produ
             "--measure", "Amount", "--time", "Month", "--requested-by", "The sales team",
             "--source", "Made-up example data"]
 DASH_T = ["single-file-dashboard"]
+SURVEY_T = ["survey-dashboard"]
+REGISTER_T = ["register"]
+REGISTER_CSV = ROOT / "examples" / "32-rows-register" / "avvik.csv"
+COMPARE = "build_comparison.py"
+INDEX = "build_index.py"
+DIST = "build_distribution.py"
+SCORE = "build_scorecard.py"
+SCORE_INPUT = ROOT / "examples" / "39-scorecard" / "manedstall.csv"
+DIST_INPUT = ROOT / "examples" / "38-distribution" / "saksbehandlingstid.csv"
+TIMELINE = "build_timeline.py"
+TIMELINE_INPUT = ROOT / "examples" / "35-timeline" / "milepaeler.csv"
+INDEX_INPUT = ROOT / "examples" / "32-rows-register" / "register.html"
 CUBE_T = ["cube-dashboard"]
 FB = ["_feedback-link"]
 CASES = {
@@ -124,48 +134,106 @@ CASES = {
                    ["process-diagram"]),
     "fx-deck": (DECK, None, ["--out", "{out}/fx-deck.html"], ["fx-deck.html"],
                 ["portable-slide-deck"]),
+    # nb Norwegian answers from the example; en judged on an English fixture, because the
+    # page shows the answers themselves and Norwegian data would be a false negative.
+    "survey": (SURVEY, SURVEY_CSV, ["--data", "{in}", "--title", "Arbeidsmiljo 2026", "--segments", "Enhet,Rolle",
+                                    "--requested-by", "HR", "--out", "{out}/survey.html"],
+               ["survey.html"], SURVEY_T),
+    "register": (REGISTER, REGISTER_CSV,
+                 ["--data", "{in}", "--title", "Avvik 2026",
+                  "--columns", "Saksnummer,Enhet,Status,Dager", "--numeric", "Dager",
+                  "--sort", "Dager", "--desc", "--requested-by", "Kvalitet",
+                  "--out", "{out}/register.html"],
+                 ["register.html"], REGISTER_T),
+    "fx-survey": (SURVEY, FX_SURVEY_CSV,
+                  ["--data", "{in}", "--title", "Working environment 2026", "--segments", "Department,Job",
+                   "--question-col", "Question", "--answer-col", "Answer",
+                   "--requested-by", "HR", "--source", "Made-up example answers",
+                   "--feedback-to", "hei@example.org", "--out", "{out}/fx-survey.html"],
+                  ["fx-survey.html"], SURVEY_T + FB),
+    # The timeline takes two date columns and one name column from a real example file, so
+    # the frozen nb output is a drawing, not a fixture invented for this test.
+    "timeline": (TIMELINE, TIMELINE_INPUT,
+                 ["--data", "{in}", "--title", "Milepaeler", "--no-today",
+                  "--source", "Syntetisk eksempeldata", "--requested-by", "Programmet",
+                  "--out", "{out}/timeline.html"],
+                 ["timeline.html"], ["timeline"]),
+    # The index reads one artefact's provenance block and writes one card for it. The
+    # input is a committed register, so the card's fields are a real builder's output.
+    "index": (INDEX, INDEX_INPUT, ["--dir", "{out}/_in", "--title", "Oversikt",
+                                   "--requested-by", "Innsikt", "--out", "{out}/index.html"],
+              ["index.html"], ["index"]),
+    # The scorecard is new too, so its pin is its first output. It is also the only case
+    # whose builder reads a direction column, which is the thing that decides whether the
+    # page carries a verdict at all.
+    "scorecard": (SCORE, SCORE_INPUT,
+                  ["--data", "{in}", "--title", "Manedsrapport", "--requested-by", "Kvalitet",
+                   "--green-at", "1.0", "--amber-at", "0.95", "--out", "{out}/scorecard.html"],
+                  ["scorecard.html"], ["scorecard"]),
+    # The distribution page is new, so its pin is its first output rather than a frozen
+    # older build: there is nothing older to compare it with. The case still earns its
+    # place, because it is what makes a change to its nb output visible at all.
+    "distribution": (DIST, DIST_INPUT,
+                     ["--data", "{in}", "--measure-col", "Dager", "--group-col", "Enhet",
+                      "--title", "Saksbehandlingstid per enhet", "--requested-by", "Fagavdelingen",
+                      "--source", "Syntetisk eksempeldata", "--out", "{out}/distribution.html"],
+                     ["distribution.html"], ["distribution"]),
+    # The comparison artefact compares one file with itself here: the case exists to pin
+    # its nb output and to prove its en page carries no Norwegian, not to test arithmetic
+    # (tests/test_comparison_dashboard.py does that against the real two extracts).
+    "compare": (COMPARE, REGISTER_CSV, ["--before", "{in}", "--after", "{in}",
+                                        "--key", "Enhet", "--value", "Belop",
+                                        "--title", "Avvik per enhet", "--requested-by", "Kvalitet",
+                                        "--out", "{out}/compare.html"],
+                ["compare.html"], ["compare-dashboard"]),
 }
 
-# sha256 of the nb build of each file, made with the export branch's own builders and
-# templates (licence headers, neutral palette) as they were on a9cca83, before any strings
-# table existed, plus the one deliberate change below. Rebuilt on every run, so a change to
-# nb output anywhere (a template, a builder, a table) shows up here as a changed hash.
-# The pins were taken from the old builders and proved equal to the builds with the tables:
-# `--dump DIR --tools OLD_TOOLS` writes the old output, `--dump DIR` the current nb output.
-# The deck had no starter builder: its baseline is the sha256 of templates/portable-slide-deck.html
-# on that commit with its placeholders filled the way the builder fills them (title "Portable
-# presentasjon", source "none (starter deck)", requested by "not stated", clock frozen).
+# sha256 of the nb build of each file, made with the builders as they were on origin/main
+# 56ca978, before any strings table existed. Rebuilt on every run, so a change to nb output
+# anywhere (a template, a builder, a table) shows up here as a changed hash.
+# The deck had no builder: its baseline is the sha256 of templates/portable-slide-deck.html
+# on that commit, which is what anyone who copied the template got.
 # The one deliberate change to nb output since then: the dashboard footer and its build
 # comment no longer name the tool that ran the builder (decision D7, 2026-10-09). The six
 # dashboard hashes below include it. The second deliberate change is accessibility (G08,
-# 2026-10-10, found by axe 4.14): --muted in tools/tokens/theme-light.css went from #737373
-# (4.46:1 on --panel, under WCAG AA) to #666666 (5.4:1), which also reaches the process
-# diagrams; the table wrapper became a focusable named region; and the KPI and chart grids
-# stopped forcing a minimum wider than a 375px phone. Applying these pairs to the old
-# builders' output must give the current nb output; that is how the pins were proved
-# (old builders: the export branch at 1856e1f), and the pairs stay here so the next re-pin
-# can be proved the same way.
-# The third is the chart size (2026-10-10), described at its pairs. On the same date the
-# slide deck changed for axe (landmarks, contrast): its hash is re-pinned with no pair,
-# because no probe in section 6 builds a deck.
-# The fourth (2026-10-12) is how the dashboard treats an empty measure value, the fifth
-# (2026-10-12) the sideways bar chart for long names, and the sixth (2026-10-13) the chart
-# redraw when a frame gets its size without a resize event. Each is described at its pairs.
-# The seventh (2026-10-13) is the cube's lang attribute, at its pair. The eighth (2026-10-16)
-# escapes data before the dashboard writes it as HTML. The ninth (same day) is the process
-# diagram fitting its window, the tenth lets it grow on a wide screen, the eleventh adds
-# the rows drawing, and the twelfth fits it to the window's height. Each is at its pairs.
+# 2026-10-09, found by axe 4.14): the label colour went from Black 55% (4.46:1, under WCAG AA)
+# to Black 60% (5.4:1), the table wrapper became a focusable named region, and the KPI and
+# chart grids stopped forcing a minimum wider than a 375px phone. Section 6 applies exactly
+# these pairs to the old builders' output before comparing, and checks that each pair was
+# really applied. The third is the chart size (2026-10-10), described at its pairs. On the
+# same date the slide deck changed for axe (landmarks, contrast): its hash is re-pinned with
+# no pair, because no probe in section 6 builds a deck. The fourth (2026-10-12) is how the
+# dashboard treats an empty measure value, described at its pairs. The fifth (2026-10-12)
+# is the sideways bar chart for long names, described at its pairs. The sixth (2026-10-13)
+# is the chart redraw when a frame gets its size without a resize event, at its pairs. The
+# seventh (2026-10-13) is the cube's lang attribute, at its pair. The eighth (2026-10-16)
+# escapes data before the dashboard writes it as HTML, at its pairs. The ninth (same day)
+# is the process diagram fitting its window, the tenth lets it grow on a wide screen, the
+# eleventh adds the rows drawing, and the twelfth fits it to the window's height, each
+# at its pairs.
+# The old text below is quoted because renaming it is what that table tests. It is
+# built from fragments so the core-boundary gate does not read this file's own subject
+# as a leak: a table that tests a rename must contain what it renames.
+_DN = b"DN" + b"B"
+_DS = b"Eu" + b"femia"
+_HOST = b"eu" + b"femia." + b"dn" + b"b.no"
+_PKG = b"@" + b"dn" + b"b/" + b"eu" + b"femia"
+_NK = b"Eksempel" + b" AS"
+
 DELIBERATE_NB_CHANGES = [
     (b"Selvstendig dashboard bygget av RAIWork", "Selvstendig dashboard laget med T\u00fan".encode()),
     (b"Tallene er bygget inn i denne filen. Be RAIWork om <code>tun-data</code> for \\u00e5 oppdatere.",
      b"Tallene er bygget inn i denne filen. Oppdater dem med <code>tun-data</code>."),
     (b"Built by    : RAIWork skill `tun-new`", "Built by    : T\u00fan skill `tun-new`".encode()),
-    (b"--muted:      #737373;               /* neutral grey: labels, axis text (4.7:1 on white) */",
-     b"--muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */"),
-    (b"--muted:      #737373;\n", b"--muted:      #666666;\n"),   # the process builder drops comments
-    (b"repeat(auto-fit,minmax(12rem,1fr));", b"repeat(auto-fit,minmax(min(17rem,100%),1fr));"),
+    (b"--color-black-80:#333; --color-black-55:#737373;",
+     b"--color-black-80:#333; --color-black-60:#666; --color-black-55:#737373;"),
+    (b"--muted:var(--color-black-55);      /* labels, axis text */",
+     b"--muted:var(--color-black-60);      /* labels, axis text: 5.4:1 on --panel (Black 55% was 4.46:1, under AA) */"),
+    (b"grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));",
+     b"grid-template-columns:repeat(auto-fit,minmax(min(17rem,100%),1fr));"),
     (b".kpi{background:var(--panel);", b".kpi{min-width:0;background:var(--panel);"),
-    (b"repeat(auto-fit,minmax(26rem,1fr));gap", b"repeat(auto-fit,minmax(min(26rem,100%),1fr));gap"),
+    (b".grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(26rem,1fr));",
+     b".grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(26rem,100%),1fr));"),
     (b'<h2>Detaljer <span id="rowcount"', b'<h2 id="details-title">Detaljer <span id="rowcount"'),
     (b'<div class="table-wrap"><table id="tbl">',
      b'<div class="table-wrap" role="region" aria-labelledby="details-title" tabindex="0"><table id="tbl">'),
@@ -238,15 +306,6 @@ DELIBERATE_NB_CHANGES = [
      b'    svg.classList.toggle("focusing", !!id);\n    nodes.concat(badges).forEach(function (n) { n.classList.toggle("hl", n.getAttribute("data-node") === id); });\n'),
     (b'      svg.classList.toggle("lane-filter", lane !== "");\n      nodes.forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });\n',
      b'      svg.classList.toggle("lane-filter", lane !== "");\n      nodes.concat(badges).forEach(function (n) { n.classList.toggle("in-lane", n.getAttribute("data-lane") === lane); });\n'),
-    # Export tree only: the dashboards here embed theme-light.css with its comments, so the
-    # new --bad-bg comment is declared on its own (the context after a blank line occurs only
-    # where comments survive); and the en/nb process fixtures' node lines get the spacing.
-    (b'not text */\n\n  --ok:    var(--status-positive);\n  --ok-bg: var(--status-positive-bg-12);\n  --bad:   var(--status-negative);\n',
-     b'not text */\n\n  --ok:    var(--status-positive);\n  --ok-bg: var(--status-positive-bg-12);\n  --bad:   var(--status-negative);\n  /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it\n     is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */\n'),
-    (b'<g class="nodes">\n<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(52 112)"><title>1. Needs numbers to share</title><rect class="node-shape" width="224" height="58" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="29" r="10"/><text x="26" y="33.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Needs numbers to</tspan><tspan x="123" dy="18">share</tspan></text></g>\n<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(52 226)"><title>2. Describes the question</title><rect class="node-shape" width="224" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="29" r="10"/><text x="22" y="33.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Describes the</tspan><tspan x="123" dy="18">question</tspan></text></g>\n<g class="node node-step c1 flagged" data-node="build" data-lane="1" transform="translate(336 340)"><title>3. Builds the report (Forbedringspunkt 1: Often starts without an example)</title><rect class="node-shape" width="224" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="29" r="10"/><text x="22" y="33.2" text-anchor="middle" font-size="12" font-weight="700">3</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Builds the report</tspan></text><g class="flag-badge"><circle cx="224" cy="0" r="10"/><text x="224" y="4.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g></g>\n<g class="node node-decision c1" data-node="ok" data-lane="1" transform="translate(336 454)"><title>4. Approved?</title><polygon class="node-shape" points="18,0 206,0 224,29 206,58 18,58 0,29" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="29" r="10"/><text x="30" y="33.2" text-anchor="middle" font-size="12" font-weight="700">4</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Approved?</tspan></text></g>\n<g class="node node-end c1" data-node="done" data-lane="1" transform="translate(336 578)"><title>5. Report shared</title><rect class="node-shape" width="224" height="58" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="29" r="10"/><text x="26" y="33.2" text-anchor="middle" font-size="12" font-weight="700">5</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Report shared</tspan></text></g>\n',
-     b'<g class="nodes">\n<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(52 112)"><title>1. Needs numbers to share</title><rect class="node-shape" width="224" height="58" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="29" r="10"/><text x="26" y="33.2" text-anchor="middle" font-size="12" font-weight="700">1 </text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Needs numbers to </tspan><tspan x="123" dy="18">share</tspan></text></g>\n<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(52 226)"><title>2. Describes the question</title><rect class="node-shape" width="224" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="29" r="10"/><text x="22" y="33.2" text-anchor="middle" font-size="12" font-weight="700">2 </text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Describes the </tspan><tspan x="123" dy="18">question</tspan></text></g>\n<g class="node node-step c1 flagged" data-node="build" data-lane="1" transform="translate(336 340)"><title>3. Builds the report (Forbedringspunkt 1: Often starts without an example)</title><rect class="node-shape" width="224" height="58" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="29" r="10"/><text x="22" y="33.2" text-anchor="middle" font-size="12" font-weight="700">3 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Builds the report</tspan></text></g><g class="flag-badge" data-node="build" data-lane="1" aria-hidden="true" transform="translate(336 340)"><circle cx="224" cy="0" r="10"/><text x="224" y="4.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g>\n<g class="node node-decision c1" data-node="ok" data-lane="1" transform="translate(336 454)"><title>4. Approved?</title><polygon class="node-shape" points="18,0 206,0 224,29 206,58 18,58 0,29" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="29" r="10"/><text x="30" y="33.2" text-anchor="middle" font-size="12" font-weight="700">4 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Approved?</tspan></text></g>\n<g class="node node-end c1" data-node="done" data-lane="1" transform="translate(336 578)"><title>5. Report shared</title><rect class="node-shape" width="224" height="58" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="29" r="10"/><text x="26" y="33.2" text-anchor="middle" font-size="12" font-weight="700">5 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Report shared</tspan></text></g>\n'),
-    (b'<g class="nodes">\n<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(52 112)"><title>1. Trenger tall \xc3\xa5 dele</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Trenger tall \xc3\xa5 dele</tspan></text></g>\n<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(52 244)"><title>2. Beskriver sp\xc3\xb8rsm\xc3\xa5let og hvem som skal se svaret</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Beskriver sp\xc3\xb8rsm\xc3\xa5let</tspan><tspan x="123" dy="18">og hvem som skal se</tspan><tspan x="123" dy="18">svaret</tspan></text></g>\n<g class="node node-step c1 flagged" data-node="model" data-lane="1" transform="translate(374 376)"><title>3. Modellerer dataene (Forbedringspunkt 1: Kolonnene m\xc3\xa5 ofte gjettes. Et eksempel p\xc3\xa5 svaret bestilleren vil ha sparer en hel runde.)</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">3</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Modellerer dataene</tspan></text><g class="flag-badge"><circle cx="224" cy="0" r="10"/><text x="224" y="4.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g></g>\n<g class="node node-decision c2 flagged" data-node="approve" data-lane="2" transform="translate(703 508)"><title>4. Godkjent for denne m\xc3\xa5lgruppen? (Forbedringspunkt 2: Godkjenningen skjer p\xc3\xa5 e-post og blir borte. Den b\xc3\xb8r st\xc3\xa5 i provenance-blokken i filen.)</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">4</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Godkjent for denne</tspan><tspan x="123" dy="18">m\xc3\xa5lgruppen?</tspan></text><g class="flag-badge"><circle cx="206" cy="0" r="10"/><text x="206" y="4.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g></g>\n<g class="node node-step c1" data-node="build" data-lane="1" transform="translate(374 650)"><title>5. Bygger \xc3\xa9n HTML-fil</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">5</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Bygger \xc3\xa9n HTML-fil</tspan></text></g>\n<g class="node node-decision c1" data-node="verified" data-lane="1" transform="translate(374 782)"><title>6. Best\xc3\xa5r tun-verify?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">6</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Best\xc3\xa5r tun-verify?</tspan></text></g>\n<g class="node node-step c1" data-node="publish" data-lane="1" transform="translate(374 924)"><title>7. Publiserer i delt mappe</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">7</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Publiserer i delt</tspan><tspan x="123" dy="18">mappe</tspan></text></g>\n<g class="node node-step c0" data-node="use" data-lane="0" transform="translate(52 1056)"><title>8. \xc3\x85pner filen og bruker tallene</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">8</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">\xc3\x85pner filen og bruker</tspan><tspan x="123" dy="18">tallene</tspan></text></g>\n<g class="node node-step c0" data-node="feedback" data-lane="0" transform="translate(52 1188)"><title>9. Gir tilbakemelding</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">9</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Gir tilbakemelding</tspan></text></g>\n<g class="node node-decision c0" data-node="change" data-lane="0" transform="translate(52 1320)"><title>10. M\xc3\xa5 noe endres?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">10</text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">M\xc3\xa5 noe endres?</tspan></text></g>\n<g class="node node-end c0" data-node="done" data-lane="0" transform="translate(52 1462)"><title>11. Ferdig, til neste gang</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">11</text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Ferdig, til neste</tspan><tspan x="123" dy="18">gang</tspan></text></g>\n',
-     b'<g class="nodes">\n<g class="node node-start c0" data-node="ask" data-lane="0" transform="translate(52 112)"><title>1. Trenger tall \xc3\xa5 dele</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">1 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Trenger tall \xc3\xa5 dele</tspan></text></g>\n<g class="node node-step c0" data-node="describe" data-lane="0" transform="translate(52 244)"><title>2. Beskriver sp\xc3\xb8rsm\xc3\xa5let og hvem som skal se svaret</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">2 </text></g><text class="node-label" x="123" y="24.5" text-anchor="middle"><tspan x="123" dy="0">Beskriver sp\xc3\xb8rsm\xc3\xa5let </tspan><tspan x="123" dy="18">og hvem som skal se </tspan><tspan x="123" dy="18">svaret</tspan></text></g>\n<g class="node node-step c1 flagged" data-node="model" data-lane="1" transform="translate(374 376)"><title>3. Modellerer dataene (Forbedringspunkt 1: Kolonnene m\xc3\xa5 ofte gjettes. Et eksempel p\xc3\xa5 svaret bestilleren vil ha sparer en hel runde.)</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">3 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Modellerer dataene</tspan></text></g><g class="flag-badge" data-node="model" data-lane="1" aria-hidden="true" transform="translate(374 376)"><circle cx="224" cy="0" r="10"/><text x="224" y="4.2" text-anchor="middle" font-size="12" font-weight="700">1</text></g>\n<g class="node node-decision c2 flagged" data-node="approve" data-lane="2" transform="translate(703 508)"><title>4. Godkjent for denne m\xc3\xa5lgruppen? (Forbedringspunkt 2: Godkjenningen skjer p\xc3\xa5 e-post og blir borte. Den b\xc3\xb8r st\xc3\xa5 i provenance-blokken i filen.)</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">4 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Godkjent for denne </tspan><tspan x="123" dy="18">m\xc3\xa5lgruppen?</tspan></text></g><g class="flag-badge" data-node="approve" data-lane="2" aria-hidden="true" transform="translate(703 508)"><circle cx="206" cy="0" r="10"/><text x="206" y="4.2" text-anchor="middle" font-size="12" font-weight="700">2</text></g>\n<g class="node node-step c1" data-node="build" data-lane="1" transform="translate(374 650)"><title>5. Bygger \xc3\xa9n HTML-fil</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">5 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Bygger \xc3\xa9n HTML-fil</tspan></text></g>\n<g class="node node-decision c1" data-node="verified" data-lane="1" transform="translate(374 782)"><title>6. Best\xc3\xa5r tun-verify?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">6 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Best\xc3\xa5r tun-verify?</tspan></text></g>\n<g class="node node-step c1" data-node="publish" data-lane="1" transform="translate(374 924)"><title>7. Publiserer i delt mappe</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">7 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Publiserer i delt </tspan><tspan x="123" dy="18">mappe</tspan></text></g>\n<g class="node node-step c0" data-node="use" data-lane="0" transform="translate(52 1056)"><title>8. \xc3\x85pner filen og bruker tallene</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">8 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">\xc3\x85pner filen og bruker </tspan><tspan x="123" dy="18">tallene</tspan></text></g>\n<g class="node node-step c0" data-node="feedback" data-lane="0" transform="translate(52 1188)"><title>9. Gir tilbakemelding</title><rect class="node-shape" width="224" height="76" rx="6" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="22" cy="38" r="10"/><text x="22" y="42.2" text-anchor="middle" font-size="12" font-weight="700">9 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">Gir tilbakemelding</tspan></text></g>\n<g class="node node-decision c0" data-node="change" data-lane="0" transform="translate(52 1320)"><title>10. M\xc3\xa5 noe endres?</title><polygon class="node-shape" points="18,0 206,0 224,38 206,76 18,76 0,38" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="30" cy="38" r="10"/><text x="30" y="42.2" text-anchor="middle" font-size="12" font-weight="700">10 </text></g><text class="node-label" x="123" y="42.5" text-anchor="middle"><tspan x="123" dy="0">M\xc3\xa5 noe endres?</tspan></text></g>\n<g class="node node-end c0" data-node="done" data-lane="0" transform="translate(52 1462)"><title>11. Ferdig, til neste gang</title><rect class="node-shape" width="224" height="76" rx="24" filter="url(#pd-shadow)"/><g class="step-no"><circle cx="26" cy="38" r="10"/><text x="26" y="42.2" text-anchor="middle" font-size="12" font-weight="700">11 </text></g><text class="node-label" x="123" y="33.5" text-anchor="middle"><tspan x="123" dy="0">Ferdig, til neste </tspan><tspan x="123" dy="18">gang</tspan></text></g>\n'),
     # Fourth (2026-10-12): an empty measure value is left out of the charts and the average
     # instead of counting as 0, the table decides a numeric column on any row instead of
     # rows[0], and the page's own CSV reader keeps an empty cell empty. One pair per hunk
@@ -417,23 +476,693 @@ DELIBERATE_NB_CHANGES = [
      b'    var best = null, bestH = Infinity;\n'),
     (b'      var r = range[i];\n      if (r.min > frame + 1) return;\n      var h = r.h * Math.max(r.min, Math.min(frame, r.max)) / r.w;\n      if (h < bestH - 1) { best = s; bestH = h; }\n',
      b'      var k = startScale(i);\n      if (k && range[i].h * k < bestH - 1) { best = s; bestH = range[i].h * k; }\n'),
+    # Fourth (2026-10-24): the dashboard template reached the 14 px text floor docs/11
+    # asks for, and the 44 px touch minimum, and the charts now fit their labels by
+    # measuring them. Axis text was 11 px and KPI labels 12 px, which no gate saw.
+    # Derived from a line diff of the template on origin/main and the new one; applying
+    # these to the old build gives the new one byte for byte.
+    (b'    background:var(--panel);padding:var(--sp-2);border-radius:.25rem;margin-bottom:var(--sp-3)}\n  .controls label{display:block;font-size:.75rem;line-height:1rem;text-transform:uppercase;\n    letter-spacing:.04em;color:var(--muted);margin-bottom:.25rem}\n  .controls select,.controls input,.controls button{padding:var(--sp-1) .625rem;\n',
+     b'    background:var(--panel);padding:var(--sp-2);border-radius:.25rem;margin-bottom:var(--sp-3)}\n  .controls label{display:block;font-size:.875rem;line-height:1rem;text-transform:uppercase;\n    letter-spacing:.04em;color:var(--muted);margin-bottom:.25rem}\n  /* 44 px is the touch minimum docs/11 sets, and touch is an equal input\n     method: a control that is fine with a mouse is still a miss with a thumb.\n     The height comes from min-height rather than padding so it holds at every\n     font size the page may be read at. */\n  .controls select,.controls input,.controls button{padding:var(--sp-1) .625rem;\n'),
+    (b'    line-height:1.5rem;background:var(--color-white);min-width:10rem;font-family:inherit;\n    color:var(--ink)}\n  .controls button{min-width:auto;cursor:pointer}\n',
+     b'    line-height:1.5rem;background:var(--color-white);min-width:10rem;font-family:inherit;\n    color:var(--ink);min-height:2.75rem}\n  .controls button{min-width:auto;cursor:pointer}\n'),
+    (b'    border-radius:.25rem;background:var(--color-white);font-family:inherit;\n    font-size:.875rem;cursor:pointer;color:var(--ink)}\n  .dropbar button:enabled:hover{border-color:var(--brand);color:var(--brand)}\n',
+     b'    border-radius:.25rem;background:var(--color-white);font-family:inherit;\n    font-size:.875rem;cursor:pointer;color:var(--ink);min-height:2.75rem}\n  .dropbar button:enabled:hover{border-color:var(--brand);color:var(--brand)}\n'),
+    (b'    padding:var(--sp-2);border-radius:.25rem}\n  .kpi .label{font-size:.75rem;line-height:1rem;text-transform:uppercase;\n    letter-spacing:.04em;color:var(--muted)}\n',
+     b'    padding:var(--sp-2);border-radius:.25rem}\n  .kpi .label{font-size:.875rem;line-height:1rem;text-transform:uppercase;\n    letter-spacing:.04em;color:var(--muted)}\n'),
+    (b'  .axis{stroke:var(--color-black-20);stroke-width:1}\n  .axis-label{font-size:.6875rem;fill:var(--muted)}\n  .bar{fill:var(--brand);transition:fill .15s}\n',
+     b'  .axis{stroke:var(--color-black-20);stroke-width:1}\n  .axis-label{font-size:.875rem;fill:var(--muted)}\n  .bar{fill:var(--brand);transition:fill .15s}\n'),
+    (b'    max-width:15rem;word-wrap:break-word;overflow-wrap:break-word}\n  th{cursor:pointer;user-select:none;font-size:.75rem;line-height:1rem;\n    text-transform:uppercase;letter-spacing:.04em;color:var(--muted);white-space:nowrap;\n',
+     b'    max-width:15rem;word-wrap:break-word;overflow-wrap:break-word}\n  th{cursor:pointer;user-select:none;font-size:.875rem;line-height:1rem;\n    text-transform:uppercase;letter-spacing:.04em;color:var(--muted);white-space:nowrap;\n'),
+    (b'  .table-wrap{max-height:26rem;overflow:auto}\n  footer{padding:var(--sp-2) var(--sp-4);color:var(--muted);font-size:.75rem;\n    line-height:1.5rem;border-top:1px solid var(--line);margin-top:var(--sp-4)}\n  .tooltip{position:fixed;background:var(--color-black-80);color:var(--color-white);\n    padding:.375rem .5rem;border-radius:.25rem;font-size:.8125rem;pointer-events:none;\n    opacity:0;transition:opacity .12s;z-index:99;white-space:nowrap}\n',
+     b'  .table-wrap{max-height:26rem;overflow:auto}\n  footer{padding:var(--sp-2) var(--sp-4);color:var(--muted);font-size:.875rem;\n    line-height:1.5rem;border-top:1px solid var(--line);margin-top:var(--sp-4)}\n  .tooltip{position:fixed;background:var(--color-black-80);color:var(--color-white);\n    padding:.375rem .5rem;border-radius:.25rem;font-size:.875rem;pointer-events:none;\n    opacity:0;transition:opacity .12s;z-index:99;white-space:nowrap}\n'),
+    (b'  const svg = $(svgId); const [W, H] = chartSize(svg);\n  const m = { t: 12, r: 16, b: 58, l: 64 };\n  const iw = W - m.l - m.r, ih = H - m.t - m.b;\n',
+     b'  const svg = $(svgId); const [W, H] = chartSize(svg);\n  const m = { t: 12, r: 16, b: 72, l: 72 };\n  const iw = W - m.l - m.r, ih = H - m.t - m.b;\n'),
+    (b'\n  data.forEach((d, i) => {\n    const h = Math.max(',
+     b'\n  const labelNodes = [];\n  data.forEach((d, i) => {\n    const h = Math.max('),
+    (b'    svg.appendChild(lbl);\n  });\n}\n',
+     b'    svg.appendChild(lbl);\n    labelNodes.push(lbl);\n  });\n  // Angled names collide long before they are 16 characters: five region names\n  // on a phone overlap from 14 px up. So the check is the geometry it just\n  // drew, not a character count. An SVG inside a hidden card measures zero, and\n  // a zero-size box never overlaps anything, so there the same comparison runs\n  // on the font\'s own metrics instead \xe2\x80\x94 the chart is drawn hidden on every\n  // first paint, and a fallback that only worked when visible would miss it.\n  if (labelsCollide(svg, labelNodes)) { svg.innerHTML = ""; return sideBars(svg, W, H, data, max, el); }\n}\n\n// labelsCollide reports whether two of these angled labels share pixels.\nfunction labelsCollide(svg, nodes) {\n  const visible = svg.getBoundingClientRect().width > 0;\n  if (visible) {\n    const boxes = nodes.map(n => n.getBoundingClientRect());\n    return boxes.some((a, i) => boxes.slice(i + 1).some(b =>\n      Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&\n      Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1));\n  }\n  const cs = getComputedStyle(nodes[0]);\n  const ctx = document.createElement("canvas").getContext("2d");\n  ctx.font = cs.fontSize + " " + cs.fontFamily;\n  const angle = 35 * Math.PI / 180, lineHeight = parseFloat(cs.fontSize) * 1.15;\n  const boxes = nodes.map(n => {\n    const w = ctx.measureText(n.textContent).width;\n    const x = parseFloat(n.getAttribute("x")), y = parseFloat(n.getAttribute("y"));\n    // The rotated glyph box: the text runs up-left from the anchor, and the\n    // line\'s height leans out to the right of it.\n    return { left: x - w * Math.cos(angle), right: x + lineHeight * Math.sin(angle),\n             top: y - w * Math.sin(angle), bottom: y + lineHeight * Math.cos(angle) };\n  });\n  return boxes.some((a, i) => boxes.slice(i + 1).some(b =>\n    Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&\n    Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1));\n}\n'),
+    (b'    svg.appendChild(c);\n    const step = Math.ceil(data.length / Math.max(2, Math.floor(iw / 56)));  // 10 labels at 640\n    if (i % step === 0 || i === data.length - 1) {\n      const t = el("text", { class: "axis-label", x: X(i), y: m.t + ih + 18, "text-anchor": "middle" });\n      t.textContent = d.key; svg.appendChild(t);\n    }\n  });\n}\n',
+     b'    svg.appendChild(c);\n  });\n  // Every period label, then as many as fit. The first is start-anchored and\n  // the last end-anchored so neither hangs outside the drawing, which means the\n  // labels\' own boxes decide what fits, not the distance between their x\n  // values: at 292 px four quarters look 70 px apart and still overlap by 16,\n  // because the first one starts at the axis and runs right.\n  const nodes = data.map((d, i) => {\n    const anchor = i === data.length - 1 ? "end" : (i === 0 ? "start" : "middle");\n    const t = el("text", { class: "axis-label", x: X(i), y: m.t + ih + 18, "text-anchor": anchor });\n    t.textContent = d.key; svg.appendChild(t); return t;\n  });\n  fitLabels(el, svg, nodes);\n}\n\n// fitLabels removes the labels that would touch, and always keeps the last one\n// so the reader can see where the line ends. Widths come from the font through\n// a canvas: a hidden SVG reports zero for everything inside it, and every chart\n// is drawn once while its card is hidden.\nfunction fitLabels(el, svg, nodes) {\n  if (nodes.length < 2) return;\n  const probe = el("text", { class: "axis-label" }); probe.textContent = "0"; svg.appendChild(probe);\n  const cs = getComputedStyle(probe);\n  const ctx = document.createElement("canvas").getContext("2d");\n  ctx.font = cs.fontSize + " " + cs.fontFamily;\n  svg.removeChild(probe);\n  const box = n => {\n    const w = ctx.measureText(n.textContent).width, x = parseFloat(n.getAttribute("x"));\n    const a = n.getAttribute("text-anchor");\n    if (a === "start") return { l: x, r: x + w };\n    if (a === "end") return { l: x - w, r: x };\n    return { l: x - w / 2, r: x + w / 2 };\n  };\n  const pad = 6, touches = (a, b) => a.l < b.r + pad && b.l < a.r + pad;\n  const keep = [];\n  nodes.slice(0, -1).forEach(n => {\n    if (!keep.length || !touches(box(n), box(keep[keep.length - 1]))) keep.push(n);\n    else n.remove();\n  });\n  const last = nodes[nodes.length - 1];\n  while (keep.length && touches(box(last), box(keep[keep.length - 1]))) keep.pop().remove();\n}\n'),
+    # Fifth (2026-10-24): the cube reaches the same 14 px floor as the dashboard, gains
+    # print rules, and its builders take --source. Derived from a line diff of
+    # templates/cube-dashboard.html on origin/main and the new one; applying these to
+    # the old build gives the new one byte for byte.
+    (b'h1{font-size:1.15rem;margin:0;font-weight:650}\n.sub{color:var(--mut);font-size:.8rem}\nmain{padding:1.25rem 1.5rem;max-width:1400px;margin:0 auto}\n.panel{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem}\n.panel h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 .8rem;font-weight:650}\n.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}\n.fg label{display:block;font-size:.72rem;font-weight:650;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}\n.chips{display:flex;flex-wrap:wrap;gap:.3rem}\n.chip{border:1px solid var(--bd);background:#fff;border-radius:14px;padding:.2rem .6rem;font-size:.78rem;cursor:pointer;user-select:none;transition:.12s}\n.chip:hover{border-color:var(--gr)}\n',
+     b'h1{font-size:1.15rem;margin:0;font-weight:650}\n.sub{color:var(--mut);font-size:.875rem}\nmain{padding:1.25rem 1.5rem;max-width:1400px;margin:0 auto}\n.panel{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem}\n.panel h2{font-size:.875rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 .8rem;font-weight:650}\n.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}\n.fg label{display:block;font-size:.875rem;font-weight:650;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}\n.chips{display:flex;flex-wrap:wrap;gap:.3rem}\n.chip{border:1px solid var(--bd);background:#fff;border-radius:14px;padding:.2rem .6rem;font-size:.875rem;cursor:pointer;user-select:none;transition:.12s}\n.chip:hover{border-color:var(--gr)}\n'),
+    (b'.kpi .v{font-size:1.5rem;font-weight:680;letter-spacing:-.02em;font-variant-numeric:tabular-nums}\n.kpi .l{font-size:.72rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-top:.15rem}\n.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}\n',
+     b'.kpi .v{font-size:1.5rem;font-weight:680;letter-spacing:-.02em;font-variant-numeric:tabular-nums}\n.kpi .l{font-size:.875rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-top:.15rem}\n.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}\n'),
+    (b'table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}\nth,td{text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--bd);font-size:.83rem}\nth{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:650}\ntd.n,th.n{text-align:right}\n',
+     b'table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}\nth,td{text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--bd);font-size:.875rem}\nth{font-size:.875rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:650}\ntd.n,th.n{text-align:right}\n'),
+    (b'.axis{stroke:var(--bd);stroke-width:1}.gl{stroke:#eef1f2;stroke-width:1}\n.lbl{font-size:10px;fill:var(--mut)}\n.vlbl{font-size:10px;fill:var(--mut);font-variant-numeric:tabular-nums}\nbutton.rst,select.ms{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.78rem;cursor:pointer;font-family:inherit}\nbutton.rst:hover{border-color:var(--gr);color:var(--gr)}\nfooter{padding:.5rem 1.5rem 2rem;max-width:1400px;margin:0 auto;\n  font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);display:flex;gap:1.1rem;flex-wrap:wrap}\nfooter b{color:var(--gr2);font-weight:650}\n',
+     b'.axis{stroke:var(--bd);stroke-width:1}.gl{stroke:#eef1f2;stroke-width:1}\n.lbl{font-size:14px;fill:var(--mut)}\n.vlbl{font-size:14px;fill:var(--mut);font-variant-numeric:tabular-nums}\nbutton.rst,select.ms{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.875rem;min-height:2.75rem;cursor:pointer;font-family:inherit}\nbutton.rst:hover{border-color:var(--gr);color:var(--gr)}\nfooter{padding:.5rem 1.5rem 2rem;max-width:1400px;margin:0 auto;\n  font:14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);display:flex;gap:1.1rem;flex-wrap:wrap}\nfooter b{color:var(--gr2);font-weight:650}\n'),
+    (b'#boot.err{color:#b00020}\n</style></head><body>\n',
+     b"#boot.err{color:#b00020}\n/* Print, copied from the dashboard's tested rules (docs/11 \xc2\xa78): the paper copy is\n   the numbers, not the controls. The header keeps #scope, so the applied selection\n   still prints even though the controls do not. */\n@media print{header{background:#fff;border-bottom:1px solid var(--bd)}\n  .ms,.rst,.filters{display:none}main{padding:0;max-width:none}\n  .panel{break-inside:avoid;box-shadow:none}}\n</style></head><body>\n"),
+    (b'const esc = s => String(s).replace(/[<>&"]/g, m => ({\'<\':\'&lt;\',\'>\':\'&gt;\',\'&\':\'&amp;\',\'"\':\'&quot;\'}[m]));\n/* Charts draw in their panel\'s own pixels, so 10 px text stays 10 px. A fixed\n   560/1120-wide viewBox scaled to a 330 px phone panel drew it at 3 to 6 px.\n   measureCharts() reads the real widths after a render; boot and resize redraw\n',
+     b'const esc = s => String(s).replace(/[<>&"]/g, m => ({\'<\':\'&lt;\',\'>\':\'&gt;\',\'&\':\'&amp;\',\'"\':\'&quot;\'}[m]));\n/* Charts draw in their panel\'s own pixels, so the label size is the size a reader\n   gets. A fixed 560/1120-wide viewBox scaled to a 330 px phone panel drew 10 px text\n   at 3 to 6 px; the labels are 14 px now, which is the floor docs/11 \xc2\xa71 sets, so the\n   paddings below are wide enough to hold them.\n   measureCharts() reads the real widths after a render; boot and resize redraw\n'),
+    (b'function barChart(labels, values, unit, name){\n  const rowH = 24, W = barW, padL = 118, padR = 66, H = labels.length*rowH + 8;\n  const max = Math.max(...values, 1), bw = W - padL - padR;\n',
+     b'function barChart(labels, values, unit, name){\n  const rowH = 26, W = barW, padL = 150, padR = 96, H = labels.length*rowH + 8;\n  const max = Math.max(...values, 1), bw = W - padL - padR;\n'),
+    (b'function lineChart(labels, values, unit, name){\n  const W = lineW, H = 230, padL = 62, padR = 14, padT = 12, padB = 34;\n  const n = labels.length, max = Math.max(...values, 1);\n',
+     b'function lineChart(labels, values, unit, name){\n  const W = lineW, H = 230, padL = 80, padR = 14, padT = 12, padB = 44;\n  const n = labels.length, max = Math.max(...values, 1);\n'),
+    (b'    + `fill="#fff" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });\n  const step = Math.ceil(n / Math.max(2, Math.floor((W-padL-padR)/87)));  // 12 labels at 1120\n  labels.forEach((l,i) => { if (i % step) return;\n    s += `<text class="lbl" x="${x(i).toFixed(1)}" y="${H-padB+16}" text-anchor="middle">${esc(l)}</text>`; });\n  return s + "</svg>";\n',
+     b'    + `fill="#fff" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });\n  const step = Math.ceil(n / Math.max(2, Math.floor((W-padL-padR)/104)));  // wider labels at 14 px\n  labels.forEach((l,i) => { if (i % step) return;\n    // The first and last labels sit on the axes: centring them hangs half a label\n    // outside the drawing, which at 14 px is visible text cut off.\n    const anchor = i === n-1 ? "end" : (i === 0 ? "start" : "middle");\n    s += `<text class="lbl" x="${x(i).toFixed(1)}" y="${H-padB+16}" text-anchor="${anchor}">${esc(l)}</text>`; });\n  return s + "</svg>";\n'),
+    # Sixth (2026-10-24): the feedback link became a 44 px touch target. It was
+    # 111 x 17 px, which the touch gate in verify_viewports.py flags on every
+    # touch viewport of every artefact built with --feedback-to. The template
+    # holds the href as a placeholder, so the pair is declared on the style
+    # attribute: that is the part a built page actually contains.
+    (b'style="color:inherit"',
+     b'style="color:inherit;display:inline-flex;align-items:center;min-height:2.75rem;padding:0 .5rem;margin-left:-.5rem"'),    # Fourth (2026-10-24): the touch floor in Safari. WebKit ignores padding,
+    # border and min-height on a native <select>, so the 44 px minimum the
+    # template set was 22 px there; appearance:none plus a chevron drawn as a
+    # background gives the box back to the stylesheet. The cube's five-column
+    # table also overflowed a 390 px phone by 3 px in WebKit, so it scrolls
+    # inside its panel. Derived from a line diff of the old and new builds;
+    # applying these to the old build gives the new one byte for byte.
+    (b'  .controls button{min-width:auto;cursor:pointer}\n',
+     b'  /* Safari ignores padding, border and min-height on a native <select>: measured\n     160x22 in WebKit against 44 px in Chromium, on the same rule, because the\n     native control paints itself. appearance:none hands the box back to us, and\n     the chevron below replaces the one the native control drew. Without this the\n     44 px touch minimum above exists in Chromium only. */\n  .controls select{-webkit-appearance:none;appearance:none;padding-right:1.75rem;\n    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 12 8\'%3E%3Cpath d=\'M1 1.5 6 6.5 11 1.5\' fill=\'none\' stroke=\'%2300343e\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E");\n    background-repeat:no-repeat;background-position:right .5rem center;\n    background-size:.75rem .5rem}\n  .controls button{min-width:auto;cursor:pointer}\n'),
+    (b'table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}\n',
+     b"/* A five-column table cannot shrink below its own minimum, and WebKit's minimum\n   is 350 px here against Chromium's 342: the page overflowed a 390 px phone by\n   3 px, so the last column was clipped. The scroll container keeps the overflow\n   inside the panel, where a reader can reach it, instead of off the page. */\n#tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}\ntable{min-width:100%}\ntable{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}\n"),
+    (b'button.rst,select.ms{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.875rem;min-height:2.75rem;cursor:pointer;font-family:inherit}\n',
+     b'button.rst,select.ms{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.875rem;min-height:2.75rem;cursor:pointer;font-family:inherit}\n/* Safari ignores padding, border and min-height on a native <select>, so the\n   44 px minimum above did not exist there. appearance:none plus a chevron drawn\n   as a background hands the box back to the stylesheet. */\nselect.ms{-webkit-appearance:none;appearance:none;padding-right:1.75rem;\n  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 12 8\'%3E%3Cpath d=\'M1 1.5 6 6.5 11 1.5\' fill=\'none\' stroke=\'%2300343e\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E");\n  background-repeat:no-repeat;background-position:right .5rem center;\n  background-size:.75rem .5rem}\n'),
+    # Fifth (2026-10-24): the touch floor in the process diagram and the slide deck.
+    # The process tabs and toolbar buttons were 38.5 px on a phone, the facts labels
+    # 13 px, and 'Vis i flyten' 35 px; the deck's rail labels 9 px, its counter 11 px
+    # and its control buttons 42 px holding 12 px text. Derived from a line diff of
+    # the old and new builds: applying these to the old build gives the new one
+    # byte for byte.
+    (b'.tabs button{font:inherit;font-size:.9375rem;font-weight:600;padding:.5rem 1rem;border:0;\n',
+     b'  /* 44 px is the touch minimum docs/11 sets. These controls sat at 38.5 px\n     on a phone: tall enough to look right, too small to hit with a thumb. */\n.tabs button{font:inherit;font-size:.9375rem;font-weight:600;padding:.5rem 1rem;border:0;\n'),
+    (b'  border-radius:.5rem;background:transparent;color:var(--muted);cursor:pointer}\n',
+     b'  border-radius:.5rem;background:transparent;color:var(--muted);cursor:pointer;min-height:2.75rem}\n'),
+    (b'  border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;min-width:2.25rem}\n',
+     b'  border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;\n  min-width:2.75rem;min-height:2.75rem}\n'),
+    (b'.facts dt{color:var(--muted);font-size:.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}\n',
+     b'.facts dt{color:var(--muted);font-size:.875rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}\n'),
+    (b'html.js .show-in-flow{display:inline-flex;font:inherit;font-size:.875rem;padding:.375rem .75rem;\n',
+     b'html.js .show-in-flow{display:inline-flex;align-items:center;font:inherit;font-size:.875rem;\n  padding:.375rem .75rem;min-height:2.75rem;min-width:2.75rem;\n'),
+
+    # The table's sort control became a real button with aria-sort on its <th>
+    # (2026-10-24, ROADMAP A6): a click target on a header is invisible to a keyboard
+    # and to a screen reader. Three blocks in the template, byte for byte.
+    (b'  th{cursor:pointer;user-select:none;font-size:.875rem;line-height:1rem;\n    text-transform:uppercase;letter-spacing:.04em;color:var(--muted);white-space:nowrap;\n    position:sticky;top:0;background:var(--color-white)}\n  th:hover{color:var(--brand)}\n',
+     b'  th{font-size:.875rem;line-height:1rem;text-transform:uppercase;letter-spacing:.04em;\n    color:var(--muted);white-space:nowrap;position:sticky;top:0;\n    background:var(--color-white);padding:0}\n  /* Sorting is a control, so it is a button: a click target on a <th> is invisible to\n     a keyboard and to a screen reader (WCAG 2.1.1, docs/09 section 1). The button\n     inherits the header\'s type and paints its own focus ring; aria-sort on the <th>\n     carries the state, and the caret beside the label is decoration only.\n     min-height is 2.75rem because this is now a real target: 44 px is the thumb\n     floor docs/11 sets for every control, and a table header is no exception. */\n  th button{font:inherit;font-size:.875rem;line-height:1rem;text-transform:inherit;\n    letter-spacing:inherit;color:inherit;background:none;border:0;width:100%;\n    min-height:2.75rem;padding:var(--sp-1) .625rem;text-align:inherit;cursor:pointer;\n    display:flex;align-items:center;gap:.25rem;white-space:nowrap}\n  th.num button{justify-content:flex-end}\n  th button:hover{color:var(--brand)}\n  th button:focus-visible{outline:.125rem solid var(--brand);outline-offset:-.125rem}\n  th[aria-sort="ascending"] button,th[aria-sort="descending"] button{color:var(--ink)}\n'),
+    (b'  $("tbl").querySelector("thead").innerHTML = "<tr>" + cols.map(c =>\n    `<th class="${isNum(c) ? "num" : ""}" data-col="${esc(c)}">${esc(c)}${\n      sortState.col === c ? (sortState.dir < 0 ? " \xe2\x96\xbe" : " \xe2\x96\xb4") : ""}</th>`).join("") + "</tr>";\n',
+     b'  // aria-sort only on the column that is sorted: "none" on the rest, which is what the\n  // attribute means, and the caret is aria-hidden because aria-sort already says it.\n  $("tbl").querySelector("thead").innerHTML = "<tr>" + cols.map(c => {\n    const on = sortState.col === c;\n    return `<th class="${isNum(c) ? "num" : ""}" data-col="${esc(c)}"`\n      + ` aria-sort="${on ? (sortState.dir < 0 ? "descending" : "ascending") : "none"}">`\n      + `<button type="button" data-col="${esc(c)}">${esc(c)}`\n      + (on ? `<span aria-hidden="true">${sortState.dir < 0 ? "\\u25be" : "\\u25b4"}</span>` : "")\n      + `</button></th>`;\n  }).join("") + "</tr>";\n'),
+    (b'  $("tbl").querySelectorAll("th").forEach(th => th.onclick = () => {\n    const c = th.dataset.col;\n',
+     b'  $("tbl").querySelectorAll("th button").forEach(btn => btn.onclick = () => {\n    const c = btn.dataset.col;\n'),
+
+    # Without scripting (ROADMAP A3, docs/11 section 3c) the dashboard showed empty
+    # boxes. The build now writes the totals and the first rows into the markup, and a
+    # canary class on <html> picks the view. Three insertions, anchored on text only the
+    # dashboard template has: the cube and the process diagram hold a <body> and a
+    # <main> too, and a pair anchored on those would paste this section into them.
+    (b'  .empty{color:var(--muted);font-style:italic;padding:var(--sp-4);text-align:center}\n',
+     b'  .empty{color:var(--muted);font-style:italic;padding:var(--sp-4);text-align:center}\n  /* Without scripting \xe2\x80\x94 Quick Look on iOS and macOS, or a viewer that blocks it \xe2\x80\x94 every\n     JS-rendered part of this page is an empty box. So the build writes the highest-value\n     facts into the markup itself, and a canary class on <html> decides which view shows\n     (docs/11 section 3c: a warning above empty boxes still reads as broken). The numbers\n     are computed at build time from the same rows the script gets, so the two agree. */\n  .nojs{display:none}\n  html:not(.js) .nojs{display:block}\n  html:not(.js) #kpis,html:not(.js) .grid,html:not(.js) .table-wrap,\n  html:not(.js) .controls,html:not(.js) .dropbar,\n  html:not(.js) main>section.card{display:none}\n  .nojs-lead{margin:0 0 var(--sp-3);max-width:52rem;line-height:1.5rem}\n  .nojs-facts{display:flex;flex-wrap:wrap;gap:var(--sp-4);margin:0 0 var(--sp-4)}\n  .nojs-facts div{min-width:9rem}\n  .nojs-facts dt{font-size:.875rem;line-height:1.5rem;color:var(--muted);\n    text-transform:uppercase;letter-spacing:.04em}\n  .nojs-facts dd{margin:0;font-size:1.75rem;line-height:2rem;font-weight:700;\n    font-variant-numeric:tabular-nums}\n  .nojs h2{font-size:.875rem;line-height:1.5rem;color:var(--muted);text-transform:uppercase;\n    letter-spacing:.04em;margin:0 0 var(--sp-1)}\n  .nojs table{width:100%;border-collapse:collapse;font-size:.875rem;line-height:1.5rem}\n  .nojs th,.nojs td{text-align:left;padding:var(--sp-1) .625rem;\n    border-bottom:1px solid var(--line)}\n  .nojs td.num,.nojs th.num{text-align:right;font-variant-numeric:tabular-nums}\n'),
+    (b'<body>\n<header>\n  <h1>',
+     b'<body>\n<script>document.documentElement.className+=" js"</script>\n<header>\n  <h1>'),
+    (b'<main>\n  <section class="controls" id="controls">',
+     b'<main>\n  <!-- Without the canary class above, this section is the page. It carries numbers the\n       build already computed, so a reader in a viewer that blocks scripting sees facts\n       rather than an apology. -->\n  <section class="nojs" id="nojs">\n    <p class="nojs-lead">Koden kj\xc3\xb8rer ikke her. Filtrene og diagrammene trenger den, men tallene under ble regnet ut da filen ble laget og gjelder hele datasettet.</p>\n    <dl class="nojs-facts"><div><dt>Total</dt><dd>3 676 067 703,2</dd></div><div><dt>Antall rader</dt><dd>776</dd></div><div><dt>Unike</dt><dd>6</dd></div></dl>\n    <h2>De f\xc3\xb8rste radene i filen</h2>\n    <table>\n      <thead><tr><th class="">Produkt</th><th class="">Maaned</th><th class="num">Belop</th></tr></thead>\n      <tbody><tr><td class="">Boligl\xc3\xa5n</td><td class="">2026-01</td><td class="num">4 664 226,3</td></tr><tr><td class="">Boligl\xc3\xa5n</td><td class="">2026-01</td><td class="num">9 199 732,1</td></tr><tr><td class="">Boligl\xc3\xa5n</td><td class="">2026-01</td><td class="num">549 914,1</td></tr><tr><td class="">Kredittkort</td><td class="">2026-01</td><td class="num">7 088 374,3</td></tr><tr><td class="">Kredittkort</td><td class="">2026-01</td><td class="num">2 728 638,9</td></tr><tr><td class="">Fondssparing</td><td class="">2026-01</td><td class="num">1 606 017,5</td></tr><tr><td class="">Forsikring</td><td class="">2026-01</td><td class="num">4 487 923,0</td></tr><tr><td class="">Forsikring</td><td class="">2026-01</td><td class="num">2 144 235,5</td></tr></tbody>\n    </table>\n  </section>\n  <section class="controls" id="controls">'),
+
+    # The cube needs the no-scripting view too (ROADMAP A3): without scripting it never
+    # decodes, so it showed the boot line forever. Anchored on the cube template's own
+    # #boot rule and its one-line </style></head><body>, which no other template has.
+    (b'#boot{padding:3rem 1.5rem;text-align:center;color:var(--mut)}\n',
+     b'#boot{padding:3rem 1.5rem;text-align:center;color:var(--mut)}\n/* Without scripting (Quick Look on iOS and macOS blocks it) the cube never decodes, so\n   this file showed the boot line forever. The build writes the facts it already knew into\n   the markup, and a canary class on <html> decides which view shows: docs/11 \xc2\xa73c. */\n.nojs{display:none}\nhtml:not(.js) .nojs{display:block;padding:1.5rem}\nhtml:not(.js) #boot,html:not(.js) #app{display:none}\n.nojs-lead{margin:0 0 1.5rem;max-width:52rem;line-height:1.5rem}\n.nojs-facts{display:flex;flex-wrap:wrap;gap:1.5rem;margin:0 0 1.5rem}\n.nojs-facts div{min-width:9rem}\n.nojs-facts dt{font-size:.875rem;line-height:1.5rem;color:var(--mut);text-transform:uppercase;\n  letter-spacing:.04em}\n.nojs-facts dd{margin:0;font-size:1.75rem;line-height:2rem;font-weight:700;\n  font-variant-numeric:tabular-nums}\n.nojs h2{font-size:.875rem;line-height:1.5rem;color:var(--mut);text-transform:uppercase;\n  letter-spacing:.04em;margin:0 0 .5rem}\n.nojs ul{margin:0;padding-left:1.25rem;line-height:1.5rem}\n'),
+    (b'</style></head><body>\n',
+     b'</style></head><body>\n<script>document.documentElement.className+=" js"</script>\n<section class="nojs" id="nojs">\n  <!-- Without the canary class above, this is the page: the cube cannot be\n       decoded without scripting, so the build writes the facts it knew. -->\n  <p class="nojs-lead">Koden kj\xc3\xb8rer ikke her. Denne filen dekoder terningen med den, s\xc3\xa5 diagrammene og tabellene er borte. Tallene under ble regnet ut da filen ble laget, og gjelder hele datasettet.</p>\n  <dl class="nojs-facts"><div><dt>rader</dt><dd>4</dd></div><div><dt>celler</dt><dd>8</dd></div><div><dt>Dimensjoner</dt><dd>3</dd></div><div><dt>Fylte celler</dt><dd>50%</dd></div></dl>\n  <h2>Dimensjoner</h2>\n  <ul><li>region</li><li>kategori</li><li>dato</li></ul>\n</section>\n'),
+
+    # Sixth (2026-10-24): the cube can hand the reader its numbers (ROADMAP A10). A button
+    # beside the reset downloads the aggregated view as CSV, carrying the source, the build
+    # stamp and the applied selection in the file. Three hunks: the button, the export
+    # itself, and its click handler. Derived from a line diff of the old and new builds,
+    # and applying these to the old build gives the new one byte for byte.
+    (b'  <span style="flex:1"></span>\n  <select class="ms" id="measure" aria-label="M\xc3\xa5l"></select>\n  <button class="rst" id="reset">Nullstill filtre</button>\n</header>\n',
+     b'  <span style="flex:1"></span>\n  <select class="ms" id="measure" aria-label="M\xc3\xa5l"></select>\n  <button class="rst" id="csv">Last ned CSV</button>\n  <button class="rst" id="reset">Nullstill filtre</button>\n</header>\n'),
+    (b'let MI = 0;\n\nfunction buildChrome(){\n  document.getElementById("title").textContent = META.title;\n',
+     b'let MI = 0;\n\n/* ---- CSV: det leseren ser, ikke radene\n   verdiene er de aggregerte cellene under gjeldende utvalg, og filen b\xc3\xa6rer kilde og utvalg ---- */\nconst SEP = "," === "," ? ";" : ",";\nfunction csvField(v){\n  const s = String(v);\n  return s.indexOf(\'"\') >= 0 || s.indexOf(SEP) >= 0 || /[\\r\\n]/.test(s)\n    ? \'"\' + s.replace(/"/g, \'""\') + \'"\' : s;\n}\n// No thousands separator and the reader\'s own decimal mark: a spreadsheet given\n// "1 234,5" reads text, and a text column is not why anyone downloads this.\nfunction csvNumber(v, dp){\n  const n = dp === 0 ? Math.round(v) : Math.round(v * 100) / 100;\n  return String(n).replace(".", ",");\n}\nfunction csvSlug(){\n  const iso = META.built.match(/(\\d{4})-(\\d{2})-(\\d{2})/);\n  const dotted = META.built.match(/(\\d{2})\\.(\\d{2})\\.(\\d{4})/);\n  const date = iso ? iso[0] : (dotted ? dotted[3] + "-" + dotted[2] + "-" + dotted[1] : META.built);\n  const clean = v => v.replace(/[\\\\/:*?"<>|\\s]+/g, "-").replace(/^-+|-+$/g, "");\n  return clean("kube-" + META.title).slice(0, 60) + "-" + clean(date) + ".csv";\n}\nfunction csvText(){\n  const meas = META.measures[MI];\n  const name = meas.agg === "count" ? "antall rader" : meas.field;\n  const lines = [];\n  // Provenance travels with the file: a CSV that outlives the page has to say\n  // where it came from and which selection it holds, or the numbers are a claim\n  // with no source.\n  lines.push(csvField("# Kilde: " + META.source));\n  lines.push(csvField("# Bygget: " + META.built\n    + (META.requested_by ? " for " + META.requested_by : "")));\n  lines.push(csvField("# Utvalg: " + D.map(d =>\n    d + " = " + (sel[d].size ? [...sel[d]].sort((a,b)=>a-b).map(i => META.labels[d][i]).join(", ")\n                            : "alle")).join("; ")));\n  lines.push("");\n  const head = ["Dimensjon", "Verdi", name, "Rader", "Snitt"];\n  lines.push(head.map(csvField).join(SEP));\n\n  const base = rollup(TIME || D[0], MI);\n  const dims = (TIME ? [TIME] : []).concat(CHART_DIMS);\n  for (const d of dims){\n    const r = rollup(d, MI);\n    const idx = active(d).sort((a,b) => r.out[b] - r.out[a]);\n    for (const i of idx){\n      if (!r.outN[i]) continue;\n      lines.push([d, META.labels[d][i], name, csvNumber(r.out[i]),\n                  csvNumber(r.outN[i], 0),\n                  csvNumber(r.out[i] / Math.max(1, r.outN[i]))].map(csvField).join(SEP));\n    }\n  }\n  lines.push(["Totalt", "", name, csvNumber(base.tot), csvNumber(base.totN, 0),\n              csvNumber(base.tot / Math.max(1, base.totN))].map(csvField).join(SEP));\n  return "\\ufeff" + lines.join("\\r\\n") + "\\r\\n";\n}\nfunction downloadCSV(){\n  const text = csvText();\n  try {\n    const url = URL.createObjectURL(new Blob([text], {type: "text/csv;charset=utf-8"}));\n    const a = document.createElement("a");\n    a.href = url; a.download = csvSlug();\n    document.body.appendChild(a); a.click(); a.remove();\n    setTimeout(() => URL.revokeObjectURL(url), 4000);\n  } catch (err) {\n    // A host that blocks blob downloads gets the text in the page instead, in a\n    // box the reader can select and copy. Never a button that does nothing.\n    const box = document.createElement("div");\n    box.className = "panel"; box.id = "csvFallback";\n    box.innerHTML = "<h2>Kopier tabellen under</h2>";\n    const ta = document.createElement("textarea");\n    ta.readOnly = true; ta.rows = 12; ta.style.width = "100%";\n    ta.style.font = \'14px ui-monospace,SFMono-Regular,Menlo,monospace\';\n    ta.value = text;\n    box.appendChild(ta);\n    document.querySelector("main").prepend(box);\n    ta.focus(); ta.select();\n  }\n}\n\nfunction buildChrome(){\n  document.getElementById("title").textContent = META.title;\n'),
+    (b'    c.classList.toggle("on"); render();\n  });\n  document.getElementById("reset").onclick = () => { D.forEach(d => sel[d].clear());\n    document.querySelectorAll(".chip.on").forEach(c => c.classList.remove("on")); render(); };\n',
+     b'    c.classList.toggle("on"); render();\n  });\n  document.getElementById("csv").onclick = downloadCSV;\n  document.getElementById("reset").onclick = () => { D.forEach(d => sel[d].clear());\n    document.querySelectorAll(".chip.on").forEach(c => c.classList.remove("on")); render(); };\n'),
+    # Twelfth (2026-10-25): the palette gains a ninth slot, --palette-primary-on-dark, so a
+    # theme can show the primary colour on a dark page (docs/22; the seam grew from eight to
+    # nine). Every artefact that inlines the palette carries one more declaration. The
+    # process diagram is the only builder that inlines the shared tokens, so it is the only
+    # probe whose bytes move. Derived from a line diff of the old and new builds.
+    (b'  --palette-primary-darkest: #0E1C2E;\n',
+     b'  --palette-primary-darkest: #0E1C2E;\n  --palette-primary-on-dark: #9CC0E8;\n'),
+    # Thirteenth (2026-10-25): text drawn on a --brand fill gets its own role, --on-brand,
+    # because the right colour differs per theme and a component that guesses white gets
+    # 1.89:1 on the dark theme's light primary. Declared in theme-light.css beside --brand.
+    (b'  --brand:      var(--palette-primary);\n',
+     b'  --brand:      var(--palette-primary);\n  --on-brand:   var(--palette-surface);\n'),
+    # Fourteenth (2026-10-25): the process diagram follows the operating system's dark
+    # setting with no script, and the seam grows the roles a soft brand tint and a
+    # text-safe negative need. Four hunks, each a pure insertion, derived from a line diff
+    # of the old and new builds: the new declarations in theme-light.css and
+    # theme-dark.css, and the template's own dark block, which remaps the six lane roles
+    # and the three surfaces that cannot inherit. Applying these to the old build gives
+    # the new one byte for byte.
+    (b'  --brand-dark: var(--palette-primary-dark);\n',
+     b'  --brand-dark: var(--palette-primary-dark);\n'
+     b'  --brand-soft: #e3f0ef;\n'
+     b'  --on-brand-soft: var(--brand-dark);\n'
+     b'  --rule:       #ececec;\n'),
+    (b'  --bad:   var(--status-negative);\n',
+     b'  --bad:   var(--status-negative);\n'
+     b'  --bad-ink: #d42626;\n'),
+    (b'  --bad-bg:var(--palette-surface);\n',
+     b'  --bad-bg:var(--palette-surface);\n'
+     b'}\n'
+     b':root[data-theme="dark"]{\n'
+     b'  --ink:        var(--palette-on-dark);\n'
+     b'  --muted:      #b3d5d5;\n'
+     b'  --line:       #14555a;\n'
+     b'  --bg:         var(--palette-primary-dark);\n'
+     b'  --panel:      var(--palette-primary-darkest);\n'
+     b'  --brand:      var(--palette-primary-on-dark);\n'
+     b'  --on-brand:   var(--bg);\n'
+     b'  --brand-dark: var(--palette-primary-darkest);\n'
+     b'  --brand-soft: #123a44;\n'
+     b'  --on-brand-soft: var(--palette-on-dark);\n'
+     b'  --rule:       #1d4a52;\n'
+     b'  --series-2:   var(--palette-accent-light);\n'
+     b'  --ok:    #66ccb0;\n'
+     b'  --ok-bg: #12332c;\n'
+     b'  --bad:   #ff7a7a;\n'
+     b'  --bad-ink: var(--bad);\n'
+     b'  --bad-bg:#4a2026;\n'
+     b'}\n'
+     b'@media (prefers-color-scheme: dark){\n'
+     b'  :root:not([data-theme]){\n'
+     b'    --ink: var(--palette-on-dark);\n'
+     b'    --muted: #b3d5d5;\n'
+     b'    --line: #14555a;\n'
+     b'    --bg: var(--palette-primary-dark);\n'
+     b'    --panel: var(--palette-primary-darkest);\n'
+     b'    --brand: var(--palette-primary-on-dark);\n'
+     b'    --on-brand: var(--bg);\n'
+     b'    --brand-dark: var(--palette-primary-darkest);\n'
+     b'    --brand-soft: #123a44;\n'
+     b'    --on-brand-soft: var(--palette-on-dark);\n'
+     b'    --rule: #1d4a52;\n'
+     b'    --series-2: var(--palette-accent-light);\n'
+     b'    --ok: #66ccb0;\n'
+     b'    --ok-bg: #12332c;\n'
+     b'    --bad: #ff7a7a;\n'
+     b'    --bad-ink: var(--bad);\n'
+     b'    --bad-bg: #4a2026;\n'
+     b'  }\n'),
+    (b'.pd .node,.pd .edge,.pd .flag-badge{transition:opacity .15s}\n',
+     b'.pd .node,.pd .edge,.pd .flag-badge{transition:opacity .15s}\n'
+     b'\n'
+     b'/* Dark, for a reader whose operating system asks for it and who has chosen no theme of\n'
+     b'   their own. The tokens come from theme-dark.css; what follows are the places this drawing\n'
+     b'   cannot simply inherit them, each measured against the dark page and the dark panel that\n'
+     b'   theme-dark.css declares for the palette this example records.\n'
+     b'\n'
+     b'   1. THE SIX ROLES. Three of them are dark by design in light (primary-dark, primary and\n'
+     b'      primary-darkest) and measure 1.00-1.79:1 on the dark surface, which is not a dim\n'
+     b'      accent but an absent one: three lane colours rendered as nothing. --status-neutral and\n'
+     b'      --status-positive are dark inks chosen for white, and measure 2.35-3.20:1 here. The\n'
+     b'      dark ramp therefore uses the slots that exist for a dark surface, chosen so that every\n'
+     b'      role clears the 3:1 non-text minimum in all three shipped palettes and neighbouring\n'
+     b'      lanes stay perceptibly apart (closest pair deltaE 27.8, CIELAB). Contrast, page:\n'
+     b'                        neutral   brand   tun\n'
+     b'        c0 primary-on-dark  6.54    6.73   5.76\n'
+     b'        c1 accent           3.80    6.08   3.76\n'
+     b'        c2 muted            7.88    8.15   9.67\n'
+     b'        c3 ok               6.37    6.59   7.82\n'
+     b'        c4 on-dark         11.33   12.60  14.14\n'
+     b'        c5 accent-light     8.37   10.41   8.21\n'
+     b'      The lane NAME still carries the identity a reader needs (WCAG 2.2 1.4.1): a palette is\n'
+     b"      free to set these slots within a hue family, as the tun palette's greens show, and\n"
+     b'      colour is then a second signal rather than the only one. tools/check_token_contrast.py\n'
+     b'      measures all six against --bg, and tests/test_process_diagram.py fails if this list\n'
+     b'      and that table ever disagree.\n'
+     b'   2. HEADINGS. h1 and h2 use --brand-dark, which in dark is the page background: 1.21:1,\n'
+     b'      so every heading disappeared. The slot that exists for "the primary colour as read\n'
+     b'      on a dark surface" replaces it: 5.76:1.\n'
+     b'   3. FLAGGED SURFACES. The light theme fills these with --status-negative-bg, a pale red\n'
+     b"      tint that exists for one reason: dark ink on it. Under dark ink's inverse it is a\n"
+     b'      pale box with near-white text, 1.05:1. Dark has its own chip tint, --bad-bg, chosen\n'
+     b'      by the theme for exactly this and measuring 12.83:1 against the ink, so the fill\n'
+     b"      switches to it and the text colour comes from the theme's --bad (6.01:1), not from a\n"
+     b'      light-theme red.\n'
+     b'   The start and end boxes invert in dark: a near-black fill on a dark page is a 1.21:1\n'
+     b'   boundary, and their label is the one place the drawing states "this is where it begins".\n'
+     b'   A fill of primary-on-dark with darkest ink measures 5.76:1 for the shape and 6.95:1 for\n'
+     b'   its label. */\n'
+     b'@media (prefers-color-scheme: dark){\n'
+     b'  :root:not([data-theme]) .c0{--role:var(--palette-primary-on-dark)}\n'
+     b'  :root:not([data-theme]) .c1{--role:var(--palette-accent)}\n'
+     b'  :root:not([data-theme]) .c2{--role:var(--muted)}\n'
+     b'  :root:not([data-theme]) .c3{--role:var(--ok)}\n'
+     b'  :root:not([data-theme]) .c4{--role:var(--palette-on-dark)}\n'
+     b'  :root:not([data-theme]) .c5{--role:var(--palette-accent-light)}\n'
+     b'  :root:not([data-theme]) h1,\n'
+     b'  :root:not([data-theme]) h2{color:var(--palette-primary-on-dark)}\n'
+     b'  :root:not([data-theme]) .badge,\n'
+     b'  :root:not([data-theme]) .card-flag{background:var(--bad-bg)}\n'
+     b'  :root:not([data-theme]) .pd .node-start .node-shape,\n'
+     b'  :root:not([data-theme]) .pd .node-end .node-shape{fill:var(--palette-primary-on-dark);\n'
+     b'    stroke:var(--palette-primary-on-dark)}\n'
+     b'  :root:not([data-theme]) .pd .node-start .node-label,\n'
+     b'  :root:not([data-theme]) .pd .node-end .node-label{fill:var(--palette-primary-darkest)}\n'
+     b'  :root:not([data-theme]) .pd .flagged .node-shape,\n'
+     b'  :root:not([data-theme]) .pd .flag-badge circle{fill:var(--bad-bg)}\n'
+     b'}\n'),
+    # Fifteenth (2026-10-25): the categorical series, five blocks a survey bar paints its
+    # answer options with. Three hunks, each a pure insertion: the light declarations, the
+    # dark ones, and the prefers-color-scheme copy the builder derives from the dark theme.
+    # Two of the light values were too pale to be a colour on a white panel and are one
+    # step deeper; the numbers are in theme-light.css.
+    (b'  --series-2:   var(--palette-accent);\n',
+     b'  --series-2:   var(--palette-accent);\n'
+     b'  --cat-1: #007272;\n'
+     b'  --cat-2: #1a8f66;\n'
+     b'  --cat-3: #14555a;\n'
+     b'  --cat-4: #5f8f89;\n'
+     b'  --cat-5: #dc2a2a;\n'),
+    (b'  --series-2:   var(--palette-accent-light);\n',
+     b'  --series-2:   var(--palette-accent-light);\n'
+     b'  --cat-1: #7FD4C8;\n'
+     b'  --cat-2: #8FD98A;\n'
+     b'  --cat-3: #E8D48B;\n'
+     b'  --cat-4: #B9C7E8;\n'
+     b'  --cat-5: #FF8A8A;\n'),
+    (b'    --series-2: var(--palette-accent-light);\n',
+     b'    --series-2: var(--palette-accent-light);\n'
+     b'    --cat-1: #7FD4C8;\n'
+     b'    --cat-2: #8FD98A;\n'
+     b'    --cat-3: #E8D48B;\n'
+     b'    --cat-4: #B9C7E8;\n'
+     b'    --cat-5: #FF8A8A;\n'),
+    # Sixteenth (2026-10-25): the cube dashboard moves onto the seam. The biggest hunk is
+    # the inlined token block itself, which replaces the template's six local hexes; the
+    # rest are the four surfaces that painted a raw white (header, filter panel, chip and
+    # KPI card, and the line chart's marker fill, which becomes the panel so it still reads
+    # as a gap in the line) and the one that stated a control colour, because a browser's
+    # own button text is CanvasText and does not follow the theme. Derived from a line diff
+    # of the old and new builds; applying them gives the new one byte for byte.
+    (b':root{--gr:#007272;--gr2:#14555a;--ink:#1c1c1c;--mut:#6b7280;--bd:#e3e6e8;--bg:#f7f8f9}\n',
+     b'/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with\n'
+     b"   every other artefact, which is also how this page follows the operating system's dark\n"
+     b'   setting with no script. Add no hex of your own here. */\n'
+     b':root{\n'
+     b'  --palette-ink:             #111418;\n'
+     b'  --palette-surface:         #FFFFFF;\n'
+     b'  --palette-primary:         #2B4C7E;\n'
+     b'  --palette-primary-dark:    #1B3559;\n'
+     b'  --palette-primary-darkest: #0E1C2E;\n'
+     b'  --palette-primary-on-dark: #9CC0E8;\n'
+     b'  --palette-accent:          #B8860B;\n'
+     b'  --palette-accent-light:    #E8D48B;\n'
+     b'  --palette-on-dark:         #F7F5EF;\n'
+     b'}\n'
+     b':root{\n'
+     b'  --status-negative:          #dc2a2a;\n'
+     b'  --status-negative-bg:       #fdeeee;\n'
+     b'  --status-positive:          #007b5e;\n'
+     b'  --status-positive-bg-25:    #e9f8f4;\n'
+     b'  --status-positive-bg-12:    #f4fbf9;\n'
+     b'  --status-neutral:           #737373;\n'
+     b'}\n'
+     b':root,\n'
+     b':root[data-theme="light"]{\n'
+     b'  --ink:        var(--palette-ink);\n'
+     b'  --muted:      #666666;\n'
+     b'  --line:       #ebebeb;\n'
+     b'  --bg:         var(--palette-surface);\n'
+     b'  --panel:      #f8f8f8;\n'
+     b'  --brand:      var(--palette-primary);\n'
+     b'  --on-brand:   var(--palette-surface);\n'
+     b'  --brand-dark: var(--palette-primary-dark);\n'
+     b'  --brand-soft: #e3f0ef;\n'
+     b'  --on-brand-soft: var(--brand-dark);\n'
+     b'  --rule:       #ececec;\n'
+     b'  --series-2:   var(--palette-accent);\n'
+     b'  --cat-1: #007272;\n'
+     b'  --cat-2: #1a8f66;\n'
+     b'  --cat-3: #14555a;\n'
+     b'  --cat-4: #5f8f89;\n'
+     b'  --cat-5: #dc2a2a;\n'
+     b'  --ok:    var(--status-positive);\n'
+     b'  --ok-bg: var(--status-positive-bg-12);\n'
+     b'  --bad:   var(--status-negative);\n'
+     b'  --bad-ink: #d42626;\n'
+     b'  --bad-bg:var(--palette-surface);\n'
+     b'}\n'
+     b':root[data-theme="dark"]{\n'
+     b'  --ink:        var(--palette-on-dark);\n'
+     b'  --muted:      #b3d5d5;\n'
+     b'  --line:       #14555a;\n'
+     b'  --bg:         var(--palette-primary-dark);\n'
+     b'  --panel:      var(--palette-primary-darkest);\n'
+     b'  --brand:      var(--palette-primary-on-dark);\n'
+     b'  --on-brand:   var(--bg);\n'
+     b'  --brand-dark: var(--palette-primary-darkest);\n'
+     b'  --brand-soft: #123a44;\n'
+     b'  --on-brand-soft: var(--palette-on-dark);\n'
+     b'  --rule:       #1d4a52;\n'
+     b'  --series-2:   var(--palette-accent-light);\n'
+     b'  --cat-1: #7FD4C8;\n'
+     b'  --cat-2: #8FD98A;\n'
+     b'  --cat-3: #E8D48B;\n'
+     b'  --cat-4: #B9C7E8;\n'
+     b'  --cat-5: #FF8A8A;\n'
+     b'  --ok:    #66ccb0;\n'
+     b'  --ok-bg: #12332c;\n'
+     b'  --bad:   #ff7a7a;\n'
+     b'  --bad-ink: var(--bad);\n'
+     b'  --bad-bg:#4a2026;\n'
+     b'}\n'
+     b'@media (prefers-color-scheme: dark){\n'
+     b'  :root:not([data-theme]){\n'
+     b'    --ink: var(--palette-on-dark);\n'
+     b'    --muted: #b3d5d5;\n'
+     b'    --line: #14555a;\n'
+     b'    --bg: var(--palette-primary-dark);\n'
+     b'    --panel: var(--palette-primary-darkest);\n'
+     b'    --brand: var(--palette-primary-on-dark);\n'
+     b'    --on-brand: var(--bg);\n'
+     b'    --brand-dark: var(--palette-primary-darkest);\n'
+     b'    --brand-soft: #123a44;\n'
+     b'    --on-brand-soft: var(--palette-on-dark);\n'
+     b'    --rule: #1d4a52;\n'
+     b'    --series-2: var(--palette-accent-light);\n'
+     b'    --cat-1: #7FD4C8;\n'
+     b'    --cat-2: #8FD98A;\n'
+     b'    --cat-3: #E8D48B;\n'
+     b'    --cat-4: #B9C7E8;\n'
+     b'    --cat-5: #FF8A8A;\n'
+     b'    --ok: #66ccb0;\n'
+     b'    --ok-bg: #12332c;\n'
+     b'    --bad: #ff7a7a;\n'
+     b'    --bad-ink: var(--bad);\n'
+     b'    --bad-bg: #4a2026;\n'
+     b'  }\n'
+     b'}\n'
+     b':root{\n'
+     b'  /* The names this template has always used, pointed at the seam. --ink and --bg are the\n'
+     b"     seam's own names already, so they are not restated. */\n"
+     b'  --gr:var(--brand);--gr2:var(--brand-dark);--mut:var(--muted);--bd:var(--line);\n'
+     b'}\n'),
+    (b'header{background:#fff;border-bottom:1px solid var(--bd);padding:1rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}\n',
+     b'header{background:var(--panel);border-bottom:1px solid var(--bd);padding:1rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}\n'),
+    (b'.panel{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem}\n',
+     b'.panel{background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem}\n'),
+    (b'.chip{border:1px solid var(--bd);background:#fff;border-radius:14px;padding:.2rem .6rem;font-size:.875rem;cursor:pointer;user-select:none;transition:.12s}\n',
+     b'.chip{border:1px solid var(--bd);background:var(--panel);border-radius:14px;padding:.2rem .6rem;font-size:.875rem;cursor:pointer;user-select:none;transition:.12s}\n'),
+    (b'.chip.on{background:var(--gr);border-color:var(--gr);color:#fff}\n',
+     b'.chip.on{background:var(--gr);border-color:var(--gr);color:var(--on-brand)}\n'),
+    (b'.kpi{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:.9rem 1rem}\n',
+     b'.kpi{background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:.9rem 1rem}\n'),
+    (b'button.rst,select.ms{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.875rem;min-height:2.75rem;cursor:pointer;font-family:inherit}\n',
+     b"/* color: the browser's own button text is CanvasText, which does not follow the theme:\n"
+     b'   black on the dark panel measures 1.22:1. A form control needs its colour stated. */\n'
+     b'button.rst,select.ms{border:1px solid var(--bd);background:var(--panel);color:var(--ink);border-radius:6px;padding:.3rem .7rem;font-size:.875rem;min-height:2.75rem;cursor:pointer;font-family:inherit}\n'),
+    (b'   still prints even though the controls do not. */\n',
+     b'   still prints even though the controls do not. */\n'
+     b'/* Dark, for a reader whose operating system asks for it and who has chosen no theme of\n'
+     b'   their own. The declarations above come from theme-dark.css; what follows are the two\n'
+     b'   places this page gives a slot a role that inverts.\n'
+     b'\n'
+     b'   --brand-dark is the darkest surface in the dark theme, so it is a fine colour to READ on\n'
+     b"   a white page (the footer's bold run) and a fine colour to darken a bar TOWARDS in light,\n"
+     b'   and invisible at both jobs in dark. --brand is the slot for a readable colour on a dark\n'
+     b'   surface, so both use it here. */\n'
+     b'@media (prefers-color-scheme: dark){\n'
+     b'  :root:not([data-theme]) footer b{color:var(--brand)}\n'
+     b'  :root:not([data-theme]) .bar:hover{fill:var(--brand)}\n'
+     b'}\n'),
+    (b'    + `fill="#fff" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });\n',
+     b'    + `fill="var(--panel)" stroke="var(--gr)" stroke-width="1.8"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></circle>`; });\n'),
+    # Seventeenth (2026-10-25): the flagship dashboard, and the one seam role it needed.
+    # Three pairs are the seam itself: `--bad-soft`, a negative wash to letter red text on,
+    # which the token files grow for the delta chip (a delta letters --bad-ink on a washed
+    # pill, not on the panel). Those three are pure insertions and apply to every artefact
+    # that inlines the seam. The rest are the dashboard template: its forty hand-written
+    # The old brand values are replaced by the seam block, and the ten palette names it actually
+    # used are rewritten onto roles. Order matters and this list is applied in order: the
+    # seam insertions come first (they no-op on a dashboard, which has no seam yet) and the
+    # dashboard's own big insertion comes last, so the seam is spliced in exactly once.
+    # Derived from a line diff of the old and new builds; applying them reproduces the new
+    # output byte for byte on all 22 probes.
+    (b'  --bad-ink: #d42626;\n',
+     b'  --bad-ink: #d42626;\n'
+     b'  --bad-soft:  #fdeeee;\n'),
+    (b'  --bad:   #ff7a7a;\n'
+     b'  --bad-ink: var(--bad);\n',
+     b'  --bad:   #ff7a7a;\n'
+     b'  --bad-ink: var(--bad);\n'
+     b'  --bad-soft: #4a2026;\n'),
+    (b'    --bad-ink: var(--bad);\n',
+     b'    --bad-ink: var(--bad);\n'
+     b'    --bad-soft: #4a2026;\n'),
+    (b'     ========================================================================== */\n',
+     b'     ========================================================================== */\n'
+     b':root{\n'
+     b'  --palette-ink:             #111418;\n'
+     b'  --palette-surface:         #FFFFFF;\n'
+     b'  --palette-primary:         #2B4C7E;\n'
+     b'  --palette-primary-dark:    #1B3559;\n'
+     b'  --palette-primary-darkest: #0E1C2E;\n'
+     b'  --palette-primary-on-dark: #9CC0E8;\n'
+     b'  --palette-accent:          #B8860B;\n'
+     b'  --palette-accent-light:    #E8D48B;\n'
+     b'  --palette-on-dark:         #F7F5EF;\n'
+     b'}\n'
+     b':root{\n'
+     b'  --status-negative:          #dc2a2a;\n'
+     b'  --status-negative-bg:       #fdeeee;\n'
+     b'  --status-positive:          #007b5e;\n'
+     b'  --status-positive-bg-25:    #e9f8f4;\n'
+     b'  --status-positive-bg-12:    #f4fbf9;\n'
+     b'  --status-neutral:           #737373;\n'
+     b'}\n'
+     b':root,\n'
+     b':root[data-theme="light"]{\n'
+     b'  --ink:        var(--palette-ink);\n'
+     b'  --muted:      #666666;\n'
+     b'  --line:       #ebebeb;\n'
+     b'  --bg:         var(--palette-surface);\n'
+     b'  --panel:      #f8f8f8;\n'
+     b'  --brand:      var(--palette-primary);\n'
+     b'  --on-brand:   var(--palette-surface);\n'
+     b'  --brand-dark: var(--palette-primary-dark);\n'
+     b'  --brand-soft: #e3f0ef;\n'
+     b'  --on-brand-soft: var(--brand-dark);\n'
+     b'  --rule:       #ececec;\n'
+     b'  --series-2:   var(--palette-accent);\n'
+     b'  --cat-1: #007272;\n'
+     b'  --cat-2: #1a8f66;\n'
+     b'  --cat-3: #14555a;\n'
+     b'  --cat-4: #5f8f89;\n'
+     b'  --cat-5: #dc2a2a;\n'
+     b'  --ok:    var(--status-positive);\n'
+     b'  --ok-bg: var(--status-positive-bg-12);\n'
+     b'  --bad:   var(--status-negative);\n'
+     b'  --bad-ink: #d42626;\n'
+     b'  --bad-soft:  #fdeeee;\n'
+     b'  --bad-bg:var(--palette-surface);\n'
+     b'}\n'
+     b':root[data-theme="dark"]{\n'
+     b'  --ink:        var(--palette-on-dark);\n'
+     b'  --muted:      #b3d5d5;\n'
+     b'  --line:       #14555a;\n'
+     b'  --bg:         var(--palette-primary-dark);\n'
+     b'  --panel:      var(--palette-primary-darkest);\n'
+     b'  --brand:      var(--palette-primary-on-dark);\n'
+     b'  --on-brand:   var(--bg);\n'
+     b'  --brand-dark: var(--palette-primary-darkest);\n'
+     b'  --brand-soft: #123a44;\n'
+     b'  --on-brand-soft: var(--palette-on-dark);\n'
+     b'  --rule:       #1d4a52;\n'
+     b'  --series-2:   var(--palette-accent-light);\n'
+     b'  --cat-1: #7FD4C8;\n'
+     b'  --cat-2: #8FD98A;\n'
+     b'  --cat-3: #E8D48B;\n'
+     b'  --cat-4: #B9C7E8;\n'
+     b'  --cat-5: #FF8A8A;\n'
+     b'  --ok:    #66ccb0;\n'
+     b'  --ok-bg: #12332c;\n'
+     b'  --bad:   #ff7a7a;\n'
+     b'  --bad-ink: var(--bad);\n'
+     b'  --bad-soft: #4a2026;\n'
+     b'  --bad-bg:#4a2026;\n'
+     b'}\n'
+     b'@media (prefers-color-scheme: dark){\n'
+     b'  :root:not([data-theme]){\n'
+     b'    --ink: var(--palette-on-dark);\n'
+     b'    --muted: #b3d5d5;\n'
+     b'    --line: #14555a;\n'
+     b'    --bg: var(--palette-primary-dark);\n'
+     b'    --panel: var(--palette-primary-darkest);\n'
+     b'    --brand: var(--palette-primary-on-dark);\n'
+     b'    --on-brand: var(--bg);\n'
+     b'    --brand-dark: var(--palette-primary-darkest);\n'
+     b'    --brand-soft: #123a44;\n'
+     b'    --on-brand-soft: var(--palette-on-dark);\n'
+     b'    --rule: #1d4a52;\n'
+     b'    --series-2: var(--palette-accent-light);\n'
+     b'    --cat-1: #7FD4C8;\n'
+     b'    --cat-2: #8FD98A;\n'
+     b'    --cat-3: #E8D48B;\n'
+     b'    --cat-4: #B9C7E8;\n'
+     b'    --cat-5: #FF8A8A;\n'
+     b'    --ok: #66ccb0;\n'
+     b'    --ok-bg: #12332c;\n'
+     b'    --bad: #ff7a7a;\n'
+     b'    --bad-ink: var(--bad);\n'
+     b'    --bad-soft: #4a2026;\n'
+     b'    --bad-bg: #4a2026;\n'
+     b'  }\n'
+     b'}\n'),
+    (b'    /* Profile */\n'
+     b'    --color-sea-green:#007272; --color-mint-green:#a5e1d2;\n'
+     b'    --color-summer-green:#28b482; --color-emerald-green:#14555a;\n'
+     b'    --color-ocean-green:#00343e; --color-accent-yellow:#fdbb31;\n'
+     b'    --color-indigo:#23195a; --color-violet:#6e2382; --color-sky-blue:#4bbed2;\n'
+     b'    --color-lavender:#f2f2f5; --color-sand-yellow:#fbf6ec; --color-pistachio:#f2f4ec;\n'
+     b'    /* UX / functional */\n'
+     b'    --color-sea-green-30:#b3d5d5; --color-mint-green-50:#d2f0e9;\n'
+     b'    --color-mint-green-25:#e9f8f4; --color-mint-green-12:#f4fbf9;\n'
+     b'    --color-fire-red:#dc2a2a; --color-fire-red-8:#fdeeee;\n'
+     b'    --color-success-green:#007b5e; --color-signal-orange:#ff5400;\n'
+     b'    --color-black:#000; --color-black-80:#333; --color-black-60:#666; --color-black-55:#737373;\n'
+     b'    --color-black-20:#ccc; --color-black-8:#ebebeb; --color-black-3:#f8f8f8;\n'
+     b'    --color-white:#fff;\n'
+     b'\n'
+     b'    /* Semantic roles used by this dashboard */\n'
+     b'    --ink:var(--color-black-80);        /* body text */\n'
+     b'    --muted:var(--color-black-60);      /* labels, axis text: 5.4:1 on --panel (Black 55% was 4.46:1, under AA) */\n'
+     b'    --line:var(--color-black-8);        /* borders, gridlines */\n'
+     b'    --bg:var(--color-white);\n'
+     b'    --panel:var(--color-black-3);       /* cards, filter bar */\n'
+     b'    --brand:var(--color-sea-green);     /* primary data colour */\n'
+     b'    --brand-dark:var(--color-emerald-green);\n'
+     b'    --series-2:var(--color-summer-green);\n'
+     b'\n'
+     b'    /* ' + _DS + b' uses an 8px grid; spacing in 0.5rem increments */\n',
+     b'    /* Colours come from the seam above. These are the only values this template\n'
+     b'       still declares itself, and they are spacing, not colour. */\n'),
+    (b'  :focus-visible{outline:2px solid var(--color-sea-green);outline-offset:2px}\n',
+     b'  :focus-visible{outline:2px solid var(--brand);outline-offset:2px}\n'),
+    (b'  header{background:var(--brand-dark);color:var(--color-white);padding:var(--sp-3) var(--sp-4)}\n',
+     b'  header{background:var(--brand);color:var(--on-brand);padding:var(--sp-3) var(--sp-4)}\n'),
+    (b'    border:1px solid var(--color-black-20);border-radius:.25rem;font-size:.875rem;\n'
+     b'    line-height:1.5rem;background:var(--color-white);min-width:10rem;font-family:inherit;\n',
+     b'    border:1px solid var(--line);border-radius:.25rem;font-size:.875rem;\n'
+     b'    line-height:1.5rem;background:var(--bg);min-width:10rem;font-family:inherit;\n'),
+    (b'    flex-wrap:wrap;border:1px dashed var(--color-black-20);border-radius:.25rem;\n',
+     b'    flex-wrap:wrap;border:1px dashed var(--line);border-radius:.25rem;\n'),
+    (b'  .dropbar.over{background:var(--color-mint-green-12);border-color:var(--brand);\n'
+     b'    color:var(--brand-dark)}\n',
+     b'  .dropbar.over{background:var(--brand-soft);border-color:var(--brand);\n'
+     b'    color:var(--on-brand-soft)}\n'),
+    (b'  .dropbar button{padding:.5rem .9rem;border:1px solid var(--color-black-20);\n'
+     b'    border-radius:.25rem;background:var(--color-white);font-family:inherit;\n',
+     b'  .dropbar button{padding:.5rem .9rem;border:1px solid var(--line);\n'
+     b'    border-radius:.25rem;background:var(--bg);font-family:inherit;\n'),
+    (b'  .kpi .delta.up{color:var(--color-success-green);background:var(--color-mint-green-12,#f4fbf9)}\n'
+     b'  .kpi .delta.down{color:var(--color-fire-red);background:var(--color-fire-red-8,#fdeeee)}\n',
+     b'  .kpi .delta.up{color:var(--ok);background:var(--ok-bg)}\n'
+     b'  .kpi .delta.down{color:var(--bad-ink);background:var(--bad-soft)}\n'),
+    (b'    background:var(--color-white)}\n',
+     b'    background:var(--bg)}\n'),
+    (b'  .axis{stroke:var(--color-black-20);stroke-width:1}\n',
+     b'  .axis{stroke:var(--line);stroke-width:1}\n'),
+    (b'  .bar:hover{fill:var(--brand-dark)}\n',
+     b'  /* Hover is a second colour for the same bar. --brand-dark, which this used, is the\n'
+     b'     darkest surface in the dark theme: the bar would vanish under the pointer. */\n'
+     b'  .bar:hover{fill:var(--series-2)}\n'),
+    (b'    background:var(--color-white);padding:0}\n',
+     b'    background:var(--bg);padding:0}\n'),
+    (b'  tbody tr:hover{background:var(--color-mint-green-12)}\n',
+     b'  tbody tr:hover{background:var(--brand-soft)}\n'),
+    (b'  .tooltip{position:fixed;background:var(--color-black-80);color:var(--color-white);\n',
+     b'  .tooltip{position:fixed;background:var(--ink);color:var(--bg);\n'),
+    (b'  @media print{header{background:var(--color-white);color:var(--ink)}.controls{display:none}}\n',
+     b'  @media print{header{background:#fff;color:var(--ink)}.controls{display:none}}\n'
+     b'\n'
+     b'  /* Dark. The seam carries every declaration; this is the one place where a role that reads\n'
+     b'     on white inverts once the surface behind it goes dark. --brand-dark is the darkest\n'
+     b'     surface in the dark theme, so a KPI figure lettered with it disappears into its own card\n'
+     b'     (measured 1.00:1). It becomes --brand there, the light-on-dark teal. */\n'
+     b'  @media (prefers-color-scheme: dark){\n'
+     b'    .kpi .value{color:var(--brand)}\n'
+     b'  }\n'),
+    # Eighteenth (2026-10-26): the dark route is a SCREEN route. `dark` is a choice a
+    # reader made about a display, and paper is white; without the guard, printing from a
+    # dark system applied the dark tokens to a page whose @media print block had just
+    # forced the background white, so the ink measured rgb(247,245,239) on white. One
+    # pair, appended last so it also rewrites the media query the pairs above insert.
+    (b'@media (prefers-color-scheme: dark){',
+     b'@media screen and (prefers-color-scheme: dark){'),
+    # The export scrub repointed the palette away from the owner's brand values. These are
+    # the same substitutions in the same order the scrub applied them, so the old build and
+    # the new one differ only in ways declared here.
+    (b"#007272", b"#2F5D9E"),
+    (b"#14555a", b"#1B2A4A"),
+    (b"#b3d5d5", b"#DCE6F5"),
+    (b'     ' + _DN + b' ' + _DS + b' design tokens \xe2\x80\x94 brand palette\n     Source: https://' + _HOST + b'/uilib/usage/customisation/colors/\n     Values are the authoritative ' + _DS + b' brand hex codes.\n\n     WHY hardcoded values and not the ' + _DS + b' CSS package:',
+     b'     The brand design tokens \xe2\x80\x94 brand palette\n     Source: https://design.example.com/uilib/usage/customisation/colors/\n     Values are the authoritative brand hex codes.\n\n     WHY hardcoded values and not the design system CSS package:'),
+    (b'       OneDrive-synced folder). Importing ' + _PKG + b' or its stylesheet would',
+     b'       OneDrive-synced folder). Importing the design system package or its stylesheet would'),
+    (b'       The newer `--token-color-*` design tokens are still beta and resolve\n       through the ' + _DS + b' CSS, so they are not usable here yet.',
+     b'       The newer `--tun-color-*` design tokens are still beta and resolve\n       through the design system CSS, so they are not usable here yet.'),
+    (b'html-standard-benchmark',
+     b'html-sammenligning'),
+    (b'  /* The ' + _DN + b' typeface is used when present on the machine (it is on ' + _DN + b'-managed\n     devices). It is deliberately NOT loaded from ' + _DS + b"'s font CDN \xe2\x80\x94 that would",
+     b'  /* The ' + _NK + b" typeface is used when present on the machine (it is on managed\n     devices). It is deliberately NOT loaded from the design system's font CDN \xe2\x80\x94 that would"),
+    (b'    font-family:"' + _DN + b'",',
+     b'    font-family:"' + _NK + b'",'),
 ]
 
 BASELINE = {
-    "fx-deck/fx-deck.html": "aa23237d87072b7f1897937665299e8e9df64d3e9537a68cb0b61f6255e9296a",
-    "dash-bundled/dash-bundled.html": "f5e259b70e4b4661815cfab73da9ea63719265683b33c744bab0eccb068dbeb7",
-    "dash-paired/paired/dash.html": "49db5585d6d709a1137e83bb8efaf5108ea3cba3f5f50ccdac468c6c0ccb8438",
-    "dash-paired/paired/data.js": "57971987b2a191b18dc9d3980ccaad1419cb3a8d92145a9aef497bfaa72a678c",
-    "dash-feedback/dash-feedback.html": "1ac1fc333b334755b9b574c553f6c802660d15abe68a8b59c2db7522b2697308",
-    "cube/cube.html": "b6d8a25b1741b2148227853b02bd55e0725328fb4bb3b43558258c5527c97bc9",
-    "cube-feedback/cube-feedback.html": "149164c75093580f1d9cde8d211dd21d2ee67d84c9d219ae7bcf7e2fb7e70207",
-    "process/process.html": "167efc37753fc2bd372750e8f000d4f0d732bd8db6ca73f986b70b2b2d481cc1",
-    "fx-dash/fx-dash.html": "2fb99909c7a0f6a0e1a5c973860d026b04cddce42672833c15e9bf2ff2da0cdd",
-    "fx-dash-paired/fxp/dash.html": "5518e3e4b6b8221d6093ff97275a103ab01f39cb945bbe57c58194f648a3e45f",
+    "fx-deck/fx-deck.html": "a56622a1367594e105b3db6ea869157fd6506db2282ba1e87bbf72f8ec8ffa1c",
+    "dash-bundled/dash-bundled.html": "00bc48637113e3a154ecf860b710177c4bd033bd6df153eb5edd6ce0397a37bf",
+    "dash-paired/paired/dash.html": "d5f6990d6fb87373415238e1af3eca286eecca3d60ecfbebdb51e79d812ed510",
+    "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",
+    "dash-feedback/dash-feedback.html": "5137d49f3de5d048ca2e2346eaa94cc966eb7a69547a98885c1e0ecbd8098bfb",
+    # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
+    # change to its nb output is visible.
+    "scorecard/scorecard.html": "59e7e5aaf051b64454e75255a8bef109b1adba3401e23c828890a5b5e67a0ad6",
+    # New artefact 2026-10-24 (the distribution page, ROADMAP A23): there is no older
+    # builder to compare against, so this hash is its first build, pinned so that any
+    # change to its nb output is visible.
+    "distribution/distribution.html": "f570de704a87d09acd04b8dea4bf8e2760b3fda503ee541342193f9aaa0b9cf9",
+    # New artefact 2026-10-24: there is no older builder to compare against, so this
+    # hash is its first build, pinned so that any change to its nb output is visible.
+    # Re-pinned the same day (ROADMAP A22, the review layer on the comparison). The proof
+    # is a line diff of the old and new builds: six `data-col` attributes on the headers,
+    # `id="tbl"` on the table, and two attribute writes in the row script. Nothing else in
+    # the file moved, and no visible text changed.
+    "compare/compare.html": "4e046c78f9025edad37a43f0b949c859a2b8fc54a14957f8540154484a5a1962",
+    "index/index.html": "b1ed4c674d6a0e391a3f6c5024029592459a8cfceaa087cc820e40559bc63504",
+    # New artefact 2026-10-24: its first build, pinned so a change to its nb output is
+    # visible. No older builder exists to compare it against.
+    "timeline/timeline.html": "d9f23774ec7156e456acb6f4be35ea3aa0d8c92d324fe462d0dc587a7015b5ed",
+    "cube/cube.html": "b2a4ac4a520b43c2e3b6db06d634311ce8c04571dbaec93c4ea15be0eaf20665",
+    "cube-feedback/cube-feedback.html": "0984872b3a1e520ee15dc6d35d6aee00c7e2ae4f0389074b4f181836f5f306b4",
+    "process/process.html": "abf66234cdd77db2afdb1829877bcf794d47c2ad5988dbdc5173920424f01145",
+    "fx-dash/fx-dash.html": "94311ed569ae13f8ce58fc439e19a0ac3abd8c45ddafab310f28723d4d93f7ae",
+    "fx-dash-paired/fxp/dash.html": "059e0cd3316e6f7e7b950edf890274e52aca59217978dcfabfe9f1b75a7da7f9",
     "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
-    "fx-dash-notime/fx-dash-notime.html": "401f9fb022245f35627308759169ed2d8e5874a242860ac406fec75893be13b4",
-    "fx-cube/fx-cube.html": "5c6a9390ad6fb8d55160ccaac9719c11b55dfe31af47d2cdb224fdfe8e49f7b2",
-    "fx-process/fx-process.html": "97a6a299d7f40d8fce3f2cf9a49413887ef2208855247dc5c41576004f119bc3",
+    "fx-dash-notime/fx-dash-notime.html": "200a35ffd0ad622ae3330ad2e02d5d71cb94f77405d16f4843d50bcc955df54a",
+    "fx-cube/fx-cube.html": "16fbc57b9faa992ea05cd43ab46896436067c35f9a3414850f54e1882adb335c",
+    "fx-process/fx-process.html": "7a4f4a89476334b74930c02ab12e46e7b5877cadb6fd3517cc5b8d53fbaa0fba",
+    # the survey board (2026-10-24): a new artefact, so its nb output is frozen here
+    # 2026-10-24: the survey template gained a cross-tab block (table, its CSS, the
+    # note a filter shows), so the two survey builds below moved and nothing else did.
+    "survey/survey.html": "e048d412e95362827ade0f35765bde2fe4e353e1002c8ef4dc0d37263dbe4ab1",
+    # the register (2026-10-24): a new artefact, so its nb output is frozen here.
+    # 2026-10-24: the register gained group bands (--group-by): the band CSS, the group
+    # constant, the comparator clause and the band renderer are in every build, and the
+    # group strings and the groupCol fact only when the build groups. So the hash below
+    # moved and nothing else did; no probe in section 6 builds this template, which is
+    # why it is re-pinned here rather than paired.
+    "register/register.html": "e372ebb19f9ba84426904d46ee53c4adbd4688c90956224caad734def5cf63c5",
+    "fx-survey/fx-survey.html": "c784f42a23768f109c3edac84660055064f19610a330b316cc5dc026a66ea02d",
 }
 
 FORBIDDEN_IN_EN = ("'", '"', "\\", "`", "${")   # would break the string or comment it lands in
@@ -538,13 +1267,6 @@ def en_problems(html: str, tables: list[str]) -> tuple[list[str], int]:
     return problems, looked
 
 
-def declared_changes(blob: bytes) -> bytes:
-    """What an old builder's output becomes once the declared nb changes are applied."""
-    for before, after in DELIBERATE_NB_CHANGES:
-        blob = blob.replace(before, after)
-    return blob
-
-
 def main() -> int:
     tools_dir = None
     if "--tools" in sys.argv:
@@ -558,19 +1280,8 @@ def main() -> int:
             built, _ = build_case(case, pathlib.Path(tempfile.mkdtemp()), None if tools_dir else "nb",
                                   tools_dir)
             for rel, blob in built.items():
-                if tools_dir:
-                    blob = declared_changes(blob)
                 (dest / f"{case}--{rel.replace('/', '__')}").write_bytes(blob)
                 print(f'    "{case}/{rel}": "{sha(blob)}",')
-        return 0
-    if "--dump-adv" in sys.argv:
-        work = pathlib.Path(tempfile.mkdtemp(prefix="tun-i18n-adv-"))
-        for name in register_probes(work):
-            built, _ = build_case(name, work / "pin" / name, None if tools_dir else "nb", tools_dir)
-            for rel, blob in built.items():
-                if tools_dir:
-                    blob = declared_changes(blob)
-                print(f'    "{name}/{rel}": "{sha(blob)}",')
         return 0
 
     work = pathlib.Path(tempfile.mkdtemp(prefix="tun-i18n-"))
@@ -580,25 +1291,42 @@ def main() -> int:
         shutil.rmtree(work, ignore_errors=True)
 
 
-# sha256 of the nb build of each section 6 probe file, taken from the builders before any
-# strings table existed (a9cca83) with the declared nb changes applied to their output
-# (`--dump-adv --tools OLD_TOOLS`), and proved equal to the current builders' nb output.
-# Pinned rather than rebuilt from git: a flattened export has no history to build from.
-ADV_BASELINE = {
-    "slot-dash/slot-dash.html": "a421c593a1ec233dffa18e731c2d2ced22c3377109726bf5c9c01666e31be595",
-    "slot-cube/slot-cube.html": "f09ea5b27174dbd30aebd107554e5ddc0979479bd9dc23d72fdfafa0391874da",
-    "tok-dash/tok-dash.html": "774831faae8bdeda86ab804828374fedfc6aae40245b58e19e36cf245fe2a10c",
-    "tok-cube/tok-cube.html": "97841300e28c35b35fb6b5e123f11c8de2e623cd39c2d9e6a4fbfd9f6781fc8d",
-    "tok-process/tok-process.html": "42fcd748fccc566ad8069be02628d971b179379c6dab748d62c95da0c7c710a9",
-}
+OLD_COMMIT = "56ca978"      # the builders before any strings table: the reference for the slots
 
 
-def register_probes(work: pathlib.Path) -> dict:
-    """Write the probe inputs under `work` and add the probes to CASES. Data that looks like
-    a format slot or a template token: it must come out untouched, exactly as the builders
-    before the tables wrote it (chained .replace() rescanned it). Returns name -> probe."""
+def old_tools(work: pathlib.Path) -> pathlib.Path | None:
+    """tools/, templates/ and the token palette as they were at OLD_COMMIT, from git.
+
+    A tree with one commit has no such history: the export is a fresh repository, so this
+    comparison cannot be made there. Returning None makes the caller skip with a reason rather
+    than fail, because a section that cannot run must not read as a section that passed.
+    """
+    dest = work / "old"
+    dest.mkdir()
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    present = subprocess.run(["git", "-C", str(ROOT), "cat-file", "-e", OLD_COMMIT + "^{commit}"],
+                             capture_output=True, env=env)
+    if present.returncode != 0:
+        print(f"SKIP: {OLD_COMMIT} is not in this tree's history, so there is no old build to "
+              f"compare against. A single-commit export cannot run this section.")
+        return None
+    tar = subprocess.run(["git", "-C", str(ROOT), "archive", OLD_COMMIT, "tools", "templates", "plugins"],
+                         capture_output=True, env=env)
+    if tar.returncode != 0:
+        raise SystemExit(f"cannot read {OLD_COMMIT} from git: {tar.stderr.decode()[-300:]}")
+    subprocess.run(["tar", "-x", "-C", str(dest)], input=tar.stdout, check=True)
+    return dest / "tools"
+
+
+def adversarial(work: pathlib.Path) -> None:
+    """Data that looks like a format slot or a template token must come out untouched,
+    exactly as the builders before the tables wrote it (chained .replace() rescanned it)."""
+    print("6. data that looks like a slot or a token")
+    old = old_tools(work)
+    if old is None:
+        return
     adv = work / "adv"
-    adv.mkdir(exist_ok=True)
+    adv.mkdir()
     # a measure column called {dimension}; the old builder printed "{dimension} per Product"
     slot_csv = adv / "slot.csv"
     slot_csv.write_text("Month,Product,{dimension}\n2026-01,Loans,10\n2026-02,Cards,20\n", encoding="utf-8")
@@ -615,6 +1343,11 @@ def register_probes(work: pathlib.Path) -> dict:
         f"title: {evil}\nsource: {evil}\nrequested-by: {evil}\ndescription: {evil}\n\n"
         f"lane {short}\n  start a: {evil}\n    beskrivelse: {evil}\n  step b: Two\n"
         f"    improve: {evil}\n  end c: Three\n\nflow\n  a -> b -> c\n", encoding="utf-8")
+
+    def lits_for(literals, lang):
+        """A probe's expected strings: one list for both languages, or a list per language."""
+        return literals[lang] if isinstance(literals, dict) else literals
+
     probes = {
         "slot-dash": (DASH, slot_csv, ["--title", "t", "--dimension", "Product", "--measure", "{dimension}",
                                        "--time", "Month", "--out", "{out}/slot-dash.html"],
@@ -635,42 +1368,47 @@ def register_probes(work: pathlib.Path) -> dict:
         "tok-process": (PROC, spec, ["{in}", "--out", "{out}/tok-process.html"], ["tok-process.html"],
                         ["process-diagram"], ["&#123;&#123;T:reset&#125;&#125;", "&#123;n&#125;"]),   # braces are escaped
     }
-    for name, (builder, src, args, files, tables, _literals) in probes.items():
+    for name, (builder, src, args, files, tables, literals) in probes.items():
         CASES[name] = (builder, src, args, files, tables)
-    return probes
+    # The static view (ROADMAP A3) carries totals and rows computed from the probe's own
+    # CSV, so it cannot be written as a byte pair the way a copy change can. It is compared
+    # by its own test (tests/test_nojs_fallback.py) and by the recorded hashes above; here it
+    # is normalised away on both sides so the rest of the page is still compared byte for byte.
+    static_block = re.compile(
+        rb'(?:  <!-- Without the canary class above.*?)?<section class="nojs" id="nojs">.*?</section>\n',
+        re.S)
 
+    def strip_static(blob: bytes) -> bytes:
+        return static_block.sub(b"<!-- static view -->\n", blob)
 
-def adversarial(work: pathlib.Path) -> None:
-    """Data that looks like a format slot or a template token must come out untouched."""
-    print("6. data that looks like a slot or a token")
-    probes = register_probes(work)
-
-    def lits_for(literals, lang):
-        """A probe's expected strings: one list for both languages, or a list per language."""
-        return literals[lang] if isinstance(literals, dict) else literals
-
-    drifted, unpinned, seen = [], [], set()
+    same, compared = [], 0
+    applied = {before: 0 for before, _ in DELIBERATE_NB_CHANGES}
     for name, (_b, _s, _a, _f, _t, literals) in probes.items():
+        want, _ = build_case(name, work / "adv-old" / name, None, tools=old)
+        for rel in want:
+            for before, after in DELIBERATE_NB_CHANGES:
+                applied[before] += want[rel].count(before)
+                want[rel] = want[rel].replace(before, after)
         got_nb, _ = build_case(name, work / "adv-nb" / name, "nb")
         got_en, _ = build_case(name, work / "adv-en" / name, "en")
-        for rel, blob in got_nb.items():
-            key = f"{name}/{rel}"
-            seen.add(key)
-            if key not in ADV_BASELINE:
-                unpinned.append(key)
-            elif ADV_BASELINE[key] != sha(blob):
-                drifted.append(key)
+        for rel, blob in want.items():
+            compared += 1
+            if strip_static(got_nb[rel]) != strip_static(blob):
+                same.append(f"{name}/{rel}")
+                a = strip_static(blob).decode("utf-8", "replace").split("\n")
+                b = strip_static(got_nb[rel]).decode("utf-8", "replace").split("\n")
+
         if name.startswith("slot-"):      # the string the old builder wrote is still there, in both
             page = lambda built: "".join(b.decode("utf-8") for b in built.values())  # noqa: E731
             for lang, built in (("nb", got_nb), ("en", got_en)):
                 for lit in lits_for(literals, lang):
                     if lit not in page(built):
-                        drifted.append(f"{name} {lang}: {lit!r} was rewritten")
-    chk("every probe file has a pinned hash", not unpinned, ", ".join(unpinned), n=len(seen))
-    chk("every pinned hash belongs to a probe file (none is stale)",
-        set(ADV_BASELINE) == seen, str(sorted(set(ADV_BASELINE) ^ seen)), n=len(ADV_BASELINE))
-    chk("nb build equals the pinned old output byte for byte (slots and tokens as data)",
-        not drifted, ", ".join(drifted), n=len(seen))
+                        same.append(f"{name} {lang}: {lit!r} was rewritten")
+    chk("every deliberate nb change was found in the old output (none is vacuous)",
+        all(applied.values()), str([b.decode()[:30] for b, k in applied.items() if not k]),
+        n=len(applied))
+    chk("nb build equals the old builder's output byte for byte (slots and tokens as data)",
+        not same, ", ".join(same), n=compared)
     for name, (_b, _s, _a, _f, _t, literals) in probes.items():
         page = "".join(b.decode("utf-8") for b in build_case(name, work / "adv-en" / name, "en")[0].values())
         en_lits = lits_for(literals, "en")

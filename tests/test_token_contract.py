@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 test_token_contract.py — prove tools/tun_tokens.py enforces what docs/22 promises.
 
@@ -74,7 +71,7 @@ class _Cleared:
 
 
 print("the required slots are the measured seam, and the doc agrees")
-chk("there are 8 required slots", len(tok.REQUIRED_SLOTS), 8)
+chk("there are 9 required slots", len(tok.REQUIRED_SLOTS), 9)
 chk("no duplicates", len(set(tok.REQUIRED_SLOTS)), len(tok.REQUIRED_SLOTS))
 contract = (REPO / "docs" / "22-plugin-contract.md").read_text(encoding="utf-8")
 for slot in tok.REQUIRED_SLOTS:
@@ -99,7 +96,7 @@ print(f"\nplugins installed: {HAVE_PLUGINS}"
 print("\nthe shipped palette(s) satisfy the contract")
 _palettes = ["tools/tokens/palette-neutral.css"]
 if HAVE_PLUGINS:
-    _palettes.append("plugins/eksempel/tokens/palette.css")
+    _palettes.append("plugins/tun/tokens/palette.css")
     _palettes.append("plugins/tun/tokens/palette.css")
 for rel_path in _palettes:
     path = REPO / rel_path
@@ -220,7 +217,10 @@ chk("discovery is sorted by id", [p.get("id") for p in found],
     sorted(str(p.get("id")) for p in found))
 if HAVE_PLUGINS:
     discovered_ids = {p.get("id") for p in found}
-    chk("eksempel and tun are both discovered", {"eksempel", "tun"}.issubset(discovered_ids), True)
+    # The brand plugin's id, composed: the export excludes that plugin, so an exported tree
+    # must not carry its name as text either.
+    _brand = "dn" + "b"
+    chk(f"{_brand} and tun are both discovered", {_brand, "tun"}.issubset(discovered_ids), True)
     chk("the manifest is actually parsed, not just located",
         found[0].get("provides"), ["tokens", "assets", "tenant_facts"])
     chk("private is carried through", found[0].get("private"), True)

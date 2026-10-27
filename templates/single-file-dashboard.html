@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="{{T:html_lang}}">
 <head>
 <meta charset="utf-8">
@@ -43,68 +35,77 @@
 -->
 <style>
   /* ==========================================================================
-     Colour tokens, inlined at build time by tools/build_dashboard.py through
-     tools/tun_tokens.py: the active palette (core's neutral palette in
-     tools/tokens/palette-neutral.css, or the one brand plugin that provides
-     tokens), then tools/tokens/status-semantic.css and theme-light.css. Those
-     define the semantic roles used below: --ink, --muted, --line, --bg,
-     --panel, --brand, --brand-dark, --series-2, --ok/--ok-bg, --bad/--bad-bg.
+     The brand design tokens — brand palette
+     Source: https://design.example.com/uilib/usage/customisation/colors/
+     Values are the authoritative brand hex codes.
 
-     WHY inlined values and not a linked stylesheet: this file must stay
-     self-contained (no CDN, works offline, opens from a OneDrive-synced
-     folder). A <link> to a token stylesheet would break that.
+     WHY hardcoded values and not the design system CSS package:
+       This file must stay self-contained (no CDN, works offline, opens from a
+       OneDrive-synced folder). Importing the design system package or its stylesheet would
+       break that. So we inline only the token VALUES we use.
+       The newer `--tun-color-*` design tokens are still beta and resolve
+       through the design system CSS, so they are not usable here yet.
      ========================================================================== */
 {{TOKEN_CSS}}
   :root{
-    /* Template-local colours for roles the palette has no slot for. Plain
-       neutral values chosen here, not taken from any brand. */
-    --border:#ccc;                        /* neutral grey: input and dashed borders */
-    --highlight:#eef2f7;                  /* pale neutral slate: row hover, drop target */
-    --tooltip-bg:var(--palette-ink);
-    --on-brand:var(--palette-on-dark);    /* text on --brand-dark */
-
-    /* Spacing on an 8px grid, in 0.5rem increments */
+    /* Colours come from the seam above. These are the only values this template
+       still declares itself, and they are spacing, not colour. */
     --sp-1:0.5rem; --sp-2:1rem; --sp-3:1.5rem; --sp-4:2rem;
   }
   *{box-sizing:border-box}
   /* Accessibility (docs/09-usability-and-navigation-principles.md §1/§5, WCAG 2.2 2.1.1
      and 2.4.7): a visible focus ring for keyboard users, and reduced motion honoured for
      anyone who has asked their OS for it. Confirmed cheap and safe to add — an
-     unrelated external dashboard has both with no visible downside. */
+     independently built, unrelated dashboard benchmarked in html-sammenligning
+     (2026-09-11) has both with no visible downside. */
   :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.01ms!important;animation-iteration-count:1!important;
       transition-duration:.01ms!important;scroll-behavior:auto!important}
   }
-  /* System font stack only. No web font is loaded: that would add a remote
-     dependency and break offline use. */
+  /* The Eksempel AS typeface is used when present on the machine (it is on managed
+     devices). It is deliberately NOT loaded from the design system's font CDN — that would
+     add a remote dependency and break offline use. Graceful system fallback. */
   body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-family:"Eksempel AS",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
     font-size:1rem;line-height:1.5}
-  header{background:var(--brand-dark);color:var(--on-brand);padding:var(--sp-3) var(--sp-4)}
+  header{background:var(--brand);color:var(--on-brand);padding:var(--sp-3) var(--sp-4)}
   header h1{margin:0;font-size:1.5rem;line-height:2rem;font-weight:500}
   header .meta{opacity:.85;font-size:.875rem;line-height:1.5rem;margin-top:var(--sp-1)}
   main{padding:var(--sp-3) var(--sp-4);max-width:90rem;margin:0 auto}
   .controls{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:flex-end;
     background:var(--panel);padding:var(--sp-2);border-radius:.25rem;margin-bottom:var(--sp-3)}
-  .controls label{display:block;font-size:.75rem;line-height:1rem;text-transform:uppercase;
+  .controls label{display:block;font-size:.875rem;line-height:1rem;text-transform:uppercase;
     letter-spacing:.04em;color:var(--muted);margin-bottom:.25rem}
+  /* 44 px is the touch minimum docs/11 sets, and touch is an equal input
+     method: a control that is fine with a mouse is still a miss with a thumb.
+     The height comes from min-height rather than padding so it holds at every
+     font size the page may be read at. */
   .controls select,.controls input,.controls button{padding:var(--sp-1) .625rem;
-    border:1px solid var(--border);border-radius:.25rem;font-size:.875rem;
+    border:1px solid var(--line);border-radius:.25rem;font-size:.875rem;
     line-height:1.5rem;background:var(--bg);min-width:10rem;font-family:inherit;
-    color:var(--ink)}
+    color:var(--ink);min-height:2.75rem}
+  /* Safari ignores padding, border and min-height on a native <select>: measured
+     160x22 in WebKit against 44 px in Chromium, on the same rule, because the
+     native control paints itself. appearance:none hands the box back to us, and
+     the chevron below replaces the one the native control drew. Without this the
+     44 px touch minimum above exists in Chromium only. */
+  .controls select{-webkit-appearance:none;appearance:none;padding-right:1.75rem;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right .5rem center;
+    background-size:.75rem .5rem}
   .controls button{min-width:auto;cursor:pointer}
   .controls button:hover{border-color:var(--brand);color:var(--brand)}
   .dropbar{display:flex;gap:var(--sp-2);align-items:center;justify-content:space-between;
-    flex-wrap:wrap;border:1px dashed var(--border);border-radius:.25rem;
+    flex-wrap:wrap;border:1px dashed var(--line);border-radius:.25rem;
     padding:.75rem var(--sp-2);margin-bottom:var(--sp-3);font-size:.875rem;
     color:var(--muted);transition:background .15s,border-color .15s}
-  .dropbar.over{background:var(--highlight);border-color:var(--brand);
-    color:var(--brand-dark)}
+  .dropbar.over{background:var(--brand-soft);border-color:var(--brand);
+    color:var(--on-brand-soft)}
   .dropbar strong{color:var(--ink)}
-  .dropbar button{padding:.5rem .9rem;border:1px solid var(--border);
+  .dropbar button{padding:.5rem .9rem;border:1px solid var(--line);
     border-radius:.25rem;background:var(--bg);font-family:inherit;
-    font-size:.875rem;cursor:pointer;color:var(--ink)}
+    font-size:.875rem;cursor:pointer;color:var(--ink);min-height:2.75rem}
   .dropbar button:enabled:hover{border-color:var(--brand);color:var(--brand)}
   .dropbar button:disabled{opacity:.45;cursor:default}
   .linklike{color:var(--brand);text-decoration:underline;cursor:pointer}
@@ -113,11 +114,11 @@
     gap:var(--sp-2);margin-bottom:var(--sp-3)}
   .kpi{min-width:0;background:var(--panel);border-left:.25rem solid var(--brand);
     padding:var(--sp-2);border-radius:.25rem}
-  .kpi .label{font-size:.75rem;line-height:1rem;text-transform:uppercase;
+  .kpi .label{font-size:.875rem;line-height:1rem;text-transform:uppercase;
     letter-spacing:.04em;color:var(--muted)}
   .kpi .value{font-size:2rem;line-height:2.5rem;font-weight:500;
     color:var(--brand-dark);margin-top:.25rem;font-variant-numeric:tabular-nums}
-  /* NOTE (from comparing an unrelated external dashboard): renderKpis() below does not currently
+  /* NOTE (html-sammenligning, 2026-09-11): renderKpis() below does not currently
      emit a .delta element at all — these three rules are dead CSS, not a live a11y bug.
      Kept ready in the icon+text shape already proven in examples/05-theme-toggle-demo/
      (WCAG 2.2 1.4.1 — colour must never be the only signal) so that whoever wires an
@@ -127,16 +128,18 @@
   .kpi .delta{font-size:.875rem;margin-top:.25rem;display:inline-flex;align-items:center;
     gap:.3rem;padding:.1rem .4rem;border-radius:.2rem}
   .kpi .delta.up{color:var(--ok);background:var(--ok-bg)}
-  .kpi .delta.down{color:var(--bad);background:var(--bad-bg)}
+  .kpi .delta.down{color:var(--bad-ink);background:var(--bad-soft)}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(26rem,100%),1fr));gap:var(--sp-3)}
   .card{border:1px solid var(--line);border-radius:.25rem;padding:var(--sp-2);
     background:var(--bg)}
   .card h2{margin:0 0 var(--sp-2);font-size:1rem;line-height:1.5rem;font-weight:500}
   svg{width:100%;height:auto;display:block;overflow:visible}
-  .axis{stroke:var(--border);stroke-width:1}
-  .axis-label{font-size:.6875rem;fill:var(--muted)}
+  .axis{stroke:var(--line);stroke-width:1}
+  .axis-label{font-size:.875rem;fill:var(--muted)}
   .bar{fill:var(--brand);transition:fill .15s}
-  .bar:hover{fill:var(--brand-dark)}
+  /* Hover is a second colour for the same bar. --brand-dark, which this used, is the
+     darkest surface in the dark theme: the bar would vanish under the pointer. */
+  .bar:hover{fill:var(--series-2)}
   .gridline{stroke:var(--line);stroke-width:1}
   .line-path{fill:none;stroke:var(--series-2);stroke-width:2.5;
     stroke-linejoin:round;stroke-linecap:round}
@@ -144,29 +147,86 @@
   table{width:100%;border-collapse:collapse;font-size:.875rem;line-height:1.5rem}
   th,td{text-align:left;padding:var(--sp-1) .625rem;border-bottom:1px solid var(--line);
     max-width:15rem;word-wrap:break-word;overflow-wrap:break-word}
-  th{cursor:pointer;user-select:none;font-size:.75rem;line-height:1rem;
-    text-transform:uppercase;letter-spacing:.04em;color:var(--muted);white-space:nowrap;
-    position:sticky;top:0;background:var(--bg)}
-  th:hover{color:var(--brand)}
+  th{font-size:.875rem;line-height:1rem;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--muted);white-space:nowrap;position:sticky;top:0;
+    background:var(--bg);padding:0}
+  /* Sorting is a control, so it is a button: a click target on a <th> is invisible to
+     a keyboard and to a screen reader (WCAG 2.1.1, docs/09 section 1). The button
+     inherits the header's type and paints its own focus ring; aria-sort on the <th>
+     carries the state, and the caret beside the label is decoration only.
+     min-height is 2.75rem because this is now a real target: 44 px is the thumb
+     floor docs/11 sets for every control, and a table header is no exception. */
+  th button{font:inherit;font-size:.875rem;line-height:1rem;text-transform:inherit;
+    letter-spacing:inherit;color:inherit;background:none;border:0;width:100%;
+    min-height:2.75rem;padding:var(--sp-1) .625rem;text-align:inherit;cursor:pointer;
+    display:flex;align-items:center;gap:.25rem;white-space:nowrap}
+  th.num button{justify-content:flex-end}
+  th button:hover{color:var(--brand)}
+  th button:focus-visible{outline:.125rem solid var(--brand);outline-offset:-.125rem}
+  th[aria-sort="ascending"] button,th[aria-sort="descending"] button{color:var(--ink)}
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-  tbody tr:hover{background:var(--highlight)}
+  tbody tr:hover{background:var(--brand-soft)}
   .table-wrap{max-height:26rem;overflow:auto}
-  footer{padding:var(--sp-2) var(--sp-4);color:var(--muted);font-size:.75rem;
+  footer{padding:var(--sp-2) var(--sp-4);color:var(--muted);font-size:.875rem;
     line-height:1.5rem;border-top:1px solid var(--line);margin-top:var(--sp-4)}
-  .tooltip{position:fixed;background:var(--tooltip-bg);color:var(--on-brand);
-    padding:.375rem .5rem;border-radius:.25rem;font-size:.8125rem;pointer-events:none;
+  .tooltip{position:fixed;background:var(--ink);color:var(--bg);
+    padding:.375rem .5rem;border-radius:.25rem;font-size:.875rem;pointer-events:none;
     opacity:0;transition:opacity .12s;z-index:99;white-space:nowrap}
   .empty{color:var(--muted);font-style:italic;padding:var(--sp-4);text-align:center}
-  @media print{header{background:var(--bg);color:var(--ink)}.controls{display:none}}
+  /* Without scripting — Quick Look on iOS and macOS, or a viewer that blocks it — every
+     JS-rendered part of this page is an empty box. So the build writes the highest-value
+     facts into the markup itself, and a canary class on <html> decides which view shows
+     (docs/11 section 3c: a warning above empty boxes still reads as broken). The numbers
+     are computed at build time from the same rows the script gets, so the two agree. */
+  .nojs{display:none}
+  html:not(.js) .nojs{display:block}
+  html:not(.js) #kpis,html:not(.js) .grid,html:not(.js) .table-wrap,
+  html:not(.js) .controls,html:not(.js) .dropbar,
+  html:not(.js) main>section.card{display:none}
+  .nojs-lead{margin:0 0 var(--sp-3);max-width:52rem;line-height:1.5rem}
+  .nojs-facts{display:flex;flex-wrap:wrap;gap:var(--sp-4);margin:0 0 var(--sp-4)}
+  .nojs-facts div{min-width:9rem}
+  .nojs-facts dt{font-size:.875rem;line-height:1.5rem;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.04em}
+  .nojs-facts dd{margin:0;font-size:1.75rem;line-height:2rem;font-weight:700;
+    font-variant-numeric:tabular-nums}
+  .nojs h2{font-size:.875rem;line-height:1.5rem;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.04em;margin:0 0 var(--sp-1)}
+  .nojs table{width:100%;border-collapse:collapse;font-size:.875rem;line-height:1.5rem}
+  .nojs th,.nojs td{text-align:left;padding:var(--sp-1) .625rem;
+    border-bottom:1px solid var(--line)}
+  .nojs td.num,.nojs th.num{text-align:right;font-variant-numeric:tabular-nums}
+  @media print{header{background:#fff;color:var(--ink)}.controls{display:none}}
+
+  /* Dark. The seam carries every declaration; this is the one place where a role that reads
+     on white inverts once the surface behind it goes dark. --brand-dark is the darkest
+     surface in the dark theme, so a KPI figure lettered with it disappears into its own card
+     (measured 1.00:1). It becomes --brand there, the light-on-dark teal. */
+  @media screen and (prefers-color-scheme: dark){
+    .kpi .value{color:var(--brand)}
+  }
 </style>
 </head>
 <body>
+<script>document.documentElement.className+=" js"</script>
 <header>
   <h1>{{DASHBOARD_TITLE}}</h1>
   <div class="meta" id="meta"></div>
 </header>
 
 <main>
+  <!-- Without the canary class above, this section is the page. It carries numbers the
+       build already computed, so a reader in a viewer that blocks scripting sees facts
+       rather than an apology. -->
+  <section class="nojs" id="nojs">
+    <p class="nojs-lead">{{T:nojs_lead}}</p>
+    <dl class="nojs-facts">{{NOJS_FACTS}}</dl>
+    <h2>{{T:nojs_rows}}</h2>
+    <table>
+      <thead><tr>{{NOJS_HEAD}}</tr></thead>
+      <tbody>{{NOJS_ROWS}}</tbody>
+    </table>
+  </section>
   <section class="controls" id="controls"><!-- filters injected by init() --></section>
   <section class="dropbar" id="dropbar">
     <span><strong>{{T:drop_title}}</strong> {{T:drop_lead}}
@@ -276,7 +336,7 @@ function chartSize(svg) {
 /* ---------- SVG bar chart -------------------------------------------------- */
 function barChart(svgId, data, opts) {
   const svg = $(svgId); const [W, H] = chartSize(svg);
-  const m = { t: 12, r: 16, b: 58, l: 64 };
+  const m = { t: 12, r: 16, b: 72, l: 72 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   svg.innerHTML = "";
   if (!data.length) { svg.innerHTML = `<text x="${W / 2}" y="150" text-anchor="middle" class="axis-label">{{T:no_data}}</text>`; return; }
@@ -300,6 +360,7 @@ function barChart(svgId, data, opts) {
   }
   svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
 
+  const labelNodes = [];
   data.forEach((d, i) => {
     const h = Math.max((d.value / max) * ih, 1);
     const x = m.l + i * bw + bw * 0.15, y = m.t + ih - h;
@@ -312,7 +373,41 @@ function barChart(svgId, data, opts) {
       transform: `rotate(-35 ${m.l + i * bw + bw / 2} ${m.t + ih + 16})` });
     lbl.textContent = String(d.key).length > 16 ? String(d.key).slice(0, 15) + "…" : d.key;
     svg.appendChild(lbl);
+    labelNodes.push(lbl);
   });
+  // Angled names collide long before they are 16 characters: five region names
+  // on a phone overlap from 14 px up. So the check is the geometry it just
+  // drew, not a character count. An SVG inside a hidden card measures zero, and
+  // a zero-size box never overlaps anything, so there the same comparison runs
+  // on the font's own metrics instead — the chart is drawn hidden on every
+  // first paint, and a fallback that only worked when visible would miss it.
+  if (labelsCollide(svg, labelNodes)) { svg.innerHTML = ""; return sideBars(svg, W, H, data, max, el); }
+}
+
+// labelsCollide reports whether two of these angled labels share pixels.
+function labelsCollide(svg, nodes) {
+  const visible = svg.getBoundingClientRect().width > 0;
+  if (visible) {
+    const boxes = nodes.map(n => n.getBoundingClientRect());
+    return boxes.some((a, i) => boxes.slice(i + 1).some(b =>
+      Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+      Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1));
+  }
+  const cs = getComputedStyle(nodes[0]);
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = cs.fontSize + " " + cs.fontFamily;
+  const angle = 35 * Math.PI / 180, lineHeight = parseFloat(cs.fontSize) * 1.15;
+  const boxes = nodes.map(n => {
+    const w = ctx.measureText(n.textContent).width;
+    const x = parseFloat(n.getAttribute("x")), y = parseFloat(n.getAttribute("y"));
+    // The rotated glyph box: the text runs up-left from the anchor, and the
+    // line's height leans out to the right of it.
+    return { left: x - w * Math.cos(angle), right: x + lineHeight * Math.sin(angle),
+             top: y - w * Math.sin(angle), bottom: y + lineHeight * Math.cos(angle) };
+  });
+  return boxes.some((a, i) => boxes.slice(i + 1).some(b =>
+    Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+    Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1));
 }
 
 function sideBars(svg, W, H, data, max, el) {
@@ -388,12 +483,46 @@ function lineChart(svgId, data) {
     c.addEventListener("mousemove", e => showTip(e, `${d.key}: ${fmt(d.value)}`));
     c.addEventListener("mouseleave", hideTip);
     svg.appendChild(c);
-    const step = Math.ceil(data.length / Math.max(2, Math.floor(iw / 56)));  // 10 labels at 640
-    if (i % step === 0 || i === data.length - 1) {
-      const t = el("text", { class: "axis-label", x: X(i), y: m.t + ih + 18, "text-anchor": "middle" });
-      t.textContent = d.key; svg.appendChild(t);
-    }
   });
+  // Every period label, then as many as fit. The first is start-anchored and
+  // the last end-anchored so neither hangs outside the drawing, which means the
+  // labels' own boxes decide what fits, not the distance between their x
+  // values: at 292 px four quarters look 70 px apart and still overlap by 16,
+  // because the first one starts at the axis and runs right.
+  const nodes = data.map((d, i) => {
+    const anchor = i === data.length - 1 ? "end" : (i === 0 ? "start" : "middle");
+    const t = el("text", { class: "axis-label", x: X(i), y: m.t + ih + 18, "text-anchor": anchor });
+    t.textContent = d.key; svg.appendChild(t); return t;
+  });
+  fitLabels(el, svg, nodes);
+}
+
+// fitLabels removes the labels that would touch, and always keeps the last one
+// so the reader can see where the line ends. Widths come from the font through
+// a canvas: a hidden SVG reports zero for everything inside it, and every chart
+// is drawn once while its card is hidden.
+function fitLabels(el, svg, nodes) {
+  if (nodes.length < 2) return;
+  const probe = el("text", { class: "axis-label" }); probe.textContent = "0"; svg.appendChild(probe);
+  const cs = getComputedStyle(probe);
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = cs.fontSize + " " + cs.fontFamily;
+  svg.removeChild(probe);
+  const box = n => {
+    const w = ctx.measureText(n.textContent).width, x = parseFloat(n.getAttribute("x"));
+    const a = n.getAttribute("text-anchor");
+    if (a === "start") return { l: x, r: x + w };
+    if (a === "end") return { l: x - w, r: x };
+    return { l: x - w / 2, r: x + w / 2 };
+  };
+  const pad = 6, touches = (a, b) => a.l < b.r + pad && b.l < a.r + pad;
+  const keep = [];
+  nodes.slice(0, -1).forEach(n => {
+    if (!keep.length || !touches(box(n), box(keep[keep.length - 1]))) keep.push(n);
+    else n.remove();
+  });
+  const last = nodes[nodes.length - 1];
+  while (keep.length && touches(box(last), box(keep[keep.length - 1]))) keep.pop().remove();
 }
 
 /* ---------- KPIs ---------------------------------------------------------- */
@@ -415,9 +544,16 @@ function renderTable(rows) {
   // Numeric if any row has a number there: rows[0] may be empty.
   const numCols = new Set(cols.filter(c => rows.some(r => typeof r[c] === "number")));
   const isNum = c => numCols.has(c);
-  $("tbl").querySelector("thead").innerHTML = "<tr>" + cols.map(c =>
-    `<th class="${isNum(c) ? "num" : ""}" data-col="${esc(c)}">${esc(c)}${
-      sortState.col === c ? (sortState.dir < 0 ? " ▾" : " ▴") : ""}</th>`).join("") + "</tr>";
+  // aria-sort only on the column that is sorted: "none" on the rest, which is what the
+  // attribute means, and the caret is aria-hidden because aria-sort already says it.
+  $("tbl").querySelector("thead").innerHTML = "<tr>" + cols.map(c => {
+    const on = sortState.col === c;
+    return `<th class="${isNum(c) ? "num" : ""}" data-col="${esc(c)}"`
+      + ` aria-sort="${on ? (sortState.dir < 0 ? "descending" : "ascending") : "none"}">`
+      + `<button type="button" data-col="${esc(c)}">${esc(c)}`
+      + (on ? `<span aria-hidden="true">${sortState.dir < 0 ? "\u25be" : "\u25b4"}</span>` : "")
+      + `</button></th>`;
+  }).join("") + "</tr>";
 
   const sorted = [...rows].sort((a, b) => {
     const x = a[sortState.col], y = b[sortState.col];
@@ -430,8 +566,8 @@ function renderTable(rows) {
       typeof r[c] === "number" ? fmt(r[c]) : esc(r[c])}</td>`).join("") + "</tr>").join("");
 
   $("rowcount").textContent = `({{T:showing}} ${Math.min(sorted.length, 500)} {{T:of}} ${rows.length})`;
-  $("tbl").querySelectorAll("th").forEach(th => th.onclick = () => {
-    const c = th.dataset.col;
+  $("tbl").querySelectorAll("th button").forEach(btn => btn.onclick = () => {
+    const c = btn.dataset.col;
     sortState = { col: c, dir: sortState.col === c ? -sortState.dir : -1 };
     renderTable(visibleRows());
   });

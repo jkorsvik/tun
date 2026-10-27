@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete — this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún — tun.community
+    Rows        : {{ROWS_INLINED}} inlined, as a list, one array per row
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence
+  required to view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: a register. A list of rows with a search field, sortable
+  columns and pages. There is no chart, on purpose — sometimes the question is
+  "give me the list", and a list that filters in the page beats a spreadsheet
+  nobody can open.
+
+  What it is NOT: a filtered view of a larger dataset. Every row the builder
+  received is in this file, and every reader with the file can search all of
+  them. If two audiences must see different rows, the split happens before the
+  build and produces two files (AGENTS.md rule 1: the boundary is the folder,
+  not a filter inside the file).
+
+  The static table below is the no-JS view: the first page, drawn by the builder.
+  The script re-renders the same table when a search, a sort or a page changes.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+{{TOKEN_CSS}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.25rem;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+.controls{display:flex;flex-wrap:wrap;gap:.75rem 1rem;align-items:flex-end;
+  background:var(--panel);border:1px solid var(--line);border-radius:.5rem;padding:1rem}
+.controls .field{display:flex;flex-direction:column;gap:.25rem;min-width:12rem}
+.controls .grow{flex:1 1 18rem}
+.controls label{font-size:.875rem;line-height:1.25rem;color:var(--muted);font-weight:600}
+.controls input[type=search],.controls select{font:inherit;font-size:.875rem;
+  min-height:2.75rem;padding:.5rem .625rem;border:1px solid var(--line);border-radius:.25rem;
+  background:var(--panel);color:var(--ink);width:100%}
+.controls select{-webkit-appearance:none;appearance:none;padding-right:2rem;
+  /* WebKit ignores padding and min-height on a native select and draws it 22 px tall. */
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .5rem center;background-size:.75rem .5rem}
+.controls button{font:inherit;font-size:.875rem;font-weight:600;min-height:2.75rem;padding:.5rem 1rem;
+  border:1px solid var(--brand);border-radius:.25rem;background:var(--panel);color:var(--brand);
+  cursor:pointer}
+.controls button:hover{background:var(--brand-soft)}
+.controls button:disabled{color:var(--muted);border-color:var(--line);cursor:default;
+  background:var(--panel)}
+.hint{margin:.5rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(12rem,100%),1fr));
+  gap:.75rem;margin:1rem 0 0;padding:0;list-style:none}
+.kpis li{background:var(--panel);border:1px solid var(--line);border-left:.25rem solid var(--brand);
+  border-radius:.375rem;padding:.75rem 1rem}
+.kpis .label{display:block;font-size:.875rem;line-height:1.25rem;color:var(--muted)}
+.kpis .num{display:block;font-size:1.75rem;line-height:2rem;font-weight:700;
+  font-variant-numeric:tabular-nums}
+.note{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.375rem;
+  font-size:.875rem;line-height:1.5}
+.note strong{display:block}
+.wrap{margin:1rem 0 0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  overflow:auto;max-height:none}
+table{border-collapse:collapse;width:100%;font-size:.875rem;line-height:1.5}
+caption{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--rule);
+  vertical-align:top}
+thead th{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--line);
+  font-weight:600;white-space:nowrap;padding:0}
+thead th button{font:inherit;font-weight:600;text-align:inherit;width:100%;
+  min-height:2.75rem;padding:.5rem .75rem;border:0;background:none;color:var(--ink);
+  cursor:pointer;display:flex;gap:.375rem;align-items:center}
+thead th button:hover{background:var(--brand-soft)}
+thead th button .caret{color:var(--brand)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:#fafbfb}
+tbody tr:last-child td{border-bottom:0}
+/* A group band names the group and says what it holds. It is a header, not a row of data:
+   scope="colgroup" is what tells a screen reader the rows below belong to it, and a styled
+   <td> would look the same and mean nothing. */
+tbody tr.grp th{background:var(--brand-soft);color:var(--on-brand-soft);text-align:left;
+  font-size:.875rem;line-height:1.5;font-weight:600;padding:.5rem .75rem;
+  border-bottom:1px solid var(--line);border-top:2px solid var(--line);position:static}
+tbody tr.grp:first-child th{border-top:0}
+tbody tr.grp .grpmeta{font-weight:400;color:var(--muted);margin-left:.5rem}
+.pager{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;margin:1rem 0 0;
+  font-size:.875rem;color:var(--muted)}
+.pager button{font:inherit;font-size:.875rem;font-weight:600;min-height:2.75rem;
+  padding:.5rem 1rem;border:1px solid var(--brand);border-radius:.25rem;background:var(--panel);
+  color:var(--brand);cursor:pointer}
+.pager button:hover:not(:disabled){background:var(--brand-soft)}
+.pager button:disabled{color:var(--muted);border-color:var(--line);cursor:default}
+.pager .count{font-variant-numeric:tabular-nums}
+footer{max-width:86rem;margin:2rem auto 0;padding:1rem 1.5rem 2rem;color:var(--muted);
+  font-size:.875rem;line-height:1.5;border-top:1px solid var(--line)}
+footer a{color:var(--brand)}
+/* A phone cannot hold seven columns, and pinching a table sideways is how a reader loses
+   the column they sorted by. Under 40 rem each row becomes its own card, labelled per cell,
+   so the values stay readable and the page never scrolls sideways. The heading row is
+   hidden and the sort control above the list takes over. */
+@media (max-width:40rem){
+  .wrap{border:0;background:none;overflow:visible}
+  table,tbody,tr,td{display:block}
+  thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  tbody tr{border:1px solid var(--line);border-radius:.5rem;background:var(--panel);
+    margin:0 0 .75rem;padding:.25rem .875rem}
+  tbody tr:hover{background:var(--panel)}
+  /* A group band is not a card: no cell labels beside it, and it must not be mistaken for a
+     row of data on the narrow layout where every other row is one. */
+  tbody tr.grp{border:0;background:var(--brand-soft);padding:.5rem .875rem;margin:.75rem 0 0}
+  tbody tr.grp th{display:block;padding:0;border:0;font-size:.875rem}
+  tbody tr.grp .grpmeta{display:block;margin:.125rem 0 0}
+  td{border-bottom:1px solid var(--rule);padding:.5rem 0;display:grid;
+    grid-template-columns:minmax(6.5rem,40%) 1fr;gap:.25rem .75rem}
+  tbody tr td:last-child{border-bottom:0}
+  td::before{content:attr(data-label);color:var(--muted);font-weight:600}
+  td.num{text-align:left}
+  /* An empty cell in a card is a value that is not there, not a broken layout: the source
+     had no amount for this row. Say so with a dash rather than a gap. */
+  td:empty::after{content:"\2013";color:var(--muted)}
+  /* The first screen on a phone belongs to the list. The two counts repeat what the
+     pager already says, and the hint describes controls the reader can see. */
+  .kpis,.hint{display:none}
+  .controls{padding:.75rem;gap:.5rem}
+  .controls .field{flex:1 1 calc(50% - .5rem);min-width:0}
+  .controls .grow{flex:1 1 100%}
+  main{padding:1rem}
+}
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows is the one place
+   this page picks a slot by its LIGHT role, and that role inverts.
+
+   THE HEADER BAND fills with --brand-dark and writes --on-brand on it. In light that is
+   dark teal under white. In dark, --brand-dark is the darkest surface and --on-brand is
+   --bg, so the two are both dark and the title measures 1.39:1. The pair the theme does
+   define is a --brand fill carrying --on-brand, so the band uses that pair here and stays a
+   band. The group band is already fixed at the seam: it letters itself with
+   --on-brand-soft, which both themes declare against --brand-soft. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) header{background:var(--brand);color:var(--on-brand)}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
+  .controls,.pager,.hint,.note{display:none}
+  tbody tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.className += " js"</script>
+<header><div class="in">
+  <h1>{{TITLE}}</h1>
+  <p class="sub">{{SOURCE_DESCRIPTION}}</p>
+</div></header>
+<main>
+  <form class="controls" id="controls" hidden>
+    <div class="field grow">
+      <label for="q">{{T:search_label}}</label>
+      <input type="search" id="q" name="q" placeholder="{{T:search_placeholder}}"
+             autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="sortsel">{{T:sort_label}}</label>
+      <select id="sortsel">{{SORT_OPTIONS}}</select>
+    </div>
+    <div class="field">
+      <button type="button" id="dirbtn">{{T:sort_asc}}</button>
+    </div>
+    <div class="field">
+      <label for="size">{{T:page_size}}</label>
+      <select id="size">{{PAGE_SIZE_OPTIONS}}</select>
+    </div>
+    <div class="field">
+      <button type="reset" id="reset">{{T:reset}}</button>
+    </div>
+  </form>
+  <p class="hint" id="hint" hidden>{{T:search_hint}} {{T:sort_hint}}</p>
+
+  <ul class="kpis">
+    <li><span class="label">{{T:rows_total}}</span><span class="num">{{ROWS_INLINED}}</span></li>
+    <li><span class="label">{{T:cols_total}}</span><span class="num">{{COLUMNS_INLINED}}</span></li>
+  </ul>
+
+  <div class="note" id="nojs">
+    <strong>{{T:nojs_head}}</strong>
+    <span>{{NOJS_NOTE}}</span>
+  </div>
+
+  <div class="wrap" role="region" aria-label="{{T:aria_table}}" tabindex="0">
+    <table id="tbl">
+      <caption>{{TITLE}} — {{T:aria_table}}</caption>
+      <thead><tr>{{NOJS_HEAD}}</tr></thead>
+      <tbody>{{NOJS_ROWS}}</tbody>
+    </table>
+  </div>
+
+  <div class="pager">
+    <button type="button" id="prev" disabled>{{T:prev}}</button>
+    <span class="count" id="count" aria-live="polite">{{T:rows_shown}}</span>
+    <button type="button" id="next" disabled>{{T:next}}</button>
+  </div>
+{{FEEDBACK_BLOCK}}
+</main>
+<footer>
+  <p>{{T:footer_a}} · {{T:footer_b}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p>
+</footer>
+<script>
+/* The register. One array per row, in the column order the build chose, plus the header
+   the build chose: nothing here decides what is shown, only which rows and in what order.
+
+   Two things this page refuses to do quietly:
+     * a search that matches nothing says so in the table body, and the count says "0 of N".
+       An empty table with no sentence reads as a broken page.
+     * a numeric column sorts as a number. Sorting "9" after "10" is the classic silent
+       wrong answer in a page like this, so the build marks the numeric columns and the
+       comparator reads them as numbers (and an empty cell sorts last in either direction,
+       because "no value" is not "zero"). */
+const META = {{REGISTER_META}};
+const ROWS = {{REGISTER_ROWS}};
+const T = {{REGISTER_STRINGS}};
+const tb = document.querySelector("#tbl tbody");
+const thead = document.querySelector("#tbl thead tr");
+const q = document.getElementById("q");
+const sizeSel = document.getElementById("size");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+const count = document.getElementById("count");
+const empty = T.rows_empty;
+/* -1 means the build did not group. The key is absent from META then, so a build
+   without --group-by writes exactly the bytes it wrote before. */
+const GROUP_COL = typeof META.groupCol === "number" ? META.groupCol : -1;
+
+let state = {q: "", sort: META.sortCol, dir: META.sortDir, page: 0, size: META.pageSize};
+
+function norm(v) { return String(v === null || v === undefined ? "" : v).toLocaleLowerCase(); }
+
+function filtered() {
+  const needle = norm(state.q).trim();
+  if (!needle) return ROWS.map((row, i) => i);
+  const words = needle.split(/\s+/);
+  const out = [];
+  for (let i = 0; i < ROWS.length; i++) {
+    const hay = ROWS[i].map(norm).join(" \u0000 ");
+    if (words.every(w => hay.indexOf(w) !== -1)) out.push(i);
+  }
+  return out;
+}
+
+function compare(a, b) {
+  /* Grouping beats the chosen sort, or the bands would repeat: a group that is split into
+     two runs of rows shows its header twice and reads as two groups. */
+  if (GROUP_COL >= 0) {
+    const ga = ROWS[a][GROUP_COL], gb = ROWS[b][GROUP_COL];
+    if (ga !== gb) {
+      const na = typeof ga === "number", nb = typeof gb === "number";
+      if (na && nb) return ga - gb;
+      if (na !== nb) return na ? -1 : 1;
+      return String(ga).localeCompare(String(gb), T.locale, {numeric: true});
+    }
+  }
+  const col = state.sort;
+  const av = ROWS[a][col], bv = ROWS[b][col];
+  const aEmpty = av === "" || av === null || av === undefined;
+  const bEmpty = bv === "" || bv === null || bv === undefined;
+  if (aEmpty || bEmpty) return aEmpty === bEmpty ? a - b : (aEmpty ? 1 : -1);
+  if (META.numeric.indexOf(col) !== -1) return (Number(av) - Number(bv)) * state.dir;
+  return String(av).localeCompare(String(bv), T.locale, {numeric: true}) * state.dir;
+}
+
+function cell(value, col) {
+  const td = document.createElement("td");
+  td.setAttribute("data-label", META.columns[col]);
+  if (META.numeric.indexOf(col) !== -1) td.className = "num";
+  td.textContent = value === null || value === undefined ? "" : String(value);
+  return td;
+}
+
+function render() {
+  const idx = filtered();
+  idx.sort(compare);
+  const pages = Math.max(1, Math.ceil(idx.length / state.size));
+  if (state.page >= pages) state.page = pages - 1;
+  if (state.page < 0) state.page = 0;
+  const start = state.page * state.size;
+  const slice = idx.slice(start, start + state.size);
+
+  /* A group's totals are counted over the rows in the current view, not over the page on
+     screen: a group split across two pages must not report two different sums. That is also
+     why the count is taken here and not carried in from the build: a search narrows what is
+     shown, and a total that ignored the search would be a second answer to the same
+     question. */
+  const groups = new Map();
+  if (GROUP_COL >= 0) {
+    for (const i of idx) {
+      const g = ROWS[i][GROUP_COL];
+      let acc = groups.get(g);
+      if (!acc) { acc = {n: 0, sum: META.numeric.map(() => 0)}; groups.set(g, acc); }
+      acc.n += 1;
+      META.numeric.forEach((col, k) => {
+        const v = ROWS[i][col];
+        if (typeof v === "number") acc.sum[k] += v;
+      });
+    }
+  }
+
+  const fmtNum = (n) => Number(n).toLocaleString(T.locale, {maximumFractionDigits: 1});
+  const band = (g) => {
+    const acc = groups.get(g) || {n: 0, sum: META.numeric.map(() => 0)};
+    const tr = document.createElement("tr");
+    tr.className = "grp";
+    const th = document.createElement("th");
+    th.setAttribute("scope", "colgroup");
+    th.colSpan = META.columns.length;
+    const name = document.createElement("span");
+    name.className = "grpname";
+    name.textContent = String(g);
+    const meta = document.createElement("span");
+    meta.className = "grpmeta";
+    const bits = [(acc.n === 1 ? T.groupRowsOne : T.groupRows).replace("{n}", fmtNum(acc.n))];
+    META.numeric.forEach((col, k) => bits.push(META.columns[col] + " " + fmtNum(acc.sum[k])));
+    meta.textContent = bits.join(" \u00b7 ");
+    th.appendChild(name);
+    th.appendChild(meta);
+    tr.appendChild(th);
+    return tr;
+  };
+
+  tb.textContent = "";
+  if (!slice.length) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = META.columns.length;
+    td.textContent = empty;
+    tr.appendChild(td);
+    tb.appendChild(tr);
+  } else {
+    let lastGroup;
+    for (const i of slice) {
+      if (GROUP_COL >= 0) {
+        const g = ROWS[i][GROUP_COL];
+        if (g !== lastGroup) { tb.appendChild(band(g)); lastGroup = g; }
+      }
+      const tr = document.createElement("tr");
+      for (let c = 0; c < META.columns.length; c++) tr.appendChild(cell(ROWS[i][c], c));
+      tb.appendChild(tr);
+    }
+  }
+
+  /* aria-sort only on the sorted column: "none" on the rest is what the attribute means,
+     and the caret is aria-hidden because aria-sort already says it. */
+  thead.querySelectorAll("th").forEach((th, i) => {
+    const on = i === state.sort;
+    th.setAttribute("aria-sort", on ? (state.dir < 0 ? "descending" : "ascending") : "none");
+    const caret = th.querySelector(".caret");
+    if (caret) {
+      caret.textContent = on ? (state.dir < 0 ? "\u25be" : "\u25b4") : "";
+      caret.setAttribute("aria-hidden", "true");
+    }
+  });
+
+  /* The counts follow the page's own convention: nb groups with a space, en with a comma.
+     A reader in Oslo should not read "1,200 rows" in a Norwegian list. */
+  const fmt = n => Number(n).toLocaleString(T.locale);
+  syncSort();
+  count.textContent = T.rows_shown
+    .replace("{shown}", (idx.length ? fmt(start + 1) : "0") + "\u2013" + fmt(start + slice.length))
+    .replace("{total}", fmt(idx.length));
+  prev.disabled = state.page === 0;
+  next.disabled = state.page >= pages - 1;
+}
+
+/* A search types; a render per keystroke on a 5,000-row list is a stutter. One frame of
+   delay is invisible and keeps the field responsive. */
+let queued = false;
+q.addEventListener("input", () => {
+  state.q = q.value;
+  state.page = 0;
+  if (queued) return;
+  queued = true;
+  requestAnimationFrame(() => { queued = false; render(); });
+});
+sizeSel.addEventListener("change", () => {
+  state.size = Number(sizeSel.value) || META.pageSize;
+  state.page = 0;
+  render();
+});
+document.getElementById("controls").addEventListener("reset", () => {
+  state = {q: "", sort: META.sortCol, dir: META.sortDir, page: 0, size: META.pageSize};
+  sizeSel.value = String(META.pageSize);
+  requestAnimationFrame(render);
+});
+prev.addEventListener("click", () => { state.page -= 1; render(); });
+next.addEventListener("click", () => { state.page += 1; render(); });
+thead.querySelectorAll("th button").forEach((btn, i) => {
+  btn.addEventListener("click", () => {
+    if (state.sort === i) state.dir = -state.dir;
+    else { state.sort = i; state.dir = META.numeric.indexOf(i) !== -1 ? -1 : 1; }
+    state.page = 0;
+    render();
+  });
+});
+
+const sortSel = document.getElementById("sortsel");
+const dirBtn = document.getElementById("dirbtn");
+function syncSort() {
+  sortSel.value = String(state.sort);
+  dirBtn.textContent = state.dir < 0 ? T.sort_desc : T.sort_asc;
+  dirBtn.setAttribute("aria-label", T.sort_label + ": "
+    + META.columns[state.sort] + ", " + (state.dir < 0 ? T.sort_desc : T.sort_asc));
+}
+sortSel.addEventListener("change", () => {
+  state.sort = Number(sortSel.value);
+  state.dir = META.numeric.indexOf(state.sort) !== -1 ? -1 : 1;
+  state.page = 0;
+  syncSort();
+  render();
+});
+dirBtn.addEventListener("click", () => {
+  state.dir = -state.dir;
+  state.page = 0;
+  syncSort();
+  render();
+});
+document.getElementById("nojs").hidden = true;
+document.getElementById("controls").hidden = false;
+document.getElementById("hint").hidden = false;
+syncSort();
+render();
+</script>
+</body>
+</html>

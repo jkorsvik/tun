@@ -1,0 +1,64 @@
+# Strings for templates/funnel.html and tools/build_funnel.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shows how many records reach each declared stage of a funnel, both conversion
+# rates, and how many were lost between two stages.
+
+[nb]
+html_lang = nb
+svg_title = Tratt
+svg_desc = Tratt fra {first} til {last} i {n} trinn: {start} inn, {end} ut.
+caption = Hver stolpe er ett trinn, og bredden er antall saker som nådde det. Tallet til høyre er antallet, andelen av {first}, andelen av trinnet før, og hvor mange som falt fra siden forrige trinn.
+caption_width = Bare bredden bærer antallet. Høyde og areal er holdt konstante, fordi to skalerte dimensjoner gjør et fall på 50 prosent til et tap på 75 prosent areal.
+head_table = Tallene bak bildet
+table_caption = Hvert trinn med antall, andel av første trinn, andel av trinnet før, og antall tapt siden forrige trinn.
+col_stage = Trinn
+col_count = Antall
+col_of_first = Av første
+col_of_previous = Av forrige
+col_lost = Tapt
+row_total = Fra første til siste
+col_head_rest = Av forrige · tapt
+of_previous = {share} · −{lost}
+bar_title = {stage}: {n} saker, {share} av første trinn
+sub_line = {stages} trinn, {first} til {last} · {records} saker
+worst_line = Det største fallet er mellom {before} og {after}: {lost} saker, {share} av dem som nådde {before}.
+worst_none = Ingen trinn taper saker: hver sak som kommer inn, kommer gjennom.
+skip_head = Trinnene henger ikke sammen
+skip_intro = Disse sakene når et senere trinn uten å ha nådd trinnet før. Da er dette ikke én gruppe som går gjennom en tratt, og andelene under må leses som antall per trinn, ikke som konvertering.
+skip_line = {n} saker når {to} uten å ha nådd {frm}
+source_line = {name} — {records} saker
+duplicates = {n} dupliserte rad(er) er talt én gang
+footer_a = Selvstendig fil: alle tallene er regnet ut på forhånd, og ingenting hentes når den åpnes.
+footer_b = Ingen server, ingen innlogging, ingen skript. Trinnene er oppgitt av den som bygde siden, ikke gjettet fra dataene.
+footer_built = Bygget
+dash = –
+
+[en]
+html_lang = en
+svg_title = Funnel
+svg_desc = Funnel from {first} to {last} in {n} steps: {start} in, {end} out.
+caption = Each bar is one stage and its width is how many records reached it. The figures to the right are the count, the share of {first}, the share of the stage before, and how many were lost since that stage.
+caption_width = Only the width carries the count. Height and area are held constant, because two scaled dimensions turn a fall of 50 per cent into a loss of 75 per cent of the area.
+head_table = The numbers behind the picture
+table_caption = Each stage with its count, the share of the first stage, the share of the stage before, and the number lost since that stage.
+col_stage = Stage
+col_count = Count
+col_of_first = Of first
+col_of_previous = Of previous
+col_lost = Lost
+row_total = From first to last
+col_head_rest = Of previous · lost
+of_previous = {share} · −{lost}
+bar_title = {stage}: {n} records, {share} of the first stage
+sub_line = {stages} stages, {first} to {last} · {records} records
+worst_line = The largest fall is between {before} and {after}: {lost} records, {share} of those that reached {before}.
+worst_none = No stage loses records: everything that enters comes through.
+skip_head = The stages are not nested
+skip_intro = These records reach a later stage without reaching the stage before it. Then this is not one cohort passing a funnel, and the shares below must be read as counts per stage rather than as conversion.
+skip_line = {n} records reach {to} without reaching {frm}
+source_line = {name} — {records} records
+duplicates = {n} duplicate row(s) counted once
+footer_a = Self-contained file: every figure is worked out in advance, and nothing is fetched when it opens.
+footer_b = No server, no sign-in, no script. The stages are declared by whoever built the page, never guessed from the data.
+footer_built = Built
+dash = –

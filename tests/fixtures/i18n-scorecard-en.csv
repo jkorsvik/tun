@@ -1,0 +1,30 @@
+Case,Period,Value,Target,Direction,Unit
+Customer satisfaction,2025-10,74,78,up,points
+Customer satisfaction,2025-11,75,78,up,points
+Customer satisfaction,2025-12,76,78,up,points
+Customer satisfaction,2026-01,75,78,up,points
+Customer satisfaction,2026-02,77,78,up,points
+Customer satisfaction,2026-03,80,78,up,points
+Customer satisfaction,2026-04,79,78,up,points
+Customer satisfaction,2026-05,81,78,up,points
+Handling time,2025-10,4.2,5.0,down,days
+Handling time,2025-11,4.0,5.0,down,days
+Handling time,2025-12,4.6,5.0,down,days
+Handling time,2026-01,4.9,5.0,down,days
+Handling time,2026-02,5.4,5.0,down,days
+Handling time,2026-03,5.8,5.0,down,days
+Handling time,2026-04,6.1,5.0,down,days
+Handling time,2026-05,6.4,5.0,down,days
+Digital share,2025-10,67,80,up,per cent
+Digital share,2025-11,70,80,up,per cent
+Digital share,2025-12,71,80,up,per cent
+Digital share,2026-01,74,80,up,per cent
+Digital share,2026-02,75,80,up,per cent
+Digital share,2026-03,76,80,up,per cent
+Complaints,2025-10,104,120,down,count
+Complaints,2025-11,98,120,down,count
+Complaints,2025-12,131,120,down,count
+Complaints,2026-01,112,120,down,count
+Complaints,2026-03,109,120,down,count
+Complaints,2026-04,118,120,down,count
+Complaints,2026-05,101,120,down,count

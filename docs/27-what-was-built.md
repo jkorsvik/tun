@@ -1,5 +1,7 @@
 # 27. What has been built with this method
 
+**Reader:** user — you want an artefact out of your own data and do not intend to change the toolkit.
+
 > **Status:** a catalogue, written 2026-10-08. Written generically on purpose: no person,
 > organisation, dataset or customer is named. Where a fact was not recorded anywhere this
 > page could check, the cell says **not recorded**. Synthetic examples link to their folder
@@ -17,6 +19,9 @@ or a rule. Hosts are explained in [where a Tún artefact can live](26-hosting.md
 | A case-room dashboard, used for real case work | A SharePoint document library, opened in the inline preview | Not recorded. Real data, not in this repository | A literal script-tag opener, typed as prose inside an HTML comment, stopped every script on the page in the preview. Now [constraints row 25](01-tenant-constraints.md), enforced by `check_no_stray_script_text()` in the publish gate |
 | A consumer-trends summary for a non-technical audience | Not recorded | 48 products, illustrative figures | Not recorded |
 | A one-page pitch ([`examples/19-tun-pitch`](../examples/19-tun-pitch/)) | A file, sent as a link or attachment | 15 KB, no code that runs | A page with no script cannot be dead in a hostile preview. The worst case is that it looks plainer |
+| A cohort grid of who came back ([`examples/44-cohort`](../examples/44-cohort/)) | A file, sent as a link or attachment | 496 invented accounts, 9 cohorts | The one artefact whose column axis is not in the file. Derived per row from each person's earliest date, so row order cannot change the story, and a cell that cannot exist yet is hatched rather than drawn as zero. Now `tests/test_cohort.py`, 48 checks |
+| A small multiple of one measure across groups ([`examples/45-smallmultiples`](../examples/45-smallmultiples/)) | A file, sent as a link or attachment | 9 invented units, 10 weeks, 84 values | The only chart whose whole claim is its axis. A panel that scales itself makes 4 to 8 look like 400 to 800 with every number still true, and no accessibility rule can see it. Now `tests/test_smallmultiples.py`, 51 checks and six mutations |
+| A rank change between two periods ([`examples/46-rank-change`](../examples/46-rank-change/)) | A file, sent as a link or attachment | 13 invented products, two quarters, one shared rank | A line between two columns has no direction of its own, so a flipped subtraction draws every climber as a fall and nothing looks wrong. The first draft had that, plus a backwards change column and the leaver's word on the newcomer's side. Now `tests/test_rank_change.py`, 49 checks and five mutations |
 
 ## Standalone with a dense cube
 

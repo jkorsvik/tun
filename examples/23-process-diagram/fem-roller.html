@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="nb">
 <head>
 <meta charset="utf-8">
@@ -16,7 +8,7 @@
   Slik behandler kommunen en byggesøknad
   PROVENANCE  (do not delete — this is how output gets traced back)
     Source data : Eksempeldata (syntetisk), oppdiktet prosess med fem roller
-    Built       : 2026-10-16 15:02 CEST
+    Built       : 2026-10-24 10:00 UTC
     Requested by: Prosjekteier
     Built by    : tools/build_process_diagram.py
     Repo        : tun
@@ -45,6 +37,7 @@
   --tun-paper:            #f7f7f5;
   --tun-ink-darkest:      #071812;
   --tun-accent-tint:      #a4c8a3;
+  --tun-secondary-light:  #6cac96;
 }
 :root{
   --palette-ink:             var(--tun-ink);
@@ -52,16 +45,17 @@
   --palette-primary:         var(--tun-secondary);
   --palette-primary-dark:    var(--tun-ink);
   --palette-primary-darkest: var(--tun-ink-darkest);
+  --palette-primary-on-dark: var(--tun-secondary-light);
   --palette-accent:          var(--tun-accent);
   --palette-accent-light:    var(--tun-accent-tint);
   --palette-on-dark:         var(--tun-paper);
 }
 :root{
-  --status-negative:          #C9372C;
-  --status-negative-bg:       #fbeded;
-  --status-positive:          #1F7A5C;
-  --status-positive-bg-25:    #d7ece3;
-  --status-positive-bg-12:    #eaf5f0;
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
   --status-neutral:           #737373;
 }
 :root,
@@ -72,12 +66,75 @@
   --bg:         var(--palette-surface);
   --panel:      #f8f8f8;
   --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
   --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
   --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
   --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -107,8 +164,10 @@ h4{margin:1rem 0 .25rem;font-size:.875rem;text-transform:uppercase;letter-spacin
 .tabs{display:none}
 html.js .tabs{display:flex;flex-wrap:wrap;gap:.25rem;margin:1.5rem 0 0;padding:.25rem;
   border-radius:.75rem;background:var(--bg);border:1px solid var(--line);width:max-content;max-width:100%}
+  /* 44 px is the touch minimum docs/11 sets. These controls sat at 38.5 px
+     on a phone: tall enough to look right, too small to hit with a thumb. */
 .tabs button{font:inherit;font-size:.9375rem;font-weight:600;padding:.5rem 1rem;border:0;
-  border-radius:.5rem;background:transparent;color:var(--muted);cursor:pointer}
+  border-radius:.5rem;background:transparent;color:var(--muted);cursor:pointer;min-height:2.75rem}
 .tabs button[aria-selected="true"]{background:var(--brand-dark);color:var(--palette-on-dark)}
 .tabs button:hover{color:var(--ink)}
 .tabs button[aria-selected="true"]:hover{color:var(--palette-on-dark)}
@@ -126,7 +185,8 @@ html.js .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;m
 .toolbar .group{display:flex;gap:.25rem;align-items:center}
 .toolbar .group[hidden]{display:none}
 .toolbar button{font:inherit;font-size:.875rem;padding:.375rem .75rem;border-radius:.5rem;
-  border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;min-width:2.25rem}
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;
+  min-width:2.75rem;min-height:2.75rem}
 .toolbar button:hover{border-color:var(--brand)}
 .toolbar button[aria-pressed="true"]{background:var(--brand-dark);color:var(--palette-on-dark);
   border-color:var(--brand-dark)}
@@ -192,14 +252,15 @@ html.js .pan.rows .lane-strip:not([hidden]){right:auto;bottom:1px;width:9rem;hei
 /* Fills behind ink text keep the pale-red tint; red TEXT sits on white (--bad-bg). */
 .badge{background:var(--status-negative-bg);color:var(--ink);border:2px solid var(--bad)}
 .facts{margin:0;display:grid;gap:.625rem}
-.facts dt{color:var(--muted);font-size:.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.facts dt{color:var(--muted);font-size:.875rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 .facts dd{margin:0;overflow-wrap:anywhere}
 .card{overflow-wrap:anywhere}
 .card-flag{margin:.75rem 0 0;padding:.625rem .75rem;border-radius:.5rem;background:var(--status-negative-bg)}
 .card-flag p{margin:.125rem 0}
 .card-actions{margin:.75rem 0 0}
 .show-in-flow{display:none}
-html.js .show-in-flow{display:inline-flex;font:inherit;font-size:.875rem;padding:.375rem .75rem;
+html.js .show-in-flow{display:inline-flex;align-items:center;font:inherit;font-size:.875rem;
+  padding:.375rem .75rem;min-height:2.75rem;min-width:2.75rem;
   border-radius:.5rem;border:1px solid var(--brand);background:var(--bg);color:var(--brand);cursor:pointer}
 html.js .show-in-flow:hover{background:var(--panel)}
 .role-card ul{margin:0;padding-left:1.25rem}
@@ -247,6 +308,63 @@ html.js .pd .node{cursor:pointer}
 .pd.lane-filter .node:not(.in-lane),.pd.lane-filter .edge:not(.in-lane),.pd.lane-filter .flag-badge:not(.in-lane){opacity:.18}
 .pd.lane-filter .lane:not(.in-lane) .lane-band{fill-opacity:0}
 .pd .node,.pd .edge,.pd .flag-badge{transition:opacity .15s}
+
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The tokens come from theme-dark.css; what follows are the places this drawing
+   cannot simply inherit them, each measured against the dark page and the dark panel that
+   theme-dark.css declares for the palette this example records.
+
+   1. THE SIX ROLES. Three of them are dark by design in light (primary-dark, primary and
+      primary-darkest) and measure 1.00-1.79:1 on the dark surface, which is not a dim
+      accent but an absent one: three lane colours rendered as nothing. --status-neutral and
+      --status-positive are dark inks chosen for white, and measure 2.35-3.20:1 here. The
+      dark ramp therefore uses the slots that exist for a dark surface, chosen so that every
+      role clears the 3:1 non-text minimum in all three shipped palettes and neighbouring
+      lanes stay perceptibly apart (closest pair deltaE 27.8, CIELAB). Contrast, page:
+                        neutral   brand   tun
+        c0 primary-on-dark  6.54    6.73   5.76
+        c1 accent           3.80    6.08   3.76
+        c2 muted            7.88    8.15   9.67
+        c3 ok               6.37    6.59   7.82
+        c4 on-dark         11.33   12.60  14.14
+        c5 accent-light     8.37   10.41   8.21
+      The lane NAME still carries the identity a reader needs (WCAG 2.2 1.4.1): a palette is
+      free to set these slots within a hue family, as the tun palette's greens show, and
+      colour is then a second signal rather than the only one. tools/check_token_contrast.py
+      measures all six against --bg, and tests/test_process_diagram.py fails if this list
+      and that table ever disagree.
+   2. HEADINGS. h1 and h2 use --brand-dark, which in dark is the page background: 1.21:1,
+      so every heading disappeared. The slot that exists for "the primary colour as read
+      on a dark surface" replaces it: 5.76:1.
+   3. FLAGGED SURFACES. The light theme fills these with --status-negative-bg, a pale red
+      tint that exists for one reason: dark ink on it. Under dark ink's inverse it is a
+      pale box with near-white text, 1.05:1. Dark has its own chip tint, --bad-bg, chosen
+      by the theme for exactly this and measuring 12.83:1 against the ink, so the fill
+      switches to it and the text colour comes from the theme's --bad (6.01:1), not from a
+      light-theme red.
+   The start and end boxes invert in dark: a near-black fill on a dark page is a 1.21:1
+   boundary, and their label is the one place the drawing states "this is where it begins".
+   A fill of primary-on-dark with darkest ink measures 5.76:1 for the shape and 6.95:1 for
+   its label. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) .c0{--role:var(--palette-primary-on-dark)}
+  :root:not([data-theme]) .c1{--role:var(--palette-accent)}
+  :root:not([data-theme]) .c2{--role:var(--muted)}
+  :root:not([data-theme]) .c3{--role:var(--ok)}
+  :root:not([data-theme]) .c4{--role:var(--palette-on-dark)}
+  :root:not([data-theme]) .c5{--role:var(--palette-accent-light)}
+  :root:not([data-theme]) h1,
+  :root:not([data-theme]) h2{color:var(--palette-primary-on-dark)}
+  :root:not([data-theme]) .badge,
+  :root:not([data-theme]) .card-flag{background:var(--bad-bg)}
+  :root:not([data-theme]) .pd .node-start .node-shape,
+  :root:not([data-theme]) .pd .node-end .node-shape{fill:var(--palette-primary-on-dark);
+    stroke:var(--palette-primary-on-dark)}
+  :root:not([data-theme]) .pd .node-start .node-label,
+  :root:not([data-theme]) .pd .node-end .node-label{fill:var(--palette-primary-darkest)}
+  :root:not([data-theme]) .pd .flagged .node-shape,
+  :root:not([data-theme]) .pd .flag-badge circle{fill:var(--bad-bg)}
+}
 
 @media print{
   @page{size:A4;margin:12mm}
@@ -528,7 +646,7 @@ stegets nummer, det samme som i fanen Steg.</p>
 </section>
 
 <footer>
-<p>Kilde: Eksempeldata (syntetisk), oppdiktet prosess med fem roller. Bestilt av: Prosjekteier. Laget 2026-10-16 15:02 CEST.
+<p>Kilde: Eksempeldata (syntetisk), oppdiktet prosess med fem roller. Bestilt av: Prosjekteier. Laget 2026-10-24 10:00 UTC.
 Én selvstendig fil: ingen server, ingen nettverk, ingen lisens.</p>
 </footer>
 </main>

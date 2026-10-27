@@ -1,7 +1,11 @@
 # Maintainability conventions — source language and filter independence
 
-**Status:** proposal, not enforced by any tool yet. It covers the one piece of the
-original architecture principles that neither `docs/08` nor `docs/11` picked up.
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
+**Status:** proposal, not enforced by any tool yet. Graduates issue #4 point 6, the one
+piece of that issue nothing since has picked up. Unlike `docs/08` (which absorbed #4
+points 1 and 3) and `docs/11` (which absorbed #4 point 4 via issue #5), this piece had no
+follow-up issue at all — it is written up here for the first time since #4 itself.
 
 Both rules below already hold in the one example that has real data behind it
 (`examples/01-hello-dashboard/`, `examples/02-paired-dashboard/`), but neither is checked
@@ -12,7 +16,7 @@ before reinventing the question.
 
 ## 1. Source data stays in its original language; translation happens only at render
 
-The rule: keep source data (column names, category values) in Norwegian, and
+The rule from #4: keep source data (column names, category values) in Norwegian, and
 translate only when the dashboard renders — via a lookup table the build script applies,
 never by writing a second, translated copy of the source file.
 
@@ -32,7 +36,7 @@ names and category values come out exactly as they went in.
 
 ## 2. Independent filter dimensions combine with AND logic, never merged into one control
 
-The rule: if a dashboard has more than one filter dimension (region, category,
+The rule from #4: if a dashboard has more than one filter dimension (region, category,
 channel), each is its own control, and selecting values across dimensions narrows the
 result set by intersection (AND) — never collapsed into a single multi-select box that
 mixes values from different dimensions.
@@ -53,7 +57,8 @@ asks for a "simpler-looking" filter bar.
 
 ## 3. Column-oriented storage for large embedded datasets — an observed technique, not yet a rule
 
-Field evidence, from a review of an unrelated external dashboard: rather than embedding rows
+Field evidence, `html-sammenligning` review of an external dashboard (2026-09-11,
+`søknadstrakt-dashboard.html`, unrelated to this repo): rather than embedding rows
 as an array of objects, it stores each column as its own typed array (e.g. a `Uint8Array`
 per dimension) and computes a boolean mask over row indices for filtering, instead of
 filtering an array of objects. For a dataset in the tens of thousands of rows bundled
@@ -96,6 +101,40 @@ mutates a file, runs the suite and restores the file was killed by a 30-second t
 between "mutate" and "restore". It left a broken file and an empty screenshot folder that
 looked like a real build. Run such a harness in the background, or work on a copy. After any
 kill, rebuild from source before you trust the tree.
+
+## 4b. One reader and one numeric parse, in `tools/tun_core.py`
+
+Five builders read a table and a number out of a cell, and each grew its own copy. The
+copies disagreed, which is the only reason this is written down:
+
+| value | written by | what the dashboard used to read | what the register used to read |
+|---|---|---|---|
+| `1,234.56` | en-US Excel | `1.23456` (a factor of 1000 too small) | the text `1,234.56` |
+| `1.234,56` | nb Excel | `1234.56` | the text `1.234,56` |
+
+Both are the same amount, both are ordinary in a tenant, and neither shows up in a
+screenshot. `tun_core.to_number` reads them the same way: when a value carries both
+separators, the **last** one is the decimal separator, because that is the only reading
+that is not a guess. A single separator stays a decimal separator, which is what every
+builder already did, so `1.234` is still one and a bit, not a thousand two hundred and
+thirty four. That ambiguity cannot be resolved without knowing the source locale, and the
+honest thing is to say so rather than to guess differently in two places.
+
+The same module owns:
+
+- **reading a table** (`read_rows`): csv/tsv/txt with a sniffed delimiter, `utf-8-sig`
+  because Excel's "CSV UTF-8" writes a BOM that sticks to the first column name, and a
+  JSON array of objects. One sniffer sample size (`SAMPLE_BYTES`), because two builders
+  used to read 8 KiB and 64 KiB and could therefore sniff one file two ways.
+- **refusing** (`die`): one line, `error: …`, exit 2. A missing file used to be a Python
+  traceback in one builder and a clean message in another.
+- **the provenance wording** (`NOT_STATED`), because "not stated" is a decision, not a
+  string.
+
+Two builders legitimately keep their own reader: the register needs positional columns so
+it can drop the ones nobody named before anything is stored, and the process builder reads
+a spec rather than a table. `tests/test_shared_core.py` proves the rest go through the
+shared code, and mutates a scratch copy to prove the checks can fail.
 
 ## 5. The page speaks nb or en: `--lang`
 

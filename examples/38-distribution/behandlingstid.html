@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Saksbehandlingstid per enhet</title>
+<!--
+  Saksbehandlingstid per enhet
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (saksbehandlingstid.csv) — 423 saker
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Fagavdelingen
+    Made with   : Tún - tun.community
+    Rows        : 423 rows on the page, 12 intervaller, bredde 5
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: the shape of one measure across the cases that hold it. Every other
+  artefact the engine builds answers a question about a total. A total says nothing about
+  whether a typical case is typical, and the mean of a lopsided set is a number that is
+  arithmetically right and descriptively wrong. This page shows the bucket counts, the
+  median and the tail, so the reader can see what the mean would have hidden.
+
+  What it is NOT: a model, a trend or a forecast. The buckets are a presentation choice, not
+  a property of the data; the page states the edges it chose, and the table carries the same
+  counts so the picture can be checked instead of trusted. A different bucket width draws a
+  different picture of the same rows, which is why the edges are printed.
+
+  There is no script in this file. A filter would re-lay the drawing, and a re-laid drawing
+  is a second thing to get wrong. What a script would have given you is below the picture:
+  every count, in a table, per bucket and per group.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+:root{
+  /* The median rule is template-local: it is a mark that must stand clear of the bars in
+     both themes, and the seam's --brand-dark is the darkest surface in the dark theme, so a
+     rule drawn with it would disappear into the panel it sits on. */
+  --bar-median:#1B2A4A;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a
+   scaled-down drawing is text under the floor. Below that the box pans. */
+.figure svg{display:block;width:100%;height:auto;min-width:62.5rem}
+.ds-grid{stroke:var(--rule);stroke-width:1}
+.ds-base{stroke:var(--line);stroke-width:1}
+.ds-panel{fill:var(--ink);font-size:14px;font-weight:600}
+.ds-stat{fill:var(--muted);font-size:14px}
+.ds-count{fill:var(--ink);font-size:14px}
+.ds-edge{fill:var(--muted);font-size:14px}
+.ds-bar{fill:var(--brand)}
+.ds-median{stroke:var(--bar-median);stroke-width:2;stroke-dasharray:4 3}
+.ds-median-label{fill:var(--bar-median);font-size:14px;font-weight:600}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.shapes{margin:1rem 0 0;padding-left:1.25rem;font-size:.9375rem}
+.shapes li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tfoot th,tfoot td{font-weight:600;background:var(--brand-soft);border-bottom:0}
+.legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin:.5rem 0 0;padding:0;list-style:none;
+  font-size:.875rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:.375rem}
+.legend .sw{width:1rem;height:.75rem;border-radius:2px;display:inline-block}
+.legend .ln{width:1rem;height:0;border-top:2px dashed var(--bar-median);display:inline-block}
+.withheld{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);
+  border-radius:.5rem;font-size:.875rem;line-height:1.5}
+.withheld p{margin:.25rem 0}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* The drawing keeps a readable minimum and the figure scrolls sideways inside its own
+     box: a phone may pan a picture, but the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  table{break-inside:auto}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band inverts; the median rule takes a light value for the same reason
+     the bars do. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    :root{--bar-median:#d5ece9}
+  }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Saksbehandlingstid per enhet</h1>
+  <p class="sub">423 saker · 12 intervaller fra 0 til 60</p>
+</div></header>
+<main>
+  <figure class="figure">
+<svg viewBox="0 0 1000 792" role="img" aria-labelledby="ds-t ds-d" preserveAspectRatio="xMinYMin meet">
+<title id="ds-t">Fordeling: Dager</title>
+<desc id="ds-d">Dager: 423 saker i 12 intervaller, median 4.</desc>
+<text class="ds-panel" x="0" y="18">Enhet nord</text>
+<text class="ds-stat" x="0" y="40">180 saker · median 4 · middel 4,6 · p90 7 · største 26</text>
+<rect class="ds-bar" x="13.0" y="66.0" width="79.0" height="92.0"><title>0 – 5: 111</title></rect>
+<rect class="ds-bar" x="94.0" y="107.4" width="79.0" height="50.6"><title>5 – 10: 61</title></rect>
+<rect class="ds-bar" x="175.0" y="152.2" width="79.0" height="5.8"><title>10 – 15: 7</title></rect>
+<rect class="ds-bar" x="418.0" y="157.2" width="79.0" height="0.8"><title>25 – 30: 1</title></rect>
+<line class="ds-base" x1="12" y1="158.0" x2="984" y2="158.0"/>
+<text class="ds-edge" x="12.0" y="176.0" text-anchor="start">0</text>
+<text class="ds-edge" x="498.0" y="176.0" text-anchor="middle">30</text>
+<text class="ds-edge" x="984.0" y="176.0" text-anchor="end">60</text>
+<line class="ds-median" x1="76.8" y1="48.0" x2="76.8" y2="158.0"><title>median: 4</title></line>
+<text class="ds-count" x="52.5" y="61.0" text-anchor="middle">111</text>
+<text class="ds-count" x="133.5" y="102.4" text-anchor="middle">61</text>
+<text class="ds-count" x="214.5" y="147.2" text-anchor="middle">7</text>
+<text class="ds-count" x="457.5" y="152.2" text-anchor="middle">1</text>
+<text class="ds-panel" x="0" y="222">Enhet sør</text>
+<text class="ds-stat" x="0" y="244">150 saker · median 4 · middel 4,7 · p90 9 · største 30</text>
+<rect class="ds-bar" x="13.0" y="270.0" width="79.0" height="92.0"><title>0 – 5: 97</title></rect>
+<rect class="ds-bar" x="94.0" y="326.0" width="79.0" height="36.0"><title>5 – 10: 38</title></rect>
+<rect class="ds-bar" x="175.0" y="351.6" width="79.0" height="10.4"><title>10 – 15: 11</title></rect>
+<rect class="ds-bar" x="256.0" y="361.1" width="79.0" height="0.9"><title>15 – 20: 1</title></rect>
+<rect class="ds-bar" x="418.0" y="361.1" width="79.0" height="0.9"><title>25 – 30: 1</title></rect>
+<rect class="ds-bar" x="499.0" y="360.1" width="79.0" height="1.9"><title>30 – 35: 2</title></rect>
+<line class="ds-base" x1="12" y1="362.0" x2="984" y2="362.0"/>
+<text class="ds-edge" x="12.0" y="380.0" text-anchor="start">0</text>
+<text class="ds-edge" x="498.0" y="380.0" text-anchor="middle">30</text>
+<text class="ds-edge" x="984.0" y="380.0" text-anchor="end">60</text>
+<line class="ds-median" x1="76.8" y1="252.0" x2="76.8" y2="362.0"><title>median: 4</title></line>
+<text class="ds-count" x="52.5" y="265.0" text-anchor="middle">97</text>
+<text class="ds-count" x="133.5" y="321.0" text-anchor="middle">38</text>
+<text class="ds-count" x="214.5" y="346.6" text-anchor="middle">11</text>
+<text class="ds-count" x="295.5" y="356.1" text-anchor="middle">1</text>
+<text class="ds-count" x="457.5" y="356.1" text-anchor="middle">1</text>
+<text class="ds-count" x="538.5" y="355.1" text-anchor="middle">2</text>
+<text class="ds-panel" x="0" y="426">Enhet vest</text>
+<text class="ds-stat" x="0" y="448">90 saker · median 6,5 · middel 10,7 · p90 21 · største 60</text>
+<rect class="ds-bar" x="13.0" y="474.0" width="79.0" height="92.0"><title>0 – 5: 30</title></rect>
+<rect class="ds-bar" x="94.0" y="489.3" width="79.0" height="76.7"><title>5 – 10: 25</title></rect>
+<rect class="ds-bar" x="175.0" y="507.7" width="79.0" height="58.3"><title>10 – 15: 19</title></rect>
+<rect class="ds-bar" x="256.0" y="550.7" width="79.0" height="15.3"><title>15 – 20: 5</title></rect>
+<rect class="ds-bar" x="337.0" y="553.7" width="79.0" height="12.3"><title>20 – 25: 4</title></rect>
+<rect class="ds-bar" x="418.0" y="559.9" width="79.0" height="6.1"><title>25 – 30: 2</title></rect>
+<rect class="ds-bar" x="499.0" y="562.9" width="79.0" height="3.1"><title>30 – 35: 1</title></rect>
+<rect class="ds-bar" x="742.0" y="562.9" width="79.0" height="3.1"><title>45 – 50: 1</title></rect>
+<rect class="ds-bar" x="904.0" y="556.8" width="79.0" height="9.2"><title>55 – 60: 3</title></rect>
+<line class="ds-base" x1="12" y1="566.0" x2="984" y2="566.0"/>
+<text class="ds-edge" x="12.0" y="584.0" text-anchor="start">0</text>
+<text class="ds-edge" x="498.0" y="584.0" text-anchor="middle">30</text>
+<text class="ds-edge" x="984.0" y="584.0" text-anchor="end">60</text>
+<line class="ds-median" x1="117.3" y1="456.0" x2="117.3" y2="566.0"><title>median: 6,5</title></line>
+<text class="ds-count" x="52.5" y="469.0" text-anchor="middle">30</text>
+<text class="ds-count" x="133.5" y="484.3" text-anchor="middle">25</text>
+<text class="ds-count" x="214.5" y="502.7" text-anchor="middle">19</text>
+<text class="ds-count" x="295.5" y="545.7" text-anchor="middle">5</text>
+<text class="ds-count" x="376.5" y="548.7" text-anchor="middle">4</text>
+<text class="ds-count" x="457.5" y="554.9" text-anchor="middle">2</text>
+<text class="ds-count" x="538.5" y="557.9" text-anchor="middle">1</text>
+<text class="ds-count" x="781.5" y="557.9" text-anchor="middle">1</text>
+<text class="ds-count" x="943.5" y="551.8" text-anchor="middle">3</text>
+<text class="ds-panel" x="0" y="630">Enhet test</text>
+<text class="ds-stat" x="0" y="652">3 saker · median 5 · middel 5,7 · p90 7 · største 7</text>
+<rect class="ds-bar" x="94.0" y="678.0" width="79.0" height="92.0"><title>5 – 10: 3</title></rect>
+<line class="ds-base" x1="12" y1="770.0" x2="984" y2="770.0"/>
+<text class="ds-edge" x="12.0" y="788.0" text-anchor="start">0</text>
+<text class="ds-edge" x="498.0" y="788.0" text-anchor="middle">30</text>
+<text class="ds-edge" x="984.0" y="788.0" text-anchor="end">60</text>
+<line class="ds-median" x1="93.0" y1="660.0" x2="93.0" y2="770.0"><title>median: 5</title></line>
+<text class="ds-count" x="133.5" y="673.0" text-anchor="middle">3</text>
+</svg>
+    <figcaption>Hver stolpe er ett intervall av Dager, og høyden er antall saker i det. Tallet over hver stolpe er det samme tallet skrevet ut, og tabellen under har alle intervallene med grensene sine. Medianen er verdien i midten når sakene sorteres. p90 er verdien 90 prosent av sakene ligger på eller under.</figcaption>
+  </figure>
+  <ul class="legend"><li><span class="sw" style="background:var(--bar)"></span>Saker per intervall</li><li><span class="ln"></span>Median</li></ul>
+
+  <h2 id="shape-h">Hva tallene sier</h2>
+  <ul class="shapes" aria-labelledby="shape-h">
+    <li><strong>Enhet nord</strong> — 62 prosent av sakene ligger i intervallet 0 til 5, og den største er 26.</li>
+    <li><strong>Enhet sør</strong> — 65 prosent av sakene ligger i intervallet 0 til 5, og den største er 30.</li>
+    <li><strong>Enhet vest</strong> — Fordelingen er spredt: det største intervallet har 33 prosent, og den største er 60. Gjennomsnittet (10,7) er 1,6 ganger medianen, så noen få saker drar tallet opp.</li>
+    <li><strong>Enhet test</strong> — 100 prosent av sakene ligger i intervallet 5 til 10, og den største er 7.</li>
+  </ul>
+
+  <h2 id="tbl-h">Intervallene bak bildet</h2>
+  <table aria-labelledby="tbl-h">
+    <caption>Antall saker i hvert intervall, per gruppe. Summen nederst skal være lik antall saker på siden.</caption>
+    <thead><tr>
+      <th scope="col">Intervall</th>
+      <th scope="col" class="num">Enhet nord (180)</th>
+      <th scope="col" class="num">Enhet sør (150)</th>
+      <th scope="col" class="num">Enhet vest (90)</th>
+      <th scope="col" class="num">Enhet test (3)</th>
+      <th scope="col" class="num">Totalt (423)</th>
+    </tr></thead>
+    <tbody>
+      <tr><th scope="row">0 – 5</th><td class="num">111</td><td class="num">97</td><td class="num">30</td><td class="num">0</td><td class="num">238</td></tr>
+      <tr><th scope="row">5 – 10</th><td class="num">61</td><td class="num">38</td><td class="num">25</td><td class="num">3</td><td class="num">127</td></tr>
+      <tr><th scope="row">10 – 15</th><td class="num">7</td><td class="num">11</td><td class="num">19</td><td class="num">0</td><td class="num">37</td></tr>
+      <tr><th scope="row">15 – 20</th><td class="num">0</td><td class="num">1</td><td class="num">5</td><td class="num">0</td><td class="num">6</td></tr>
+      <tr><th scope="row">20 – 25</th><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">4</td></tr>
+      <tr><th scope="row">25 – 30</th><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">4</td></tr>
+      <tr><th scope="row">30 – 35</th><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">3</td></tr>
+      <tr><th scope="row">35 – 40</th><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><th scope="row">40 – 45</th><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><th scope="row">45 – 50</th><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td></tr>
+      <tr><th scope="row">50 – 55</th><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><th scope="row">55 – 60</th><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">3</td></tr>
+    </tbody>
+    <tfoot>
+      <tr><th scope="row">Totalt</th><td class="num">180</td><td class="num">150</td><td class="num">90</td><td class="num">3</td><td class="num">423</td></tr>
+    </tfoot>
+  </table>
+</main>
+<footer>
+  <p>Selvstendig fil: alle radene er regnet ut på forhånd, og ingenting hentes når den åpnes.</p>
+  <p>Ingen server, ingen innlogging, ingen skript. Intervallene er et presentasjonsvalg, ikke en egenskap ved dataene.</p>
+  <p>Syntetisk eksempeldata (saksbehandlingstid.csv) — 423 saker · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

@@ -1,10 +1,12 @@
 ---
 name: magnus-review
 description: "Run an adversarial review of a PR, branch, or large diff through two senior-engineer lenses — Magnus (correctness: falsify the author's story, trace every finding through the actual code with file:line evidence) and Linus Torvalds (code & architecture: data structures over code, wrong coupling, interfaces and surfaces, useless helpers, lying names, never break user space). Verdict-first, honest severity, verified strengths listed alongside findings, and a closing pattern note. Use when the user says 'Magnus style review', 'Magnus-style review', 'run a Magnus review', 'adversarial review', 'Linus review', 'architecture review', 'will this cause headaches down the line', or asks for a senior/skeptical review of a PR or branch that goes beyond verifying the author's own claims."
-license: AGPL-3.0-or-later
 ---
 
 # Magnus-Style Review
+
+**Tier and cost, for the first reply:** none. It reads code and writes a verdict; it pushes
+nothing and approves nothing.
 
 Run an adversarial review of a PR or branch through two senior-engineer lenses — Magnus (correctness: falsify the author's story, trace every finding through the actual code with file:line evidence) and Linus Torvalds (code & architecture: data structures over code, wrong coupling, interfaces and surfaces, useless helpers, lying names, never break user space — will this wake the maintainer at 05:13) — verdict-first, honest severity, verified strengths listed alongside findings, and a closing pattern note that names the bug class and its durable fix.
 
@@ -16,10 +18,10 @@ When the user says "Magnus style review", "Magnus-style review", "run a Magnus r
 
 You are a smart, skeptical colleague whose job is to find what the author missed — not to verify the author's story. Commit messages, PR descriptions, and the author's own verification claims are hypotheses, not evidence. Every assertion you make must be backed by something you read in the actual tree or diff — or in the authoritative docs of an external system the diff depends on. Four disciplines separate this from a rubber stamp:
 
-1. **Falsify, don't confirm.** Ask "how could this be wrong?" and try to break it. The best reviews find the bug the author didn't know to look for (for example, a reserved-id bypass in a PR whose own testing verified the feature worked).
+1. **Falsify, don't confirm.** Ask "how could this be wrong?" and try to break it. The best reviews find the bug the author didn't know to look for (Magnus found a reserved-id bypass in a PR whose own testing verified the feature worked).
 2. **Trace, don't skim.** A finding is a full chain from trigger to consequence with file:line at every hop — "attacker-controlled X reaches Y because Z never checks" — never "this looks risky".
 3. **Weigh honestly.** Severity needs a rationale: what does exploitation/breakage require, what's the blast radius, why is it HIGH and not CRITICAL (or LOW and not MEDIUM). Inflated severity is as dishonest as deflated severity.
-4. **Verify semantics against the spec, not memory.** When the diff's correctness rests on an external system's behavior — SQL/engine semantics (e.g. isolation levels, upsert and deduplication behaviour, transactional settings), provider API request/response shapes, SDK defaults and signatures, wire protocols, infra config — check those claims via Context7 before accepting or challenging them. The author's confident memory and the reviewer's confident memory are equally inadmissible; plausible-but-wrong API assumptions are the classic review blind spot.
+4. **Verify semantics against the spec, not memory.** When the diff's correctness rests on an external system's behavior — SQL/engine semantics (e.g. MergeTree engines, FINAL, transactional settings), provider API request/response shapes, SDK defaults and signatures, wire protocols, infra config — check those claims via Context7 before accepting or challenging them. The author's confident memory and the reviewer's confident memory are equally inadmissible; plausible-but-wrong API assumptions are the classic review blind spot.
 
 ## The two lenses
 
@@ -75,7 +77,7 @@ Identify the base and the diff. For a PR: `gh pr diff <N>` plus `git log --oneli
 
 For diffs over ~50 files, spawn parallel `mode=inline` reviewers (fs=read, network=false, heavy model, high effort), each owning a disjoint surface with an enumerated checklist — e.g. merge-fidelity, behavior preservation of refactors, security boundary, frontend/wire compat, the Linus lens (data-structure/coupling/interface census). Disjoint surfaces prevent duplicated work; enumerated checklists prevent vague wandering.
 
-**Inline workers have a hard ~100 tool-call iteration budget — it does not scale with effort.** Two of three broad reviewers died mid-investigation on the first run of this workflow. Mandatory mitigations in every worker prompt:
+**Inline workers have a hard ~100 tool-call iteration budget (issue #1092) — it does not scale with effort.** Two of three broad reviewers died mid-investigation on the first run of this workflow. Mandatory mitigations in every worker prompt:
 - State the budget explicitly: "you have ~95 tool calls; start writing your report by call ~65 even if incomplete — running out returns nothing."
 - Bound the scope so it converges: named files/commits/checks, not "review everything".
 - Require batched greps (one bash call, many patterns) and head limits.
@@ -98,7 +100,7 @@ Linus Torvalds is a specific person, not an adjective: thirty years of kernel pa
 - **Interfaces and surfaces.** An interface that is easy to use wrongly is a broken interface no matter how clean the implementation: signatures taking three bools, call orders the caller must remember, exported surface leaking internals the consumer shouldn't see. The fix is a different signature or a smaller surface — never documentation.
 - **Useless helpers.** A function that just forwards, a one-caller abstraction, a layer for a hypothetical future. His test: delete the helper — if nothing gets worse, it was noise standing between the reader and what actually happens. (This is also the boring test: could it be one line? standard library? an existing record?)
 - **Naming.** A name that needs a comment to be understood is the wrong name; `process_helper2` says nothing and will eventually lie. Names are the surface the next reader consumes — bad naming is a real defect with a required fix, not a nit.
-- **Never break user space.** The first rule. Wire contracts, stored rows, exported APIs: anything a consumer built on is sacred. Enumerate every consumer of every changed shape — stores, rollups, wire responses, frontend joins — and verify each one handles the change. "Someone will have to remember to..." is the 05:13 page in embryo.
+- **Never break user space.** The #1 rule. Wire contracts, stored rows, exported APIs: anything a consumer built on is sacred. Enumerate every consumer of every changed shape — stores, rollups, wire responses, frontend joins — and verify each one handles the change. "Someone will have to remember to..." is the 05:13 page in embryo.
 
 Then the maintainer's question, in his voice: **will this wake me at 05:13 because every consumer machine is on fire?** Cuss the concrete chain out by name, or bless the tasteful work loudly — he genuinely does both, and both need evidence. When findings reveal spaghetti state beyond the diff itself, the spaghetti-hunt skill is the cleanup path.
 
@@ -123,4 +125,4 @@ Merge the surface reports into the report structure above. Deduplicate, re-rank 
 - Skipping the architecture lens on small diffs — small diffs accrete into big architectures.
 - Skipping the verified-strengths section because you found bugs — the author needs to know what NOT to touch.
 - Spawning one worker with an unbounded "review the whole PR" prompt — it will die at the iteration cap and return nothing.
-- Reasoning about external-system semantics from memory ("the merge keeps the newest row", "this API returns X by default", "the SDK retries automatically") — confident, plausible, and unverifiable without the docs. That is how wrong reviews get written with total authority.
+- Reasoning about external-system semantics from memory ("FINAL keeps the newest row", "this API returns X by default", "the SDK retries automatically") — confident, plausible, and unverifiable without the docs. That is how wrong reviews get written with total authority.

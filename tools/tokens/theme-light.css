@@ -1,11 +1,3 @@
-/*
-   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-   under terms of your choice, provided the Origin Notice is preserved.
-   SPDX-License-Identifier: AGPL-3.0-or-later
-*/
 /* ==========================================================================
    Theme: light (default)
    ==========================================================================
@@ -13,11 +5,13 @@
    --brand, etc.) onto the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css) and status-semantic.css, instead of
    each template hardcoding its own hex values as it does today.
 
-   NOT YET WIRED INTO templates: html files — this file documents the
-   intended mapping so it can be reviewed before any template changes. Load
-   order for a future build: the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css), then status-semantic.css,
-   then this file (so the palette- and status- prefixed variables it references
-   already exist).
+   WIRED INTO the builders that inline tokens: build_process_diagram.py and
+   build_index.py both call tun_tokens.load_token_css(), which is the load
+   order below. The templates that still hardcode their own hexes are listed in
+   ROADMAP A34.
+   Load order: the active palette (palette-neutral.css, or a brand plugin's
+   tokens/palette.css), then status-semantic.css, then this file (so the
+   palette- and status- prefixed variables it references already exist).
 
    Rationale for a light default: a dashboard is read repeatedly and at
    length — Nielsen Norman Group and general dashboard-UX guidance favour a
@@ -28,18 +22,50 @@
 :root,
 :root[data-theme="light"]{
   --ink:        var(--palette-ink);      /* body text */
-  --muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */
-  --line:       #ebebeb;               /* neutral grey: borders, gridlines */
+  --muted:      #666666;               /* labels, axis text: Black 60%, 5.4:1 on --panel (Black 55% was 4.46:1, under AA) */
+  --line:       #ebebeb;               /* borders, gridlines — Black 8% */
   --bg:         var(--palette-surface);
-  --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
+  --panel:      #f8f8f8;               /* cards, filter bar — Black 3% */
   --brand:      var(--palette-primary);        /* primary data colour, links, focus */
+  /* Text drawn ON a --brand fill (an active tab, a selected nav button). It is a role of
+     its own because the right colour differs per theme and no component should guess:
+     white on the light theme's dark primary is 8.61:1, and the same white on the dark
+     theme's light primary would be 1.89:1. Measured in both themes by
+     tools/check_token_contrast.py. */
+  --on-brand:   var(--palette-surface);
   --brand-dark: var(--palette-primary-dark);    /* header background */
+  /* The soft brand tint: a hover wash, a note box, a group band. Light uses a pale tint
+     with dark ink on it. --on-brand-soft exists because the right text colour there is not
+     --on-brand: this is a tint, not a fill, and dark ink is what reads on a pale wash. */
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  /* A hairline inside a card, one step lighter than --line. */
+  --rule:       #ececec;
   --series-2:   var(--palette-accent);     /* secondary chart series — decorative use only, not text */
+
+  /* Categorical series: the five blocks a survey bar paints its answer options with. They
+     sit beside each other in one stacked bar and the table under it repeats every number,
+     so the bar is not the only carrier: 3:1 against the panel is a floor, not a goal.
+     Light keeps three of the five values the survey shipped with; two were too pale to be a
+     colour on a white panel (2.49:1 and 2.14:1) and are one step deeper here (3.83:1 and
+     3.42:1), same hues. Closest pair deltaE 13.7 (--cat-1 and --cat-3, two teals). */
+  --cat-1: #2F5D9E;   /* blue */
+  --cat-2: #1a8f66;   /* purple, one step deeper */
+  --cat-3: #1B2A4A;   /* purple */
+  --cat-4: #5f8f89;   /* the pale tint of the same family, one step deeper */
+  --cat-5: #dc2a2a;   /* Fire Red: the outlier answer, never the only signal */
 
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
+  /* --bad as TEXT on the page, rather than as a fill or a chip. Fire Red itself is 4.49:1 on
+     --panel, which is under AA by 0.01; on white it is 4.76:1, which is how it passed for so
+     long. A text variant is the same hue, one step darker: 4.82:1 on --panel, 5.12:1 on white. */
+  --bad-ink: #d42626;
   /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
      is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
+  /* A negative WASH, distinct from --bad-bg, which is a badge fill: a delta chip letters
+     --bad-ink on this. Fire Red 8%, the value the dashboard used before the seam. */
+  --bad-soft:  #fdeeee;
   --bad-bg:var(--palette-surface);
 }

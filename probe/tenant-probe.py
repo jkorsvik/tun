@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 tenant-probe.py — re-verify what SharePoint/OneDrive actually do with an HTML file.
 
@@ -92,7 +89,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--graph-token", required=True,
                     help="delegated Graph access token with Files.ReadWrite")
-    ap.add_argument("--folder", default="tun-probe")
+    ap.add_argument("--folder", default="rai-probe")
     ap.add_argument("--keep", action="store_true", help="do not delete the fixtures")
     args = ap.parse_args()
     tok = args.graph_token

@@ -1,0 +1,67 @@
+# Strings for templates/sankey.html and tools/build_sankey.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# One row of flows from a node to a node, drawn in stages, with every total printed.
+
+[nb]
+html_lang = nb
+svg_title = Overføringningsdiagram
+svg_desc = {nodes} noder og {edges} overføringer av {value}, til sammen {total}. Hver node har like mye inn som ut, bortsett fra start og slutt.
+sub_line = {nodes} noder, {edges} overføringer, til sammen {total}
+caption = Hver bånd er en kollega, og bredden er mengden. Båndet har samme bredde ved begge ender, og hele bildet bruker én skala, så en node som tar imot mindre, er synlig kortere. Tallene står i tabellene.
+stage_label = Trinn {n}
+summary_line = {nodes} noder i {edges} overføringer: {start} starter, {end} slutter, og {total} er mengden som går inn.
+summary_biggest = Største enkeltoverføring er {src} til {dst} med {value}.
+summary_balanced = Hver node i midten har like mye inn som ut; det er kontrollert til siste enhet.
+note_balance = En kollega som ikke går opp, er pynt. Byggeren regner inn og ut for hver node, og stopper hvis en node midt i bildet ikke har like mye inn som ut: da ser det ut som om mengder oppstår eller forsvinner mellom to trinn.
+note_scale = Hele bildet bruker én skala. En skala per trinn ville latt et bånd betyde én ting i den ene enden og noe annet i den andre, uten at noe på siden sa det.
+note_layers = Trinnene er regnet ut som lengste vei fra en startnode, og en syklus blir avvist: kan mengden komme tilbake til et tidligere trinn, finnes det ingen trinn, og en tegning med trinn ville dikte opp en rekkefølge.
+note_positive = Bare positive overføringer. En kollega på null tegner en hårfin strek ingen kan se, og en negativ har ingen bredde i det hele tatt.
+note_table = Hver kollega står i tabellen med mengde og andel, og hver node med hvor mye som kom inn og gikk ut. En leser kan legge sammen en kolonne i stedet for å tro på en bredde.
+head_flows = Overføringene
+flow_caption = Én rad per kollega, største først, med andel av den samlede mengden.
+head_nodes = Nodene
+node_caption = Én rad per node: hvilket trinn den står i, og hvor mye som kom inn og gikk ut. En node midt i bildet har de samme to tallene.
+col_src = Fra
+col_dst = Til
+col_value = Mengde
+col_share = Andel
+col_node = Node
+col_stage = Trinn
+col_in = Inn
+col_out = Ut
+source_line = Kilde: {name} · {rows} overføringer
+footer_a = Bildet viser hvor mengden gikk, ikke hvorfor. En bred kollega er et faktum, ikke en forklaring.
+footer_b = Alle overføringer, andeler og nodetotaler står i tabellene, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.
+footer_built = Bygget
+
+[en]
+html_lang = en
+svg_title = Flow diagram
+svg_desc = {nodes} nodes and {edges} flows of {value}, {total} in all. Every node takes in as much as it passes on, apart from the start and the end.
+sub_line = {nodes} nodes, {edges} flows, {total} in all
+caption = Each band is a flow and its width is the quantity. A band has the same width at both ends, and the whole picture uses one scale, so a node that receives less is visibly shorter. The numbers are in the tables.
+stage_label = Stage {n}
+summary_line = {nodes} nodes in {edges} flows: {start} start, {end} end, and {total} is the quantity coming in.
+summary_biggest = The largest single flow is {src} to {dst} at {value}.
+summary_balanced = Every node in the middle takes in as much as it passes on, checked to the last unit.
+note_balance = A flow that does not add up is decoration. The builder sums the input and the output of every node and stops when a node in the middle of the picture does not take in what it passes on: the picture would then show quantities appearing or vanishing between two stages.
+note_scale = The whole picture uses one scale. A scale per stage would let a band mean one thing at one end and something else at the other, with nothing on the page saying so.
+note_layers = The stages are computed as the longest path from a start node, and a cycle is refused: if the quantity can return to an earlier stage then there are no stages, and a drawing with stages would invent an order.
+note_positive = Positive flows only. A flow of zero draws a hairline nobody can see, and a negative one has no width at all.
+note_table = Every flow is in the table with its quantity and share, and every node with what came in and what went out. A reader can add a column instead of trusting a width.
+head_flows = The flows
+flow_caption = One row per flow, largest first, with its share of the whole quantity.
+head_nodes = The nodes
+node_caption = One row per node: which stage it sits in, and how much came in and went out. A node in the middle of the picture has the same two numbers.
+col_src = From
+col_dst = To
+col_value = Quantity
+col_share = Share
+col_node = Node
+col_stage = Stage
+col_in = In
+col_out = Out
+source_line = Source: {name} · {rows} flows
+footer_a = The picture shows where the quantity went, not why. A wide band is a fact, not an explanation.
+footer_b = Every flow, share and node total is in the tables, so the picture can be checked instead of trusted. The file carries no script.
+footer_built = Built

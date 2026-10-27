@@ -2,15 +2,16 @@
 
 This is the project's own identity: the colours used on the public site
 (`tun.community`) and in the pitch artefacts, shipped as an ordinary token
-plugin through the same contract `plugins/eksempel` uses. Unlike a company brand,
+plugin through the same contract `plugins/<your-brand>` uses. Unlike `plugins/<your-brand>`,
 this one is not confidential — the colours are already public — so
 `manifest.json` sets `"private": false`. It provides `tokens` and `assets`:
 the logo, a square mark and a one-colour logo (see "The mark" below).
 
 ## Where the four source colours came from
 
-Read verbatim from the public site's own `:root` block (`tun.community`; see
-`AGENTS.md` §8 for why the site is never copied in here, only read):
+Read verbatim from the site's own `:root` block (the public site,
+tun.community. Its source lives in a private repo. `AGENTS.md` §8 says why
+it is never copied in here, only read):
 
 | Site variable | Hex | How the site actually uses it |
 |---|---|---|
@@ -84,10 +85,10 @@ TUN_PALETTE=plugins/tun/tokens/palette.css \
   python3 tools/build_dashboard.py ...
 ```
 
-Same mechanism `plugins/eksempel/README.md` documents. `TUN_PALETTE` is an
+Same mechanism `plugins/<your-brand>/README.md` documents. `TUN_PALETTE` is an
 explicit, unambiguous selection — it names the exact file to use — so it
 works the same way whether this is the only plugin installed or
-`plugins/eksempel` is installed alongside it.
+`plugins/<your-brand>` is installed alongside it.
 
 **This plugin does not change what `--prefer-plugin` / `prefer_plugin=True`
 does.** That flag means "auto-pick whichever single plugin provides

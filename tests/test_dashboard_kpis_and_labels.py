@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """The KPI cards and the bar labels of tools/build_dashboard.py, on data shaped like a query.
 
 Two problems, found by building a dashboard from a Snowflake result (one case each):
@@ -345,7 +342,64 @@ def case_l1(tmp: pathlib.Path, browsers: dict) -> None:
         page.close()
 
 
-CASES = (case_k1, case_l1)
+# ── T1: sorting the details table, from the keyboard ─────────────────────────
+def case_t1(tmp: pathlib.Path, browsers: dict) -> None:
+    """A sort control a mouse can reach and a keyboard cannot is not a control.
+
+    The header used to be a <th> with an onclick: invisible to a keyboard, silent to a
+    screen reader, and nothing said which column was sorted (WCAG 2.1.1 and 4.1.2).
+    It is now a <button> inside the <th>, with aria-sort on the <th> and a 44 px target.
+    """
+    data = tmp / "t1.csv"
+    data.write_text("Kategori,Maaned,Kroner per person\n"
+                    + "".join(f"{k},{m},{n}\n" for k, m, n in
+                              (("Mat", "2026-01", 120), ("Reise", "2026-01", 90),
+                               ("Bolig", "2026-01", 300), ("Mat", "2026-02", 140))),
+                    encoding="utf-8")
+    out = tmp / "t1.html"
+    r = build(data, out, "--time", "Maaned", dimension="Kategori", measure="Kroner per person")
+    check("T1: the fixture builds", out.is_file(), r.stderr[-200:])
+    if not out.is_file():
+        return
+    for engine, browser in browsers.items():
+        page, errors = open_page(browser, out)
+        head = page.evaluate("""() => [...document.querySelectorAll('#tbl thead th')].map(th => ({
+            col: th.dataset.col,
+            sort: th.getAttribute('aria-sort'),
+            button: !!th.querySelector('button'),
+            h: th.querySelector('button') ? th.querySelector('button').getBoundingClientRect().height : 0,
+        }))""")
+        check(f"T1 [{engine}]: every header is a button", all(c["button"] for c in head),
+              str([c["col"] for c in head if not c["button"]]))
+        sorted_cols = [c["col"] for c in head if c["sort"] != "none"]
+        check(f"T1 [{engine}]: exactly one column carries a sort state", len(sorted_cols) == 1,
+              str([(c["col"], c["sort"]) for c in head]))
+        check(f"T1 [{engine}]: aria-sort says which way", sorted_cols and
+              [c["sort"] for c in head if c["sort"] != "none"][0] in ("ascending", "descending"),
+              str([c["sort"] for c in head]))
+        check(f"T1 [{engine}]: the target is 44 px tall", all(c["h"] >= 43.5 for c in head),
+              str([round(c["h"], 1) for c in head]))
+
+        first = page.locator("#tbl thead th button").first
+        before = page.eval_on_selector_all("#tbl tbody tr td:first-child",
+                                           "els => els.map(e => e.textContent)")
+        before_sort = page.eval_on_selector("#tbl thead th", "e => e.getAttribute('aria-sort')")
+        first.focus()
+        page.keyboard.press("Enter")
+        page.wait_for_timeout(150)
+        after = page.eval_on_selector_all("#tbl tbody tr td:first-child",
+                                          "els => els.map(e => e.textContent)")
+        after_sort = page.eval_on_selector("#tbl thead th", "e => e.getAttribute('aria-sort')")
+        check(f"T1 [{engine}]: Enter on a focused header sorts the table", before != after,
+              f"{before[:2]} -> {after[:2]}")
+        check(f"T1 [{engine}]: and the state moves to that column",
+              after_sort in ("ascending", "descending") and after_sort != before_sort,
+              f"{before_sort} -> {after_sort}")
+        check(f"T1 [{engine}]: no page errors (table)", not errors, str(errors)[:200])
+        page.close()
+
+
+CASES = (case_k1, case_l1, case_t1)
 
 
 def main() -> int:

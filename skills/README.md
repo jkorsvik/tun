@@ -11,11 +11,13 @@ skills/                 what this project produces
   tun-publish/
   tun-powerbi-escape/
   tun-process/
+  tun-review/
 
 skills/dev/             how any project gets built
   hotshot/                these have nothing to do with dashboards
   magnus-review/          and everything to do with the round of work
   writing-for-agents/
+  template-on-the-seam/   one exception: putting a template on the colour seam
 ```
 
 `python3 setup.py` installs both groups. RAIWork looks one level deep, so they end up flat in
@@ -51,22 +53,27 @@ Specific to this project. This repo is their home and they will change as it doe
 | `tun-publish` | Uploads it, confirms who can see it, drafts the announcement. |
 | `tun-powerbi-escape` | Moves a report off Power BI, and answers the objections honestly. |
 | `tun-process` | Draws a process as swimlanes, with the steps that should improve flagged. |
+| `tun-review` | A reader who disagrees says which row and hands it back as one text block; `tools/read_review.py` finds the row and shows the file's number beside theirs. |
 | `tun-feedback` | Logs what went wrong or right, and files it as an issue if you want. |
 
 ---
 
-## skills/dev/ — the three for the work itself
+## skills/dev/ — the five for the work itself
 
-**Deliberately agnostic.** They name no build tool, no test runner, no branch convention and
-no forge, because the method is identical whether the thing being built is a dashboard, a
-batch job or a payments API. Take them to your next project unchanged; that is the test they
-are written to pass.
+**Deliberately agnostic, in three of the five.** `hotshot`, `magnus-review` and
+`writing-for-agents` name no build tool, no test runner, no branch convention and no forge,
+because the method is identical whether the thing being built is a dashboard, a batch job or a
+payments API. Take those three to your next project unchanged; that is the test they are
+written to pass. `template-on-the-seam` and `adding-an-artefact-kind` are the two exceptions:
+they document how THIS repo's artefacts are built, and they say so.
 
 | Skill | The method, in one line |
 |---|---|
 | `hotshot` | The full round on one word: understand, implement, prove, get torn apart, cut, submit. |
 | `magnus-review` | The reviewer whose job is to falsify your story, not confirm it. |
 | `writing-for-agents` | How to write an instruction a machine will actually follow. |
+| `template-on-the-seam` | Putting a template on the shared colour seam, and keeping it there. |
+| `adding-an-artefact-kind` | A new kind end to end: builder, seam template, two languages, a suite that can fail, eight registration points. |
 
 ### hotshot
 
@@ -113,8 +120,10 @@ The three in `dev/` also exist at user level (`~/.raiwork/skills/`) and are shar
 projects. The copies here will drift from those. That is an accepted trade: a checkout that
 works on a fresh machine with nothing else installed beats a tidier one that does nothing.
 
-If you ever bring a skill in from elsewhere, expect to rewrite it: keep the method, throw
-out the stack.
+`hotshot` here is a **rewrite**, not a copy. The original named another codebase's build tools,
+branch conventions and container stack. The method transferred; none of those instructions did.
+If you ever bring a skill in from elsewhere, expect the same job: keep the method, throw out
+the stack.
 
 `hotshot` also calls `simplify`, which ships with RAIWork itself and needs no copy here.
 
@@ -128,7 +137,8 @@ WARN hotshot  (dev)    you already have a skill with this name — left alone
 ```
 
 It only ever replaces a copy it installed itself, marked with a dotfile it wrote. A project
-install must not be able to destroy a global tool.
+install must not be able to destroy a global tool. This was a real bug here, found by it
+deleting one.
 
 ## Not vendored on purpose
 

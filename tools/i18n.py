@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 i18n.py: the strings tables behind `--lang en|nb`.
 
@@ -108,11 +105,12 @@ def keys_used(text: str) -> set[str]:
     return set(TOKEN.findall(text))
 
 
-SLOT = re.compile(r"\{([a-z]+)\}")
+SLOT = re.compile(r"\{([a-z][a-z0-9]*)\}")
 
 
 def fill(text: str, **values) -> str:
-    """Fill {slot}s of a table value in ONE pass. A value that holds a slot of its own
+    """Fill {slot}s of a table value in ONE pass. A slot is lower case letters and digits,
+    so a percentile named p90 can be a slot. A value that holds a slot of its own
     (a column called "{dimension}", a file called "source-{rows}.csv") is pasted as it
     is and never filled again, which chained .replace() calls would do. A slot with no
     value is left as written."""

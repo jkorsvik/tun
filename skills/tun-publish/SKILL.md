@@ -1,10 +1,13 @@
 ---
 name: tun-publish
 description: Publish a built standalone dashboard to SharePoint, OneDrive or Atlassian Artifacts, confirm who can see it, produce a shareable link or a Confluence embed, and draft the announcement. Use when someone wants to share, publish, distribute, or send out a dashboard, asks where to put it so colleagues can open it, or wants it in Artifacts or on a Confluence page.
-license: AGPL-3.0-or-later
 ---
 
 # Publish a dashboard to SharePoint, OneDrive or Atlassian Artifacts
+
+**Tier and cost, for the first reply:** Tier 1, no licence, no workspace, no admin. The only
+real decision is who can open the folder, and that belongs to the folder's owner rather than
+to IT.
 
 ## Before you publish
 
@@ -48,10 +51,10 @@ If the site has a synced local path, the simplest reliable publish is a file cop
 sync client then uploads it — often better than a Graph upload, because it puts the file
 exactly where the user already navigates.
 
-**Find the synced folder — the location differs per OS.** `python3 setup.py` prints it, or:
+**Find the synced folder — the location differs per OS.** `python3 setup.py` prints it (`py -3 setup.py` on Windows), or:
 
-- **Windows:** `%OneDriveCommercial%`, or `C:\Users\<user>\Eksempel AS\<site>`
-- **macOS:** `~/Library/CloudStorage/OneDrive-SharedLibraries-EksempelAS/<site>`
+- **Windows:** `%OneDriveCommercial%`, or `C:\Users\<user>\Eksempel AS Bank ASA\<site>`
+- **macOS:** `~/Library/CloudStorage/OneDrive-SharedLibraries-Eksempel ASBankASA/<site>`
 
 Then copy the file there with whatever the platform uses (`copy` / `cp`, or just drag it
 in Explorer/Finder — this step does not need a terminal at all).
@@ -130,7 +133,7 @@ Use `create-drive-item-share-link` with:
 - `type: "view"` — viewers should not edit the artefact
 - `scope: "organization"` — an internal link
 
-⚠️ `type: "embed"` and `scope: "anonymous"` **do not work** in the organisation's tenant —
+⚠️ `type: "embed"` and `scope: "anonymous"` **do not work** in the Eksempel AS tenant —
 anonymous sharing is blocked (verified; `docs/01-tenant-constraints.md` row 3). Do not
 try to route around it.
 

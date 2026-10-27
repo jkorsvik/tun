@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """Delete each fix that tests/test_dashboard_kpis_and_labels.py covers, and require it to notice.
 
 Same method as tests/mutate_builder_null_measures.py: every mutation is applied to a COPY

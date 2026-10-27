@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="nb">
 <head>
 <meta charset="utf-8">
@@ -22,11 +14,10 @@
   PROVENANCE  (do not delete — this is how output gets traced back)
     Source data : Syntetisk eksempeldata (ingen virkelige elever)
     Extracted   : 2026-09-19 06:40
-    Built       : 2026-10-11 02:47
+    Built       : 2026-10-27 01:24
     Requested by: Skoleadministrasjonen
     Built by    : examples/17-multi-regime-day-board/build_day_board.py
     Repo        : tun
-    Made with   : Tún — tun.community
     Rows in data.js: 84
   ----------------------------------------------------------------------------
   SYNTHETIC DATA ONLY. Every ElevKode, clock time, car id and status below is
@@ -52,9 +43,8 @@
   /* ==========================================================================
      Colour — values inlined, never fetched (no CDN, works offline).
 
-     WHOSE BRAND IS THIS? In this invented scenario the board belongs to a third
-     party, the fictional Eksempelkommune, whose brand this repository does not
-     have. So this file
+     WHOSE BRAND IS THIS? Eksempelskolen belongs to Eksempelkommune, a municipality
+     that is not a tenant of the platform this repository serves. So this file
      inlines NO token file at all: not the core palette in
      tools/tokens/palette-neutral.css, and not a plugin's. Loading either would
      dress one organisation's artefact in another's colours, which is a licensing
@@ -78,7 +68,7 @@
 
     /* ▼▼▼ TENANT PALETTE SLOT — THE ONLY PLACE COLOUR IS SET ▼▼▼
        Every value below is a NEUTRAL PLACEHOLDER. None of them is any
-       organisation's colour, and inventing one would be inventing a brand.
+       municipality's colour, and inventing one would be inventing a brand.
        Replace these nine values — and nothing else in the stylesheet —
        when a tenant supplies its real palette. build_day_board.py
        re-measures contrast on every build and refuses to ship a pair below
@@ -128,12 +118,13 @@
      ========================================================================== */
   body{margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden;
     background:var(--surface);color:var(--ink);
-    /* "Eksempelkommune Sans" is a fictional organisation typeface. It shows the
-       pattern for a licensed font: named first so it is used where it is
+    /* Eksempelkommune Sans is Eksempelkommune's own typeface, distributed through the
+       municipality's internal systems. Named first so it is used where it is
        installed; NEVER embedded and never declared as a web font from a URL,
-       because a licensed font inside a file that gets passed around needs the
-       font owner's permission. Everyone else gets the system stack and the
-       layout does not move. */
+       because
+       shipping a municipality's licensed font inside a file that gets passed
+       around is a licensing question nobody has answered. Everyone else gets
+       the system stack and the layout does not move. */
     font-family:"Eksempelkommune Sans","Eksempelkommune Sans Regular",system-ui,-apple-system,
       "Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     font-size:1rem;line-height:1.5}
@@ -145,21 +136,23 @@
 
   .title{display:flex;flex-direction:column;margin-right:auto}
   .title h1{margin:0;font-size:1rem;line-height:1.5rem;font-weight:500}
-  .title .subtitle{font-size:0.75rem;line-height:1rem;opacity:0.85}
+  .title .subtitle{font-size:0.875rem;line-height:1rem;opacity:0.85}
 
   /* Navigation needs a script to work, so it is hidden until one has run.
      Dead links are worse than no links. */
   #nav{display:none;gap:var(--sp-1);flex-wrap:wrap}
   .js-active #nav{display:flex}
-  #nav a{display:inline-block;padding:var(--sp-1) var(--sp-2);border-radius:0.25rem;
-    color:var(--surface);text-decoration:none;font-size:0.875rem;line-height:1.5rem;
-    border:1px solid rgba(255,255,255,0.4);min-height:2.5rem}
+  /* 44 px is the touch minimum docs/11 sets. These controls sat at 42 px
+     on a phone: tall enough to look right, too small to hit with a thumb. */
+  #nav a{display:inline-flex;align-items:center;padding:var(--sp-1) var(--sp-2);
+    border-radius:0.25rem;color:var(--surface);text-decoration:none;font-size:0.875rem;
+    line-height:1.5rem;border:1px solid rgba(255,255,255,0.4);min-height:2.75rem}
   #nav a[aria-current="page"]{background:var(--surface);color:var(--primary-dark);
     border-color:var(--surface);font-weight:500}
   #fullscreen{padding:var(--sp-1) var(--sp-2);border-radius:0.25rem;
     border:1px solid rgba(255,255,255,0.4);background:transparent;color:var(--surface);
     font-family:inherit;font-size:0.875rem;line-height:1.5rem;cursor:pointer;
-    min-height:2.5rem}
+    min-height:2.75rem;min-width:2.75rem}
   #fullscreen:disabled{opacity:0.45;cursor:default}
 
   /* One view at a time — but only once a script has proven it can switch them.
@@ -192,11 +185,11 @@
   #controls{display:flex;gap:var(--sp-1) var(--sp-2);flex-wrap:wrap;
     align-items:flex-end;background:var(--surface-sunken);padding:var(--sp-1) var(--sp-2);
     border-radius:0.25rem;margin-bottom:var(--sp-2)}
-  #controls label{display:block;font-size:0.75rem;line-height:1rem;
+  #controls label{display:block;font-size:0.875rem;line-height:1rem;
     text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-muted)}
   #controls select,#controls button{padding:var(--sp-1);border-radius:0.25rem;
     border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
-    font-family:inherit;font-size:0.875rem;line-height:1.5rem;min-height:2.5rem}
+    font-family:inherit;font-size:0.875rem;line-height:1.5rem;min-height:2.75rem}
   /* WebKit draws a native select at its own height and ignores min-height, so the 48px
      touch target below came out 22px tall in Safari. Drop the native look in every engine
      and draw the arrow with two gradients (url() is not allowed in this file). */
@@ -216,10 +209,10 @@
   /* Labels wrap to two lines on the longer scheme names; reserving the space
      keeps every number on the same baseline across the row. */
   /* Deliberately NOT text-transform:uppercase. These labels are data — the
-     scheme names out of data.js — and upper-casing turned "langdagSFO TT-kort"
-     into "LANGDAGSFO TT-KORT", erasing that SFO is an acronym. Never re-case a
+     scheme names out of data.js — and upper-casing turned "heldagsSFO TT-kort"
+     into "HELDAGSSFO TT-KORT", erasing that SFO is an acronym. Never re-case a
      term the school owns. Weight and colour carry the hierarchy instead. */
-  .kpi .label{font-size:0.8125rem;line-height:1rem;font-weight:500;
+  .kpi .label{font-size:0.875rem;line-height:1rem;font-weight:500;
     color:var(--ink-muted);min-height:2rem}
   .kpi .value{font-size:1.5rem;line-height:2rem;font-weight:500;
     color:var(--primary-dark);font-variant-numeric:tabular-nums}
@@ -231,7 +224,7 @@
   svg{width:100%;max-width:40rem;height:auto;display:block;overflow:visible}
   .axis{stroke:var(--line-strong);stroke-width:1}
   .gridline{stroke:var(--line);stroke-width:1}
-  .axis-label{font-size:0.6875rem;fill:var(--ink-muted)}
+  .axis-label{font-size:0.875rem;fill:var(--ink-muted)}
   .bar{fill:var(--primary)}
 
   table{width:100%;border-collapse:collapse;font-size:0.875rem;line-height:1.5rem}
@@ -239,7 +232,7 @@
     vertical-align:top}
   /* No sticky header: row 26 again. #content is the only scroller, so the
      header row scrolls away with the rest — an accepted cost, not an oversight. */
-  th{font-size:0.75rem;line-height:1rem;text-transform:uppercase;
+  th{font-size:0.875rem;line-height:1rem;text-transform:uppercase;
     letter-spacing:0.04em;color:var(--ink-muted);white-space:nowrap}
   .badge{display:inline-block;padding:0 var(--sp-1);border-left:0.25rem solid
     var(--status-neutral);background:var(--surface-sunken);border-radius:0.125rem;
@@ -255,10 +248,10 @@
   .legend{display:flex;flex-wrap:wrap;gap:var(--sp-1);align-items:center;
     margin:0 0 var(--sp-2)}
   .owner{display:inline-block;padding:0 var(--sp-1);border:1px solid var(--line-strong);
-    border-radius:0.125rem;font-size:0.75rem;line-height:1.5rem;color:var(--ink-muted)}
+    border-radius:0.125rem;font-size:0.875rem;line-height:1.5rem;color:var(--ink-muted)}
 
   footer{margin-top:var(--sp-3);padding-top:var(--sp-1);color:var(--ink-muted);
-    font-size:0.75rem;line-height:1rem;border-top:1px solid var(--line)}
+    font-size:0.875rem;line-height:1rem;border-top:1px solid var(--line)}
 
   /* Nine columns do not fit a phone. Below 48rem each row becomes its own card
      with the column name as a label, so nothing needs a horizontal scroll and
@@ -279,7 +272,7 @@
     tbody td{display:flex;justify-content:space-between;gap:var(--sp-1);
       border-bottom:0;padding:0.125rem 0}
     tbody td::before{content:attr(data-column);color:var(--ink-muted);
-      font-size:0.75rem;line-height:1.5rem;text-transform:uppercase;
+      font-size:0.875rem;line-height:1.5rem;text-transform:uppercase;
       letter-spacing:0.04em}
   }
   @media print{header{background:var(--surface);color:var(--ink)}
@@ -380,7 +373,7 @@
       </tr></thead>
       <tbody>
         <tr>
-          <td data-column="Ordning"><strong>Grunnskole drosje</strong></td>
+          <td data-column="Ordning"><strong>1-10 drosjesentral</strong></td>
           <td data-column="Hvem søker">Ingen søknad</td>
           <td data-column="Hvem bestiller turen">Skolen bestiller og koordinerer</td>
           <td data-column="Egenandel">Nei</td>
@@ -388,9 +381,9 @@
           <td data-column="Endres av">Skoleadm.; sentralbordet samme dag</td>
         </tr>
         <tr>
-          <td data-column="Ordning"><strong>langdagSFO TT-kort</strong></td>
+          <td data-column="Ordning"><strong>heldagsSFO TT-kort</strong></td>
           <td data-column="Hvem søker">Foresatte søker TT-kort hos kommunen.
-            Gjelder <strong>alle</strong> på langdagSFO</td>
+            Gjelder <strong>alle</strong> på heldagsSFO</td>
           <td data-column="Hvem bestiller turen"><strong>Foresatte bestiller
             drosjen selv</strong></td>
           <td data-column="Egenandel">Ja, betales av foresatte</td>
@@ -408,8 +401,8 @@
         </tr>
       </tbody>
     </table>
-    <p class="hint">Kilde: (fiktiv kilde — skolens egen transportside).
-      Der kilden ikke sier noe, står det at den ikke sier
+    <p class="hint">Kilde: (fiktiv kilde — skolens egen transportside),
+      sist endret 15.12.2023. Der kilden ikke sier noe, står det at den ikke sier
       noe. Ingenting i denne tabellen er utfylt med gjetning.</p>
   </section>
 
@@ -453,7 +446,7 @@
   </section>
   <footer>
     Eksempelskolen &middot; mønstereksempel med syntetiske data, ingen
-    virkelige elever &middot; bygget 2026-10-11 02:47 av
+    virkelige elever &middot; bygget 2026-10-27 01:24 av
     build_day_board.py &middot; data i data.js (84 rader,
     uttrekk 2026-09-19 06:40) &middot; ingen lisens, ingen server, ingen CDN.
     Hvilke målte rader i docs/01-tenant-constraints.md som styrer hvert valg
@@ -563,7 +556,7 @@
   /* The régimes the ownership table in the Ordninger view actually documents.
      An Ordning in the data that is not in this list has no owner written down
      anywhere, which is the one thing this artefact must never hide. */
-  var DOCUMENTED_SCHEMES = ["Grunnskole drosje", "langdagSFO TT-kort",
+  var DOCUMENTED_SCHEMES = ["1-10 drosjesentral", "heldagsSFO TT-kort",
                             "VGS TT-kort"];
   /* The column names are the data contract; these are what a reader sees.
      Only the two that read badly when upper-cased need an entry. */

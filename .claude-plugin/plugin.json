@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Turn any data file into an interactive artefact that is just a file: filters, charts, sortable tables, shareable through any substrate with no licence, no workspace and no admin approval. Includes skills to build, refresh, verify and publish artefacts, and to move reports off the incumbent tools. Licensed AGPL-3.0-or-later with the Tún Artefact Exception v1.1, see COPYING.ARTEFACT-EXCEPTION.",
   "author": {
-    "name": "Jon-Mikkel Ryen Korsvik"
+    "name": "vedlikeholderen"
   },
   "license": "AGPL-3.0-or-later",
   "keywords": ["dashboards", "reporting", "visualisation", "portable", "standalone", "portable-html"],

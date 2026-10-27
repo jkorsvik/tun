@@ -1,0 +1,401 @@
+<!--TUN-ANNOTATE-STYLE-->
+<style>
+  /* The review layer (docs/31). Shown only when a reader can interact with it: the
+     static sheet below uses the .nojs class the template already has, so a viewer that
+     blocks scripting (Quick Look) shows a block the reader can fill in by hand instead
+     of a button that does nothing. */
+  /* Same container as <main> and <footer>, so the layer sits on the page's own grid
+     instead of against the viewport edge. */
+  .annotate,.annotate-sheet{max-width:90rem;margin:0 auto;padding:var(--sp-3, 1.5rem) var(--sp-4, 2rem)}
+  .annotate-bar{display:none}
+  html.js .annotate-bar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3, 1.5rem);
+    margin:0 0 var(--sp-4, 2rem);padding:var(--sp-3, 1.5rem) 0;border-top:1px solid var(--line, #dcdcdc)}
+  .annotate-count{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959)}
+  .annotate-hint{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959)}
+  .annotate-btn{min-height:2.75rem;padding:0 var(--sp-3, 1.5rem);font:inherit;font-size:.875rem;
+    /* The surface token, not a raw white: this layer is injected into artefacts that now
+       follow the system's dark setting, and a button painted white under the theme's light
+       ink measures 1.09:1 there. */
+    border:1px solid var(--line, #dcdcdc);border-radius:4px;background:var(--panel, #fff);
+    color:var(--ink, #0a0a0a);cursor:pointer}
+  .annotate-btn:hover{border-color:var(--brand, #2F5D9E)}
+  .annotate-btn[aria-pressed="true"]{background:var(--brand, #2F5D9E);border-color:var(--brand, #2F5D9E);
+    color:var(--on-brand, #fff)}
+  .annotate-form,.annotate-out{font-size:.875rem;line-height:1.5rem}
+  .annotate-form p,.annotate-out p{margin:0 0 var(--sp-2, 1rem);max-width:52rem}
+  .annotate-form label{display:block;margin:var(--sp-1, 0.5rem) 0 var(--sp-1, 0.5rem);font-weight:600}
+  .annotate-form textarea,.annotate-out textarea{width:100%;box-sizing:border-box;
+    font:inherit;font-size:.875rem;line-height:1.5rem;padding:var(--sp-2, 1rem);
+    border:1px solid var(--line, #dcdcdc);border-radius:4px;background:var(--color-white, #fff);color:var(--ink, #0a0a0a)}
+  .annotate-out textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.875rem}
+  .annotate-actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2, 1rem);
+    margin:var(--sp-2, 1rem) 0 0}
+  .annotate-list{list-style:none;margin:var(--sp-3, 1.5rem) 0 0;padding:0}
+  .annotate-list li{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-2, 1rem);
+    padding:var(--sp-1, 0.5rem) 0;border-bottom:1px solid var(--line, #dcdcdc)}
+  .annotate-list .who{font-weight:600}
+  .annotate-live{font-size:.875rem;line-height:1.5rem;color:var(--muted, #595959);margin:var(--sp-1, 0.5rem) 0 0}
+  body.annotate-on #tbl tbody tr{cursor:pointer}
+  body.annotate-on #tbl tbody tr:hover td{background:var(--color-light blue-25, #e9f8f4)}
+  body.annotate-on #tbl tbody tr.annotate-hit td{background:var(--color-light blue-50, #EEE7F7)}
+  #tbl tbody tr.annotate-done td:first-child{box-shadow:inset 3px 0 0 var(--brand, #2F5D9E)}
+  .annotate-sheet pre{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,
+    monospace;font-size:.875rem;line-height:1.5rem;padding:var(--sp-2, 1rem);
+    border-left:3px solid var(--line, #dcdcdc);margin:0 0 var(--sp-3, 1.5rem)}
+</style>
+<!--TUN-ANNOTATE-BODY-->
+<section class="nojs annotate-sheet" id="annotate-sheet">
+  <h2>{{T:nojs_title}}</h2>
+  <p class="nojs-lead">{{T:nojs_lead}}</p>
+  <pre>{{ANNOTATE_HEADER}}--
+{{ANNOTATE_EXAMPLES}}</pre>
+  <p class="nojs-lead">{{T:nojs_how}}</p>
+</section>
+<section class="annotate" id="annotate">
+  <div class="annotate-bar">
+    <button type="button" class="annotate-btn" id="annotate-toggle"
+            aria-pressed="false">{{T:btn_on}}</button>
+    <span class="annotate-count" id="annotate-count">{{T:count_none}}</span>
+    <span class="annotate-hint" id="annotate-hint" hidden>{{T:hint}}</span>
+  </div>
+  <div class="annotate-form" id="annotate-form" hidden>
+    <p id="annotate-target"></p>
+    <label for="annotate-text">{{T:ask}}</label>
+    <textarea id="annotate-text" rows="3"></textarea>
+    <div class="annotate-actions">
+      <button type="button" class="annotate-btn" id="annotate-add">{{T:add}}</button>
+      <button type="button" class="annotate-btn" id="annotate-cancel">{{T:cancel}}</button>
+    </div>
+  </div>
+  <div class="annotate-out" id="annotate-out" hidden>
+    <h2 id="annotate-out-title">{{T:panel_title}}</h2>
+    <p>{{T:panel_lead}}</p>
+    <textarea id="annotate-payload" readonly rows="10"
+              aria-labelledby="annotate-out-title"></textarea>
+    <div class="annotate-actions">
+      <button type="button" class="annotate-btn" id="annotate-copy">{{T:copy}}</button>
+      <span class="annotate-live" id="annotate-copied"></span>
+    </div>
+    <ul class="annotate-list" id="annotate-list"></ul>
+  </div>
+  <p class="annotate-live" id="annotate-live" role="status" aria-live="polite"></p>
+</section>
+<script>
+(function () {
+  "use strict";
+  // Filled in by tools/review_layer.py. Nothing leaves the file: the block a reader
+  // copies is assembled here, from what is already on the page, and handed to their own
+  // clipboard. tools/read_review.py reads it back and finds the rows again.
+  var C = {{ANNOTATE_CONFIG}};
+  var notes = [];
+  var target = null;
+
+  function el(id) { return document.getElementById(id); }
+  function table() { return el(C.table || "tbl"); }
+  function heads() {
+    var t = table();
+    return t ? Array.prototype.slice.call(t.querySelectorAll("thead th")) : [];
+  }
+  // A column is found by a name the builder put in the markup, never by the visible text:
+  // a sorted column carries a caret. Two builders, two ways of saying it, so the config
+  // says which one this artefact uses: `cellAttr` names the attribute a cell carries
+  // (the register writes data-label on every td), and without it the header's data-col
+  // is read instead (the rows dashboard).
+  function colIndex(name) {
+    // An empty name is "no such column", not "the first one": an artefact with no single
+    // measure passes measure="", and the register's headers carry no data-col for it to
+    // match, so without this the first column answered to the empty name and every
+    // comment carried the case number as its figure.
+    if (!name) return -1;
+    if (C.cellAttr) {
+      var t = table();
+      var rows = t ? t.querySelectorAll("tbody tr") : [];
+      for (var r = 0; r < rows.length; r++) {
+        var tds = rows[r].children;
+        for (var i = 0; i < tds.length; i++) {
+          if ((tds[i].getAttribute(C.cellAttr) || "") === name) return i;
+        }
+      }
+      return -1;
+    }
+    var hs = heads();
+    for (var h = 0; h < hs.length; h++) {
+      if ((hs[h].getAttribute("data-col") || "") === name) return h;
+    }
+    return -1;
+  }
+  // The identity of a row. A key cell can carry a tag ("gone", "new") inside it, and
+  // textContent then reads "Nordvest borte" for a key that is "Nordvest": a comment would
+  // be filed against a name the file does not hold. An artefact that knows its own key puts
+  // it on the row, and that wins.
+  function rowKeys(tr) {
+    if (C.keyAttr) {
+      var said = tr.getAttribute(C.keyAttr);
+      if (said !== null && said !== undefined && said !== "") return [said];
+    }
+    return keyCols().map(function (k) { return cell(tr, colIndex(k)); });
+  }
+  function cell(tr, i) {
+    var c = tr.children[i];
+    return c ? (c.textContent || "").trim() : "";
+  }
+  function keyCols() {
+    var out = C.keys.filter(function (k) { return colIndex(k) >= 0; });
+    if (out.length) return out;
+    return heads().slice(0, 1).map(function (h) {
+      return h.getAttribute("data-col") || "";
+    }).filter(function (n) { return n; });
+  }
+  // A row a reader can comment on: cells, no heading, and at least one cell that says
+  // which column it belongs to. A grouped register also draws band rows (a th that spans
+  // the table) and an empty-state row (one td with a colspan); neither is a record.
+  function isDataRow(tr) {
+    if (!tr || tr.nodeName !== "TR" || !tr.parentNode || tr.parentNode.nodeName !== "TBODY") return false;
+    if (tr.querySelector("th") || tr.className.indexOf("grp") >= 0) return false;
+    var tds = tr.children;
+    if (!tds.length || (tds[0] && tds[0].colSpan > 1)) return false;
+    if (C.cellAttr) {
+      for (var i = 0; i < tds.length; i++) {
+        if (tds[i].getAttribute(C.cellAttr)) return true;
+      }
+      return false;
+    }
+    return tds.length === heads().length;
+  }
+
+  function header(keys) {
+    return ["TUN-REVIEW 1",
+      "artefact: " + C.title,
+      "file: " + C.file,
+      "built: " + C.built,
+      "rows: " + C.rows,
+      "source: " + C.source,
+      "keys: " + keys.join(", "),
+      "measure: " + C.measure];
+  }
+  function payload() {
+    var keys = keyCols();
+    var lines = header(keys);
+    notes.forEach(function (n) {
+      lines.push("--");
+      lines.push("row: " + n.row.join(" | "));
+      if (n.status) lines.push("status: " + n.status);
+      if (n.value) lines.push("value: " + n.value);
+      else if (n.cells.length) lines.push("cells: " + cellsText(n));
+      lines.push("comment: " + n.comment);
+    });
+    return lines.join("\n") + "\n";
+  }
+
+  // The figures a reader could disagree about. A dashboard has one (--measure); a register
+  // has every numeric column, and there the reader's values also break a tie when several
+  // records share the same text cells.
+  function measureCols() {
+    return (C.measures && C.measures.length) ? C.measures : (C.measure ? [C.measure] : []);
+  }
+  function rowFor(tr) {
+    var keys = keyCols();
+    var mi = colIndex(C.measure);
+    var cells = measureCols().map(function (name) {
+      var i = colIndex(name);
+      return [name, i >= 0 ? cell(tr, i) : ""];
+    }).filter(function (pair) { return pair[1] !== ""; });
+    return {
+      keys: keys,
+      row: rowKeys(tr),
+      value: mi >= 0 ? cell(tr, mi) : "",
+      // An artefact can mark a row as present on one side only (the comparison marks a key
+      // added or gone). The comment still belongs to the key; the mark says why one figure
+      // is empty, so the report does not read as "the row is wrong".
+      status: C.statusAttr ? (tr.getAttribute(C.statusAttr) || "") : "",
+      cells: cells
+    };
+  }
+  function cellsText(n) {
+    return n.cells.map(function (pair) { return pair[0] + "=" + pair[1]; }).join("; ");
+  }
+
+  function count() {
+    var c = el("annotate-count");
+    if (!c) return;
+    c.textContent = notes.length === 0 ? C.t.count_none
+      : notes.length === 1 ? C.t.count_one
+      : C.t.count_other.replace("{n}", String(notes.length));
+  }
+
+  function listNotes() {
+    var ul = el("annotate-list");
+    if (!ul) return;
+    ul.textContent = "";
+    notes.forEach(function (n, i) {
+      var li = document.createElement("li");
+      var who = document.createElement("span");
+      who.className = "who";
+      // textContent throughout: a comment is the reader's text, never markup.
+      who.textContent = n.row.join(" | ") + (n.value ? " \u00b7 " + n.value : "");
+      var said = document.createElement("span");
+      said.textContent = n.comment;
+      var del = document.createElement("button");
+      del.type = "button";
+      del.className = "annotate-btn";
+      del.textContent = C.t.remove;
+      del.addEventListener("click", function () {
+        notes.splice(i, 1);
+        render();
+        el("annotate-live").textContent = "";
+      });
+      li.appendChild(who);
+      li.appendChild(said);
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+
+  function markRows() {
+    var t = table();
+    if (!t) return;
+    var tb = t.querySelector("tbody");
+    if (!tb) return;
+    var keys = keyCols();
+    Array.prototype.forEach.call(tb.querySelectorAll("tr"), function (tr) {
+      if (!isDataRow(tr)) return;
+      var name = rowKeys(tr).join(" | ");
+      var hit = false;
+      for (var i = 0; i < notes.length; i++) {
+        if (notes[i].row.join(" | ") === name) { hit = true; break; }
+      }
+      tr.classList.toggle("annotate-done", hit);
+      if (hit) tr.title = C.t.annotated; else tr.removeAttribute("title");
+    });
+  }
+
+  function render() {
+    count();
+    markRows();
+    var out = el("annotate-out");
+    if (out) out.hidden = notes.length === 0;
+    var box = el("annotate-payload");
+    if (box) box.value = notes.length ? payload() : "";
+    listNotes();
+  }
+
+  function start() {
+    var t = el("annotate-toggle");
+    if (!t) return;
+    var on = document.body.classList.toggle("annotate-on");
+    t.setAttribute("aria-pressed", on ? "true" : "false");
+    t.textContent = on ? C.t.btn_off : C.t.btn_on;
+    var hint = el("annotate-hint");
+    if (hint) hint.hidden = !on;
+    if (!on) cancel();
+  }
+
+  function cancel() {
+    target = null;
+    var f = el("annotate-form");
+    if (f) f.hidden = true;
+    var box = el("annotate-text");
+    if (box) box.value = "";
+    var tb = table();
+    if (tb) {
+      Array.prototype.forEach.call(tb.querySelectorAll("tr.annotate-hit"), function (tr) {
+        tr.classList.remove("annotate-hit");
+      });
+    }
+  }
+
+  function begin(tr) {
+    target = rowFor(tr);
+    Array.prototype.forEach.call(table().querySelectorAll("tr.annotate-hit"), function (r) {
+      r.classList.remove("annotate-hit");
+    });
+    tr.classList.add("annotate-hit");
+    var f = el("annotate-form");
+    var p = el("annotate-target");
+    var figures = target.value || (target.cells.length ? cellsText(target) : "");
+    if (p) p.textContent = C.t.row + ": " + target.row.join(" | ")
+      + (figures ? " \u00b7 " + figures : "");
+    if (f) f.hidden = false;
+    var box = el("annotate-text");
+    if (box) { box.value = ""; box.focus(); }
+  }
+
+  function add() {
+    var box = el("annotate-text");
+    if (!target || !box) return;
+    // One line per comment, so the pasted block stays line-based. A comment that is
+    // empty is not a comment; the reader gets told rather than getting a blank entry.
+    var said = (box.value || "").replace(/\s+/g, " ").trim();
+    if (!said) { el("annotate-live").textContent = C.t.ask; box.focus(); return; }
+    notes.push({ row: target.row, status: target.status, value: target.value,
+                 cells: target.cells, comment: said });
+    cancel();
+    render();
+    el("annotate-live").textContent = C.t.added + ": " + String(notes.length);
+  }
+
+  function copy() {
+    var box = el("annotate-payload");
+    var said = el("annotate-copied");
+    if (!box || !notes.length) return;
+    function done(ok) {
+      if (said) said.textContent = ok ? C.t.copied : C.t.copy_manual;
+      if (!ok) { box.focus(); box.select(); }
+    }
+    // Clipboard access is refused in a sandboxed frame (an Atlassian Artifacts viewer is
+    // one), so the write is tried first and the textarea is left selectable either way.
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(box.value).then(function () { done(true); },
+          function () { done(false); });
+        return;
+      }
+    } catch (e) { /* fall through */ }
+    try {
+      box.focus(); box.select();
+      done(document.execCommand("copy"));
+    } catch (e2) { done(false); }
+  }
+
+  var tog = el("annotate-toggle");
+  if (!tog) return;
+
+  // The table body is replaced on every sort and filter (renderTable), which would drop
+  // the marker with it. Watching the body keeps the marker without hooking the page's
+  // own rendering code, which this layer does not own.
+  var tb = table() && table().querySelector("tbody");
+  if (tb && window.MutationObserver) {
+    new MutationObserver(markRows).observe(tb, { childList: true });
+  }
+  tog.addEventListener("click", start);
+  var addBtn = el("annotate-add");
+  if (addBtn) addBtn.addEventListener("click", add);
+  var cancelBtn = el("annotate-cancel");
+  if (cancelBtn) cancelBtn.addEventListener("click", cancel);
+  var copyBtn = el("annotate-copy");
+  if (copyBtn) copyBtn.addEventListener("click", copy);
+
+  // Delegated on the document: the table body is replaced on every filter and sort, so a
+  // listener bound to a row would be gone by the time the reader clicked it.
+  document.addEventListener("click", function (e) {
+    if (!document.body.classList.contains("annotate-on")) return;
+    var t = table();
+    if (!t) return;
+    var node = e.target;
+    while (node && node !== t && node.nodeName !== "TR") node = node.parentNode;
+    if (!isDataRow(node)) return;
+    if (node.querySelector("button")) return;
+    e.preventDefault();
+    begin(node);
+  }, false);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") cancel();
+    // Ctrl/Cmd+Enter adds the comment: the textarea keeps plain Enter for a newline,
+    // which a reader writing two sentences expects.
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && target) add();
+  });
+
+  render();
+})();
+</script>

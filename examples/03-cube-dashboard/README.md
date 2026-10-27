@@ -36,7 +36,7 @@ browser. The generator is seeded, so your numbers will match the ones below.
 
 ## Measured
 
-Build, on a MacBook:
+Build, on a managed MacBook:
 
 ```
 source rows   : 4,000,000
@@ -83,6 +83,12 @@ Nothing external. No CDN, no chart library, no WASM:
 The browser reconstructs typed-array views straight over the inflated buffer and sums
 the selected cells in place. That is why a filter click costs a tenth of a millisecond:
 there is no hashing, no allocation per cell, and no data to fetch.
+
+**Last ned CSV** writes what is on screen to a file: every dimension's aggregated
+values for the measure selected, under the filters applied, then a total row. The first
+three lines carry the source, the build stamp and the selection, so a file that leaves
+the page can still be traced back. It is the view, not the 4 000 000 rows: those were
+emptied at build time.
 
 ---
 

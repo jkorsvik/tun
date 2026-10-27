@@ -1,5 +1,7 @@
 # 28. Prior art, and what Tún takes from it
 
+**Reader:** record — a decision or a measurement, kept for why something is the way it is.
+
 > **Status:** researched 2026-10-08. Four research agents searched the web in parallel,
 > one per area below. Then a script fetched every page they cited and kept a claim only if
 > its quote was on that page. Of 146 claims, **79 quotes were word for word, 35 were
@@ -72,7 +74,7 @@ because it was a lenient regex. The reference validator found it.
 This change fixes all four (one double-quoted line each, and strings in `metadata`). All
 twelve now pass `skills-ref validate`. A stdlib gate in the pre-commit hook,
 [`tests/test_skill_frontmatter.py`](../tests/test_skill_frontmatter.py), now catches the
-same class of fault. It refuses block scalars (`>-`) too, because RAIWork shows them
+same class of fault. It refuses block scafagfelle (`>-`) too, because RAIWork shows them
 literally. Its `--mutation-check` deletes each of its 19 rules in turn, and the self-test
 notices all 19. On the first run, 7 of the 19 could be deleted unnoticed.
 

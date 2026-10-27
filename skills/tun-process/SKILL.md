@@ -5,6 +5,9 @@ description: "Draw a process as a swimlane diagram in one self-contained HTML fi
 
 # Draw a process diagram
 
+**Tier and cost, for the first reply:** Tier 1, no approvals and no licence; the diagram is
+one file in a folder whose permissions already say who may read it.
+
 You are producing a **Tier 1 portable artefact**: one `.html` file, no server, no network.
 It opens from SharePoint, OneDrive, an attachment or a USB stick. See
 `docs/08-generic-artifact-model.md`, section "Process diagrams".
@@ -116,6 +119,8 @@ Done when `python3 tools/build_process_diagram.py <spec> --check` prints `ok`.
 ```bash
 python3 tools/build_process_diagram.py <spec>.process.txt --out <folder>/<slug>.html
 ```
+
+On Windows, `python3` is `py -3`: `python3` is not a command there unless the Microsoft Store alias is installed. The rest of the line is the same.
 
 The builder lays the drawing out itself: lanes as columns, the flow running downwards,
 lines at right angles with rounded bends, each on its own track. A connection back to an

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 browser-capability-probe.py — re-verify what a `file://` page can and cannot reach,
 for capabilities NOT covered by probe/tenant-probe.py.
@@ -9,7 +6,7 @@ for capabilities NOT covered by probe/tenant-probe.py.
 tenant-probe.py answers Graph/SharePoint-side questions (does the tenant serve .html
 as attachment, is Range supported, ...). This script answers a different question:
 once a file is downloaded and opened locally, what does the BROWSER itself allow from
-origin `null`? That is a browser-platform rule, not a tenant policy, but it is just
+origin `null`? That is a browser-platform rule, not a Eksempel AS tenant policy, but it is just
 as load-bearing for anything in docs/01-tenant-constraints.md — see rows 19-20 there.
 
 Requires only Playwright + a locally installed Chromium — no Graph token, no tenant

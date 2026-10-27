@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún - tun.community
+    Records     : {{ROWS_INLINED}} days, one cell each
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: one cell per day, aligned to weekday rows, so a pattern in the week and in
+  the year is visible as a shape rather than as a table.
+
+  What it is NOT: a reason. A dark square is a day with a high number, not a cause.
+
+  There is no script in this file.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+{{TOKEN_CSS}}
+/* The band fills and their inks, decided together, one rule per band per theme. */
+{{RAMP_CSS}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:58rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:58rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem;overflow:auto}
+/* Never narrower than 1 unit = 1 px: the drawing's text is 14 units, and a scaled-down
+   drawing is text under the floor. This drawing's width depends on how many weeks the year
+   has, so the floor is set on the element itself by the builder; a fixed minimum here scaled
+   a phone down to 8.9 px text and the viewport gate said so. Below the floor the box pans,
+   and the page never does. */
+.figure svg{display:block;width:100%;height:auto}
+.cl-wd{fill:var(--muted);font-size:14px}
+.cl-month{fill:var(--ink);font-size:14px;font-weight:600}
+.cl-cell{stroke:var(--panel);stroke-width:1}
+/* A day with no data is a hatch, not a pale shade: pale means "a little", and nothing was
+   measured. The pattern survives a greyscale print and a colour-vision difference. */
+.cl-none{fill:url(#cal-hatch)}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.legend{list-style:none;margin:1rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;
+  font-size:.875rem;align-items:center}
+.legend li{display:flex;align-items:center;gap:.4rem}
+.sw{width:1rem;height:1rem;border-radius:.2rem;border:1px solid var(--line);display:inline-block}
+.sw-none{background:repeating-linear-gradient(45deg,var(--rule) 0 2px,transparent 2px 5px)}
+.summary{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.notes{margin:.75rem 0 0;padding-left:1.25rem;font-size:.9375rem;line-height:1.5}
+.notes li{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem;font-size:.875rem;line-height:1.5;
+  margin-bottom:1.5rem}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{max-width:58rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:44rem){
+  /* A phone may pan a picture inside its own box; the page never scrolls sideways. */
+  .figure{padding:.5rem}
+  th,td{padding:.4rem .5rem}
+}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .figure{overflow:visible;border:0;padding:0}
+  .figure svg{min-width:0}
+  .summary{background:#fff;padding-left:0}
+  tr{break-inside:avoid}
+  figure{break-inside:avoid}
+}
+
+  /* Dark is a SCREEN choice and paper is white, so this block is scoped to screen: without
+     the guard it would come after the print rule above and paint the ink light on a printed
+     white page. The lightest band is mixed from the panel colour, so it is the one band that
+     has to answer the media query at all. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+  }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>{{TITLE}}</h1>
+  <p class="sub">{{SUBTITLE}}</p>
+</div></header>
+<main>
+  <figure class="figure">
+{{DRAWING}}
+    <figcaption>{{CAPTION}}</figcaption>
+  </figure>
+
+  <h2 id="lg-h">{{T:legend_head}}</h2>
+  <ul class="legend" aria-labelledby="lg-h">
+  {{LEGEND}}
+  </ul>
+
+  <p class="summary">{{SUMMARY}}</p>
+  <ul class="notes">
+{{NOTES}}
+  </ul>
+
+  <h2 id="wd-h">{{T:head_weekday}}</h2>
+  <table aria-labelledby="wd-h">
+    <caption>{{T:weekday_caption}}</caption>
+    <thead><tr>
+      <th scope="col">{{T:col_weekday}}</th>
+      <th scope="col" class="num">{{T:col_days}}</th>
+      <th scope="col" class="num">{{T:col_mean}}</th>
+      <th scope="col" class="num">{{T:col_min}}</th>
+      <th scope="col" class="num">{{T:col_max}}</th>
+    </tr></thead>
+    <tbody>
+{{WEEKDAY_ROWS}}
+    </tbody>
+  </table>
+
+  <h2 id="bs-h">{{T:head_busiest}}</h2>
+  <table aria-labelledby="bs-h">
+    <caption>{{T:busiest_caption}}</caption>
+    <thead><tr>
+      <th scope="col">{{T:col_date}}</th>
+      <th scope="col">{{T:col_weekday}}</th>
+      <th scope="col" class="num">{{T:col_value}}</th>
+    </tr></thead>
+    <tbody>
+{{BUSIEST_ROWS}}
+    </tbody>
+  </table>
+</main>
+<footer>
+  <p>{{T:footer_a}}</p>
+  <p>{{T:footer_b}}</p>
+  <p>{{SOURCE_LINE}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p>
+  <p>{{FEEDBACK_BLOCK}}</p>
+</footer>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>
+  <pattern id="cal-hatch" width="6" height="6" patternUnits="userSpaceOnUse"
+           patternTransform="rotate(45)">
+    <rect width="6" height="6" fill="var(--panel)"/>
+    <line x1="0" y1="0" x2="0" y2="6" stroke="var(--rule)" stroke-width="2"/>
+  </pattern>
+</defs></svg>
+</body>
+</html>

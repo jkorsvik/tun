@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún - tun.community
+    Rows        : {{ROWS_INLINED}} keys compared ({{ROWS_BEFORE}} before, {{ROWS_AFTER}} after)
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence
+  required to view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: a comparison. Two extracts of the same measure, matched on a key,
+  shown as one row per key with the change beside it. "What moved, and by how much" is
+  the question most reports answer by hand in Excel, which is where the arithmetic goes
+  wrong and nobody can see it afterwards.
+
+  What it is NOT: a filter over a larger dataset, and not a place where the two extracts
+  are reconciled. A key that exists in only one of them is shown as new or gone, never
+  silently dropped: an absent row is a fact about the data, not a rounding error.
+
+  The static table below is the no-JS view: the largest movers, drawn by the builder.
+  The script re-renders the same rows when a filter or a sort changes.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+{{TOKEN_CSS}}
+:root{
+  /* Status colour, from the seam: --ok and --bad are Fire Red and Success Green, measured
+     per theme. Used ONLY when the builder is told which direction is good, because an
+     increase is not good or bad by itself: more revenue and more overtime are the same
+     arithmetic and opposite news. Direction is always carried by the sign as well, per
+     WCAG 1.4.1 (colour is never the only signal). */
+  /* --bad-ink, not --bad: these figures are TEXT, and Fire Red on the panel is 4.49:1,
+     under AA by a hundredth. See the role in theme-light.css. */
+  --pos:var(--ok);--neg:var(--bad-ink);--neutral:var(--muted);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.25rem;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:1.5rem 0 .5rem;font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:.75rem 1rem;align-items:flex-end;
+  background:var(--panel);border:1px solid var(--line);border-radius:.5rem;padding:1rem}
+.controls .field{display:flex;flex-direction:column;gap:.25rem;min-width:12rem}
+.controls .grow{flex:1 1 18rem}
+.controls label{font-size:.875rem;line-height:1.25rem;color:var(--muted);font-weight:600}
+.controls input[type=search],.controls select{font:inherit;font-size:.875rem;
+  min-height:2.75rem;padding:.5rem .625rem;border:1px solid var(--line);border-radius:.25rem;
+  background:var(--panel);color:var(--ink);width:100%}
+.controls select{-webkit-appearance:none;appearance:none;padding-right:2rem;
+  /* WebKit ignores padding and min-height on a native select and draws it 22 px tall. */
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .5rem center;background-size:.75rem .5rem}
+.controls button{font:inherit;font-size:.875rem;font-weight:600;min-height:2.75rem;
+  padding:.5rem 1rem;border:1px solid var(--brand);border-radius:.25rem;background:var(--panel);
+  color:var(--brand);cursor:pointer}
+.controls button:hover{background:var(--brand-soft)}
+.hint{margin:.5rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(11rem,100%),1fr));
+  gap:.75rem;margin:1rem 0 0;padding:0;list-style:none}
+.kpis li{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--brand);
+  border-radius:.25rem;padding:.75rem 1rem}
+.kpis .k{display:block;font-size:.875rem;line-height:1.25rem;color:var(--muted);
+  letter-spacing:.02em;text-transform:uppercase}
+.kpis .v{display:block;font-size:1.75rem;line-height:2rem;font-weight:600;margin-top:.125rem}
+.kpis .v{color:var(--ink)}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--line);border-radius:.5rem}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted);font-size:.875rem}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  font-variant-numeric:tabular-nums}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);font-size:.875rem;
+  line-height:1.25rem;white-space:nowrap}
+td.num,th.num{text-align:right}
+tbody tr:last-child td{border-bottom:0}
+/* The sum row keeps --panel, not the page grey: the status pair in
+   tools/tokens/status-semantic.css was measured against #FFFFFF, and Fire Red on
+   #f7f8f9 is 4.48:1, under AA. A border carries the separation instead. */
+tfoot td{font-weight:600;background:var(--panel);border-top:2px solid var(--line)}
+.delta.up,.delta.down{color:var(--ink)}
+.delta.flat,.delta.added,.delta.gone{color:var(--neutral)}
+/* Only when the builder was told which way is good does colour carry a verdict. */
+body[data-meaning="up"] .delta.up,body[data-meaning="up"] .kpis .v.up,
+body[data-meaning="down"] .delta.down,body[data-meaning="down"] .kpis .v.down{color:var(--pos)}
+body[data-meaning="up"] .delta.down,body[data-meaning="up"] .kpis .v.down,
+body[data-meaning="down"] .delta.up,body[data-meaning="down"] .kpis .v.up{color:var(--neg)}
+.sign{font-weight:600}
+.trk{display:block;height:.5rem;background:var(--line);border-radius:999px;overflow:hidden;
+  min-width:6rem}
+.trk i{display:block;height:100%;background:var(--brand)}
+.trk.added i,.trk.gone i,.trk.flat i{background:var(--neutral)}
+body[data-meaning="up"] .trk.up i,body[data-meaning="down"] .trk.down i{background:var(--pos)}
+body[data-meaning="up"] .trk.down i,body[data-meaning="down"] .trk.up i{background:var(--neg)}
+.tag{display:inline-block;font-size:.875rem;line-height:1.5rem;padding:0 .5rem;
+  /* 14 px, not 12: the text floor is measured, and a tag is text a reader reads. */
+  border-radius:999px;background:var(--brand-soft);color:var(--on-brand-soft);font-weight:600}
+.nojs{margin:1rem 0 0;padding:.75rem 1rem;border:1px solid var(--line);border-left:4px solid var(--brand);
+  background:var(--panel);border-radius:.25rem;font-size:.875rem;line-height:1.5}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media (max-width:40rem){
+  th,td{padding:.4rem .5rem;font-size:.875rem}
+  /* The bar is the first thing to go: the numbers are the content, it is the picture. */
+  .barcol{display:none}
+}
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; what follows is the one place
+   this page picks a slot by its LIGHT role, and that role inverts.
+
+   THE HEADER BAND fills with --brand-dark and writes --on-brand on it. In light that is
+   dark teal under white. In dark, --brand-dark is the darkest surface in the theme and
+   --on-brand is --bg, so the title would be dark on dark at 1.39:1. The pair the theme does
+   define is a --brand fill carrying --on-brand, so the band uses that pair here. The table
+   header and the status pill letter themselves with --on-brand-soft, which both themes
+   declare against --brand-soft, so they need nothing here. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) header{background:var(--brand);color:var(--on-brand)}
+}
+@media print{
+  .controls,.nojs{display:none}
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+}
+</style>
+</head>
+<body data-meaning="{{MEANING}}">
+<script>document.documentElement.className+=" js"</script>
+<header><div class="in">
+  <h1>{{TITLE}}</h1>
+  <p class="sub">{{SUBTITLE}}</p>
+</div></header>
+<main>
+  <div class="controls">
+    <div class="field grow">
+      <label for="q">{{T:search_label}}</label>
+      <input id="q" type="search" placeholder="{{T:search_placeholder}}" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="show">{{T:show_label}}</label>
+      <select id="show">
+        <option value="all">{{T:show_all}}</option>
+        <option value="changed">{{T:show_changed}}</option>
+        <option value="up">{{T:show_up}}</option>
+        <option value="down">{{T:show_down}}</option>
+        <option value="added">{{T:show_added}}</option>
+        <option value="gone">{{T:show_gone}}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sort">{{T:sort_label}}</label>
+      <select id="sort">
+        <option value="abs">{{T:sort_abs}}</option>
+        <option value="delta">{{T:sort_delta}}</option>
+        <option value="key">{{T:sort_key}}</option>
+        <option value="after">{{T:sort_after}}</option>
+        <option value="pct">{{T:sort_pct}}</option>
+      </select>
+    </div>
+    <button type="button" id="reset">{{T:reset}}</button>
+  </div>
+  <p class="hint">{{T:hint}}</p>
+
+  <ul class="kpis" id="kpis">
+    <li><span class="k">{{T:kpi_before}}</span><span class="v">{{KPI_BEFORE}}</span></li>
+    <li><span class="k">{{T:kpi_after}}</span><span class="v">{{KPI_AFTER}}</span></li>
+    <li><span class="k">{{T:kpi_delta}}</span><span class="v {{KPI_DELTA_CLASS}}">{{KPI_DELTA}}</span></li>
+    <li><span class="k">{{T:kpi_rows}}</span><span class="v">{{KPI_ROWS}}</span></li>
+    <li><span class="k">{{T:kpi_moved}}</span><span class="v">{{KPI_ADDED}} / {{KPI_GONE}}</span></li>
+  </ul>
+
+  <h2 id="tbl-h">{{T:table_head}}</h2>
+  <table aria-labelledby="tbl-h" id="tbl">
+    <caption>{{T:table_caption}}</caption>
+    <thead><tr>
+      <th scope="col" data-col="key">{{KEY_LABEL}}</th>
+      <th scope="col" class="num" data-col="before">{{BEFORE_LABEL}}</th>
+      <th scope="col" class="num" data-col="after">{{AFTER_LABEL}}</th>
+      <th scope="col" class="num" data-col="delta">{{T:col_delta}}</th>
+      <th scope="col" class="num" data-col="pct">{{T:col_pct}}</th>
+      <th scope="col" class="barcol" data-col="bar">{{T:col_bar}}</th>
+    </tr></thead>
+    <tbody id="rows">
+{{STATIC_ROWS}}
+    </tbody>
+    <tfoot><tr>
+      <td>{{T:total}}</td>
+      <td class="num">{{KPI_BEFORE}}</td>
+      <td class="num">{{KPI_AFTER}}</td>
+      <td class="num delta {{KPI_DELTA_CLASS}}">{{KPI_DELTA}}</td>
+      <td class="num">{{KPI_PCT}}</td>
+      <td class="barcol"></td>
+    </tr></tfoot>
+  </table>
+  <p class="nojs" id="nojs">{{T:nojs_note}}</p>
+</main>
+<footer>
+  <p>{{T:footer_a}}</p>
+  <p>{{T:footer_b}}</p>
+  <p>{{SOURCE_LINE}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p>
+</footer>
+<script>window.COMPARISON_DATA = {{COMPARISON_DATA}};</script>
+<script>
+const D = window.COMPARISON_DATA || {rows: [], meta: {}};
+const T = {{T_JSON}};
+const nf = new Intl.NumberFormat(D.meta.locale || "nb-NO", {maximumFractionDigits: 1});
+const pf = new Intl.NumberFormat(D.meta.locale || "nb-NO",
+  {style: "percent", maximumFractionDigits: 1, signDisplay: "exceptZero"});
+const el = (tag, cls) => { const n = document.createElement(tag); if (cls) n.className = cls; return n; };
+const sign = (v) => (v > 0 ? "+" : v < 0 ? "\u2212" : "");
+
+function magnitude(row) {
+  const a = Math.abs(row.d || 0);
+  return a;
+}
+
+function draw() {
+  const q = (document.getElementById("q").value || "").trim().toLowerCase();
+  const show = document.getElementById("show").value;
+  const sort = document.getElementById("sort").value;
+  let rows = D.rows.filter((r) => {
+    if (q && String(r.k).toLowerCase().indexOf(q) < 0) return false;
+    if (show === "changed") return r.s === "up" || r.s === "down";
+    if (show === "up") return r.s === "up";
+    if (show === "down") return r.s === "down";
+    if (show === "added") return r.s === "added";
+    if (show === "gone") return r.s === "gone";
+    return true;
+  });
+  const by = {
+    abs: (x, y) => magnitude(y) - magnitude(x),
+    delta: (x, y) => (y.d || 0) - (x.d || 0),
+    key: (x, y) => String(x.k).localeCompare(String(y.k), D.meta.locale || "nb-NO"),
+    after: (x, y) => (y.a || 0) - (x.a || 0),
+    pct: (x, y) => (y.pct === null ? -Infinity : y.pct) - (x.pct === null ? -Infinity : x.pct),
+  }[sort] || ((x, y) => magnitude(y) - magnitude(x));
+  rows = rows.slice().sort(by);
+  // The bar is scaled to the largest movement in view, so the picture says "relative to
+  // the biggest mover", not "relative to a full-width bar nobody can interpret".
+  const top = rows.reduce((m, r) => Math.max(m, magnitude(r)), 0) || 1;
+
+  const body = document.getElementById("rows");
+  body.textContent = "";
+  for (const r of rows) {
+    const tr = el("tr");
+    if (r.s) tr.setAttribute("data-status", r.s);
+    tr.setAttribute("data-key", r.k);
+    const k = el("td"); k.textContent = r.k;
+    if (r.s === "added" || r.s === "gone") {
+      const tag = el("span", "tag");
+      tag.textContent = r.s === "added" ? T.added : T.gone;
+      k.appendChild(document.createTextNode(" "));
+      k.appendChild(tag);
+    }
+    tr.appendChild(k);
+    const b = el("td", "num"); b.textContent = r.b === null ? "\u2013" : nf.format(r.b);
+    const a = el("td", "num"); a.textContent = r.a === null ? "\u2013" : nf.format(r.a);
+    const d = el("td", "num delta " + r.s);
+    const sp = el("span", "sign"); sp.textContent = r.d === null ? "\u2013" : sign(r.d) + nf.format(Math.abs(r.d));
+    d.appendChild(sp);
+    const p = el("td", "num");
+    p.textContent = r.pct === null ? "\u2013" : pf.format(r.pct);
+    const bar = el("td", "barcol");
+    const trk = el("span", "trk " + r.s);
+    trk.setAttribute("aria-hidden", "true");
+    const fill = el("i");
+    fill.style.width = Math.round((magnitude(r) / top) * 100) + "%";
+    trk.appendChild(fill);
+    bar.appendChild(trk);
+    tr.appendChild(b); tr.appendChild(a); tr.appendChild(d); tr.appendChild(p);
+    tr.appendChild(bar);
+    body.appendChild(tr);
+  }
+  document.getElementById("nojs").hidden = true;
+}
+
+for (const id of ["q", "show", "sort"]) {
+  document.getElementById(id).addEventListener("input", draw);
+  document.getElementById(id).addEventListener("change", draw);
+}
+document.getElementById("reset").addEventListener("click", () => {
+  document.getElementById("q").value = "";
+  document.getElementById("show").value = "all";
+  document.getElementById("sort").value = "abs";
+  draw();
+});
+if (document.documentElement.className.indexOf("js") >= 0) draw();
+</script>
+</body>
+</html>

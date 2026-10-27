@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 tree_scan.py — resolve which files the tree-wide gates apply to, and what is known debt.
 
@@ -12,7 +9,7 @@ tests cannot disagree about scope or about which failures are already accepted.
 Why this file exists
 --------------------
 Rows 24 and 26 of docs/01-tenant-constraints.md were measured, written down, and then
-broken by four shipped files. The checks that would have caught them existed in
+broken by four shipped files (#50). The checks that would have caught them existed in
 tools/verify_standalone_core.py the whole time. Nothing ran them over the tree. A check
 nobody runs is not a gate, and a gate that computes its own scope can pass *vacuously* —
 which is worse than failing, because it manufactures assurance. So:
@@ -126,10 +123,10 @@ CHECKS: dict[str, tuple[str, object, str]] = {
 # The second half matters as much as the first. A debt list nobody prunes silently
 # becomes a permanent exemption, and then the gate is off for those paths forever.
 #
-# Row 25 (check_no_stray_script_text) is the live example of the very pattern this gate is
+# Row 25 (check_no_stray_script_text) is the live example of the very pattern #50 is
 # about: the check existed for a while and nothing ran it over the tree, so five files
-# accumulated debt unseen. Paid off: the templates and generators stopped writing the
-# literal tag in prose, and the five artefacts were rebuilt. Keep it empty.
+# accumulated debt unseen. Paid off in #45: the templates and generators stopped writing
+# the literal tag in prose, and the five artefacts were rebuilt. Keep it empty.
 KNOWN_DEBT: dict[str, set[str]] = {
     "self-contained": set(),
     "placeholders": set(),

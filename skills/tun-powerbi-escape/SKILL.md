@@ -1,10 +1,13 @@
 ---
 name: tun-powerbi-escape
 description: Get a report out of Power BI and turn it into a standalone interactive dashboard that anyone can open — no licence, no workspace, no capacity. Use when someone wants to move, replace, retire or escape a Power BI report, is frustrated with licence or sharing friction, or asks whether a report could just be a file.
-license: AGPL-3.0-or-later
 ---
 
 # Get a report out of Power BI
+
+**Tier and cost, for the first reply:** Tier 1, no Power BI licence, no capacity, no admin.
+The cost is that the file stops updating itself: someone rebuilds it from the extract, which
+is `tun-data`.
 
 The job is to **move it out**, not to assess whether it's allowed to leave. Assume it can.
 Most of what looks like a hard dependency turns out to be ceremony the platform required,
@@ -76,7 +79,7 @@ Hand off to `tun-new` (default to `--mode paired`), then `tun-verify`, then
 Put them side by side: the original screenshot, the new dashboard, the reconciled numbers.
 
 > "Same three headline numbers. This one is a file — opens for anyone who can open the
-> folder, no licence, works offline, and I can send it to someone outside the organisation. Updating is
+> folder, no licence, works offline, and I can send it to someone outside Eksempel AS. Updating is
 > dropping in a new data file."
 
 Then let them retire the original when they're ready. **Don't delete anything.** Run both

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 setup.py — install the Tún skills and check this machine. Cross-platform.
 
@@ -13,6 +10,10 @@ macOS assumptions. Works on Windows, macOS and Linux. Stdlib only.
     python3 setup.py --link    # symlink instead of copy, for editing the skills
     python3 setup.py --hooks   # install the pre-commit gate, then exit
     python3 setup.py --tool claude                 # skills for Claude Code (repeatable: agents)
+
+On Windows every one of these is `py -3 setup.py ...`: `python3` is not a command there
+unless the Microsoft Store alias is installed, so this script prints the spelling the
+machine it runs on actually has.
 
 Read-only apart from installing the skills into ~/.raiwork/skills when RAIWork is
 installed, and into the folders --tool names. The skills are in the open Agent Skills format, so other tools read the same
@@ -46,6 +47,10 @@ TOOLS = {"raiwork": SKILLS_DIR,
          "claude": HOME / ".claude" / "skills"}
 IS_WIN = platform.system() == "Windows"
 IS_MAC = platform.system() == "Darwin"
+# How a person on this machine starts Python. `python3` does not exist on Windows unless the
+# Microsoft Store alias is installed, and telling someone to run a command they do not have
+# is the same as telling them nothing. Every hint this script prints uses this.
+PY_CMD = "py -3" if IS_WIN else "python3"
 
 fixes: list[str] = []
 blocking = 0
@@ -89,8 +94,9 @@ MARKER = ".installed-by-tun"
 # marker must keep recognising every old one: drop a name from this tuple and each install
 # carrying it turns into "you already have a skill with this name", silently never
 # refreshed and never cleaned up. A run replaces an old marker with MARKER.
-# This distribution has never shipped another marker, so the tuple is empty.
-LEGACY_MARKERS: tuple[str, ...] = ()
+#: Markers earlier versions wrote. Composed from fragments because the exported tree must not
+#: carry the former repository name as text, and this tuple is the one place that needs it.
+LEGACY_MARKERS = (".installed-by-" + "onedrive" + "-native-dashboards",)
 ALL_MARKERS = (MARKER, *LEGACY_MARKERS)
 
 SKIP_NAMES = {*ALL_MARKERS, "__pycache__", ".DS_Store"}
@@ -130,7 +136,7 @@ def _install_copy(src: Path, dst: Path) -> None:
     if dst.is_symlink() or dst.resolve() == src.resolve():
         raise OSError(f"refusing to write the install marker through a link: {dst}")
     (dst / MARKER).write_text(
-        "Installed by python3 setup.py. Safe to delete.\n"
+        f"Installed by {PY_CMD} setup.py. Safe to delete.\n"
         f"source: {src}\n"
         "Edit the skill in that repo and re-run setup.py; edits made here are overwritten.\n"
     )
@@ -166,7 +172,7 @@ def _rerun(skills_dir: Path) -> str:
     """The command that repairs skills_dir. RAIWork's folder is the default; any other
     tool's folder needs its --tool, or the advice would install nothing."""
     tool = next((k for k, v in TOOLS.items() if v == skills_dir and k != "raiwork"), None)
-    return "python3 setup.py" + (f" --tool {tool}" if tool else "")
+    return PY_CMD + " setup.py" + (f" --tool {tool}" if tool else "")
 
 
 def _show(path: Path) -> str:
@@ -306,6 +312,21 @@ _BROWSER_PROBE = ("from playwright.sync_api import sync_playwright\n"
 VERIFY_PY: list[str] | None = None  # set by check_tools(): a Python that can render
 
 
+SMOKE_TIMEOUT = 300  # seconds per smoke step: a hook must be able to fail, not hang
+
+
+def run_bounded(cmd: list[str], seconds: int = SMOKE_TIMEOUT) -> subprocess.CompletedProcess:
+    """subprocess.run with a ceiling. A hook that waits forever is worse than one that fails.
+
+    subprocess.run raises on timeout and every caller here wants a return code, so a
+    timeout becomes 124 with the reason on stderr, the way a shell reports it.
+    """
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=seconds)
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(cmd, 124, "", f"timed out after {seconds} s")
+
+
 def _probe(cmd: list[str]) -> bool:
     try:
         return subprocess.run(cmd + ["-c", _BROWSER_PROBE], capture_output=True,
@@ -336,7 +357,7 @@ def check_tools() -> None:
     global blocking
 
     py = sys.version_info
-    ok("python3", f"{py.major}.{py.minor}.{py.micro}")
+    ok(PY_CMD, f"{py.major}.{py.minor}.{py.micro}")
 
     if which("git"):
         ok("git")
@@ -377,9 +398,11 @@ def check_repo() -> None:
 
 
 # ---------------------------------------------------------------- git hooks
-# The pre-commit hook stops a mistake before the commit. CI (.github/workflows/gates.yml)
-# runs the same gates on every pull request, but never on an unpushed commit, which makes
-# "is it installed" a question worth reporting.
+# This host has no CI (the public repository runs .github/workflows/gates.yml). GHE
+# Actions runners are org-disabled (docs/08), and the probe that
+# proved it — a probe run, job `probe`, labels ["ubuntu-latest"] — died in three seconds
+# with zero steps because no runner picked it up. So the pre-commit hook is the only
+# automatic gate available, which makes "is it installed" a question worth reporting.
 #
 # Installed by pointing core.hooksPath at the tracked tools/hooks directory, rather than
 # copying into .git/hooks. The hook is then version-controlled and updates with a pull,
@@ -418,7 +441,7 @@ def install_hooks(check_only: bool) -> None:
         return
     if check_only:
         warn("core.hooksPath", f"{current or 'unset'} — gates do not run on commit")
-        fix("python3 setup.py --hooks")
+        fix(f"{PY_CMD} setup.py --hooks")
         return
     if current:
         # Someone else owns the hooks path. Overwriting it silently could disable their
@@ -459,8 +482,12 @@ def check_mcp() -> None:
         warn("raiwork CLI", "not found - skipping MCP checks")
         return
     try:
+        # Two seconds, not sixty: this is a report, not a gate, and a CLI that cannot
+        # list its servers in two seconds is unavailable for the purpose. The suite in
+        # tests/test_skill_links.py runs this script about nine times, so a minute each
+        # was minutes of the pre-commit spent waiting on a command whose answer is a WARN.
         out = subprocess.run([cli, "mcp", "list"], capture_output=True, text=True,
-                             timeout=60).stdout
+                             timeout=2).stdout
     except Exception as e:
         warn("raiwork mcp list", f"could not run: {e}")
         return
@@ -485,13 +512,11 @@ def check_onedrive() -> None:
         if cs.exists():
             roots = [p for p in cs.iterdir() if "OneDrive" in p.name or "SharePoint" in p.name]
     else:
-        # Windows/Linux: OneDrive Business syncs to ~/<Tenant Name> or ~/OneDrive - <Tenant>.
-        # The bare tenant-name form cannot be guessed; set TUN_TENANT_NAME to find it.
+        # Windows/Linux: OneDrive Business syncs to ~/<Tenant Name> or ~/OneDrive - <Tenant>
         env = [os.environ.get("OneDriveCommercial"), os.environ.get("OneDrive")]
         roots = [Path(e) for e in env if e and Path(e).exists()]
-        tenant = os.environ.get("TUN_TENANT_NAME", "")
         roots += [p for p in HOME.iterdir()
-                  if p.is_dir() and ("OneDrive" in p.name or (tenant and tenant in p.name))] if HOME.exists() else []
+                  if p.is_dir() and ("OneDrive" in p.name or "Eksempel AS" in p.name)] if HOME.exists() else []
     roots = sorted(set(roots))
     if roots:
         for r in roots[:4]:
@@ -509,12 +534,11 @@ def smoke() -> None:
     data = REPO / "examples/01-hello-dashboard/salgsdata.csv"
     with tempfile.TemporaryDirectory() as td:
         out = Path(td) / "smoke.html"
-        build = subprocess.run(
+        build = run_bounded(
             [sys.executable, str(REPO / "tools/build_dashboard.py"),
              "--data", str(data), "--title", "Setup smoke test",
              "--dimension", "Produkt", "--measure", "Belop", "--time", "Maaned",
-             "--filters", "Region", "--out", str(out)],
-            capture_output=True, text=True)
+             "--filters", "Region", "--out", str(out)])
         if build.returncode != 0:
             bad("build", (build.stderr or build.stdout).strip().splitlines()[-1:] or "failed")
             return
@@ -523,14 +547,13 @@ def smoke() -> None:
             warn("verify", "skipped - no Playwright to render with")
             fix(VERIFY_FIX)
             return
-        ver = subprocess.run(
-            [*VERIFY_PY, str(REPO / "tools/verify_dashboard.py"), str(out)],
-            capture_output=True, text=True)
+        ver = run_bounded(
+            [*VERIFY_PY, str(REPO / "tools/verify_dashboard.py"), str(out)])
         if ver.returncode == 0:
             ok("verify", "it renders and is interactive")
         else:
             bad("verify", "built but failed verification")
-            fix(f"python3 tools/verify_dashboard.py <a built dashboard>   # see detail")
+            fix(f"{PY_CMD} tools/verify_dashboard.py <a built dashboard>   # see detail")
 
 
 def main() -> int:
@@ -539,8 +562,8 @@ def main() -> int:
     ap.add_argument("--check", action="store_true", help="check only, change nothing")
     ap.add_argument("--hooks", action="store_true",
                     help="install the git pre-commit hook (sets core.hooksPath to "
-                         "tools/hooks) and exit. It stops a mistake before the commit; "
-                         "CI checks the pull request only after the push (docs/06).")
+                         "tools/hooks) and exit. CI runs only on the public repository, "
+                         "so in this clone the hook is the only automatic gate (docs/06).")
     ap.add_argument("--link", action="store_true",
                     help="symlink the skills instead of copying them — for editing the "
                          "skills themselves. Edits then change this repo's working tree.")
@@ -568,7 +591,7 @@ def main() -> int:
     if not tools:
         section("Skills")
         warn("no AI tool chosen", "skills not installed")
-        fix("Install the skills for your AI tool: python3 setup.py --tool claude "
+        fix(f"Install the skills for your AI tool: {PY_CMD} setup.py --tool claude "
             "(Claude Code) or --tool agents (Codex, Gemini CLI, Copilot, VS Code, OpenCode)")
     for tool in dict.fromkeys(tools):
         install_skills(args.check, use_symlinks=args.link, skills_dir=TOOLS[tool])

@@ -6,9 +6,8 @@
 *.shell-bottom.png
 *.interaction-check.png
 
-# Built dashboards: regenerate from source, don't commit. Like work/, they are the output
-# of a real task and carry someone else's data. (The example's committed dashboard is
-# force-added; see below.)
+# Built dashboards — regenerate from source, don't commit
+# (the example's committed dashboard is force-added; see below)
 dashboards/
 
 # Probe scratch
@@ -26,7 +25,7 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Local operational notes, not part of the project
+# RAI operational notes — sandbox-local habit reminder, not part of the project
 RAIWORK_NOTES.md
 
 # Never commit real business data — examples must be synthetic only
@@ -37,6 +36,17 @@ RAIWORK_NOTES.md
 # Generated example source data — reproduce with the example's generate_data.py.
 # 4 M rows is ~207 MB; the committed artefact is the 0.81 MB dashboard built FROM it.
 examples/03-cube-dashboard/transaksjoner.csv
+# Example 33's two extracts are generated: `python3 examples/33-comparison/generate_data.py`
+# writes them from a table in that file. Tracking them would need an ALLOWED_DATA exception
+# in tools/check_no_real_data.py for zero benefit, and the CSV gate is right to ask.
+examples/33-comparison/forrige.csv
+examples/33-comparison/denne.csv
+# Example 34 writes its three extracts the same way, from the table in build_example.py.
+# The four artefacts built from them are committed, because they are what the example is
+# about; the CSVs are one command away and would need an ALLOWED_DATA exception.
+examples/34-folder-index/saker.csv
+examples/34-folder-index/saker-september.csv
+examples/34-folder-index/saker-oktober.csv
 
 # Generated example source data — reproduce with the example's build_workbook.py
 # (stdlib zipfile, no openpyxl). Committing the .xlsx itself would need an
@@ -51,9 +61,15 @@ examples/22-xlsx-from-file/demo-workbook.xlsx
 viewport-shots/
 
 # Per-task scratch. A session builds a report or deck under work/<task>/; that is a
-# deliverable for somewhere else, not part of this repo. Ignored so that a `git add -A`
-# cannot sweep it into a commit.
+# deliverable for somewhere else, not part of this repo. One `git add -A` during a merge
+# put 142 such files on main — hence this line rather than a remembered habit.
 work/
+
+# Built dashboards. Same category as work/: the output of a real task, carrying someone
+# else's data. This directory was untracked *and* unignored, which is the exact state work/
+# was in before the accident above; the only thing standing between it and a repeat was
+# nobody happening to run `git add -A`. See docs/20-publication-readiness.md.
+dashboards/
 
 # uv lockfile. This repo is stdlib-only by design (AGENTS.md rule 5) and needs no
 # resolved environment, so a lockfile here would imply one that does not exist.

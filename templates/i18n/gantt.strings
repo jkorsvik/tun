@@ -1,0 +1,78 @@
+# Strings for templates/gantt.html and tools/build_gantt.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page compares a plan against what happened, per task, on one date axis. The difference is
+# a signed number of days, and an unfinished task is a word rather than a bar.
+
+[nb]
+html_lang = nb
+svg_title = Fremdrift mot plan
+svg_desc = {n} tiltak fra {first} til {last}, med en planlagt og en faktisk linje per tiltak. Planen er merket med kolonnen {plan}.
+sub_line = {n} tiltak, {first} til {last}
+caption = Per tiltak: den øvre linjen er det som var planlagt, den nedre er det som skjedde. Tallet til høyre er hvor mange dager tiltaket ble ferdig etter planen, med fortegn.
+legend_today = i dag
+running_mark = pågår
+summary_line = {n} tiltak, {late} ferdig etter planen.
+summary_worst = Verst er {task}, {days} dager over.
+summary_none_late = Ingen er ferdig etter planen.
+summary_open = {running} pågår og {notstarted} er ikke startet.
+note_bars = To linjer per tiltak på samme akse: øverst det som var planlagt, nederst det som skjedde. En andre akse ville fått tre dager til å se ut som tre uker.
+note_slip = Avviket er et tall med fortegn, ikke en farge. Pluss betyr ferdig etter planen, minus før. En farge er en stemning; tallet er svaret, og det står både ved linjen og i tabellen.
+note_unfinished = Et tiltak uten sluttdato er ikke tegnet som en linje. Det er enten ikke startet eller pågår, og de to står med hvert sitt ord: en linje på null dager ville lest som ferdig i tide.
+note_order = Radene står sortert etter planlagt start, og ved lik start i den rekkefølgen de kom i uttrekket. Rekkefølgen er en påstand om planen, derfor står den her.
+note_dates = Datoer leses bare som ÅÅÅÅ-MM-DD. Godtar byggeren også 03.04, må den gjette om kilden mente mars eller april, og en plan som er en måned feil er verre enn en som ikke bygges.
+head_table = Datoene og avviket
+table_caption = Én rad per tiltak: planlagt start og slutt, faktisk start og slutt, avviket i dager, og hvilken tilstand tiltaket er i.
+col_task = Tiltak
+col_plan_start = Planlagt start
+col_plan_end = Planlagt slutt
+col_act_start = Faktisk start
+col_act_end = Faktisk slutt
+col_slip = Avvik
+col_state = Tilstand
+state_late = ferdig etter planen
+state_early = ferdig før planen
+state_ontime = ferdig i tide
+state_running = pågår
+state_notstarted = ikke startet
+source_line = Kilde: {name} · {rows} rader
+skipped = {n} rad(er) uten tiltaksnavn er ikke tegnet.
+footer_a = Bildet sammenligner planen med det som skjedde, per tiltak, på én datoakse. Det sier ingenting om hvor mye arbeid som gjenstår, bare hvor datoene ligger.
+footer_b = Alle datoer og alle avvik står i tabellen, så bildet kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.
+footer_built = Bygget
+
+[en]
+html_lang = en
+svg_title = Progress against plan
+svg_desc = {n} tasks from {first} to {last}, with a planned and an actual line per task. The plan comes from the column {plan}.
+sub_line = {n} tasks, {first} to {last}
+caption = Per task: the upper line is what was planned, the lower is what happened. The number on the right is how many days past its planned finish the task ended, with its sign.
+legend_today = today
+running_mark = running
+summary_line = {n} tasks, {late} finished after the plan.
+summary_worst = Worst is {task}, {days} days over.
+summary_none_late = None finished after the plan.
+summary_open = {running} running and {notstarted} not started.
+note_bars = Two lines per task on the same axis: the plan above, what happened below. A second axis would make three days look like three weeks.
+note_slip = The difference is a signed number, not a colour. Plus means finished after the plan, minus before. A colour is a mood; the number is the answer, and it stands both beside the line and in the table.
+note_unfinished = A task with no end date is not drawn as a line. It is either not started or still running, and the two carry different words: a zero-day bar would read as finished on time.
+note_order = The rows are sorted by planned start, and by source order where the start is the same. The order is a claim about the plan, which is why the page states it.
+note_dates = Dates are read only as YYYY-MM-DD. If the builder also accepted 03.04 it would have to guess whether the source meant March or April, and a plan a month out is worse than one that does not build.
+head_table = The dates and the difference
+table_caption = One row per task: planned start and finish, actual start and finish, the difference in days, and the state the task is in.
+col_task = Task
+col_plan_start = Planned start
+col_plan_end = Planned finish
+col_act_start = Actual start
+col_act_end = Actual finish
+col_slip = Difference
+col_state = State
+state_late = finished after the plan
+state_early = finished before the plan
+state_ontime = finished on time
+state_running = running
+state_notstarted = not started
+source_line = Source: {name} · {rows} rows
+skipped = {n} row(s) with no task name are not drawn.
+footer_a = The picture compares the plan with what happened, per task, on one date axis. It says nothing about how much work remains, only where the dates lie.
+footer_b = Every date and every difference is in the table, so the picture can be checked instead of trusted. The file carries no script.
+footer_built = Built

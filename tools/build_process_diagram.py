@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-# or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-# COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-# under terms of your choice, provided the Origin Notice is preserved.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 build_process_diagram.py — turn a small text spec into one self-contained process diagram.
 
@@ -105,8 +99,11 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import build_size
+import build_stamp  # noqa: E402
 import i18n  # noqa: E402
 import tun_tokens  # noqa: E402
+from tun_tokens import strip_css_comments  # noqa: E402
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 TEMPLATE = REPO / "templates" / "process-diagram.html"
@@ -1687,20 +1684,9 @@ def render_chips(spec: Spec) -> str:
     return "".join(chips)
 
 
-def strip_css_comments(css: str) -> str:
-    """The token files carry long rationale comments. They belong in the repo, not in
-    every artefact, and some of them name the brand the palette came from."""
-    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    return "\n".join(line.rstrip() for line in css.splitlines() if line.strip())
-
-
 def build_timestamp() -> str:
     """Local time, or SOURCE_DATE_EPOCH (the reproducible-builds convention) in UTC."""
-    epoch = os.environ.get("SOURCE_DATE_EPOCH")
-    if epoch:
-        stamp = dt.datetime.fromtimestamp(int(epoch), tz=dt.timezone.utc)
-        return stamp.strftime("%Y-%m-%d %H:%M UTC")
-    return dt.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z").strip()
+    return build_stamp.local()
 
 
 def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAULT_LANG,
@@ -1709,8 +1695,12 @@ def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAUL
     lr, when given, is the rows drawing the script may switch to. Cards, roles and the text
     version come from lay; both layouts number the steps the same way."""
     use_lang(lang)
-    token_css, token_source = tun_tokens.load_token_css(("status-semantic.css", "theme-light.css"),
-                                                        palette=spec.headers.get("palette"))
+    # auto_dark: this artefact follows the operating system's theme with no script, no
+    # storage and no toggle, so a reader whose OS is dark gets a dark diagram instead of
+    # a white page at midnight. The diagram's own role ramp has a dark counterpart in the
+    # template; the palette it sits on comes from theme-dark.css.
+    token_css, token_source = tun_tokens.load_token_css(palette=spec.headers.get("palette"),
+                                                        auto_dark=True)
     n_flags = sum(1 for b in lay.boxes.values() if b.flag)
     counts = (f"{len(spec.nodes)} steps, {len(spec.edges)} connections, "
               f"{len(spec.lanes)} lanes, {n_flags} flagged")
@@ -1802,6 +1792,8 @@ def main(argv: list[str] | None = None) -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(page, encoding="utf-8")
     print(f"built {args.out}  ({args.out.stat().st_size / 1024:.1f} KB; {summary})")
+    # No builder ships an artefact past the Tier 1 ceiling (tools/build_size.py).
+    build_size.enforce(args.out)
     print(f"  next: uv run --extra verify python tools/verify_process_diagram.py "
           f"{args.out} --spec {args.spec}")
     return 0

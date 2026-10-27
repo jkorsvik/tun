@@ -1,0 +1,84 @@
+# Strings for templates/heatmap.html and tools/build_heatmap.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shades one value per row-and-column cell on a stated one-hue scale, prints every
+# value in its own cell, and draws an empty cell as hatched rather than as zero.
+
+[nb]
+html_lang = nb
+svg_title = Varmekart
+svg_desc = Varmekart med {rows} rader og {cols} kolonner. Hver rute er farget etter verdien, og verdien står i ruten.
+cell_missing = {row} / {col}: ingen data
+cell_title = {row} / {col}: {value}
+dash = –
+caption = Hver rute er ett møte mellom {measure} og de to kolonnene, og fargen følger skalaen under.
+caption_scale = Verdien står i ruten, så fargen er en andre lesning av et tall som allerede er på siden, ikke den eneste.
+legend_head = Skalaen
+legend_missing = Ingen data
+legend_clamped = {n} rute(r) ligger over toppen av skalaen og er tegnet med den mørkeste fargen.
+extreme_line = Den høyeste ruten er {row} / {col} med {value}, som er {share} av summen.
+extreme_tie = {n} ruter deler den høyeste verdien, {value}: {names}.
+note_missing = {missing} av {all} ruter har ingen data. De er skravert, ikke farget som null: ingen saker og ingen registrerte saker er to ulike funn.
+note_flat = Alle ruter har samme verdi, så fargen skiller ingenting. Da er tabellen svaret, ikke bildet.
+note_mean = Hver rute er et gjennomsnitt av radene som møtes der. Summen til høyre er gjennomsnittet av rutene i raden, og er derfor ikke det samme som gjennomsnittet over alle radene.
+note_order_rows = Radene står i rekkefølgen du oppgav.
+note_sorted_rows = Radene er sortert etter sum, høyest først, fordi du ikke oppgav en rekkefølge.
+note_sorted_cols = Kolonnene er sortert stigende etter navn, fordi du ikke oppgav en rekkefølge.
+note_scale = Skalaen går fra {low} til {high} og er lineær mellom dem, delt i fem trinn. Trinnene er avrundet til det sidene viser, så bredden kan skille med én.
+note_scale_clamped = Skalaen går fra {low} til {high}, som er toppen du oppgav. Alt over er tegnet med den mørkeste fargen og betyr «minst {high}».
+sub_line = {rows} rader og {cols} kolonner · {measure} ({agg})
+agg_sum = sum
+agg_mean = gjennomsnitt
+agg_count = antall rader
+head_notes = Slik er bildet laget
+head_table = Tallene bak bildet
+table_caption = Hver rad med sin sum, og hver kolonne med sin sum, så tallene i bildet kan kontrolleres.
+col_row = Rad
+col_total_sum = Sum
+col_total_mean = Gjennomsnitt av rutene
+col_total_count = Antall rader
+source_line = {name} — {cells} ruter med verdi
+duplicates = {n} dupliserte rad(er) er slått sammen
+skipped = {n} rad(er) manglet rad- eller kolonneverdi og er ikke talt
+footer_a = Selvstendig fil: alle tallene er regnet ut på forhånd, og ingenting hentes når den åpnes.
+footer_b = Ingen server, ingen innlogging, ingen skript. En rute uten data er skravert, aldri tegnet som null.
+footer_built = Bygget
+
+[en]
+html_lang = en
+svg_title = Heatmap
+svg_desc = Heatmap with {rows} rows and {cols} columns. Each cell is shaded by its value, and the value is printed in the cell.
+cell_missing = {row} / {col}: no data
+cell_title = {row} / {col}: {value}
+dash = –
+caption = Each cell is one meeting of {measure} and the two columns, and its colour follows the scale below.
+caption_scale = The value is printed in the cell, so the colour is a second reading of a number already on the page, not the only one.
+legend_head = The scale
+legend_missing = No data
+legend_clamped = {n} cell(s) sit above the top of the scale and are drawn in the darkest shade.
+extreme_line = The highest cell is {row} / {col} at {value}, which is {share} of the total.
+extreme_tie = {n} cells share the highest value, {value}: {names}.
+note_missing = {missing} of {all} cells have no data. They are hatched, not shaded as zero: no cases and no cases recorded are two different findings.
+note_flat = Every cell holds the same value, so the colour separates nothing. Then the table is the answer, not the picture.
+note_mean = Each cell is an average of the rows that meet there. The total on the right is the average of the cells in that row, so it is not the average over every row.
+note_order_rows = The rows are in the order you gave.
+note_sorted_rows = The rows are sorted by total, largest first, because no order was given.
+note_sorted_cols = The columns are sorted ascending by name, because no order was given.
+note_scale = The scale runs from {low} to {high} and is linear between them, in five bands. The edges are rounded to what the page prints, so two bands can differ by one.
+note_scale_clamped = The scale runs from {low} to {high}, the top you set. Everything above it is drawn in the darkest shade and means at least {high}.
+sub_line = {rows} rows and {cols} columns · {measure} ({agg})
+agg_sum = sum
+agg_mean = average
+agg_count = row count
+head_notes = How the picture was made
+head_table = The numbers behind the picture
+table_caption = Each row with its total, and each column with its total, so the figures in the picture can be checked.
+col_row = Row
+col_total_sum = Sum
+col_total_mean = Average of the cells
+col_total_count = Row count
+source_line = {name} — {cells} cells with a value
+duplicates = {n} duplicate row(s) combined
+skipped = {n} row(s) had no row or column value and are not counted
+footer_a = Self-contained file: every figure is worked out in advance, and nothing is fetched when it opens.
+footer_b = No server, no sign-in, no script. A cell with no data is hatched, never drawn as zero.
+footer_built = Built

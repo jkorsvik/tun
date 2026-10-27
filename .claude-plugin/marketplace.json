@@ -2,7 +2,7 @@
   "name": "tun",
   "description": "Tún: standalone artefacts",
   "owner": {
-    "name": "Jon-Mikkel Ryen Korsvik"
+    "name": "vedlikeholderen"
   },
   "plugins": [
     {

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 test_skill_frontmatter.py — every SKILL.md must load in every harness, not just a forgiving one.
 
@@ -22,7 +19,7 @@ stdlib, so it runs in the pre-commit hook with nothing installed:
   - every value is a plain one-line scalar with no ': ', no ' #', no leading YAML indicator
     and no flow collection, OR it is double-quoted with no '"' or '\\' inside (RAIWork shows
     a double-quoted value without its quotes; it does not show a block scalar '>-' correctly,
-    so block scalars are refused too)
+    so block scafagfelle are refused too)
   - metadata: a map of string values, two-space indented
 
 The self-test feeds known-bad frontmatter through the same checker and requires each one to
@@ -57,7 +54,7 @@ def check_value(where: str, raw: str) -> tuple[str | None, str | None]:
             return None, f"{where}: a double-quoted value may not hold '\"' or '\\'"
         return inner, None
     if raw in (">", ">-", "|", "|-", ">+", "|+"):
-        return None, f"{where}: block scalars are not read correctly by every harness; use one double-quoted line"
+        return None, f"{where}: block scafagfelle are not read correctly by every harness; use one double-quoted line"
     if raw.startswith(("[", "{")):
         return None, f"{where}: flow collections are refused by the reference validator; write a string"
     if raw.startswith(INDICATORS):
@@ -135,7 +132,7 @@ SELF_TEST = [  # (frontmatter, folder, the one message it must produce)
      "a plain value may not contain ': '"),
     ("---\nname: demo\ndescription: ok\nmetadata:\n  tags: [a, b]\n---\n", "demo",
      "flow collections are refused"),
-    ("---\nname: demo\ndescription: >-\n  folded\n---\n", "demo", "block scalars are not read"),
+    ("---\nname: demo\ndescription: >-\n  folded\n---\n", "demo", "block scafagfelle are not read"),
     ("---\nname: demo\ndescription: \"say \"hi\" now\"\n---\n", "demo", "may not hold '\"'"),
     ("---\nname: Demo\ndescription: ok\n---\n", "Demo", "must be lowercase"),
     ("---\nname: demo\ndescription: ok\n---\n", "other", "must equal the folder name"),

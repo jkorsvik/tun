@@ -1,0 +1,54 @@
+# Strings for templates/_annotate.html and tools/review_layer.py.
+# Format: see tools/i18n.py. The payload KEYS are not here on purpose: the block a
+# reader pastes back is a data format, so its keys stay the same in both languages
+# (tools/read_review.py parses one vocabulary). These are the words on screen.
+
+[nb]
+btn_on = Kommenter
+btn_off = Avslutt kommentering
+hint = Klikk på en rad i tabellen for å kommentere den.
+count_none = Ingen kommentarer
+count_one = 1 kommentar
+count_other = {n} kommentarer
+panel_title = Tilbakemeldingen din
+panel_lead = Kopier blokken og lim den inn i en e-post eller melding til den som bygde filen. Den inneholder hvilken bygging du så, og hvilke rader du mener.
+copy = Kopier
+copied = Kopiert
+copy_manual = Merk teksten og kopier den.
+add = Legg til
+cancel = Avbryt
+ask = Hva er galt, eller hva mangler?
+added = Kommentarer
+remove = Fjern
+row = Rad
+nojs_title = Vil du si fra om noe?
+nojs_lead = Skriv en e-post til den som bygde filen. Lim inn blokken under, og skriv kommentaren din etter hver rad du vil si noe om.
+nojs_how = Kopier linjen for raden det gjelder, skriv kommentaren på linjen under, og gjenta.
+your_row = raden du vil kommentere
+your_comment = kommentaren din her
+annotated = Denne raden har en kommentar.
+
+[en]
+btn_on = Comment
+btn_off = Stop commenting
+hint = Click a row in the table to comment on it.
+count_none = No comments
+count_one = 1 comment
+count_other = {n} comments
+panel_title = Your feedback
+panel_lead = Copy the block and paste it into an e-mail or message to whoever built the file. It carries which build you looked at, and which rows you mean.
+copy = Copy
+copied = Copied
+copy_manual = Select the text and copy it.
+add = Add
+cancel = Cancel
+ask = What is wrong, or what is missing?
+added = Comments
+remove = Remove
+row = Row
+nojs_title = Something to report?
+nojs_lead = Write an e-mail to whoever built the file. Paste the block below, and write your comment after each row you want to mention.
+nojs_how = Copy the line for the row in question, write the comment on the line below it, and repeat.
+your_row = the row you want to comment on
+your_comment = your comment here
+annotated = This row has a comment.

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hvor mange blir med videre</title>
+<!--
+  Hvor mange blir med videre
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : Syntetisk eksempeldata (kunder.csv)
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
+    Requested by: Kundeservice
+    Made with   : Tún - tun.community
+    Cohorts     : 9 drawn, 496 distinct personer
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: one row per cohort, one column per period since the cohort started,
+  shaded by the share of that cohort still active, with the count and the share printed in
+  the cell and the bands printed in the legend.
+
+  What it is NOT: a claim about why people leave, and not a forecast. It counts the rows the
+  extract holds. A blank in the lower right is "not yet observable", not zero.
+
+  There is no script in this file. A filter would re-derive the cohorts, and the derivation
+  is the claim being made.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here. */
+:root{
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
+}
+:root{
+  /* The two stripes of the "not yet" texture. A texture is not a value, and the seam's
+     --line nearly matches the panel, so a hatched cell built from it would read as an
+     empty one. These are the only colours this template still declares. */
+  --hatch-1:#f2f2f2;--hatch-2:#8f8f8f;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+h2{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.5rem;
+  padding:1rem}
+/* Only the table scrolls. The caption, the legend and the notes are prose and must wrap at the
+   window's own width: inside the scroll box they take the table's width and are clipped mid-word
+   on a phone, which reads as a broken page rather than a wide table. */
+.scroll{overflow-x:auto}
+.cap{margin:0 0 .75rem;color:var(--muted);font-size:.875rem;line-height:1.5}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.hint{display:none;margin:.5rem 0 0;color:var(--muted);font-size:.875rem;line-height:1.5}
+@media (max-width:40rem){.hint{display:block}}
+figcaption{margin:.75rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+/* The grid is a table, not a drawing: it is a rectangle of numbers, so it gets real row
+   and column headers and a screen reader can walk it. It never shrinks its text. */
+table{width:100%;border-collapse:separate;border-spacing:2px;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .75rem;color:var(--muted);caption-side:top}
+th,td{padding:.5rem .625rem;text-align:right;font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft);font-weight:600;
+  text-align:center}
+thead th.row-h{text-align:left}
+tbody th{background:var(--brand-soft);color:var(--on-brand-soft);text-align:left;font-weight:600}
+tbody th .sz{display:block;font-weight:400;font-size:.875rem;color:var(--muted)}
+/* A cell that cannot exist yet. Hatched, never a zero: "not yet" is not "none". */
+td.future{background:repeating-linear-gradient(45deg,var(--hatch-1) 0 .1875rem,var(--hatch-2) .1875rem .375rem)}
+td .pc{display:block;font-size:.875rem;font-weight:400;opacity:.9}
+.legend{list-style:none;display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;margin:1rem 0 0;
+  padding:0}
+.legend li{display:flex;align-items:center;gap:.5rem;font-size:.875rem;line-height:1.5}
+.legend .sw{display:inline-block;width:1.5rem;height:1rem;border:1px solid var(--line);
+  border-radius:.1875rem}
+.legend .sw-future{background:repeating-linear-gradient(45deg,var(--hatch-1) 0 .1875rem,var(--hatch-2) .1875rem .375rem)}
+.note{margin:1rem 0 0;padding:.75rem 1rem;background:var(--brand-soft);border-radius:.5rem;
+  font-size:.9375rem;line-height:1.5}
+.meta{margin:0;padding-left:1.25rem;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.meta li{margin:.25rem 0}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .note{background:#fff;padding-left:0}
+  .meta{color:#000}
+  tr,figure{break-inside:avoid}
+  thead{display:table-header-group}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme, and --on-brand resolves to
+     --bg there, so the band that reads white-on-ocean in light would be dark on dark. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+    :root{--hatch-1:#1d4a52;--hatch-2:#5f9aa8}
+  }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Hvor mange blir med videre</h1>
+  <p class="sub">9 kohorter, 496 personer i alt</p>
+</div></header>
+<main>
+  <figure class="figure">
+  <p class="cap" aria-hidden="true">Hver rad er de som hadde sin første aktivitet i perioden lengst til venstre. +1 er én periode senere, +2 to perioder senere. En skravert rute betyr at perioden ikke har skjedd ennå for kohorten, ikke at ingen kom tilbake.</p>
+  <div class="scroll">
+  <table>
+    <caption class="sr-only">Hver rad er de som hadde sin første aktivitet i perioden lengst til venstre. +1 er én periode senere, +2 to perioder senere. En skravert rute betyr at perioden ikke har skjedd ennå for kohorten, ikke at ingen kom tilbake.</caption>
+    <thead><tr>
+      <th scope="col" class="row-h">Kohort</th>
+      <th scope="col">+0</th>
+      <th scope="col">+1</th>
+      <th scope="col">+2</th>
+      <th scope="col">+3</th>
+      <th scope="col">+4</th>
+      <th scope="col">+5</th>
+      <th scope="col">+6</th>
+      <th scope="col">+7</th>
+      <th scope="col">+8</th>
+    </tr></thead>
+    <tbody>
+      <tr><th scope="row">2025-09<span class="sz">38 personer</span></th><td style="background:#2f5d9e;color:#ffffff">38<span class="pc">100 %</span></td><td style="background:#8da6ca;color:#0a0a0a">16<span class="pc">42 %</span></td><td style="background:#8da6ca;color:#0a0a0a">12<span class="pc">32 %</span></td><td style="background:#8da6ca;color:#0a0a0a">10<span class="pc">26 %</span></td><td style="background:#bccbe0;color:#0a0a0a">9<span class="pc">24 %</span></td><td style="background:#bccbe0;color:#0a0a0a">9<span class="pc">24 %</span></td><td style="background:#bccbe0;color:#0a0a0a">8<span class="pc">21 %</span></td><td style="background:#bccbe0;color:#0a0a0a">6<span class="pc">16 %</span></td><td style="background:#bccbe0;color:#0a0a0a">6<span class="pc">16 %</span></td></tr>
+      <tr><th scope="row">2025-10<span class="sz">52 personer</span></th><td style="background:#2f5d9e;color:#ffffff">52<span class="pc">100 %</span></td><td style="background:#8da6ca;color:#0a0a0a">22<span class="pc">42 %</span></td><td style="background:#8da6ca;color:#0a0a0a">14<span class="pc">27 %</span></td><td style="background:#bccbe0;color:#0a0a0a">11<span class="pc">21 %</span></td><td style="background:#bccbe0;color:#0a0a0a">9<span class="pc">17 %</span></td><td style="background:#bccbe0;color:#0a0a0a">8<span class="pc">15 %</span></td><td style="background:#bccbe0;color:#0a0a0a">8<span class="pc">15 %</span></td><td style="background:#bccbe0;color:#0a0a0a">6<span class="pc">12 %</span></td><td class="future"></td></tr>
+      <tr><th scope="row">2025-11<span class="sz">61 personer</span></th><td style="background:#2f5d9e;color:#ffffff">61<span class="pc">100 %</span></td><td style="background:#8da6ca;color:#0a0a0a">17<span class="pc">28 %</span></td><td style="background:#bccbe0;color:#0a0a0a">12<span class="pc">20 %</span></td><td style="background:#bccbe0;color:#0a0a0a">9<span class="pc">15 %</span></td><td style="background:#bccbe0;color:#0a0a0a">8<span class="pc">13 %</span></td><td style="background:#bccbe0;color:#0a0a0a">8<span class="pc">13 %</span></td><td style="background:#e6ecf3;color:#0a0a0a">5<span class="pc">8 %</span></td><td class="future"></td><td class="future"></td></tr>
+      <tr><th scope="row">2025-12<span class="sz">44 personer</span></th><td style="background:#2f5d9e;color:#ffffff">44<span class="pc">100 %</span></td><td style="background:#8da6ca;color:#0a0a0a">21<span class="pc">48 %</span></td><td style="background:#8da6ca;color:#0a0a0a">15<span class="pc">34 %</span></td><td style="background:#8da6ca;color:#0a0a0a">12<span class="pc">27 %</span></td><td style="background:#8da6ca;color:#0a0a0a">11<span class="pc">25 %</span></td><td style="background:#bccbe0;color:#0a0a0a">10<span class="pc">23 %</span></td><td class="future"></td><td class="future"></td><td class="future"></td></tr>
+      <tr><th scope="row">2026-01<span class="sz">71 personer</span></th><td style="background:#2f5d9e;color:#ffffff">71<span class="pc">100 %</span></td><td style="background:#8da6ca;color:#0a0a0a">25<span class="pc">35 %</span></td><td style="background:#8da6ca;color:#0a0a0a">22<span class="pc">31 %</span></td><td style="background:#8da6ca;color:#0a0a0a">19<span class="pc">27 %</span></td><td style="background:#8da6ca;color:#0a0a0a">19<span class="pc">27 %</span></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td></tr>
+      <tr><th scope="row">2026-02<span class="sz">58 personer</span></th><td style="background:#2f5d9e;color:#ffffff">58<span class="pc">100 %</span></td><td style="background:#8da6ca;color:#0a0a0a">27<span class="pc">47 %</span></td><td style="background:#8da6ca;color:#0a0a0a">21<span class="pc">36 %</span></td><td style="background:#8da6ca;color:#0a0a0a">20<span class="pc">34 %</span></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td></tr>
+      <tr><th scope="row">2026-03<span class="sz">66 personer</span></th><td style="background:#2f5d9e;color:#ffffff">66<span class="pc">100 %</span></td><td style="background:#8da6ca;color:#0a0a0a">26<span class="pc">39 %</span></td><td style="background:#bccbe0;color:#0a0a0a">14<span class="pc">21 %</span></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td></tr>
+      <tr><th scope="row">2026-04<span class="sz">49 personer</span></th><td style="background:#2f5d9e;color:#ffffff">49<span class="pc">100 %</span></td><td style="background:#8da6ca;color:#0a0a0a">18<span class="pc">37 %</span></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td></tr>
+      <tr><th scope="row">2026-05<span class="sz">57 personer</span></th><td style="background:#2f5d9e;color:#ffffff">57<span class="pc">100 %</span></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td><td class="future"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="hint">Dra sidelengs for å se alle periodene.</p>
+  </figure>
+
+  <ul class="legend" aria-label="Andel av kohorten som er aktiv">
+    <li><span class="sw" style="background:#e6ecf3"></span>0 til 9 %</li>
+    <li><span class="sw" style="background:#bccbe0"></span>10 til 24 %</li>
+    <li><span class="sw" style="background:#8da6ca"></span>25 til 49 %</li>
+    <li><span class="sw" style="background:#5d81b3"></span>50 til 74 %</li>
+    <li><span class="sw" style="background:#2f5d9e"></span>75 % eller mer</li>
+    <li><span class="sw sw-future"></span>Ikke mulig ennå</li>
+  </ul>
+
+  <p class="note">Den mest tallrike kohorten er 2026-01 med 71 personer. Av dem var 25 tilbake i periode 1, som er 35 %.</p>
+
+  <h2 id="how-h">Slik er kohortene regnet ut</h2>
+  <ul class="meta" aria-labelledby="how-h">
+    <li>Kohorten er perioden for den første datoen til hver Kunde. En som er aktiv i to perioder, teller i begge, men bare én gang per periode.</li>
+    <li>Andelen er antall personer delt på kohortens egen størrelse, ikke på alle i filen.</li>
+    <li>Kolonnen +0 er kohortens størrelse. Den er lik per definisjon, ikke et funn.</li>
+    <li>Ruter nede til høyre mangler fordi perioden ikke har skjedd ennå. De er skravert, ikke satt til null.</li>
+    <li>Kohorter under 5 personer er ikke tegnet. De er ingen.</li>
+    <li>Perioden er måned. Datoer som ikke kunne leses, stoppet bygget.</li>
+  </ul>
+</main>
+<footer>
+  <p>Tallene er hentet fra uttrekket og regnet ut da filen ble laget. Ingen ting oppdateres av seg selv.</p>
+  <p>En selvstendig fil: ingen server, ingen nettverk, ingen lisens.</p>
+  <p>Syntetisk eksempeldata (kunder.csv) · Bygget 2026-10-24 10:00</p>
+  <p></p>
+</footer>
+</body>
+</html>

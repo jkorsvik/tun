@@ -1,0 +1,74 @@
+# Strings for templates/rank-change.html and tools/build_rank_change.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page shows two ranked columns and the lines between them, so the reader can see who moved
+# rather than compare two lists by eye.
+
+[nb]
+html_lang = nb
+svg_title = Rangendring
+svg_desc = {before} rader i den første perioden og {after} i den andre, med en linje per enhet som finnes i begge. Rangene er utledet fra verdiene.
+sub_line = {before} enheter i den første perioden, {after} i den andre, fra {first} til {last}
+caption = Hver linje er én enhet som finnes i begge periodene. Rangnummeret står ved hvert navn, og verdien står ved siden av: rang alene skiller ikke et byks på en avrundingsfeil fra et fall.
+scroll_hint = Dra sidelengs i bildet for å se hele tabellen.
+summary_head = {shared} enheter finnes i begge periodene. {climbs} klatret, {falls} falt, {flat} står på samme plass fra {first} til {last}.
+summary_climb = Størst klatring: {entity}, {places} plass(er) opp, til {rank}.
+summary_fall = Størst fall: {entity}, {places} plass(er) ned, til {rank}.
+summary_still = {shared} enheter finnes i begge periodene, og ingen av dem har byttet plass fra {first} til {last}. Da er det nivåene som har endret seg, ikke rekkefølgen.
+summary_none = Ingen enhet finnes i både {first} og {last}, så ingenting kan ha flyttet seg.
+summary_edges = {entered} enhet(er) er borte i den andre perioden og {left} er ny: de er tegnet uten linje, fordi en linje ville påstått en bevegelse ingen har gjort.
+ties_none = Ingen delte plasser: hver rang er brukt én gang.
+ties_line = {n} rad(er) deler plass med raden over eller under, så rangene hopper: 1, 1, 3. En delt plass er ikke en feil, men den må stå skrevet, ellers ser den ut som en.
+entered = ny
+left = borte
+head_table = Tallene bak bildet
+table_caption = Rangene er utledet fra verdiene i hver periode, ikke fra rekkefølgen i filen. En strek betyr at enheten ikke finnes i den perioden.
+col_entity = Enhet
+col_before_value = Verdi {{PERIOD_FROM}}
+col_before_rank = Rang {{PERIOD_FROM}}
+col_after_value = Verdi {{PERIOD_TO}}
+col_after_rank = Rang {{PERIOD_TO}}
+col_value_delta = Endring
+col_rank_delta = Plasser
+plus = +{value}
+minus = −{value}
+unchanged = 0
+dash = –
+source_line = Kilde: {name} · {entities} enheter
+footer_a = Rang er ikke det samme som verdi. En enhet kan klatre flere plasser på en avrundingsfeil og falle en plass mens den vokser, så verdien står ved hvert navn.
+footer_b = En heltrukket linje er en klatring, en stiplet er et fall, og en vannrett linje er samme plass. Retningen går også fram av hvilken kolonne linjen ender høyere i, så fargen er ikke den eneste bæreren. En enhet som bare finnes i én av periodene er tegnet uten linje og merket «ny» eller «borte». Filen har ingen skript: et filter ville lagt kolonnene på nytt, og kolonnene er påstanden.
+footer_built = Bygget
+
+[en]
+scroll_hint = Drag sideways in the picture to see the whole table.
+html_lang = en
+svg_title = Rank change
+svg_desc = {before} rows in the first period and {after} in the second, with one line per entity present in both. The ranks are derived from the values.
+sub_line = {before} entities in the first period, {after} in the second, from {first} to {last}
+caption = Each line is one entity present in both periods. The rank number stands beside each name and the value beside that: rank alone cannot tell a jump on a rounding difference from a collapse.
+summary_head = {shared} entities appear in both periods. {climbs} climbed, {falls} fell, {flat} held their place from {first} to {last}.
+summary_climb = Largest climb: {entity}, {places} place(s) up, to {rank}.
+summary_fall = Largest fall: {entity}, {places} place(s) down, to {rank}.
+summary_still = {shared} entities appear in both periods, and none of them changed place from {first} to {last}. The levels moved, not the order.
+summary_none = No entity appears in both {first} and {last}, so nothing can have moved.
+summary_edges = {entered} entity(ies) are gone in the second period and {left} are new: they are drawn with no line, because a line would claim a move nobody made.
+ties_none = No shared ranks: every rank is used once.
+ties_line = {n} row(s) share a rank with the row above or below, so the ranks skip: 1, 1, 3. A shared rank is not an error, but it has to be stated or it reads like one.
+entered = new
+left = gone
+head_table = The numbers behind the picture
+table_caption = The ranks are derived from the values in each period, not from the order in the file. A dash means the entity is not in that period.
+col_entity = Entity
+col_before_value = Value {{PERIOD_FROM}}
+col_before_rank = Rank {{PERIOD_FROM}}
+col_after_value = Value {{PERIOD_TO}}
+col_after_rank = Rank {{PERIOD_TO}}
+col_value_delta = Change
+col_rank_delta = Places
+plus = +{value}
+minus = −{value}
+unchanged = 0
+dash = –
+source_line = Source: {name} · {entities} entities
+footer_a = Rank is not value. An entity can climb several places on a rounding difference and fall one place while growing, so the value stands beside every name.
+footer_b = A solid line climbs, a dashed line falls, and a horizontal line holds its place. The direction also follows from which column the line ends higher in, so the style is not the only carrier. An entity present in only one period is drawn with no line and marked new or gone. The file has no script: a filter would re-lay the columns, and the columns are the claim.
+footer_built = Built

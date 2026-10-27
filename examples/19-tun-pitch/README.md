@@ -47,6 +47,13 @@ its own limit is a pitch that gets found out in the room.
 
 ```sh
 python3 tools/verify_standalone_core.py examples/19-tun-pitch/tun-pitch.html
+
+# The illustration is one scaled picture: its labels are drawn in the picture's own
+# units, so the floor it can hold depends on the width. From 1366 px up every label
+# is at least 11 px; narrower than that the picture scales with the window, and the
+# overflow and touch checks still run at every viewport.
+python3 tools/verify_viewports.py examples/19-tun-pitch/tun-pitch.html \
+    --text-floor 11 --text-floor-above 1366
 ```
 
 Nine checks, including self-containment and the provenance block. Then **look at the

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete — this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Rows        : {{ROWS_INLINED}} in the source file, {{CATEGORY_COUNT}} categories on the sheet
+    Made with   : Tún — tun.community
+    Artefact    : one A4 sheet for {{PERIOD_LABEL}}, printed or PDF. No script, no network, no state
+
+  One A4 sheet. The page is the artefact: it is read on paper or as a PDF, so it carries no
+  control, no hover, no scroll, and nothing that only exists on screen. What it does carry is
+  the four numbers, the chart behind them, and the sentences that say what moved, because a
+  printed page cannot be filtered by the person holding it.
+
+  Built by tools/build_onepager.py from templates/onepager.html. Edit the template, not this
+  file: the next build overwrites it.
+-->
+<style>
+  :root{
+    --ink:#0a0a0a; --muted:#595959; --line:#dcdcdc; --rule:#ececec; --panel:#fff;
+    --brand:#2F5D9E; --brand-dark:#1B2A4A; --brand-soft:#e3f0ef;
+    --up:#007b5e; --down:#dc2a2a;
+    /* A4 at 96 dpi, so the screen sheet and the printed sheet are the same object. The
+       margin is the @page margin below: changing one without the other moves the page. */
+    --sheet-w:210mm; --sheet-h:297mm; --sheet-pad:14mm;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#eef1f2;color:var(--ink);
+    font-family:"Eksempel AS",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  /* A column, so the footer sits on the paper's bottom edge instead of wherever the last
+     sentence ends. On screen that is what the sheet looks like; in print the height is the
+     printable area, so the footer lands there too rather than starting a second page. */
+  .sheet{width:var(--sheet-w);min-height:var(--sheet-h);margin:24px auto;padding:var(--sheet-pad);
+    background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.14);font-size:10pt;line-height:1.5;
+    display:flex;flex-direction:column}
+
+  header{border-bottom:2px solid var(--brand);padding-bottom:4mm;margin-bottom:6mm}
+  .eyebrow{margin:0 0 1mm;font-size:9pt;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--brand)}
+  h1{margin:0 0 2mm;font-size:19pt;line-height:1.2;font-weight:600;letter-spacing:-.01em}
+  .standfirst{margin:0;color:var(--muted);font-size:10pt}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin:0 0 6mm}
+  .kpi{border-left:2px solid var(--brand);padding:0 0 0 3mm}
+  .kpi .label{margin:0;font-size:9pt;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted)}
+  .kpi .value{margin:1mm 0 0;font-size:17pt;font-weight:600;line-height:1.15;
+    font-variant-numeric:tabular-nums}
+  .kpi .delta{margin:.5mm 0 0;font-size:9pt;color:var(--muted)}
+  .kpi .delta.up{color:var(--up)}
+  .kpi .delta.down{color:var(--down)}
+
+  h2{font-size:11pt;margin:0 0 2mm;font-weight:600}
+  .chart{margin:0 0 6mm;break-inside:avoid}
+  /* Bars in HTML, not SVG: a viewBox scales its labels with the drawing, so a category name
+     that looks right on screen prints at 6 pt. Here the type size is the type size. */
+  .bars{margin:0}
+  .bar-row{display:grid;grid-template-columns:36mm 1fr 24mm;gap:3mm;align-items:center;
+    margin:0 0 1.6mm}
+  .bar-name{font-size:9pt;line-height:1.25;overflow-wrap:anywhere}
+  .bar-track{display:block;height:3.5mm;background:var(--rule);border-radius:1mm;overflow:hidden}
+  .bar-fill{display:block;height:100%;background:var(--brand)}
+  .bar-value{font-size:9pt;text-align:right;font-variant-numeric:tabular-nums;
+    color:var(--brand-dark)}
+
+  .moved{margin:0;padding:0;list-style:none;break-inside:avoid}
+  .moved li{margin:0 0 1.5mm;padding-left:5mm;position:relative}
+  .moved li::before{content:"";position:absolute;left:0;top:2.2mm;width:2.5mm;height:2.5mm;
+    background:var(--brand);border-radius:50%}
+  .moved li.down::before{background:var(--down)}
+  .moved b{font-variant-numeric:tabular-nums}
+
+  footer{margin-top:auto;padding-top:3mm;border-top:1px solid var(--line);color:var(--muted);
+    font-size:9pt;line-height:1.45}
+  footer p{margin:0 0 1mm}
+  footer .made{margin-top:2mm}
+
+  /* One page, or none. A printed sheet that runs to two pages is a document that lost its
+     argument on the way to the printer, so the builder refuses a build that overflows and
+     tools/verify_print.py measures it. */
+  /* The sheet IS the page: an A4 box with a 14 mm inner margin, and @page margin 0 so the
+     page box and the sheet are the same rectangle. Then what the screen shows is what the
+     printer gets, and a sheet that grows past 297 mm prints on two pages, which
+     tools/verify_print.py fails on. Margins are inside the sheet, not around it, because a
+     printer's own non-printable edge would otherwise clip the border. */
+  @page{size:A4;margin:0}
+  @media print{
+    html,body{background:#fff}
+    .sheet{margin:0;box-shadow:none}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="sheet" id="sheet">
+
+  <header>
+    <p class="eyebrow">{{T:kind}}</p>
+    <h1>{{TITLE}}</h1>
+    <p class="standfirst">{{STANDFIRST}}</p>
+  </header>
+
+  <section class="kpis" aria-label="{{T:aria_kpis}}">
+{{KPIS}}
+  </section>
+
+  <section class="chart" aria-label="{{T:aria_chart}}">
+    <h2>{{CHART_TITLE}}</h2>
+{{CHART}}
+  </section>
+
+  <section class="moved-section" aria-label="{{T:aria_moved}}">
+    <h2>{{MOVED_TITLE}}</h2>
+    <ul class="moved">
+{{MOVED}}
+    </ul>
+  </section>
+
+  <footer>
+    <p>{{SOURCE_LINE}}</p>
+    <p>{{PROVENANCE_LINE}}</p>
+    <p class="made">{{T:made_with}}</p>
+  </footer>
+
+</div>
+<script>document.documentElement.className+=" js"</script>
+</body>
+</html>

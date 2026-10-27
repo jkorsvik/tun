@@ -1,0 +1,57 @@
+# Strings for templates/survey-dashboard.html and tools/build_survey_dashboard.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# source_line: one line naming what was counted, never who answered.
+
+[nb]
+html_lang = nb
+num_locale = nb-NO
+dec = ,
+all = Alle
+reset = Nullstill
+answered = svarte
+questions = Spørsmål
+suppressed_head = Færre enn 5 svar
+suppressed_body = Ikke vist. Et lite antall lar seg føre tilbake til enkeltpersoner, så cellen skjules heller enn å trykkes.
+suppression_note = Tallene er antall svar, ikke andel av alle som fikk spørsmålet. Et spørsmål med færre enn 5 svar vises ikke, og et svaralternativ med færre enn 5 svar viser ingen sum. Fritekst er ikke med i denne filen.
+no_rows = Ingen svar med dette utvalget.
+footer_a = Selvstendig fil: tallene ligger i filen, og ingenting hentes når den åpnes
+footer_b = Ingen server, ingen innlogging
+footer_built = Bygget
+from = fra
+source_line = {name} — {answers} svar på {questions} spørsmål
+kpi_answers = Svar i utvalget
+kpi_questions = Spørsmål
+kpi_suppressed = Skjulte celler
+cross_head = Krysstabell
+cross_answered = svarte på begge
+cross_total = Sum
+cross_note = To spørsmål stilt mot hverandre, og tabellen vises bare når hver kombinasjon har minst 5 svar. Summen langs raden og kolonnen står på siden, så én skjult celle ville latt seg regne ut av de andre. Derfor vises hele tabellen eller ingen av den.
+cross_dropped = Ikke vist. Minst én kombinasjon har færre enn 5 svar, og siden summen langs raden og kolonnen står på siden, ville den ene cellen kunne regnes ut. Da vises ingen av dem.
+cross_filtered = Krysstabellene gjelder hele utvalget. Nullstill filteret for å se dem igjen.
+
+[en]
+html_lang = en
+num_locale = en-GB
+dec = .
+all = All
+reset = Reset
+answered = answered
+questions = Questions
+suppressed_head = Fewer than 5 answers
+suppressed_body = Not shown. A small count can be traced back to a person, so the cell is hidden rather than printed.
+suppression_note = The numbers are counts of answers, not a share of everyone who was asked. A question with fewer than 5 answers is not shown, and an option with fewer than 5 answers shows no count. Free text is not in this file.
+no_rows = No answers in this selection.
+footer_a = Standalone file: the numbers are inside it, and nothing is fetched when it opens
+footer_b = No server, no sign-in
+footer_built = Built
+from = from
+source_line = {name} — {answers} answers to {questions} questions
+kpi_answers = Answers in selection
+kpi_questions = Questions
+kpi_suppressed = Hidden cells
+cross_head = Cross-tab
+cross_answered = answered both
+cross_total = Total
+cross_note = Two questions asked against each other. The table is shown only when every combination has at least 5 answers: the row and column totals are on the page, so a single hidden cell could be worked out from the others. The whole table is shown, or none of it.
+cross_dropped = Not shown. At least one combination has fewer than 5 answers, and because the row and column totals are on the page, that one cell could be worked out. So none of them are shown.
+cross_filtered = The cross-tabs cover the whole selection. Reset the filter to see them again.

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 feedback_link.py — the optional "Gi tilbakemelding" link ("Give feedback" with --lang en) inside a built artefact.
 
@@ -90,9 +87,6 @@ def block(target: str, *, title: str, built: str, source: str, lang: str = i18n.
     config_js = (json.dumps(config, ensure_ascii=False)
                  .replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
     static_href = compose(base, keys, crlf, subject, head + f"JavaScript: {t['no']}")
-    # The partial opens with its licence comment. The page it lands in already carries the
-    # runtime header, so the comment stays in the source and out of the artefact.
-    partial = re.sub(r"\A\s*<!--.*?-->\s*", "", PARTIAL.read_text(encoding="utf-8"), flags=re.S)
-    return (i18n.apply(partial, t).strip()
+    return (i18n.apply(PARTIAL.read_text(encoding="utf-8"), t).strip()
             .replace("{{FEEDBACK_HREF}}", html.escape(static_href, quote=True))
             .replace("{{FEEDBACK_CONFIG}}", config_js))

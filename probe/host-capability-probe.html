@@ -1,18 +1,9 @@
 <!doctype html>
 <!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
-<!--
   Tún artefact-host capability probe.
   Purpose : measure what a host that serves one HTML file allows, by running the checks inside
             the host and printing the results on screen. Read the results from a screenshot.
   Data    : none. Safe to publish anywhere.
-  Made with   : Tún, tun.community
   Usage   : docs/29-atlassian-artifacts.md, "Re-running the probe".
   Each check prints ok / no plus the reason. Every Content-Security-Policy violation the
   page triggers is listed separately with its directive, so a "no" names its cause.

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 verify_day_board.py — proves the constraints this example exists to
 demonstrate, which tools/verify_dashboard.py does not look at.
@@ -84,7 +81,7 @@ ALLOWED = {
     "Dato": re.compile(r"\d{4}-\d{2}-\d{2}"),
     "ElevKode": re.compile(r"ELEV-\d\d"),
     "Retning": re.compile(r"Til skole|Fra skole|Fra SFO"),
-    "Ordning": re.compile(r"Grunnskole drosje|langdagSFO TT-kort|VGS TT-kort"),
+    "Ordning": re.compile(r"1-10 drosjesentral|heldagsSFO TT-kort|VGS TT-kort"),
     "Planlagt": re.compile(r"[0-2]\d:[0-5]\d"),
     "Bil": re.compile(r"(OT|TT)-\d\d|Ikke bestilt|Avventer TT-kort"),
     "Ledsager": re.compile(r"Ja|Nei|Vurderes"),
@@ -120,7 +117,7 @@ ALLOWED = {
 EXPECTED_VALUES = {
     "ElevKode": {f"ELEV-{n:02d}" for n in range(1, 15)},
     "Retning": {"Til skole", "Fra skole", "Fra SFO"},
-    "Ordning": {"Grunnskole drosje", "langdagSFO TT-kort", "VGS TT-kort"},
+    "Ordning": {"1-10 drosjesentral", "heldagsSFO TT-kort", "VGS TT-kort"},
     "Bil": ({f"OT-{n}" for n in (31, 32, 33, 34)}
             | {f"TT-{n}" for n in (51, 52, 53, 54, 71, 72, 73)}
             | {"Ikke bestilt", "Avventer TT-kort"}),
@@ -155,9 +152,9 @@ def stylesheet(html: str) -> str:
 def palette_values() -> dict[str, set[str]]:
     """Every colour this repo ships, read from the files rather than recalled.
 
-    Listing one brand's hex values inline would be wrong twice over: it goes
-    stale the moment a palette is edited, and it only tests the one brand
-    somebody happened to type out.
+    An earlier version of this check listed one organisation's nine hex values
+    inline. That was wrong twice over: it went stale the moment a palette was
+    edited, and it only ever tested the one brand somebody happened to type out.
     Reading the files instead means the check covers the CORE palette and EVERY
     plugin palette, and keeps covering a plugin added after this was written.
 
@@ -184,8 +181,8 @@ def palette_values() -> dict[str, set[str]]:
 
 
 def run_brand(failures: list[str]) -> None:
-    """In the scenario the artefact belongs to a third party. Prove it wears nobody's colours."""
-    print("\n-- brand and signalling (a third party, not this repo's owner) --")
+    """The artefact belongs to Eksempelkommune. Prove it wears nobody else's colours."""
+    print("\n-- brand and signalling (a tenant that is not this repo's owner) --")
     html = HTML.read_text(encoding="utf-8")
     css = stylesheet(html)
 
@@ -235,8 +232,8 @@ def run_brand(failures: list[str]) -> None:
 
     # The font stack is an ALLOW-LIST, not a ban on particular typefaces.
     #
-    # Searching for one organisation's font by name would have the same two faults
-    # as a hardcoded hex list: it goes stale, and it only
+    # The earlier version searched for one organisation's font by name, which had
+    # the same two faults as the hardcoded hex list: it goes stale, and it only
     # catches the name somebody typed. Permitting a known set instead rejects EVERY
     # unlisted family, including an organisation's, including one nobody has heard
     # of yet. It is the same argument the example makes about its data vocabulary.
@@ -379,7 +376,7 @@ def run_static(failures: list[str]) -> None:
     # Assembled at runtime rather than written as literals. The repo's own
     # real-data gate (tools/check_no_real_data.py) scans tracked files for
     # name, e-mail and personal-number SHAPES, and it correctly flagged an
-    # e-mail literal here when these were spelled out. A canary is test input,
+    # e-mail literal here when these were sTunkallend out. A canary is test input,
     # but the gate cannot know that, and teaching it an exception would blunt it
     # for every other file. Composing the strings keeps both checks honest.
     def _c(*parts: str) -> str:
@@ -459,7 +456,7 @@ def run_no_js(failures: list[str], shots: list[pathlib.Path], engines: tuple[str
                 check(f"#{view} readable without script", vis, failures)
             text = page.inner_text("#view-schemes")
             check("the three Ordning regimes are in static markup",
-                  all(s in text for s in ("Grunnskole drosje", "langdagSFO TT-kort",
+                  all(s in text for s in ("1-10 drosjesentral", "heldagsSFO TT-kort",
                                           "VGS TT-kort")), failures)
             text = page.inner_text("#view-routines")
             check("the routines are in static markup",

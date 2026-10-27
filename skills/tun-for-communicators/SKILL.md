@@ -5,6 +5,23 @@ description: "Explain this project's vocabulary (self-contained file, paired mod
 
 # Sirkushest, the communications edition
 
+**Tier and cost, for the first reply:** none. This skill explains vocabulary and builds
+nothing; when it hands work to a builder, that builder's first reply states its cost.
+
+## Provenance
+
+<!-- attribution:start -->
+This is derived from `skills/rektor-eksempelet`, which is itself derived from **a text a
+user pasted in**, not from a colleague's own finished sirkushest skill. The original has
+not been found: a search of the codebase on the internal forge gives no hits, and nothing
+with that name sits in the skill catalogues on the machine. **When the original becomes
+available, this file should be compared against it**, and anything that diverges should
+be corrected here.
+<!-- attribution:end -->
+
+The principal's edition is tuned for one named person and his workplace. It must not be
+shared further. This edition is the one that can be given away.
+
 ## Who the reader is
 
 A communications adviser. She is confident in her own field: she knows who the recipient

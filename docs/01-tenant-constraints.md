@@ -1,24 +1,36 @@
 # Tenant Constraints — What SharePoint & OneDrive Actually Do
 
-> **Status:** Empirically verified against an enterprise Microsoft 365 tenant by RAIWork,
-> using Microsoft Graph + `curl` + headless Chromium.
-> Rows 19-20 (browser-platform, not tenant-policy) come from
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
+> **Status:** Empirically verified against the live Eksempel AS tenant (`eksempelasanor-my.sharepoint.com`)
+> on **2026-09-04** by RAIWork, using Microsoft Graph + `curl` + headless Chromium.
+> Rows 19-20 (browser-platform, not tenant-policy) added **2026-09-06** via
 > `probe/browser-capability-probe.py`, Chromium `151.0.7922.34`.
-> Rows 21-27 are **manual** observations, not automated probes, and are flagged as such
-> below. Each is a manual observation on one device, through one sharing path or a small
-> set of them: a data point, not a platform-wide guarantee.
-> Row 23 was RETRACTED by rows 24-26. It is kept as a table row, not deleted, as a record
-> of a conclusion that briefly looked confirmed and was not.
-> Rows 24-26 come from one affected file and a series of isolated minimal reproductions.
-> `examples/16-embedding-mode-comparison-poc/` in this repo is a reusable diagnostic tool
-> covering all four findings.
-> Rows 23-26 were all found in one session. Treat that as a signal that this list is not
-> exhaustive, not as a sign the search is done; see
-> `examples/16-embedding-mode-comparison-poc/README.md` for the open follow-up, including
-> the scanning layer behind row 25.
-> Row 27 is one Slack attachment opened on a real iPhone, and the same standalone file
-> opened through the browser handoff. It records the transport separately from the
-> browser result.
+> Row 21 added **2026-09-06** from a **manual** test by en kollega
+> (a real iPhone, a real Teams message link) — not an automated probe, and
+> flagged as such below.
+> Row 22 added **2026-09-07**, also manual, also en kollega — same file,
+> three different sharing paths, on both PC and mobile. Not exhaustive: see
+> issue opened alongside it for what is still untested (device/OS spread,
+> mail clients, sharing-link scope).
+> Row 23 added **2026-09-15**, RETRACTED the same evening by rows 24-26 below —
+> kept as a table row, not deleted, as a record of a conclusion that briefly
+> looked confirmed and was not.
+> Rows 24-26 added **2026-09-15**, manual, en kollega, against a real case
+> file and a series of isolated minimal reproductions — see
+> [`en kollega-kollega/saksrom`](https://example.com/en kollega-kollega/saksrom)
+> `docs/04-hosting-og-dedup.md` Trinn E-H for the full bisection process, and
+> `examples/16-embedding-mode-comparison-poc/` in this repo for a reusable
+> diagnostic tool covering all four findings.
+> Rows 23-26 were all found in a single evening, in a single real incident —
+> the fastest this table has ever grown. Treat that as a signal that this list
+> is not exhaustive, not as a sign the search is done; see the "Bevisst holdt
+> åpen" section of `examples/16-embedding-mode-comparison-poc/README.md` for
+> the longer-term follow-up this points to, including a possible conversation
+> with Eksempel AS's security team about the scanning layer behind row 25.
+> Row 27 added **2026-09-20**, manual, from one Slack attachment opened on a real
+> iPhone and the same standalone file opened through the browser handoff. It
+> records the transport separately from the browser result.
 > Every row below is a measured observation, not a doc quote.
 > Re-run [`probe/tenant-probe.py`](../probe/tenant-probe.py) (rows 1-6) and
 > [`probe/browser-capability-probe.py`](../probe/browser-capability-probe.py)
@@ -51,13 +63,13 @@ is counter-intuitive. **Read this before designing anything.**
 |---|---|---|---|
 | 1 | `.html` in a document library, Graph `downloadUrl` | `200`, `content-type: text/html`, **`content-disposition: attachment`** | ❌ Downloads, never renders |
 | 2 | `.aspx` (the classic "rename it" trick) | `200`, **`content-type: application/octet-stream`**, `attachment` | ❌ MIME actively downgraded — deliberately closed |
-| 3 | Graph `createLink` `type: "embed"`, `scope: "organization"` | `400 invalidRequest` — *"embed Type … supported only for anonymous Scope"* | ❌ Anonymous sharing is blocked in this tenant |
+| 3 | Graph `createLink` `type: "embed"`, `scope: "organization"` | `400 invalidRequest` — *"embed Type … supported only for anonymous Scope"* | ❌ Anonymous sharing is blocked in a tenant tenant |
 | 4 | Graph `/preview` → `_layouts/15/embed.aspx` | `200 text/html`, 264 KB of **SharePoint viewer chrome**. Our markup: **0 occurrences**. 9 × "Download" | ❌ Renders a viewer with a Download button, not our page |
 | 5 | `<iframe>` from any non-Microsoft origin | `x-frame-options: SAMEORIGIN`<br>`content-security-policy: frame-ancestors 'self' <MS domains>` | ❌ Framing outside SharePoint/Teams/M365 is blocked |
 | 6 | **HTTP `Range:` request on file content** | **`206 Partial Content`**, `content-range: bytes 0-99/996` | ✅ **Works** — see "Why this matters" below |
 | 7 | **Local open from the OneDrive sync folder (`file://`)** | Renders fully. JS executes. Button click mutates DOM. Title, styling, interactivity all correct | ✅ **Works perfectly** |
 | 8 | `fetch()` to SharePoint from a `file://` page | `401 Unauthorized` — reached the server, but unauthenticated | ⚠️ Live data needs a token; MSAL cannot use a `file://` redirect URI |
-| 9 | OneDrive sync client on macOS | Present: `~/Library/CloudStorage/OneDrive-SharedLibraries-EksempelAS` | ✅ Distribution channel confirmed |
+| 9 | OneDrive sync client on macOS | Present: `~/Library/CloudStorage/OneDrive-SharedLibraries-Eksempel ASBankASA` | ✅ Distribution channel confirmed |
 | 10 | `createLink` `type:"view"`, `scope:"organization"` | `200` — link created | ✅ Internal sharing works |
 | 11 | `createLink` `type:"view"`, `scope:"anonymous"` | **`403 notAllowed`** — *"sharing has been disabled"* | ❌ **Anonymous/external links blocked tenant-wide** |
 | 12 | `.svg` with an embedded `<script>` | `200`, `content-type: image/svg+xml`, **`content-disposition: attachment`** | ❌ Same treatment — disposition is unconditional |
@@ -70,11 +82,11 @@ is counter-intuitive. **Read this before designing anything.**
 | 19 | `showDirectoryPicker({mode:"readwrite"})` from `file://` — no user gesture, then a real click-triggered gesture | API present; **both** calls return the identical `AbortError` ("user aborted a request") | ⚠️ **Present, but not fully testable headlessly** — see below |
 | 20 | `new Worker(URL.createObjectURL(new Blob([src])))` from `file://`, vs. `new Worker("./external.js")` (control) | Blob-sourced worker **runs and round-trips a message**; external-path worker fails with `SecurityError … cannot be accessed from origin 'null'` (same failure as row 8/DuckDB) | ✅ **Inline compute works; loading a worker file does not** |
 | 21 | **Manual, not scripted:** open `examples/07-topbar-pattern-demo/topbar-pattern-demo.html` via a real Teams message link, on a real iPhone | Hamburger menu and info panel worked — script execution itself is NOT blocked in this open path. The fullscreen button's unguarded `requestFullscreen()` call threw, and the **host WebView surfaced a visible "Script error" banner to the user**, not a silent console error. Fixed with feature-detection + `try/catch` (`examples/07-topbar-pattern-demo/README.md`); button now disables itself instead | ⚠️ **JS runs fine; Fullscreen API is the specific thing that breaks, visibly, if left unguarded** — exact Teams version and in-app-preview-vs-external-browser not yet isolated |
-| 22 | **Manual, not scripted:** one standalone demo file, shared three ways from OneDrive and opened on both a PC and a mobile phone: (a) "Copy link" pasted into an e-mail, (b) the same link pasted into a Teams message — opened via Teams' own auto-generated preview card, (c) the same Teams message — opened via the plain-text link Teams also renders underneath that card | (a) JavaScript ran and everything worked **on PC**; JavaScript did **not** run on mobile at all — menu, theme toggle, info panel, all inert, no console reachable to confirm why. (b) JavaScript ran **on both PC and mobile**. (c) Rendered **source code only**, in neither device — did not execute as a page at all | ⚠️ **The sharing path decides, not the device** — Teams' own preview card is the only confirmed mobile-working route found so far; a raw OneDrive link (e-mail, or OneDrive's own "Send" dialog) only worked on PC. Prompted a host-agnostic warning banner, visible by default and only hidden by a script proven to have run (pattern in `docs/11-responsiveness-and-browser-support.md`). **Not exhaustive** (see the open items at the end of this document): only one phone/OS combination tested, only Outlook (desktop+mobile) and Teams tried, sharing-link scope (organization vs. specific people) not varied |
+| 22 | **Manual, not scripted:** `examples/10-consolidated-standalone-demo/consolidated-standalone-demo.html`, the same file, shared three ways from OneDrive and opened on both a PC and a mobile phone: (a) "Copy link" pasted into an e-mail, (b) the same link pasted into a Teams message — opened via Teams' own auto-generated preview card, (c) the same Teams message — opened via the plain-text link Teams also renders underneath that card | (a) JavaScript ran and everything worked **on PC**; JavaScript did **not** run on mobile at all — menu, theme toggle, info panel, all inert, no console reachable to confirm why. (b) JavaScript ran **on both PC and mobile**. (c) Rendered **source code only**, in neither device — did not execute as a page at all | ⚠️ **The sharing path decides, not the device** — Teams' own preview card is the only confirmed mobile-working route found so far; a raw OneDrive link (e-mail, or OneDrive's own "Send" dialog) only worked on PC. Prompted a host-agnostic warning banner, visible by default and only hidden by a script proven to have run (`examples/10-consolidated-standalone-demo/`). **Not exhaustive** — see the follow-up issue: only one phone/OS combination tested, only Outlook (desktop+mobile) and Teams tried, sharing-link scope (organization vs. specific people) not varied |
 | 23 | **RETRACTED, same evening it was added:** embedded multi-line string concatenation (`"tekst" +` repeated across lines) in inline `<script>` data, vs. the identical content as one continuous string | A rushed two-test comparison first concluded multi-line concatenation itself broke SharePoint's inline file-preview ("hurtigvisning" in a document library — not row 4's `embed.aspx` viewer, not a download). A **third, better-isolated** test (two panels, side by side, identical file, only line-format different) showed **both render correctly** — see `examples/16-embedding-mode-comparison-poc/`, panel A vs. B. | ❌ **Retracted — was never the cause.** Kept as a table row, not deleted, specifically so this wrong conclusion cannot quietly get re-discovered and re-reported as new. Row 25 has what the format red herring was masking. |
-| 24 | **Manual, not scripted:** click on `<a href="#page-x">` navigation inside SharePoint's inline file-preview ("hurtigvisning"), CSS `:target` driving which section is visible — isolated to a bare-minimum test page (3 links, 3 `:target`-styled boxes, nothing else) | Clicking never changed which box was visible — fragment navigation itself did not occur. An **otherwise-identical** page using a JavaScript click handler (`preventDefault()` + toggling a CSS class instead of relying on the browser's own fragment navigation) switched correctly on the first click | ❌ **Fragment navigation (`<a href="#...">` → browser navigates → `:target` matches) is blocked in this preview surface — even though JavaScript itself runs (see row 25).** CSS `:target` is not a safe page-switching mechanism for anything meant to be opened this way. **Preferred fix: `<input type="radio" name="page">` + `:checked`** — checking an input is not navigation, so no fragment is involved, and unlike the JS click handler this keeps working when scripts do not run at all (row 22a). Built and verified in `examples/13-js-free-standalone-poc/`; gated by `tools/verify_standalone_core.py`'s `check_no_target_driven_visibility`. ⚠ The radio replacement itself has NOT yet been opened in this preview surface — that is an open probe, and until then it is a reasoned substitution, not a measured one. A JS click handler remains the fallback where a radio group does not fit |
-| 25 | **Manual, not scripted:** a literal `<script` substring appearing anywhere in an HTML file opened via SharePoint's inline file-preview — including *inside an HTML comment*, describing in prose what a sibling `<script src="...">` tag does, never executed by any browser | A file with this exact pattern in its own top-of-file documentation comment rendered a permanent "no JavaScript" fallback state — the file's *own* one-line inline banner-removal script (nothing to do with the comment) never ran either. Removing only the two comment phrases containing the literal text, zero other changes, fixed the file completely. Reproduced in isolation: a 457-byte page with one script tag and nothing else fails identically the moment a second, textual "`<script`" occurrence is added anywhere in the file | ❌ **A naive text scan for "`<script`" across the raw file — not real HTML parsing — appears to gate whether ANY script on the page runs, tenant-side.** Never type the literal characters "`<script`" as prose/documentation anywhere in a file meant to run in this preview surface, comment or not. See `examples/16-embedding-mode-comparison-poc/README.md` for the full bisection |
-| 26 | **Manual, not scripted:** `position:sticky` and, separately, `position:fixed` (with a JS-measured `padding-top` compensating on the sibling content) for a header meant to stay visible while the rest of the page scrolls, inside SharePoint's inline file-preview | `position:sticky`: header overlapped/covered the top of the newly-visible content on every page switch, regardless of scroll position. `position:fixed` + measured `padding-top`: same overlap persisted. An app-shell layout with **no positioning property at all** — non-scrolling `<body>` as a `100vh` flex column, the header as a plain non-scrolling flex row, and the content area as the *sole* `overflow-y:auto` container — fixed it completely, confirmed by manual observation in both SharePoint and OneDrive | ❌ **Both `position:sticky` and `position:fixed` are unreliable for anything that must stay visible during scroll in this preview surface**, independent of otherwise-correct CSS. Use a non-scrolling flex-shell with one dedicated scrolling container instead — do not spend more local-browser time trying to fix sticky/fixed further, local rendering already looked correct both times |
+| 24 | **Manual, not scripted:** click on `<a href="#page-x">` navigation inside SharePoint's inline file-preview ("hurtigvisning"), CSS `:target` driving which section is visible — isolated to a bare-minimum test page (3 links, 3 `:target`-styled boxes, nothing else) | Clicking never changed which box was visible — fragment navigation itself did not occur. An **otherwise-identical** page using a JavaScript click handler (`preventDefault()` + toggling a CSS class instead of relying on the browser's own fragment navigation) switched correctly on the first click | ❌ **Fragment navigation (`<a href="#...">` → browser navigates → `:target` matches) is blocked in this preview surface — even though JavaScript itself runs (see row 25).** CSS `:target` is not a safe page-switching mechanism for anything meant to be opened this way. **Preferred fix, added 2026-09-19 (#50): `<input type="radio" name="page">` + `:checked`** — checking an input is not navigation, so no fragment is involved, and unlike the JS click handler this keeps working when scripts do not run at all (row 22a). Built and verified in `examples/13-js-free-standalone-poc/`; gated by `tools/verify_standalone_core.py`'s `check_no_target_driven_visibility`. ⚠ The radio replacement itself has NOT yet been opened in this preview surface — that is an open probe on #51, and until then it is a reasoned substitution, not a measured one. A JS click handler remains the fallback where a radio group does not fit |
+| 25 | **Manual, not scripted:** a literal `<script` substring appearing anywhere in an HTML file opened via SharePoint's inline file-preview — including *inside an HTML comment*, describing in prose what a sibling `<script src="...">` tag does, never executed by any browser | A real case file with this exact pattern in its own top-of-file documentation comment rendered a permanent "no JavaScript" fallback state — the file's *own* one-line inline banner-removal script (nothing to do with the comment) never ran either. Removing only the two comment phrases containing the literal text, zero other changes, fixed the file completely. Reproduced in isolation: a 457-byte page with one script tag and nothing else fails identically the moment a second, textual "`<script`" occurrence is added anywhere in the file | ❌ **A naive text scan for "`<script`" across the raw file — not real HTML parsing — appears to gate whether ANY script on the page runs, tenant-side.** Never type the literal characters "`<script`" as prose/documentation anywhere in a file meant to run in this preview surface, comment or not. See `examples/16-embedding-mode-comparison-poc/README.md` for the full bisection and `en kollega-kollega/saksrom` `docs/04-hosting-og-dedup.md` Trinn F for the case that surfaced it |
+| 26 | **Manual, not scripted:** `position:sticky` and, separately, `position:fixed` (with a JS-measured `padding-top` compensating on the sibling content) for a header meant to stay visible while the rest of the page scrolls, inside SharePoint's inline file-preview | `position:sticky`: header overlapped/covered the top of the newly-visible content on every page switch, regardless of scroll position. `position:fixed` + measured `padding-top`: same overlap persisted. An app-shell layout with **no positioning property at all** — non-scrolling `<body>` as a `100vh` flex column, the header as a plain non-scrolling flex row, and the content area as the *sole* `overflow-y:auto` container — fixed it completely, confirmed by the same user in both SharePoint and OneDrive | ❌ **Both `position:sticky` and `position:fixed` are unreliable for anything that must stay visible during scroll in this preview surface**, independent of otherwise-correct CSS. Use a non-scrolling flex-shell with one dedicated scrolling container instead — do not spend more local-browser time trying to fix sticky/fixed further, local rendering already looked correct both times |
 | 27 | **Manual, not scripted:** upload a self-contained slide deck as a raw `.html` attachment in Slack, open it on macOS and on an iPhone, then use the iPhone's "open in browser" handoff | Slack on macOS opened the interactive page. Slack's iPhone attachment preview showed the HTML source. The handoff offered Yandex on the tested phone; Yandex rendered the same local file in portrait and landscape. A revised file with persistent touch controls then opened successfully from disk. True fullscreen was not separately confirmed on the device | ⚠️ **The file is portable; the attachment preview is not a browser.** Keep the single offline file as the canonical artefact. Make controls touch-visible and guard fullscreen. Use direct file transfer or an optional hosted URL when a preview surface refuses to execute HTML. One iPhone, one Slack version and one registered browser is a data point, not a platform-wide guarantee |
 | 28 | **Scripted against the live tenant, 2026-10-08:** open an `.html` file in SharePoint's inline file preview ("hurtigvisning") from a OneDrive folder, and read the preview frame's attributes from the host page. Then rebuild the same frame locally (a `blob:` iframe with the same `sandbox` value) and drive a page inside it in Chromium, Firefox and WebKit, with a control arm that adds `allow-downloads` | The preview renders the file as `<iframe src="blob:https://<tenant>-my.sharepoint.com/<uuid>" sandbox="allow-scripts">`. Scripts run. The frame has an opaque origin (`self.origin === "null"`) and none of `allow-downloads`, `allow-modals`, `allow-popups` or `allow-same-origin`. In the replica, `Blob` + `<a download>` gave no download in any of the three engines (WebKit logs "Not allowed to download due to sandboxing"). With `allow-downloads` added, all three downloaded, and the file was named after the blob UUID. `window.print()` was ignored in Chromium ("the 'allow-modals' keyword is not set"). Opening the file's own URL instead of the preview downloads it (row 1) | ⚠️ **Scripts run in the preview, but nothing can leave it.** Row 18's drag-out does not work there, and neither does a print button. A page that offers either must detect the frame (`window.self !== window.top && self.origin === "null"`) and tell the reader to download the file and open it from disk. [`examples/24-editable-document`](../examples/24-editable-document/) does this, and the guard was seen to fire in the live preview |
 
@@ -103,7 +115,7 @@ control, documented under
 > context of the user."*
 
 Any workaround that defeats `Content-Disposition: attachment` is, by definition,
-defeating a security control in a corporate document store. **We are not going to do
+defeating a security control in a tenant's document store. **We are not going to do
 that.** The architecture routes around it instead.
 
 ---
@@ -123,7 +135,7 @@ own fallback there. It cannot ask for real fullscreen.
 byte ranges** of a file without downloading the whole thing. That is precisely the
 access pattern **Parquet** and **DuckDB-WASM** need, and it works.
 
-**Measured.** DuckDB-WASM 1.32.0 against a 24.41 MB Parquet file
+**Measured, 2026-09-04.** DuckDB-WASM 1.32.0 against a 24.41 MB Parquet file
 (4 000 000 rows, 8 columns, 4 row groups) served with `Accept-Ranges: bytes` and
 `Cache-Control: no-store`, fresh browser context per query:
 
@@ -201,7 +213,7 @@ Measured: 4 000 000 source rows → 115 200 cells → **0.81 MB `.html`**, decod
 
 ---
 
-## Rows 19-20 — browser platform, not SharePoint
+## Rows 19-20 — measured 2026-09-06, browser platform not SharePoint
 
 Rows 1-18 are either a tenant-policy question (does SharePoint serve this file
 a certain way) or a question already answered inside the paired-mode work. Rows
@@ -214,7 +226,7 @@ pure browser behaviour, reproducible in any tenant).
 ### Row 19 — the File System Access API is real, but cannot be probed past its first line
 
 `window.showDirectoryPicker` exists from a `file://` page. That is what the
-local change-queue pattern (used in an internal dashboard) relies on
+`endringskoeffisient-html` pattern (used in production in the betalingsoversikt) relies on
 for a dashboard to read *and write* a change-queue file in its own OneDrive folder,
 live, without any server. It had never been run through this discipline before —
 it was working code, not yet a measured row.
@@ -236,7 +248,7 @@ is no CDP-level interception for it the way there is for `<input type=file>`.
 **Consequence for this repo:** row 19 cannot be reduced to a pass/fail exit code like
 rows 1-18. The only automatable claims are: the API exists, and it demands genuine
 activation. Whether a real grant-then-write-then-reread cycle actually works against
-a OneDrive-synced folder on the organisation's tenant has to be checked **by a human, in a headed
+a OneDrive-synced folder on the Eksempel AS tenant has to be checked **by a human, in a headed
 browser, once** — and re-checked the same way if this pattern is extended, because
 nothing here can catch a regression automatically. Treat any future automated "PASS"
 claiming to cover this path with suspicion; it is testing something else.
@@ -255,7 +267,7 @@ enough to want a background thread — a simulation sweep, a large re-aggregatio
 run inside a portable `file://` artefact**, so long as the worker's source is generated
 inline rather than referenced. Relevant beyond dashboards: any standalone-HTML
 specialization that needs to compute rather than just display (see the generic
-artifact-model discussion) can rely on this without waiting on Tier 2/3.
+artefact-model discussion) can rely on this without waiting on Tier 2/3.
 
 ---
 
@@ -300,7 +312,7 @@ Be honest about these; do not design around them:
 
   Worth being clear about what that costs us: nothing that matters. Embedding buys
   "appears on a page without clicking a file" — a convenience. Paired mode already
-  provides the dynamism, and a file already provides the reach (including outside the organisation,
+  provides the dynamism, and a file already provides the reach (including outside Eksempel AS,
   which no embedded page can do).
 - **Live data from a `file://` dashboard.** Row 8 — no auth path. Data must be
   inlined at build time, or the dashboard must be hosted at a real origin.
@@ -334,7 +346,7 @@ So: one editor, use paired mode. Several editors at once, use a SharePoint list 
 source and let the page read a snapshot of it. `examples/17` describes this split for a
 synthetic case, in the text of its page (`oversikt.template.html`).
 
-## Sharing outside the organisation
+## Sharing outside Eksempel AS
 
 Row 11 matters most here: **anonymous SharePoint links are blocked at tenant level.** You
 cannot send an outsider a link to a file in our SharePoint.
@@ -349,11 +361,11 @@ That does not block external sharing — it means SharePoint isn't the channel.
 
 This is a genuine capability Power BI does not have at all: a `.pbix` cannot be opened by
 someone outside the tenant, and a Power BI link requires a licence. A self-contained HTML
-dashboard is just a document — and documents already have well-understood routes out of a large enterprise.
+dashboard is just a document — and documents already have well-understood routes out of a tenant.
 
 ⚠️ Which makes the security thinking *more* important, not less. A file that can be emailed
 can be emailed to the wrong person, and it carries all its data inside it. Before anything
-leaves the organisation: check the classification, confirm the data is meant to be shared, and remember
+leaves Eksempel AS: check the classification, confirm the data is meant to be shared, and remember
 that **a file you have sent cannot be revoked.**
 
 Untested, and worth knowing: whether a **guest/B2B invite** to a SharePoint site would let a
@@ -368,8 +380,8 @@ heavier than just sending the file.
 - A declarative sidecar (`<script src="./data.js">`) for read-only live-per-open
   updates, no rebuild, no permission prompt. **Tier 1.**
 - Live read/write to a shared folder via the File System Access API, for patterns like
-  the local change-queue (in real use, but only verifiable end-to-end by a
-  human in a headed browser, row 19). **Tier 1, unusual verification cost.**
+  the local change-queue — real in production, but only verifiable end-to-end by a
+  human in a headed browser (row 19). **Tier 1, unusual verification cost.**
 - An inline Worker (built from a `Blob`, never from a file path) for client-side
   computation that would otherwise block the UI thread — no server, no approval
   (row 20). **Tier 1.**
@@ -401,43 +413,6 @@ probe script.
 If any row flips, **update this file in the same commit** as whatever you change
 in response.
 
-## A new rendering path, documented but not yet measured: SharePoint HTML pages
-
-Microsoft is rolling out **HTML pages in SharePoint** (public preview from October 2026,
-general availability announced for late 2026). An `.html` file in a site's **Site Pages**
-library renders as a page, not as an attachment preview. This is a different surface from
-the inline preview that rows 21-27 measure, so none of those rows carry over in either
-direction until it is measured.
-
-What Microsoft's support article "Create, upload, edit, and publish HTML pages in
-SharePoint" states (checked verbatim against the fetched page, 2026-10-06):
-
-| Claim | Source wording, short |
-|---|---|
-| Rendering | "SharePoint renders HTML in a sandboxed iframe ... Content Security Policy (CSP) rules provide extra isolation." |
-| JavaScript | "The sandbox supports JavaScript when the code is contained in the same HTML file." |
-| Libraries | Chart.js, Mermaid, React, Fluent UI and Babylon from a Microsoft-managed CDN only. |
-| Network | "SharePoint blocks arbitrary fetch requests and outbound API calls from HTML pages." |
-| Storage | "The sandbox can't access the browser localStorage." |
-| Size | "The maximum size is 10 MB." |
-| Anchor links | "Navigation within the HTML like anchor links: Yes." |
-| Enabling | A site owner turns on Site Pages -> File types -> **Allow HTML files**. |
-| Access | Publishing "doesn't grant new permissions"; viewers need permission to view the page. |
-| Tenant control | "Can I disable or restrict HTML pages at the tenant level? No." |
-| Mobile | View in the SharePoint app in Teams on mobile: yes. |
-
-Why it matters here: a Tún artefact already has exactly the shape this path accepts, all
-code and data inline and nothing fetched, and the 0.81 MB cube fits the 10 MB limit with
-room to spare. Likely breaks, to measure: anything using `localStorage`, `fetch`, a sibling
-`data.js` (paired mode), fullscreen and downloads (both depend on sandbox flags Microsoft
-does not list), and inline event-handler attributes (depends on the CSP).
-
-Also note: "Edit in SharePoint" **moves** a file from its document library into Site Pages,
-so existing sharing links to the old location are likely to stop working; and editing a
-page with Copilot may rewrite the HTML, including the provenance block and Origin Notice.
-
-Status: no row yet. A self-reporting probe page is being prepared; results become row 28.
-
 ## Assumptions still to test
 
 These were not verified and should not be relied on until they are:
@@ -450,7 +425,7 @@ These were not verified and should not be relied on until they are:
       admitted it was never tested (2026-09-19). Design as if it is true. Do not quote
       it as measured.
 
-- [ ] Whether an **SPFx web part is approvable** in the organisation's tenant, and what the
+- [ ] Whether an **SPFx web part is approvable** in Eksempel AS's tenant, and what the
       lead time is. This gates Tier 2 entirely.
 - [ ] Whether a **Teams tab** (`frame-ancestors` allows `teams.microsoft.com`) can
       host a dashboard — the CSP in row 1 hints this may be a legitimate embed path.
@@ -463,18 +438,18 @@ These were not verified and should not be relied on until they are:
       a 0.81 MB cube-backed file covering 4 M source rows opens instantly from
       `file://`. The remaining unknown is the Outlook/SharePoint *attachment* ceiling,
       not the browser's — and the cube makes it unlikely we ever approach it.
-- [ ] Whether `DecompressionStream` is available in every browser the organisation actually
+- [ ] Whether `DecompressionStream` is available in every browser Eksempel AS actually
       deploys. Verified in Chromium; it needs Chrome/Edge 80+ or Safari 16.4+. The
       template fails loudly with a readable message rather than a blank page, but a
       locked-down legacy browser in the estate would still block the cube path.
 - [ ] **Row 19, end to end, on a real OneDrive-synced folder.** Feature presence and
-      the user-gesture requirement are confirmed. A real
-      grant → write → close → reopen → reread cycle, against an actual enterprise-tenant
-      synced folder, has only been exercised by the local change-queue pattern in
-      real use — never captured as a repeatable, scripted check, and per the row
+      the user-gesture requirement are confirmed (2026-09-06). A real
+      grant → write → close → reopen → reread cycle, against an actual Eksempel AS-tenant
+      synced folder, has only been exercised by the `endringskoeffisient-html` pattern in
+      production use — never captured as a repeatable, scripted check, and per the row
       19 discussion above, it structurally cannot be one. Re-verify by hand if this
       pattern is extended or a browser update changes its behaviour.
-- [ ] Whether enterprise browser policy at the organisation **disables the File System Access API**
+- [ ] Whether enterprise browser policy at Eksempel AS **disables the File System Access API**
       outright (some organizations block it via `FileSystemReadAskForUrlAllowedForUrls`-
       style policy or similar). Untested — the probe above only proves the API exists
       in a stock, unmanaged Chromium; a managed browser profile may differ.

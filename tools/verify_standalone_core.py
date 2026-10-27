@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 verify_standalone_core.py — the generic-layer checks any standalone-HTML artefact can
 run, regardless of specialisation (dashboards, docs, simulations, process diagrams, ...).
@@ -118,9 +115,9 @@ def check_size(path: pathlib.Path) -> tuple[str, str, float]:
 def check_no_leftover_placeholders(html: str) -> tuple[bool, str]:
     """A shipped file with an unsubstituted {{TOKEN}} means the build half-failed.
 
-    Generic because the {{TOKEN}} substitution convention is not dashboard-specific:
-    any generator that fills a shell template with {{TITLE}}-style tokens can half-fail
-    the same way.
+    Generic because the {{TOKEN}} substitution convention is not dashboard-specific —
+    prosessflyt-verktoy's build.py uses the identical {{TITLE}}/{{VTAG_HTML}}
+    convention in engine/shell_head.html.
     """
     leftover = sorted(set(PLACEHOLDER.findall(html)))
     if leftover:
@@ -147,8 +144,8 @@ def check_no_stray_script_text(html: str) -> tuple[bool, str]:
     including inside an HTML comment, never executed by any browser.
 
     Generic because this is a SharePoint-preview-sandbox behaviour, not specific to
-    any one artifact type: docs/01-tenant-constraints.md row 25 documents a case
-    where a page's own documentation comment
+    any one artifact type: docs/01-tenant-constraints.md row 25 documents a real case
+    (`en kollega-kollega/saksrom`, 2026-09-15) where a page's own documentation comment
     contained the prose "lastet via <script src> fra sidecar-filer" — plain text,
     inert, inside `<!-- -->`. That page's OWN one-line inline script (unrelated to the
     comment) never executed either, and removing only the two comment phrases with
@@ -160,7 +157,7 @@ def check_no_stray_script_text(html: str) -> tuple[bool, str]:
     same-evening attempt at this check used non-greedy `<script>.*?</script>` removal
     and could be fooled into pairing a stray opening tag with an unrelated real
     closing tag much further down the file, hiding the exact bug it was meant to
-    catch — see that tool's git history for that false-negative.
+    catch — see `en kollega-kollega/saksrom` git history for that false-negative.
     """
     from html.parser import HTMLParser
 
@@ -257,7 +254,7 @@ def check_no_target_driven_visibility(html: str) -> tuple[bool, str]:
     This is the single hardest failure in this file to catch any other way: `:target`
     works flawlessly from `file://`, so a local headless render — including the one at
     the bottom of this module — passes it every time. examples/13's own verifier proved
-    exactly that.
+    exactly that before #50.
 
     `:target` for anything cosmetic (a highlight colour, a scroll offset) is untouched;
     only `display`, `visibility` and `opacity` are treated as "controls visibility".
@@ -309,7 +306,7 @@ def check_no_scroll_persistent_positioning(html: str) -> tuple[bool, str]:
     does not assume: `position:sticky` on an element inside a bounded scroll container,
     such as `th` inside `.table-wrap{max-height:26rem;overflow:auto}` in
     templates/single-file-dashboard.html. That shape is closer to row 26's own
-    prescribed fix than to the case it rejected, and is an open probe item —
+    prescribed fix than to the case it rejected, and is an open probe item on #51 —
     not a known defect.
 
     Known evasion: a header pinned with a literal `top:56px`/`padding-top:56px` and a

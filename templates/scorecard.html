@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún - tun.community
+    Rows        : {{ROWS_INLINED}} rows, {{PERIOD_COUNT}} periods
+
+  This is a self-contained artefact: no server, no CDN dependency, no licence required to
+  view. It works offline, from a OneDrive/SharePoint-synced folder.
+
+  What this file is: a scorecard. Many measures, one period, each with its history, its
+  target, and the distance between the two. The monthly report a manager reads has this
+  shape, and it is the one report that needs a target: without one, a figure is a fact with
+  no verdict.
+
+  What it is NOT: an opinion about which way is good. Direction comes from the data or from
+  --lower-is-better. Without it, this page prints the figures and says nothing about whether
+  they are good news, because an increase is good for revenue and bad for complaints, and the
+  file cannot know which it holds. Status appears only when the bands were declared.
+
+  There is no third status colour. The approved status pair is Fire Red and Success Green
+  (tools/tokens/status-semantic.css, both measured at WCAG AA on white), and a new amber
+  value would be a design decision nobody has approved. The middle band therefore uses the
+  approved neutral and carries its meaning in the word beside it.
+
+  There is no script in this file. A scorecard is a snapshot with its history behind it, and
+  a filter would be a different artefact. Every figure on every card is in the table below.
+-->
+<style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. */
+{{TOKEN_CSS}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.25rem 1.5rem}
+header .in{max-width:86rem;margin:0 auto}
+h1{margin:0;font-size:1.375rem;line-height:1.75rem;font-weight:600}
+header .sub{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;opacity:.9}
+main{max-width:86rem;margin:0 auto;padding:1.5rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(19rem,100%),1fr));
+  gap:1rem;margin:0;padding:0;list-style:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:.5rem;padding:1rem 1.25rem;
+  /* A card is one measure: keep it whole on paper. */
+  break-inside:avoid}
+.card h2{margin:0;font-size:1rem;line-height:1.5rem;font-weight:600}
+.card .unit{font-weight:400;color:var(--muted)}
+.card .big{margin:.25rem 0 0;font-size:2rem;line-height:2.25rem;font-weight:600;
+  font-variant-numeric:tabular-nums}
+.card .when{margin:0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.card .stale{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;color:var(--bad-ink)}
+.card .spark{display:block;width:100%;height:3.75rem;margin:.75rem 0 .25rem}
+.spark-line{fill:none;stroke:var(--brand);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.spark-dot{fill:var(--panel);stroke:var(--brand);stroke-width:1.8}
+.spark-target{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3}
+.card .spark-note{margin:0 0 .5rem;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.card dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.25rem .75rem;margin:0;
+  font-size:.875rem;line-height:1.5}
+.card dt{color:var(--muted)}
+.card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.card dd.s-green{color:var(--ok);font-weight:600}
+.card dd.s-amber{color:var(--muted);font-weight:600}
+.card dd.s-red{color:var(--bad-ink);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin:.5rem 0 0;padding:0;list-style:none;
+  font-size:.875rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:.375rem}
+.legend .ln{width:1.25rem;height:0;border-top:2px solid var(--brand);display:inline-block}
+.legend .ln.dash{border-top:2px dashed var(--muted)}
+h2.section{font-size:1.125rem;line-height:1.5rem;margin:2rem 0 .5rem;font-weight:600}
+.notes{margin:.5rem 0 0;padding-left:1.25rem;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.notes li{margin:.25rem 0}
+.tablewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:.5rem}
+table{width:100%;border-collapse:collapse;font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:.75rem 1rem .25rem;color:var(--muted)}
+th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--line);
+  white-space:nowrap;font-variant-numeric:tabular-nums}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft)}
+td.num,th.num{text-align:right}
+td.latest{font-weight:600}
+td.hole{color:var(--muted)}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+footer{max-width:86rem;margin:0 auto;padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}
+footer p{margin:.25rem 0}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  .cards{grid-template-columns:1fr 1fr}
+  .tablewrap{overflow:visible;border:0}
+  table{font-size:.75rem}
+}
+
+  /* Dark. --brand-dark is the darkest surface in the dark theme and --on-brand resolves to
+     --bg there, so the band that reads white-on-ocean in light would be dark on dark. The
+     status colours come from the seam, which already re-picks them for a dark page. */
+  @media screen and (prefers-color-scheme: dark){
+    header{color:var(--ink)}
+  }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>{{TITLE}}</h1>
+  <p class="sub">{{SUBTITLE}}</p>
+</div></header>
+<main>
+  <ul class="cards">
+{{CARDS}}
+  </ul>
+  <ul class="legend">{{LEGEND}}</ul>
+  <ul class="notes">{{NOTES}}</ul>
+
+  <h2 class="section" id="tbl-h">{{T:head_table}}</h2>
+{{TABLE}}
+</main>
+<footer>
+  <p>{{T:footer_a}}</p>
+  <p>{{T:footer_b}}</p>
+  <p>{{SOURCE_LINE}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p>
+  <p>{{FEEDBACK_BLOCK}}</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,83 @@
+# Strings for templates/scorecard.html and tools/build_scorecard.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# A scorecard is many measures, one period, with their targets and their history. The words
+# here are the ones a reader needs to say whether a line is on target, and to check it
+# against the table underneath.
+
+[nb]
+html_lang = nb
+head_table = Tallene bak kortene
+table_caption = Hver linje er en serie fra kilden, periode for periode. Kortene over er de samme tallene, med siste periode framhevet.
+col_kpi = Nøkkeltall
+col_target = Mål
+card_latest = Siste periode
+card_change = Mot forrige
+card_yoy = Mot i fjor
+card_target = Mål
+card_gap = Avvik fra mål
+card_status = Status
+status_green = i mål
+status_amber = nær mål
+status_red = ikke i mål
+no_direction = ingen retning oppgitt
+no_target = ikke oppgitt
+no_prev = ingen forrige periode
+no_yoy = ikke i dataene
+no_ratio = målet er null
+no_status = ingen status
+latest_elsewhere = siste periode i serien er {period}
+sparkline = {n} perioder, {from} til {to}. Laveste {min}, høyeste {max}.
+sparkline_target = Målet {target} er tegnet som en stiplet linje.
+svg_title = Forløp for {kpi}
+svg_desc = {kpi}: {values}
+legend_series = Serien
+legend_target = Målet
+note_direction = Retning er oppgitt i dataene eller på kommandolinjen. Uten den står det ingen status på siden: en økning er godt for inntekter og dårlig for klager, og filen kan ikke vite hvilken den holder.
+note_bands = Status er bare regnet ut når grensene er oppgitt. Uten dem er «nær mål» en policy, ikke et faktum.
+note_scale = Hvert forløp har sin egen skala, så to kort kan ikke sammenlignes i høyden. Tallene står på kortet og i tabellen.
+note_hole = En periode som mangler i en serie tegnes som et brudd, aldri som en rett linje mellom to punkter.
+footer_a = Selvstendig fil: alle tallene er regnet ut på forhånd, og ingenting hentes når den åpnes.
+footer_b = Ingen server, ingen innlogging, ingen skript.
+footer_built = Bygget
+sub_line = {n} mål · {periods} perioder, {from} til {to}
+source_line = {name} — {rows} rader, {kpis} mål
+period_missing = mangler
+
+[en]
+html_lang = en
+head_table = The numbers behind the cards
+table_caption = Each row is one series from the source, period by period. The cards above hold the same figures, with the latest period marked.
+col_kpi = Measure
+col_target = Target
+card_latest = Latest period
+card_change = Vs previous
+card_yoy = Vs last year
+card_target = Target
+card_gap = Gap to target
+card_status = Status
+status_green = on target
+status_amber = near target
+status_red = off target
+no_direction = no direction given
+no_target = not stated
+no_prev = no previous period
+no_yoy = not in the data
+no_ratio = the target is zero
+no_status = no status
+latest_elsewhere = the latest period in the series is {period}
+sparkline = {n} periods, {from} to {to}. Lowest {min}, highest {max}.
+sparkline_target = The target {target} is drawn as a dashed line.
+svg_title = Trend for {kpi}
+svg_desc = {kpi}: {values}
+legend_series = The series
+legend_target = The target
+note_direction = The direction comes from the data or from the command line. Without it the page carries no status at all: an increase is good news for revenue and bad news for complaints, and the file cannot know which one it holds.
+note_bands = A status is only worked out when the bands are given. Without them, near target is a policy rather than a fact.
+note_scale = Every trend has its own scale, so two cards cannot be compared in height. The figures are on the card and in the table.
+note_hole = A period missing from a series is drawn as a break, never as a straight line between two points.
+footer_a = Self-contained file: every figure is worked out in advance, and nothing is fetched when it opens.
+footer_b = No server, no sign-in, no script.
+footer_built = Built
+sub_line = {n} measures · {periods} periods, {from} to {to}
+source_line = {name} — {rows} rows, {kpis} measures
+period_missing = missing

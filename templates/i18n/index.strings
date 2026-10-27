@@ -1,0 +1,45 @@
+# Strings for templates/index.html and tools/build_index.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The index is the page a reader lands on: one card per built file, with what it answers,
+# where its numbers came from, when it was built and for whom. Words here are the ones a
+# reader needs to choose a file, and the ones that say a file cannot account for itself.
+
+[nb]
+html_lang = nb
+head_built = Filene i denne mappen
+note_built = Hvert kort er lest ut av filens egen opphavsblokk. Klikk på tittelen for å åpne filen.
+head_bare = Filer som ikke sier hvor de kommer fra
+note_bare = Disse filene ligger i mappen, men opphavsblokken mangler eller er uleselig. De er listet her i stedet for å bli beskrevet på slump.
+field_source = Kilde
+field_built = Bygget
+field_requested = For
+field_size = Størrelse
+unknown = ikke oppgitt
+empty = Denne mappen har ingen bygde filer med opphavsblokk ennå.
+sub_line = {folder} · {count} filer med opphavsblokk
+sub_line_one = {folder} · 1 fil med opphavsblokk
+sub_line_none = {folder} · ingen filer med opphavsblokk
+footer_a = Selvstendig fil: ingen skript, ingen server, og ingenting hentes når den åpnes.
+footer_b = Kortene er lest ut av provenance-blokken i hver fil. En fil som ikke kan redegjøre for seg selv, står i sin egen liste.
+footer_built = Bygget
+footer_folder = Mappe
+
+[en]
+html_lang = en
+head_built = The files in this folder
+note_built = Each card is read out of the provenance block inside the file itself. Click a title to open the file.
+head_bare = Files that do not say where they came from
+note_bare = These files are in the folder, but the provenance block is missing or unreadable. They are listed here rather than described by guesswork.
+field_source = Source
+field_built = Built
+field_requested = For
+field_size = Size
+unknown = not stated
+empty = This folder has no built files with a provenance block yet.
+sub_line = {folder} · {count} files with a provenance block
+sub_line_one = {folder} · 1 file with a provenance block
+sub_line_none = {folder} · no files with a provenance block
+footer_a = Self-contained file: no scripts, no server, and nothing is fetched when it opens.
+footer_b = The cards are read out of the provenance block inside each file. A file that cannot account for itself is listed separately.
+footer_built = Built
+footer_folder = Folder

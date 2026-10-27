@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="nb">
 <head>
 <meta charset="utf-8">
@@ -16,11 +8,10 @@
   Chart.js fargepalett-demo
   PROVENANCE
     Source data : none — synthetic regional counts, not a real report
-    Built       : 2026-10-10 13:09
+    Built       : 2026-10-27 01:39
     Companion to: docs/10-chart-colour-palettes.md
     Built by    : RAIWork
     Repo        : tun
-    Made with   : Tún — tun.community
     Generator   : examples/06-chart-palette-demo/build_chart_palette_demo.py
     Chart.js    : 4.4.0 UMD, vendored in vendor/chart.umd.min.js, inlined below
   STATUS: experimental demo, NOT a production template, and does NOT decide
@@ -29,14 +20,6 @@
   Tier 1, STANDALONE: fully self-contained, no server, no CDN.
 -->
 <style>
-/*
-   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-   under terms of your choice, provided the Origin Notice is preserved.
-   SPDX-License-Identifier: AGPL-3.0-or-later
-*/
 /* ==========================================================================
    Palette: neutral (core default)
 
@@ -59,60 +42,61 @@
   --palette-primary:         #2B4C7E;  /* primary data colour, links, focus */
   --palette-primary-dark:    #1B3559;  /* header background */
   --palette-primary-darkest: #0E1C2E;  /* darkest surface */
+  --palette-primary-on-dark: #9CC0E8;  /* primary data colour on a dark surface: 6.54:1 on
+                                          #1B3559, 9.08:1 on #0E1C2E. A lightened slate, not
+                                          an inversion: the hue is kept so a chart's primary
+                                          series is recognisably the same series in both themes */
   --palette-accent:          #B8860B;  /* secondary series, decorative only */
   --palette-accent-light:    #E8D48B;  /* highlight on dark */
   --palette-on-dark:         #F7F5EF;  /* text on a dark surface */
 }
 
-/*
-   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-   under terms of your choice, provided the Origin Notice is preserved.
-   SPDX-License-Identifier: AGPL-3.0-or-later
-*/
 /* ==========================================================================
    Status / semantic colour tokens — positive, negative, neutral
-   Owned by core, not by any brand plugin: status colour is a functional
-   signal, so it must work the same whichever plugin supplies the brand.
+   ==========================================================================
+   Source : the design system "UX / functional" colour category
+            (the brand's design-system colour documentation),
+            distinct from the "Profile" marketing palette. NOT touched by the
+            2026 brand refresh documented in the active palette — confirmed
+            still live on that page as of this writing.
 
-   Why not reuse the brand palette: brand accents are chosen to look good,
-   not to be read as text. A KPI delta must pass the WCAG 2.2 text minimum
-   (4.5:1 against #FFFFFF), and typical warm brand accents do not.
+   Why this file exists instead of reusing the brand palette for status
+   colour: the 2026 Profile palette has no red/orange left at all, and its
+   sole accent (Purple) is explicitly "microscopic decoration only" per
+   the brand presentation skill's SKILL.md — not fit for a KPI delta a reader must parse
+   at a glance. These UX/functional tokens exist specifically for
+   error/success signalling inside the design system's own components, so they are the
+   more directly applicable authority for a dashboard's status colour.
 
-   Contrast against #FFFFFF, computed with the WCAG relative-luminance formula:
-     Ember  #C9372C  ->  5.16:1  PASS
-     Moss   #1F7A5C  ->  5.25:1  PASS
-   For comparison, the example plugin's warm accents (Amber, Flame; see
-   plugins/eksempel/tokens/palette.css) measure 2.47:1 and 2.84:1, below even
-   the 3:1 icon minimum, so neither is usable for status.
+   Contrast measured against #FFFFFF (WCAG 2.2 text minimum is 4.5:1):
+     Fire Red      #dc2a2a  ->  4.76:1  PASS
+     Success Green #007b5e  ->  5.26:1  PASS
+   For comparison, the 2026 Profile greens fail this job:
+     purple   #00CC88 ->  2.10:1  FAIL (below even the 3:1 icon minimum)
+     orange  #E8912D ->  3.22:1  FAIL for text (passes for icons only)
 
-   Default status pair: Ember/Moss (WCAG AA, see contrast table above).
-   A project may use a different pair if it passes the same contrast test;
-   see docs/09-usability-and-navigation-principles.md §3.
+   DECIDED 2026-09-11 — approved for dashboard status colour, not exclusively. Field
+   evidence: an unrelated external dashboard, benchmarked via html-sammenligning,
+   independently chose the identical Fire Red (#dc2a2a) for its own negative status
+   signal. the brand presentation skill's "not brand-sanctioned, ask [design owner]" caveat was
+   written for marketing/presentation material and does not block a dashboard's
+   functional status colour. This approval names one confirmed-good, WCAG-AA-passing
+   combination — it does not forbid a different tested pair being approved later for a
+   specific project; see docs/09-usability-and-navigation-principles.md §3.
 
    Per WCAG 2.2 criterion 1.4.1 (Use of Color): colour alone must never be the only
    signal. Pair these with an icon or text label (e.g. an arrow, or the words
    "opp"/"ned"), not colour by itself.
    ========================================================================== */
 :root{
-  --status-negative:          #C9372C; /* Ember — text, icon, delta value */
-  --status-negative-bg:       #fbeded; /* Ember 8% — row/card background tint only */
-  --status-positive:          #1F7A5C; /* Moss — text, icon, delta value */
-  --status-positive-bg-25:    #d7ece3; /* Moss 25% — background tint only */
-  --status-positive-bg-12:    #eaf5f0; /* Moss 12% — subtler background tint */
-  --status-neutral:           #737373; /* neutral grey — no change / n.a. */
+  --status-negative:          #dc2a2a; /* Fire Red — text, icon, delta value */
+  --status-negative-bg:       #fdeeee; /* Fire Red 8% — row/card background tint only */
+  --status-positive:          #007b5e; /* Success Green — text, icon, delta value */
+  --status-positive-bg-25:    #e9f8f4; /* light blue 25% — background tint only */
+  --status-positive-bg-12:    #f4fbf9; /* light blue 12% — subtler background tint */
+  --status-neutral:           #737373; /* Black 55% — no change / n.a. */
 }
 
-/*
-   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-   under terms of your choice, provided the Origin Notice is preserved.
-   SPDX-License-Identifier: AGPL-3.0-or-later
-*/
 /* ==========================================================================
    Theme: light (default)
    ==========================================================================
@@ -120,11 +104,13 @@
    --brand, etc.) onto the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css) and status-semantic.css, instead of
    each template hardcoding its own hex values as it does today.
 
-   NOT YET WIRED INTO templates: html files — this file documents the
-   intended mapping so it can be reviewed before any template changes. Load
-   order for a future build: the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css), then status-semantic.css,
-   then this file (so the palette- and status- prefixed variables it references
-   already exist).
+   WIRED INTO the builders that inline tokens: build_process_diagram.py and
+   build_index.py both call tun_tokens.load_token_css(), which is the load
+   order below. The templates that still hardcode their own hexes are listed in
+   ROADMAP A34.
+   Load order: the active palette (palette-neutral.css, or a brand plugin's
+   tokens/palette.css), then status-semantic.css, then this file (so the
+   palette- and status- prefixed variables it references already exist).
 
    Rationale for a light default: a dashboard is read repeatedly and at
    length — Nielsen Norman Group and general dashboard-UX guidance favour a
@@ -135,137 +121,206 @@
 :root,
 :root[data-theme="light"]{
   --ink:        var(--palette-ink);      /* body text */
-  --muted:      #666666;               /* neutral grey: labels, axis text (5.7:1 on white, 5.4:1 on --panel) */
-  --line:       #ebebeb;               /* neutral grey: borders, gridlines */
+  --muted:      #666666;               /* labels, axis text: Black 60%, 5.4:1 on --panel (Black 55% was 4.46:1, under AA) */
+  --line:       #ebebeb;               /* borders, gridlines — Black 8% */
   --bg:         var(--palette-surface);
-  --panel:      #f8f8f8;               /* neutral grey: cards, filter bar */
+  --panel:      #f8f8f8;               /* cards, filter bar — Black 3% */
   --brand:      var(--palette-primary);        /* primary data colour, links, focus */
+  /* Text drawn ON a --brand fill (an active tab, a selected nav button). It is a role of
+     its own because the right colour differs per theme and no component should guess:
+     white on the light theme's dark primary is 8.61:1, and the same white on the dark
+     theme's light primary would be 1.89:1. Measured in both themes by
+     tools/check_token_contrast.py. */
+  --on-brand:   var(--palette-surface);
   --brand-dark: var(--palette-primary-dark);    /* header background */
+  /* The soft brand tint: a hover wash, a note box, a group band. Light uses a pale tint
+     with dark ink on it. --on-brand-soft exists because the right text colour there is not
+     --on-brand: this is a tint, not a fill, and dark ink is what reads on a pale wash. */
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  /* A hairline inside a card, one step lighter than --line. */
+  --rule:       #ececec;
   --series-2:   var(--palette-accent);     /* secondary chart series — decorative use only, not text */
+
+  /* Categorical series: the five blocks a survey bar paints its answer options with. They
+     sit beside each other in one stacked bar and the table under it repeats every number,
+     so the bar is not the only carrier: 3:1 against the panel is a floor, not a goal.
+     Light keeps three of the five values the survey shipped with; two were too pale to be a
+     colour on a white panel (2.49:1 and 2.14:1) and are one step deeper here (3.83:1 and
+     3.42:1), same hues. Closest pair deltaE 13.7 (--cat-1 and --cat-3, two teals). */
+  --cat-1: #2F5D9E;   /* blue */
+  --cat-2: #1a8f66;   /* purple, one step deeper */
+  --cat-3: #1B2A4A;   /* purple */
+  --cat-4: #5f8f89;   /* the pale tint of the same family, one step deeper */
+  --cat-5: #dc2a2a;   /* Fire Red: the outlier answer, never the only signal */
 
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
+  /* --bad as TEXT on the page, rather than as a fill or a chip. Fire Red itself is 4.49:1 on
+     --panel, which is under AA by 0.01; on white it is 4.76:1, which is how it passed for so
+     long. A text variant is the same hue, one step darker: 4.82:1 on --panel, 5.12:1 on white. */
+  --bad-ink: #d42626;
   /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
      is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
+  /* A negative WASH, distinct from --bad-bg, which is a badge fill: a delta chip letters
+     --bad-ink on this. Fire Red 8%, the value the dashboard used before the seam. */
+  --bad-soft:  #fdeeee;
   --bad-bg:var(--palette-surface);
 }
 
-/*
-   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-   under terms of your choice, provided the Origin Notice is preserved.
-   SPDX-License-Identifier: AGPL-3.0-or-later
-*/
 /* ==========================================================================
-   Theme: dark (experimental — demo only, not in any production template)
+   Theme: dark (the system route, plus the opt-in attribute)
    ==========================================================================
-   Builds on the neutral palette's dark slots (--palette-primary-dark,
-   --palette-primary-darkest) rather than inventing a separate dark
-   colour set, so a brand plugin re-skins dark mode by filling the same slots.
+   Reuses the one dark aesthetic the brand already has designed — the
+   Ocean/Emerald background + Light Yellow text pattern documented in the
+   the brand's presentation skill for slides — rather than inventing a new dark
+   theme from scratch.
 
-   STATUS: not wired into templates/*.html. Exists only for
-   examples/05-theme-toggle-demo/, so the pattern can be looked at before
-   anyone decides it belongs in a real dashboard. See
-   docs/09-usability-and-navigation-principles.md §4 for the two things
-   that must be checked before this could graduate out of the demo:
-     1. The status-colour contrast numbers in status-semantic.css were
-        measured against a WHITE background only. Ember and Moss
-        must be re-measured against --palette-primary-dark/--palette-primary-darkest before
-        they can be trusted here — do not assume the light-theme numbers
-        carry over.
-     2. Whether a theme choice persists per file (not just per browser)
-        under file:// via localStorage is unmeasured. Log the result in
-        docs/01-tenant-constraints.md before relying on it.
+   STATUS: shipped, not a demo. Two routes reach these declarations:
+     1. No script: a template's own `@media (prefers-color-scheme: dark)` block
+        paints a reader whose operating system is dark and who has chosen no
+        theme of their own. tools/build_process_diagram.py inlines this file
+        via tun_tokens.load_token_css(auto_dark=True), and
+        examples/23-process-diagram/ is the first production artefact to use it.
+     2. Opt-in: [data-theme="dark"] on <html> or <body>, toggled by a script —
+        see examples/05-theme-toggle-demo/ for that wiring.
 
-   Activated via [data-theme="dark"] on <html> or <body>, toggled by a
-   script — see the demo for the actual toggle wiring.
+   A role or surface that cannot inherit these tokens is remapped in the
+   template's own dark block, and tools/check_token_contrast.py measures it
+   there. tests/test_dark_scheme_gate.py holds REQUIRED_FOLLOWERS: a builder on
+   that list may not stop following the system setting. See
+   docs/09-usability-and-navigation-principles.md §4.
+
+   MEASURED by tools/check_token_contrast.py (WCAG 2.2 AA: 4.5:1 for text,
+   3:1 for non-text). Numbers below are against the neutral palette's dark
+   surface; the darker surface and the brand palette are both higher.
+     --brand on --bg          6.54:1  PASS   (was 1.43:1 — see below)
+     --ok on --bg             6.37:1  PASS   (was 2.35:1)
+     --bad on --bg            4.89:1  PASS   (was 2.59:1)
+     --ink on --ok-bg        12.54:1  PASS   (was 1.04:1, invisible)
+     --ink on --bad-bg       12.62:1  PASS   (was 1.04:1, invisible)
+     --muted on --bg          7.88:1  PASS
    ========================================================================== */
 :root[data-theme="dark"]{
-  --ink:        var(--palette-on-dark); /* text on dark surface */
-  --muted:      #B4C0D0;                 /* neutral light slate: dimmed label text, 6.7:1 on --bg, 9.3:1 on --panel */
-  --line:       #33496B;                 /* neutral slate separator between --bg and --panel */
+  --ink:        var(--palette-on-dark); /* "the new white" — text on dark bg */
+  --muted:      #DCE6F5;                 /* blue 30% — dimmed label text on dark bg */
+  --line:       #1B2A4A;                 /* subtle separator, darker than panel */
   --bg:         var(--palette-primary-dark);
   --panel:      var(--palette-primary-darkest);
-  --brand:      var(--palette-primary);
+  --brand:      var(--palette-primary-on-dark);
+  /* Text on a --brand fill is the page background: dark navy on the light-on-dark
+     primary measures 6.54:1. White would measure 1.89:1, which is what an active tab
+     rendered before this role existed. */
+  --on-brand:   var(--bg);
   --brand-dark: var(--palette-primary-darkest);
+  /* A dark tint of the brand, and the text that reads on it. --brand-dark is the wrong
+     choice there: it is the darkest surface in this theme, so a band filled with the tint
+     and lettered with --brand-dark is dark on dark. Measured: --on-brand-soft on
+     --brand-soft is 6.49:1 in the neutral palette, and --ink on it is 11.24:1. */
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  /* A hairline inside a card, a step up from --panel rather than the --line separator. */
+  --rule:       #1d4a52;
   --series-2:   var(--palette-accent-light);
 
-  /* Status TEXT colours (--ok, --bad) are still UNCHECKED for the case of
-     being read directly on --bg/--panel with no chip background of their
-     own — do not ship that combination without re-measuring against
-     --palette-primary-dark/--palette-primary-darkest first.
-     The CHIP backgrounds below (--ok-bg, --bad-bg) ARE checked: a
-     low-opacity dark overlay measured too low a contrast against the text
-     colour to pass WCAG AA (4.5:1) at the delta badges' font size, so these
-     use the same light, near-white tints as the light theme instead of a
-     darkened variant. A light chip on a dark page is a deliberate,
-     conventional pattern (seen e.g. in GitHub's own dark mode labels), not
-     an inconsistency.
-       Moss on Moss 12% (#eaf5f0):                4.71:1 — PASS
-       Ember on Ember 8% (#fbeded):                4.53:1 — PASS
-       Ember on white (#ffffff):                   5.16:1 — PASS, used instead */
-  --ok:    var(--status-positive);
-  --ok-bg: var(--status-positive-bg-12);
-  --bad:   var(--status-negative);
-  --bad-bg:var(--palette-surface);
+  /* The same five blocks on a dark panel: every one clears 7.5:1 against the panel and
+     4.3:1 against the bar's track, and the closest pair is deltaE 34.5, so the segments
+     separate better here than in light. Same hue family as light (two teals, a green, a
+     sand, a red) so a reader who knows the chart in light still reads it here. */
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+
+  /* --brand is the primary colour *as read on a dark surface*. The light
+     theme's --palette-primary is chosen to sit on white and is nearly
+     invisible here: measured 1.43:1 against the dark background. Core
+     therefore requires a light-on-dark primary of its own — see the ninth
+     slot in docs/22-plugin-contract.md — and this theme consumes it. */
+
+  /* Status colours are read as TEXT on the dark page in several templates
+     (templates/process-diagram.html .flag-note, the waterfall chart's
+     negative fill), so they are re-picked for a dark background instead of
+     inheriting the light-theme values. Measured against both dark surfaces:
+       --ok  #66ccb0  ->  6.37:1 on the dark bg, 6.59:1 on the darkest
+       --bad #ff7a7a  ->  4.89:1 on the dark bg, 5.06:1 on the darkest
+     The hue family is kept (a light tint of Success Green and of Fire Red)
+     so a reader still reads "green means good" without checking a legend. */
+
+  /* The chip BACKGROUNDS are dark tints, not the light near-white tints the
+     light theme uses. That earlier choice ("a light chip on a dark page is a
+     deliberate, conventional pattern") was made when chip text was assumed to
+     be dark; templates render chip text as var(--ink), which in this theme is
+     light. Measured: light ink on those light chips is 1.04:1 — the chip
+     label was invisible. A dark tint of the same status hue keeps the light
+     ink at 12.5:1 and keeps the status colour recognisable.
+       --ok-bg  #12332c  -> --ink 12.54:1, --ok border 7.05:1
+       --bad-bg #4a2026  -> --ink 12.62:1, --bad border 5.45:1 */
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  /* Already a light tint on a dark page, 6.01:1 on --bg and 7.24:1 on --panel, so the text
+     role is the same colour here rather than a second value nobody measured. */
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
 }
 
 
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
+    font-family:"Eksempel AS",-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
     font-size:1rem;line-height:1.5;transition:background .15s,color .15s}
   header{background:var(--brand-dark);color:var(--palette-on-dark);
     padding:1.25rem 2rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
   header h1{margin:0;font-size:1.4rem;line-height:1.9rem;font-weight:500}
-  header .meta{opacity:.85;font-size:.8rem;line-height:1.4rem;margin-top:.4rem;max-width:44rem}
-  #theme-toggle{padding:.5rem .9rem;border:1px solid var(--palette-on-dark);border-radius:.25rem;
+  header .meta{opacity:.85;font-size:.875rem;line-height:1.4rem;margin-top:.4rem;max-width:44rem}
+  #theme-toggle{min-height:2.75rem;padding:.5rem .9rem;border:1px solid var(--palette-on-dark);border-radius:.25rem;
     background:transparent;color:var(--palette-on-dark);font-family:inherit;font-size:.875rem;
     cursor:pointer;white-space:nowrap;flex-shrink:0}
   #theme-toggle:hover{background:var(--palette-on-dark);color:var(--brand-dark)}
   #theme-toggle:focus-visible{outline:2px solid var(--palette-accent-light);outline-offset:2px}
   .tabs{display:flex;gap:.5rem;background:var(--panel);padding:.75rem 2rem;border-bottom:1px solid var(--line);
     flex-wrap:wrap}
-  .tabbtn{padding:.5rem .9rem;border:1px solid var(--line);border-radius:.25rem;
+  .tabbtn{min-height:2.75rem;padding:.5rem .9rem;border:1px solid var(--line);border-radius:.25rem;
     background:var(--bg);font-family:inherit;font-size:.875rem;cursor:pointer;color:var(--ink)}
   .tabbtn:hover{border-color:var(--brand);color:var(--brand)}
-  .tabbtn.active{background:var(--brand);color:var(--palette-surface);border-color:var(--brand)}
+  .tabbtn.active{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
   .tabbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
   main{padding:1.5rem 2rem;max-width:74rem;margin:0 auto}
   .tabpage{display:none}
   .tabpage.active{display:block}
   .palette-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:0 0 .5rem}
-  .palette-row label{font-size:.85rem;color:var(--muted)}
-  .palette-row select{font-family:inherit;font-size:.875rem;padding:.35rem .5rem;border:1px solid var(--line);
+  .palette-row label{font-size:.875rem;color:var(--muted)}
+  .palette-row select{min-height:2.75rem;font-family:inherit;font-size:.875rem;padding:.35rem .5rem;border:1px solid var(--line);
     border-radius:.25rem;background:var(--bg);color:var(--ink)}
-  .palette-desc{font-size:.85rem;color:var(--ink);max-width:56rem;margin:0 0 .75rem;line-height:1.55}
-  .palette-desc .src{color:var(--muted);font-size:.78rem;display:block;margin-top:.2rem}
-  .rule-note{font-size:.8rem;color:var(--muted);margin:0 0 1rem;max-width:56rem}
-  .ref-table{width:100%;border-collapse:collapse;margin:0 0 1.75rem;font-size:.85rem}
+  .palette-desc{font-size:.875rem;color:var(--ink);max-width:56rem;margin:0 0 .75rem;line-height:1.55}
+  .palette-desc .src{color:var(--muted);font-size:.875rem;display:block;margin-top:.2rem}
+  .rule-note{font-size:.875rem;color:var(--muted);margin:0 0 1rem;max-width:56rem}
+  .ref-table{width:100%;border-collapse:collapse;margin:0 0 1.75rem;font-size:.875rem}
   .ref-table caption{text-align:left;font-weight:600;color:var(--ink);padding:0 0 .35rem;font-size:.95rem}
   .ref-table th,.ref-table td{padding:.4rem .6rem;border-bottom:1px solid var(--line);text-align:left}
   .ref-table th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
   .ref-table td.num{font-variant-numeric:tabular-nums}
   .ref-swatch{display:inline-block;width:1.1rem;height:1.1rem;border-radius:.2rem;
     border:1px solid rgba(128,128,128,.4);vertical-align:middle;margin-right:.4rem}
-  .ref-hex{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;color:var(--muted)}
+  .ref-hex{font-family:ui-monospace,Consolas,monospace;font-size:.875rem;color:var(--muted)}
   .ref-pass{color:var(--ok);font-weight:600}
   .ref-fail{color:var(--bad);font-weight:600;background:var(--bad-bg);padding:0 .2rem;border-radius:.2rem}
   .ref-caveat{background:var(--panel);border-left:.2rem solid var(--palette-accent);padding:.5rem .75rem;
-    font-size:.8rem;color:var(--muted);margin:0 0 1.75rem;max-width:56rem}
+    font-size:.875rem;color:var(--muted);margin:0 0 1.75rem;max-width:56rem}
   .swatches{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.25rem}
   .swatch{display:flex;align-items:center;gap:.4rem;background:var(--panel);border:1px solid var(--line);
-    border-radius:.25rem;padding:.3rem .55rem;font-size:.78rem;font-variant-numeric:tabular-nums}
+    border-radius:.25rem;padding:.3rem .55rem;font-size:.875rem;font-variant-numeric:tabular-nums}
   .sw-box{width:1rem;height:1rem;border-radius:.2rem;border:1px solid rgba(128,128,128,.4);display:inline-block;
     flex-shrink:0}
   .sw-ratio.pass{color:var(--ok);font-weight:600}
   .sw-ratio.fail{color:var(--bad);font-weight:600;background:var(--bad-bg);padding:0 .2rem;border-radius:.2rem}  /* Fire Red needs white: 4.48:1 on the panel */
   .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;margin-bottom:1rem}
   .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:.375rem;padding:.75rem}
-  .chart-card h3{margin:0 0 .5rem;font-size:.85rem;font-weight:600;color:var(--muted);
+  .chart-card h3{margin:0 0 .5rem;font-size:.875rem;font-weight:600;color:var(--muted);
     text-transform:uppercase;letter-spacing:.03em}
   .chart-card .wrap{position:relative;height:250px}
   .chart-card canvas{width:100%!important;height:100%!important}
@@ -390,11 +445,11 @@
       deuteranopi/protanopi/tritanopi. Tableau 10 st&aring;r som referanse, ikke anbefaling, av
       samme grunn.</p>
     <p><strong>Paletter (full oversikt)</strong>-fanen er lagt til for &aring; kunne deles med de som
-      skal gi tilbakemelding p&aring; selve fargevalgene uten at de m&aring; tolke diagrammene
-      f&oslash;rst: navn, hex og m&aring;lt
+      skal gi tilbakemelding p&aring; selve fargevalgene (f.eks. brand owner-sp&oslash;rsm&aring;let i
+      docs/09 &sect;3) uten at de m&aring; tolke diagrammene f&oslash;rst: navn, hex og m&aring;lt
       kontrast mot begge bakgrunner for alle syv paletter, samlet p&aring; &eacute;n side.</p>
     <div class="note">
-      Byggetidspunkt: 2026-10-10 13:09 &middot; generert av <code>build_chart_palette_demo.py</code>,
+      Byggetidspunkt: 2026-10-27 01:39 &middot; generert av <code>build_chart_palette_demo.py</code>,
       aldri h&aring;ndskrevet &middot; Chart.js 4.4.0 vendret i <code>vendor/</code> og inlinet ved bygg,
       aldri lastet av denne filen ved &aring;pning.
     </div>
@@ -425,12 +480,12 @@
 
 </script>
 <script>
-  var DATA = {"palettes": {"qualitative": {"okabeito": {"label": "Okabe–Ito (8)", "colors": ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999"], "names": ["Oransje", "Himmelblå", "Blågrønn", "Gul", "Blå", "Vermillion (rødoransje)", "Rødlilla", "Grå (erstatning for sort)"], "namesOfficial": true, "source": "Okabe, M. og Ito, K. (2002/2008), «Color Universal Design (CUD)»", "description": "Utviklet spesifikt for å være skillbar for de vanligste formene for fargesynsvariasjon (protanopi og deuteranopi). Fargenavnene er de originale fra kildepublikasjonen — det er den eneste paletten i denne oversikten med offisielt navngitte farger. Regnes som en de-facto standard i vitenskapelig visualisering."}, "set2": {"label": "ColorBrewer Set2 (8)", "colors": ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"], "names": ["Sjøgrønn", "Laksoransje", "Dueblå", "Orkidérosa", "Gulgrønn", "Gyllengul", "Lys brun", "Grå"], "namesOfficial": false, "source": "ColorBrewer (Cynthia Brewer, Penn State University), colorbrewer2.org", "description": "Opprinnelig utviklet for kartografi, senere adoptert bredt i datavisualisering. En dempet, kvalitativ palett som ColorBrewer selv klassifiserer som fargesynsvariasjon-trygg. Fargenavnene under er beskrivende — ikke offisielle, kun lagt til for lesbarhet i denne tabellen."}, "tableau10": {"label": "Tableau 10 — reference only, see caveat", "colors": ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", "#EDC948", "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC"], "names": ["Blå", "Oransje", "Rød", "Teal", "Grønn", "Gul", "Lilla", "Rosa", "Brun", "Grå"], "namesOfficial": false, "source": "Tableau Software, standardpalett fra 2016-oppdateringen", "description": "Mye brukt og gjenkjennelig i forretningsrapportering, men — i motsetning til de to andre kategoriske palettene her — ikke systematisk par-for-par testet for fargesynsvariasjon av opphavspart. Tatt med som referansepunkt for sammenligning, ikke som anbefalt standard. Fargenavn er beskrivende, ikke offisielle."}}, "sequential": {"viridis": {"label": "Viridis (8)", "colors": ["#440154", "#46327E", "#365C8D", "#277F8E", "#1FA187", "#4AC16D", "#A0DA39", "#FDE725"], "names": ["Mørk fiolett (0 %)", "Indigo (14 %)", "Blå (29 %)", "Petroleumsblå (43 %)", "Grønn-turkis (57 %)", "Grønn (71 %)", "Limegrønn (86 %)", "Gul (100 %)"], "namesOfficial": false, "source": "matplotlib (Stéfan van der Walt og Nathaniel Smith, 2015), evenly sampled", "description": "Perseptuelt jevnt fargekart utviklet som fargesynsvariasjon-trygg erstatning for regnbøge-fargekart i vitenskapelig visualisering, nå standard i store deler av det økosystemet. Fargene under er 8 jevnt fordelte punkter på et kontinuerlig fargekart, ikke diskrete kategorier — navnene angir posisjon i prosent."}, "cividis": {"label": "Cividis (9)", "colors": ["#00204D", "#05366E", "#404D6B", "#60646F", "#7C7B78", "#9B9477", "#BCAF6F", "#E0CB5D", "#FFEA46"], "names": ["Marineblå (0 %)", "Mørk stålblå (12,5 %)", "Gråblå (25 %)", "Blågrå (37,5 %)", "Grå, nøytral (50 %)", "Gråbeige (62,5 %)", "Oliv-gul (75 %)", "Gyllen (87,5 %)", "Gul (100 %)"], "namesOfficial": false, "source": "Nuñez, Anderton og Renslow (2018)", "description": "Optimalisert spesifikt for de to vanligste formene for fargesynsvariasjon ved å begrense fargekartet til en luminansbane som oppfattes likt uavhengig av fargesynstype. Den strengeste sekvensielle kandidaten i denne oversikten — førstevalg der fargesynsvariasjon er et hardt krav, ikke bare en anbefaling."}}, "diverging": {"prgn": {"label": "PRGn (7) — purple–green", "colors": ["#762a83", "#af8dc3", "#e7d4e8", "#f7f7f7", "#d9f0d3", "#7fbf7b", "#1b7837"], "names": ["Mørk lilla", "Lilla", "Lys lilla", "Nullpunkt (nær hvit)", "Lys grønn", "Grønn", "Mørk grønn"], "namesOfficial": false, "source": "ColorBrewer, colorbrewer2.org", "description": "Divergerende palett med lilla i én ende og grønn i den andre, nær-hvitt nullpunkt i midten. Klassifisert som fargesynsvariasjon-trygg av ColorBrewer. Merk: grønn-enden kan visuelt kollidere med statusfargen for positivt (Moss, se tools/tokens/status-semantic.css) — se PuOr som alternativ."}, "puor": {"label": "PuOr (7) — purple–orange", "colors": ["#b35806", "#e08214", "#fdb863", "#f7f7f7", "#b2abd2", "#8073ac", "#542788"], "names": ["Mørk oransje", "Oransje", "Lys oransje", "Nullpunkt (nær hvit)", "Lys lilla", "Lilla", "Mørk lilla"], "namesOfficial": false, "source": "ColorBrewer, colorbrewer2.org", "description": "Divergerende palett med oransje i én ende og lilla i den andre. Alternativ til PRGn uten grønn — relevant der grønn er reservert til status/merkevare (se docs/09-usability-and-navigation-principles.md §3). Også klassifisert som fargesynsvariasjon-trygg av ColorBrewer."}}}, "catLabels": ["Nord", "Sør", "Øst", "Vest", "Midt", "Innlandet"], "catValues": [42, 78, 55, 90, 33, 61], "catSeriesLabels": ["Q1", "Q2", "Q3", "Q4", "Q5"], "catSeries": {"Nord": [10, 14, 18, 22, 19], "Sør": [30, 28, 35, 40, 44], "Øst": [15, 20, 17, 25, 30], "Vest": [50, 48, 55, 60, 58], "Midt": [8, 12, 10, 15, 20], "Innlandet": [25, 22, 28, 26, 31]}, "catScatter": {"Nord": [[10, 10], [12, 13], [9, 8], [11, 12], [13, 9]], "Sør": [[30, 15], [32, 18], [28, 13], [31, 16], [29, 19]], "Øst": [[20, 30], [22, 33], [18, 28], [21, 31], [19, 34]], "Vest": [[40, 35], [42, 38], [38, 33], [41, 36], [39, 39]], "Midt": [[15, 45], [17, 48], [13, 43], [16, 46], [14, 49]], "Innlandet": [[35, 5], [37, 8], [33, 3], [36, 6], [34, 9]]}};
+  var DATA = {"palettes": {"qualitative": {"okabeito": {"label": "Okabe–Ito (8)", "colors": ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999"], "names": ["Oransje", "Himmelblå", "Blågrønn", "Gul", "Blå", "Vermillion (rødoransje)", "Rødlilla", "Grå (erstatning for sort)"], "namesOfficial": true, "source": "Okabe, M. og Ito, K. (2002/2008), «Color Universal Design (CUD)»", "description": "Utviklet spesifikt for å være skillbar for de vanligste formene for fargesynsvariasjon (protanopi og deuteranopi). Fargenavnene er de originale fra kildepublikasjonen — det er den eneste paletten i denne oversikten med offisielt navngitte farger. Regnes som en de-facto standard i vitenskapelig visualisering."}, "set2": {"label": "ColorBrewer Set2 (8)", "colors": ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"], "names": ["Sjøgrønn", "Laksoransje", "Dueblå", "Orkidérosa", "Gulgrønn", "Gyllengul", "Lys brun", "Grå"], "namesOfficial": false, "source": "ColorBrewer (Cynthia Brewer, Penn State University), colorbrewer2.org", "description": "Opprinnelig utviklet for kartografi, senere adoptert bredt i datavisualisering. En dempet, kvalitativ palett som ColorBrewer selv klassifiserer som fargesynsvariasjon-trygg. Fargenavnene under er beskrivende — ikke offisielle, kun lagt til for lesbarhet i denne tabellen."}, "tableau10": {"label": "Tableau 10 — reference only, see caveat", "colors": ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", "#EDC948", "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC"], "names": ["Blå", "Oransje", "Rød", "Teal", "Grønn", "Gul", "Lilla", "Rosa", "Brun", "Grå"], "namesOfficial": false, "source": "Tableau Software, standardpalett fra 2016-oppdateringen", "description": "Mye brukt og gjenkjennelig i forretningsrapportering, men — i motsetning til de to andre kategoriske palettene her — ikke systematisk par-for-par testet for fargesynsvariasjon av opphavspart. Tatt med som referansepunkt for sammenligning, ikke som anbefalt standard. Fargenavn er beskrivende, ikke offisielle."}}, "sequential": {"viridis": {"label": "Viridis (8)", "colors": ["#440154", "#46327E", "#365C8D", "#277F8E", "#1FA187", "#4AC16D", "#A0DA39", "#FDE725"], "names": ["Mørk fiolett (0 %)", "Indigo (14 %)", "Blå (29 %)", "Petroleumsblå (43 %)", "Grønn-turkis (57 %)", "Grønn (71 %)", "Limegrønn (86 %)", "Gul (100 %)"], "namesOfficial": false, "source": "matplotlib (Stéfan van der Walt og Nathaniel Smith, 2015), evenly sampled", "description": "Perseptuelt jevnt fargekart utviklet som fargesynsvariasjon-trygg erstatning for regnbøge-fargekart i vitenskapelig visualisering, nå standard i store deler av det økosystemet. Fargene under er 8 jevnt fordelte punkter på et kontinuerlig fargekart, ikke diskrete kategorier — navnene angir posisjon i prosent."}, "cividis": {"label": "Cividis (9)", "colors": ["#00204D", "#05366E", "#404D6B", "#60646F", "#7C7B78", "#9B9477", "#BCAF6F", "#E0CB5D", "#FFEA46"], "names": ["Marineblå (0 %)", "Mørk stålblå (12,5 %)", "Gråblå (25 %)", "Blågrå (37,5 %)", "Grå, nøytral (50 %)", "Gråbeige (62,5 %)", "Oliv-gul (75 %)", "Gyllen (87,5 %)", "Gul (100 %)"], "namesOfficial": false, "source": "Nuñez, Anderton og Renslow (2018)", "description": "Optimalisert spesifikt for de to vanligste formene for fargesynsvariasjon ved å begrense fargekartet til en luminansbane som oppfattes likt uavhengig av fargesynstype. Den strengeste sekvensielle kandidaten i denne oversikten — førstevalg der fargesynsvariasjon er et hardt krav, ikke bare en anbefaling."}}, "diverging": {"prgn": {"label": "PRGn (7) — purple–green", "colors": ["#762a83", "#af8dc3", "#e7d4e8", "#f7f7f7", "#d9f0d3", "#7fbf7b", "#1b7837"], "names": ["Mørk lilla", "Lilla", "Lys lilla", "Nullpunkt (nær hvit)", "Lys grønn", "Grønn", "Mørk grønn"], "namesOfficial": false, "source": "ColorBrewer, colorbrewer2.org", "description": "Divergerende palett med lilla i én ende og grønn i den andre, nær-hvitt nullpunkt i midten. Klassifisert som fargesynsvariasjon-trygg av ColorBrewer. Merk: grønn-enden kan visuelt kollidere med organisasjonens egen merkevarefarge (se plugins/<your-brand>/tokens/palette.css) — se PuOr som alternativ."}, "puor": {"label": "PuOr (7) — purple–orange", "colors": ["#b35806", "#e08214", "#fdb863", "#f7f7f7", "#b2abd2", "#8073ac", "#542788"], "names": ["Mørk oransje", "Oransje", "Lys oransje", "Nullpunkt (nær hvit)", "Lys lilla", "Lilla", "Mørk lilla"], "namesOfficial": false, "source": "ColorBrewer, colorbrewer2.org", "description": "Divergerende palett med oransje i én ende og lilla i den andre. Alternativ til PRGn uten grønn — relevant der grønn er reservert til status/merkevare (se docs/09-usability-and-navigation-principles.md §3). Også klassifisert som fargesynsvariasjon-trygg av ColorBrewer."}}}, "catLabels": ["Nord", "Sør", "Øst", "Vest", "Midt", "Innlandet"], "catValues": [42, 78, 55, 90, 33, 61], "catSeriesLabels": ["Q1", "Q2", "Q3", "Q4", "Q5"], "catSeries": {"Nord": [10, 14, 18, 22, 19], "Sør": [30, 28, 35, 40, 44], "Øst": [15, 20, 17, 25, 30], "Vest": [50, 48, 55, 60, 58], "Midt": [8, 12, 10, 15, 20], "Innlandet": [25, 22, 28, 26, 31]}, "catScatter": {"Nord": [[10, 10], [12, 13], [9, 8], [11, 12], [13, 9]], "Sør": [[30, 15], [32, 18], [28, 13], [31, 16], [29, 19]], "Øst": [[20, 30], [22, 33], [18, 28], [21, 31], [19, 34]], "Vest": [[40, 35], [42, 38], [38, 33], [41, 36], [39, 39]], "Midt": [[15, 45], [17, 48], [13, 43], [16, 46], [14, 49]], "Innlandet": [[35, 5], [37, 8], [33, 3], [36, 6], [34, 9]]}};
   var STATE = { qual: "okabeito", seq: "viridis", div: "prgn", theme: "light", tab: "categorical" };
   var CHARTS = {};
   var LIGHT_INK = "#000000", LIGHT_LINE = "#ebebeb";
-  var DARK_INK = "#FFF8EE", DARK_LINE = "#33496B";  // same neutral slate as --line in theme-dark.css
-  var LIGHT_BORDER = "#FFFFFF", DARK_BORDER = "#101828";
+  var DARK_INK = "#FFFFE8", DARK_LINE = "#1B2A4A";
+  var LIGHT_BORDER = "#FFFFFF", DARK_BORDER = "#0F1E26";
   var POINT_STYLES = ["circle", "triangle", "rect", "rectRot", "star", "cross"];
 
   function killChart(id) {
@@ -457,7 +512,7 @@
   }
 
   function currentBgHex() {
-    return STATE.theme === "dark" ? "#1B2A4A" : "#FFFFFF"; // --eksempel-navy / --eksempel-white, see theme-*.css
+    return STATE.theme === "dark" ? "#003842" : "#FFFFFF"; // --tun-green / --tun-white, see theme-*.css
   }
 
   function renderSwatchStrip(containerId, colors, labels) {
@@ -667,7 +722,7 @@
   function buildPaletteReference() {
     if (PALETTE_REF_BUILT) return;
     PALETTE_REF_BUILT = true;
-    var LIGHT_BG = "#FFFFFF", DARK_BG = "#1B2A4A"; // --eksempel-white / --eksempel-navy
+    var LIGHT_BG = "#FFFFFF", DARK_BG = "#003842"; // --tun-white / --tun-green
     var FAM_LABEL = { qualitative: "Kategorisk", sequential: "Sekvensiell", diverging: "Divergerende" };
     var out = "";
     ["qualitative", "sequential", "diverging"].forEach(function(fam) {
@@ -677,7 +732,7 @@
         out += '<p class="palette-desc">' + paletteDescHtml(fam, key) + "</p>";
         out += '<table class="ref-table"><caption>' + p.label + '</caption><thead><tr>' +
           "<th>Farge</th><th>Navn</th><th>Hex</th>" +
-          "<th>Kontrast mot lys bg (#FFFFFF)</th><th>Kontrast mot m\u00f8rk bg (#1B2A4A)</th>" +
+          "<th>Kontrast mot lys bg (#FFFFFF)</th><th>Kontrast mot m\u00f8rk bg (#003842)</th>" +
           "</tr></thead><tbody>";
         p.colors.forEach(function(hex, i) {
           var rL = contrastRatio(hex, LIGHT_BG), rD = contrastRatio(hex, DARK_BG);

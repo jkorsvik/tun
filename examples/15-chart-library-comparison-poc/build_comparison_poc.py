@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-# or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-# COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-# under terms of your choice, provided the Origin Notice is preserved.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 build_comparison_poc.py — generates chart-library-comparison-poc.html
 
-Follow-up to JavaScript-free standalone HTML (examples/13), but the opposite
-starting assumption from
+Follow-up to issue #30, but the opposite starting assumption from
 examples/13/14: THIS page requires JavaScript, on purpose — it exists to put
 three charting approaches side by side and let the difference actually be
 seen, not just described:
@@ -46,6 +39,7 @@ from __future__ import annotations
 
 import datetime
 import pathlib
+import re
 import sys
 
 HERE = pathlib.Path(__file__).parent
@@ -70,12 +64,26 @@ TOKEN_CSS, TOKEN_SOURCE = tun_tokens.load_token_css(("status-semantic.css", "the
 CHARTJS_JS = (HERE / "vendor" / "chart.umd.min.js").read_text(encoding="utf-8")
 
 
+_SVG_COUNT = [0]
+
+
 def read_mpl_svg(name: str) -> str:
     text = (HERE / "mpl-svg" / name).read_text(encoding="utf-8")
     # Drop the XML/DOCTYPE preamble matplotlib writes — this SVG is being
     # inlined into an existing HTML document, not served standalone.
     if "<svg" in text:
         text = "<svg" + text.split("<svg", 1)[1]
+    # matplotlib numbers its internals from 1 in every file: figure_1, axes_1, patch_1.
+    # Three charts inlined into one page therefore define id="figure_1" three times, and
+    # a duplicate id silently breaks every url(#...) reference and aria-labelledby that
+    # points at one of them. `verify_a11y.py` found 40 of them. Prefix per chart.
+    _SVG_COUNT[0] += 1
+    prefix = f"mpl{_SVG_COUNT[0]}-"
+    ids = set(re.findall(r'id="([^"]+)"', text))
+    for old_id in sorted(ids, key=len, reverse=True):
+        text = text.replace(f'id="{old_id}"', f'id="{prefix}{old_id}"')
+        text = text.replace(f'url(#{old_id})', f'url(#{prefix}{old_id})')
+        text = text.replace(f'href="#{old_id}"', f'href="#{prefix}{old_id}"')
     return text
 
 
@@ -155,7 +163,7 @@ STYLE = """
 
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
+  font-family:"Eksempel AS",-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
   font-size:1rem;line-height:1.55}
 header{background:var(--brand-dark);color:var(--palette-on-dark);padding:1.5rem 2rem}
 header h1{margin:0;font-size:1.5rem;font-weight:500}
@@ -163,7 +171,10 @@ header .meta{opacity:.85;font-size:.85rem;line-height:1.5;margin-top:.5rem;max-w
 header code{background:rgba(255,255,255,.12);padding:.05rem .3rem;border-radius:.2rem}
 nav.section-nav{display:flex;flex-wrap:wrap;gap:1.2rem;background:var(--panel);
   padding:.75rem 2rem;border-bottom:1px solid var(--line);font-size:.85rem;position:sticky;top:0;z-index:5}
-nav.section-nav a{color:var(--brand);text-decoration:none;font-weight:600}
+/* A nav item is a touch target on a phone, so it is 44 px tall itself rather than
+   relying on the bar's padding to lift it over the floor (docs/11 section 1). */
+nav.section-nav a{color:var(--brand);text-decoration:none;font-weight:600;
+  display:inline-flex;align-items:center;min-height:2.75rem}
 nav.section-nav a:hover{text-decoration:underline}
 main{padding:1.5rem 2rem;max-width:80rem;margin:0 auto}
 section{margin-bottom:3rem;padding-top:.5rem;scroll-margin-top:3.2rem}
@@ -201,6 +212,25 @@ table.compare-table th{background:var(--panel);font-size:.78rem;text-transform:u
 table.compare-table td.yes{color:var(--ok)}
 table.compare-table td.no{color:var(--bad)}
 table.compare-table td.partial{color:#9a6b00}
+/* Measured in WebKit at 390 px and 768 px (2026-10-24): the native select renders
+   150 x 22 px there, because WebKit ignores padding, border and min-height on a
+   native control. The 44 px touch floor is docs/11 section 1, and the cube hits it the
+   same way: drop the native look, draw the box and the chevron ourselves. */
+.filter-block select{appearance:none;-webkit-appearance:none;
+  min-height:2.75rem;padding:.5rem 2.25rem .5rem .75rem;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),
+    linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 1.1rem) 50%,calc(100% - .75rem) 50%;
+  background-size:.35rem .35rem,.35rem .35rem;background-repeat:no-repeat}
+/* The comparison table is 628 px of content in a 390 px viewport: it scrolls inside
+   its own box rather than pushing the page sideways (docs/11 forbids content clipped
+   or hidden by the viewport, not content a reader can scroll). */
+table.compare-table{display:block;overflow-x:auto;max-width:100%}
+@media (max-width:40rem){
+  main{padding:1.25rem 1rem}
+  nav.section-nav{padding:.6rem 1rem;gap:.8rem}
+  header{padding:1.25rem 1rem}
+}
 /* section 3 filter demos */
 .filter-compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem}
 .filter-block{background:var(--panel);border:1px solid var(--line);border-radius:.375rem;padding:1.2rem}
@@ -228,7 +258,9 @@ table.compare-table td.partial{color:#9a6b00}
 table.mapping-table{border-collapse:collapse;font-size:.82rem}
 table.mapping-table th,table.mapping-table td{padding:.4rem .6rem;border-bottom:1px solid var(--line);text-align:left}
 #export-pdf-btn{font-family:inherit;font-size:.9rem;padding:.6rem 1.1rem;border-radius:.3rem;border:none;
-  background:var(--brand);color:#fff;cursor:pointer;margin:.5rem 0}
+  background:var(--brand);color:#fff;cursor:pointer;margin:.5rem 0;
+  /* WebKit computes a padded button at 36.2 px here, below the 44 px touch floor. */
+  min-height:2.75rem}
 #export-pdf-btn:hover{filter:brightness(1.08)}
 @media print{
   nav.section-nav,#export-pdf-btn,.filter-block select,.css-filter-tabs{display:none !important}
@@ -514,14 +546,6 @@ SCRIPT = """
 """
 
 TEMPLATE = """<!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="nb">
 <head>
 <meta charset="utf-8">
@@ -532,11 +556,10 @@ TEMPLATE = """<!DOCTYPE html>
   PROVENANCE
     Source data : none — same synthetic regional counts as examples/06/13/14
     Built       : __BUILT__
-    Companion to: examples/06-chart-palette-demo/,
+    Companion to: issue #30, examples/06-chart-palette-demo/,
                   examples/13-js-free-standalone-poc/, examples/14-chart-emulation-nojs-poc/
     Built by    : RAIWork
     Repo        : tun
-    Made with   : Tún — tun.community
     Generator   : examples/15-chart-library-comparison-poc/build_comparison_poc.py
   STATUS: exploratory/diagnostic POC. Unlike examples/13/14, this page DOES require
   JavaScript — see module docstring for why: it exists to compare a JS approach

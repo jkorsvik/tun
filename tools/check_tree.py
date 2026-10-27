@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 check_tree.py — run the tenant-constraint gates over every tracked .html in the repo.
 
@@ -11,7 +8,7 @@ Stdlib only. No browser, no install, runs anywhere Python 3.9+ runs.
     python3 tools/check_tree.py --quiet    # only print problems (for the git hook)
     python3 tools/check_tree.py --list     # print the resolved scope and exit
 
-This is the piece that was missing when four shipped files broke rows 24 and 26. The checks in
+This is the piece that was missing when #50 happened. The checks in
 tools/verify_standalone_core.py already existed; they only ever ran against one file a
 human chose to point them at, so four shipped files broke rows 24 and 26 unnoticed. This
 runs them across the whole tree, in CI and in a pre-commit hook.
@@ -157,7 +154,7 @@ def main() -> int:
     if total_debt:
         print(f"\n{G}✓ PASS{Z} — no new violations across {len(files)} tracked file(s)."
               f"\n  {Y}{total_debt} known violation(s) remain{Z}, listed in"
-              f" tools/tree_scan.py.")
+              f" tools/tree_scan.py (see #45).")
     else:
         print(f"\n{G}✓ PASS{Z} — {len(files)} tracked file(s) clean, no known debt left.")
     return 0

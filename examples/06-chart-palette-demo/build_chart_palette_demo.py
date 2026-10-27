@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-# or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-# COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-# under terms of your choice, provided the Origin Notice is preserved.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 build_chart_palette_demo.py — generates chart-palette-demo.html
 
@@ -165,8 +159,8 @@ PALETTES = {
             "description": (
                 "Divergerende palett med lilla i \u00e9n ende og gr\u00f8nn i den andre, n\u00e6r-hvitt "
                 "nullpunkt i midten. Klassifisert som fargesynsvariasjon-trygg av ColorBrewer. "
-                "Merk: gr\u00f8nn-enden kan visuelt kollidere med statusfargen for positivt "
-                "(Moss, se tools/tokens/status-semantic.css) \u2014 se PuOr som alternativ."
+                "Merk: gr\u00f8nn-enden kan visuelt kollidere med organisasjonens egen merkevarefarge "
+                "(se plugins/<your-brand>/tokens/palette.css) \u2014 se PuOr som alternativ."
             ),
         },
         "puor": {
@@ -225,14 +219,6 @@ print(f"chart.js vendor size: {len(CHARTJS_JS)} bytes")
 # "Vanlige fallgruver" for the same trap). .replace() avoids that entirely.
 # ---------------------------------------------------------------------------
 TEMPLATE = """<!DOCTYPE html>
-<!--
-  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
-  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
-  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
-  under terms of your choice, provided the Origin Notice is preserved.
-  SPDX-License-Identifier: AGPL-3.0-or-later
--->
 <html lang="nb">
 <head>
 <meta charset="utf-8">
@@ -246,7 +232,6 @@ TEMPLATE = """<!DOCTYPE html>
     Companion to: docs/10-chart-colour-palettes.md
     Built by    : RAIWork
     Repo        : tun
-    Made with   : Tún — tun.community
     Generator   : examples/06-chart-palette-demo/build_chart_palette_demo.py
     Chart.js    : 4.4.0 UMD, vendored in vendor/chart.umd.min.js, inlined below
   STATUS: experimental demo, NOT a production template, and does NOT decide
@@ -259,56 +244,56 @@ __TOKEN_CSS__
 
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
+    font-family:"Eksempel AS",-apple-system,BlinkMacSystemFont,Arial,system-ui,sans-serif;
     font-size:1rem;line-height:1.5;transition:background .15s,color .15s}
   header{background:var(--brand-dark);color:var(--palette-on-dark);
     padding:1.25rem 2rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
   header h1{margin:0;font-size:1.4rem;line-height:1.9rem;font-weight:500}
-  header .meta{opacity:.85;font-size:.8rem;line-height:1.4rem;margin-top:.4rem;max-width:44rem}
-  #theme-toggle{padding:.5rem .9rem;border:1px solid var(--palette-on-dark);border-radius:.25rem;
+  header .meta{opacity:.85;font-size:.875rem;line-height:1.4rem;margin-top:.4rem;max-width:44rem}
+  #theme-toggle{min-height:2.75rem;padding:.5rem .9rem;border:1px solid var(--palette-on-dark);border-radius:.25rem;
     background:transparent;color:var(--palette-on-dark);font-family:inherit;font-size:.875rem;
     cursor:pointer;white-space:nowrap;flex-shrink:0}
   #theme-toggle:hover{background:var(--palette-on-dark);color:var(--brand-dark)}
   #theme-toggle:focus-visible{outline:2px solid var(--palette-accent-light);outline-offset:2px}
   .tabs{display:flex;gap:.5rem;background:var(--panel);padding:.75rem 2rem;border-bottom:1px solid var(--line);
     flex-wrap:wrap}
-  .tabbtn{padding:.5rem .9rem;border:1px solid var(--line);border-radius:.25rem;
+  .tabbtn{min-height:2.75rem;padding:.5rem .9rem;border:1px solid var(--line);border-radius:.25rem;
     background:var(--bg);font-family:inherit;font-size:.875rem;cursor:pointer;color:var(--ink)}
   .tabbtn:hover{border-color:var(--brand);color:var(--brand)}
-  .tabbtn.active{background:var(--brand);color:var(--palette-surface);border-color:var(--brand)}
+  .tabbtn.active{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
   .tabbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
   main{padding:1.5rem 2rem;max-width:74rem;margin:0 auto}
   .tabpage{display:none}
   .tabpage.active{display:block}
   .palette-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:0 0 .5rem}
-  .palette-row label{font-size:.85rem;color:var(--muted)}
-  .palette-row select{font-family:inherit;font-size:.875rem;padding:.35rem .5rem;border:1px solid var(--line);
+  .palette-row label{font-size:.875rem;color:var(--muted)}
+  .palette-row select{min-height:2.75rem;font-family:inherit;font-size:.875rem;padding:.35rem .5rem;border:1px solid var(--line);
     border-radius:.25rem;background:var(--bg);color:var(--ink)}
-  .palette-desc{font-size:.85rem;color:var(--ink);max-width:56rem;margin:0 0 .75rem;line-height:1.55}
-  .palette-desc .src{color:var(--muted);font-size:.78rem;display:block;margin-top:.2rem}
-  .rule-note{font-size:.8rem;color:var(--muted);margin:0 0 1rem;max-width:56rem}
-  .ref-table{width:100%;border-collapse:collapse;margin:0 0 1.75rem;font-size:.85rem}
+  .palette-desc{font-size:.875rem;color:var(--ink);max-width:56rem;margin:0 0 .75rem;line-height:1.55}
+  .palette-desc .src{color:var(--muted);font-size:.875rem;display:block;margin-top:.2rem}
+  .rule-note{font-size:.875rem;color:var(--muted);margin:0 0 1rem;max-width:56rem}
+  .ref-table{width:100%;border-collapse:collapse;margin:0 0 1.75rem;font-size:.875rem}
   .ref-table caption{text-align:left;font-weight:600;color:var(--ink);padding:0 0 .35rem;font-size:.95rem}
   .ref-table th,.ref-table td{padding:.4rem .6rem;border-bottom:1px solid var(--line);text-align:left}
   .ref-table th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
   .ref-table td.num{font-variant-numeric:tabular-nums}
   .ref-swatch{display:inline-block;width:1.1rem;height:1.1rem;border-radius:.2rem;
     border:1px solid rgba(128,128,128,.4);vertical-align:middle;margin-right:.4rem}
-  .ref-hex{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;color:var(--muted)}
+  .ref-hex{font-family:ui-monospace,Consolas,monospace;font-size:.875rem;color:var(--muted)}
   .ref-pass{color:var(--ok);font-weight:600}
   .ref-fail{color:var(--bad);font-weight:600;background:var(--bad-bg);padding:0 .2rem;border-radius:.2rem}
   .ref-caveat{background:var(--panel);border-left:.2rem solid var(--palette-accent);padding:.5rem .75rem;
-    font-size:.8rem;color:var(--muted);margin:0 0 1.75rem;max-width:56rem}
+    font-size:.875rem;color:var(--muted);margin:0 0 1.75rem;max-width:56rem}
   .swatches{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.25rem}
   .swatch{display:flex;align-items:center;gap:.4rem;background:var(--panel);border:1px solid var(--line);
-    border-radius:.25rem;padding:.3rem .55rem;font-size:.78rem;font-variant-numeric:tabular-nums}
+    border-radius:.25rem;padding:.3rem .55rem;font-size:.875rem;font-variant-numeric:tabular-nums}
   .sw-box{width:1rem;height:1rem;border-radius:.2rem;border:1px solid rgba(128,128,128,.4);display:inline-block;
     flex-shrink:0}
   .sw-ratio.pass{color:var(--ok);font-weight:600}
   .sw-ratio.fail{color:var(--bad);font-weight:600;background:var(--bad-bg);padding:0 .2rem;border-radius:.2rem}  /* Fire Red needs white: 4.48:1 on the panel */
   .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;margin-bottom:1rem}
   .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:.375rem;padding:.75rem}
-  .chart-card h3{margin:0 0 .5rem;font-size:.85rem;font-weight:600;color:var(--muted);
+  .chart-card h3{margin:0 0 .5rem;font-size:.875rem;font-weight:600;color:var(--muted);
     text-transform:uppercase;letter-spacing:.03em}
   .chart-card .wrap{position:relative;height:250px}
   .chart-card canvas{width:100%!important;height:100%!important}
@@ -433,8 +418,8 @@ __TOKEN_CSS__
       deuteranopi/protanopi/tritanopi. Tableau 10 st&aring;r som referanse, ikke anbefaling, av
       samme grunn.</p>
     <p><strong>Paletter (full oversikt)</strong>-fanen er lagt til for &aring; kunne deles med de som
-      skal gi tilbakemelding p&aring; selve fargevalgene uten at de m&aring; tolke diagrammene
-      f&oslash;rst: navn, hex og m&aring;lt
+      skal gi tilbakemelding p&aring; selve fargevalgene (f.eks. brand owner-sp&oslash;rsm&aring;let i
+      docs/09 &sect;3) uten at de m&aring; tolke diagrammene f&oslash;rst: navn, hex og m&aring;lt
       kontrast mot begge bakgrunner for alle syv paletter, samlet p&aring; &eacute;n side.</p>
     <div class="note">
       Byggetidspunkt: __BUILT__ &middot; generert av <code>build_chart_palette_demo.py</code>,
@@ -452,8 +437,8 @@ __CHARTJS_JS__
   var STATE = { qual: "okabeito", seq: "viridis", div: "prgn", theme: "light", tab: "categorical" };
   var CHARTS = {};
   var LIGHT_INK = "#000000", LIGHT_LINE = "#ebebeb";
-  var DARK_INK = "#FFF8EE", DARK_LINE = "#33496B";  // same neutral slate as --line in theme-dark.css
-  var LIGHT_BORDER = "#FFFFFF", DARK_BORDER = "#101828";
+  var DARK_INK = "#FFFFE8", DARK_LINE = "#1B2A4A";
+  var LIGHT_BORDER = "#FFFFFF", DARK_BORDER = "#0F1E26";
   var POINT_STYLES = ["circle", "triangle", "rect", "rectRot", "star", "cross"];
 
   function killChart(id) {
@@ -480,7 +465,7 @@ __CHARTJS_JS__
   }
 
   function currentBgHex() {
-    return STATE.theme === "dark" ? "#1B2A4A" : "#FFFFFF"; // --eksempel-navy / --eksempel-white, see theme-*.css
+    return STATE.theme === "dark" ? "#003842" : "#FFFFFF"; // --tun-green / --tun-white, see theme-*.css
   }
 
   function renderSwatchStrip(containerId, colors, labels) {
@@ -690,7 +675,7 @@ __CHARTJS_JS__
   function buildPaletteReference() {
     if (PALETTE_REF_BUILT) return;
     PALETTE_REF_BUILT = true;
-    var LIGHT_BG = "#FFFFFF", DARK_BG = "#1B2A4A"; // --eksempel-white / --eksempel-navy
+    var LIGHT_BG = "#FFFFFF", DARK_BG = "#003842"; // --tun-white / --tun-green
     var FAM_LABEL = { qualitative: "Kategorisk", sequential: "Sekvensiell", diverging: "Divergerende" };
     var out = "";
     ["qualitative", "sequential", "diverging"].forEach(function(fam) {
@@ -700,7 +685,7 @@ __CHARTJS_JS__
         out += '<p class="palette-desc">' + paletteDescHtml(fam, key) + "</p>";
         out += '<table class="ref-table"><caption>' + p.label + '</caption><thead><tr>' +
           "<th>Farge</th><th>Navn</th><th>Hex</th>" +
-          "<th>Kontrast mot lys bg (#FFFFFF)</th><th>Kontrast mot m\\u00f8rk bg (#1B2A4A)</th>" +
+          "<th>Kontrast mot lys bg (#FFFFFF)</th><th>Kontrast mot m\\u00f8rk bg (#003842)</th>" +
           "</tr></thead><tbody>";
         p.colors.forEach(function(hex, i) {
           var rL = contrastRatio(hex, LIGHT_BG), rD = contrastRatio(hex, DARK_BG);

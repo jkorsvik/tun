@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 verify_idea_picture.py — proves the living idea picture moves, can be explored and
 stays readable, with no script, in Chromium, Firefox and WebKit, from a file:// URL.
@@ -163,7 +160,7 @@ MUTATIONS = {
     "lens dimming outranks the lighting":
         ("#lv-all:not(:checked)~.lv-stage .g{opacity:.16}",
          ".lv-r[name=lv-lens]:not(#lv-all):checked~.lv-stage .g{opacity:.16}"),
-    "phone picture hidden on desktop": (".lv-stage .lv-tall{display:none}", ".lv-tall{display:none}"),
+    "phone picture hidden on desktop": (".lv-tall{min-width:400px;display:none}", ".lv-tall{min-width:400px;display:block}"),
     "packets follow their arrows": (".lv .pk-w-out{offset-path:path(", ".lv .pk-w-out{--off:path("),
     "playback phases": ("#lv-play:checked~.lv-stage .s2{animation:lv-step 12s linear infinite;"
                         "animation-delay:-9s}",
@@ -174,7 +171,7 @@ MUTATIONS = {
 }
 
 
-def mutation_check() -> int:
+def mutation_check(engines=core.ENGINES) -> int:
     original = HTML.read_text(encoding="utf-8")
     missed = []
     with tempfile.TemporaryDirectory() as tmp:
@@ -185,7 +182,7 @@ def mutation_check() -> int:
             mutant = pathlib.Path(tmp) / HTML.name
             mutant.write_text(original.replace(needle, repl), encoding="utf-8")
             print(f"=== mutation: {name}")
-            failures = verify(mutant)
+            failures = verify(mutant, engines)
             print(f"--> {'caught' if failures else 'MISSED'} ({len(failures)} failing check(s))")
             if not failures:
                 missed.append(name)
@@ -202,7 +199,9 @@ def main() -> int:
     core.add_engines_arg(ap, default=core.ENGINES)
     args = ap.parse_args()
     if args.mutation_check:
-        return mutation_check()
+        # the caller's engine list, or the mutants get run in engines the caller
+        # excluded (Firefox is not installed on every machine that gates this)
+        return mutation_check(args.engines)
     try:
         import playwright  # noqa: F401
     except ImportError:

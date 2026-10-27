@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """Mutation tests for the two gates added alongside them — prove they can fail.
 
 Both gates here exist because a check that *looked* present was not actually
@@ -79,8 +76,8 @@ def build(template: pathlib.Path, out: pathlib.Path) -> subprocess.CompletedProc
     rewrites = [
         ('TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "single-file-dashboard.html"',
          f'TEMPLATE = pathlib.Path({str(template)!r})'),
-        ('TOOLS_DIR = pathlib.Path(__file__).resolve().parent',
-         f'TOOLS_DIR = pathlib.Path({str(TOOLS)!r})'),
+        ('sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))',
+         f'sys.path.insert(0, {str(TOOLS)!r})'),
     ]
     for old, new in rewrites:
         if src.count(old) != 1:

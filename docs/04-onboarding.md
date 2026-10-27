@@ -1,229 +1,232 @@
-# Onboarding — a new contributor
+# Onboarding — from a spreadsheet to a shared dashboard
 
-The idea is simple: OneDrive and SharePoint can carry a dashboard, and that is a way out
-of the Power BI licence-and-workspace treadmill. This repo is that idea, written down,
-verified against a real enterprise tenant, and turned into something anyone can drive by
-asking.
+**Reader:** user — you want an artefact out of your own data and do not intend to change the toolkit.
 
-This guide gets you from zero to a published dashboard. It assumes nothing is set up on
-your machine yet. Every command below is one line and copy-pasteable, apart from the clone URL in Step 2, and there is no
-build step anywhere in the workflow — the dashboard is just a file.
+**Who this is for:** anyone with a work laptop, Windows or macOS. No prior setup, no
+developer toolchain, no admin approval. If you can open Excel and a browser, you can do
+this.
 
-Estimated time: **about an hour**, most of it installation waiting.
+Two routes, and you can stop after the first:
 
----
+- **Part 1** builds a real dashboard from the command line in about five minutes, with no
+  AI tool installed. Nothing about this project needs one — the dashboard is a file.
+- **Part 2** adds the assistant, so the same job becomes one sentence.
 
-## What you are getting
+**Done looks like this:**
 
-**RAIWork** — a desktop app where you talk to an AI that can actually do things on your
-machine: read your Excel files, build dashboards, put them in SharePoint, search Jira and
-Confluence, read your mail. Not a chatbot that gives advice; an assistant that does the
-work and shows you the result.
-
-Plus **the dashboard skills** in this repo. A "skill" is a set of written instructions
-that teaches RAIWork how to do one job properly and consistently. Once installed you can
-say *"make me a dashboard from this Excel file"* and it follows the whole recipe —
-including the safety checks — every time.
+- [ ] Python runs on your machine and says 3.9 or newer
+- [ ] `python3 setup.py` (Windows: `py -3 setup.py`) prints `Everything the dashboard
+      skills need is in place.`
+- [ ] you have opened a dashboard built from your own data, from `file://`, in a browser
+- [ ] it is in a SharePoint or OneDrive folder, and a colleague has opened it
 
 ---
 
-## Step 1 — Install RAIWork
+## Windows: the four things that are different
 
-**Not using RAIWork?** Skip this step. Steps 2 and 3 work the same with Claude Code,
-Codex, Gemini CLI, GitHub Copilot, VS Code or OpenCode: in Step 3 you add `--tool`. The
-[README](../README.md#try-it) lists which value each tool needs.
+Everything else in this document is identical on both systems. These are the only
+differences, and every one of them is handled by the tools here rather than by you:
 
-**⚠️ This step differs by platform, and if you're on Windows ask a teammate to walk you
-through it rather than following a command blind.** Everything *after* this step is
-identical on both.
-
-<details>
-<summary><strong>Windows</strong> — ask a teammate first</summary>
-
-RAIWork runs on Windows, but your team's install script may be macOS-only, so the setup path
-can be different and is not worth guessing at in a document. Ask whoever maintains the
-tooling and do it together — it's a short conversation, and getting it right saves you an
-afternoon.
-
-What you'll end up with, so you know what "done" looks like:
-
-- the RAIWork app installed and opening
-- `git` available
-- `python3` available (3.9 or newer)
-- `uv` for installing anything (`winget install astral-sh.uv`) — **never `pip`**
-
-</details>
-
-<details>
-<summary><strong>macOS</strong></summary>
-
-Install RAIWork with your team's install script, or however your organisation
-distributes it. Check that it worked:
-
-```bash
-raiwork --version     # check
-open -a RAIWork       # launch
-```
-
-</details>
-
-> **If any of this fights you, stop and ask the maintainer.** The install is the one part
-> of this that's genuinely fiddly and platform-specific. The rest is the interesting bit.
+| On Windows | What to know |
+|---|---|
+| `python3` is `py -3` | `python3` is not a command on Windows unless the Microsoft Store alias is installed. Use `py -3` wherever this document shows `python3`. `setup.py` prints the spelling your machine has. |
+| Skills are **copied**, not symlinked | Symlinks need Developer Mode. Without it `setup.py` copies the skill files, which works the same — but then re-run `setup.py` after someone updates a skill. It tells you when they are stale. |
+| OneDrive lives elsewhere | `%OneDriveCommercial%` (usually `C:\Users\<you>\Eksempel AS Bank ASA\...`), not the macOS `~/Library/CloudStorage/...` path. `setup.py` finds it and prints it. |
+| Paths use `\` | Every path in this document also works with `/` on Windows. Nothing here needs a shell script, and there are none in this repository. |
 
 ---
 
-## Step 2 — Get this repo
+## Part 1 — five minutes, no AI tool
 
-Put the clone URL of this repository in place of `<clone-url>`. On GitHub it is under
-the green **Code** button.
+### Step 1. Python
 
-```bash
-git clone <clone-url> tun
-```
-
----
-
-## Step 3 — Install the dashboard skills
-
-This tells RAIWork about the dashboard skills. One command:
+macOS ships a usable Python 3; check it:
 
 ```bash
-cd tun && python3 setup.py
+python3 --version
 ```
 
-With another AI tool, name it instead (one or both):
+Windows, in PowerShell:
+
+```powershell
+py -3 --version
+```
+
+If that fails, install Python from [python.org](https://www.python.org/downloads/) and tick
+"Add python.exe to PATH" in the installer, or run `winget install Python.Python.3.12`.
+Anything 3.9 or newer is fine — the builders are stdlib only, so there is nothing to
+install afterwards.
+
+### Step 2. Get this repository
 
 ```bash
-python3 setup.py --tool claude    # Claude Code
-python3 setup.py --tool agents    # Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode
+git clone https://example.com/tun.git \
+  ~/dev/work/github_repos/tun
+cd ~/dev/work/github_repos/tun
 ```
 
-It copies the skills into RAIWork and checks the one tool the checks need (a headless
-browser, used to prove a dashboard really renders before you send it to anyone).
+No git yet? `winget install Git.Git` on Windows, `xcode-select --install` on macOS.
 
-Copies, not shortcuts: the skills RAIWork uses are its own files, so nothing you do in
-RAIWork can change this repository by accident. The cost is that they can fall behind
-after someone updates a skill here. `python3 setup.py --check` says when that has
-happened, and running `python3 setup.py` again brings them up to date.
+### Step 3. Check the machine and install the skills
 
-Then confirm the whole machine is ready:
+One command does both: it copies the skills into your AI tool if you have one, then checks
+every tool, then builds and verifies a test dashboard to prove the chain works.
 
 ```bash
 python3 setup.py
 ```
 
-That checks your tools, skills and Microsoft 365 connection, then builds and verifies a
-test dashboard to prove the chain works end to end. If anything is missing it prints the
-exact command to fix it.
+Windows: `py -3 setup.py`. If either fails, the last block is a list of exact commands to
+fix it; `docs/05-toolchain.md` explains why each tool is there.
 
-The one thing you **must** see is `✓ ms365 authenticated` — that's the connection to
-SharePoint and OneDrive, and nothing can be published without it. If it isn't
-authenticated:
+Two of those lines matter:
+
+- `OK ms365 authenticated` — the connection to SharePoint and OneDrive. Without it you can
+  still build, but you cannot publish from the assistant.
+- `OK build produced a dashboard` followed by `OK verify it renders and is interactive` —
+  the whole pipeline works on your machine, including a headless browser.
+
+### Step 4. Build the example, then look at it
 
 ```bash
-raiwork mcp auth ms365
+python3 tools/build_dashboard.py \
+  --data examples/01-hello-dashboard/salgsdata.csv \
+  --title "Salg per region og produkt 2026" \
+  --dimension Produkt --measure Belop --time Maaned \
+  --filters Region,Produkt,Kanal \
+  --source "Eksempeldata (syntetisk) - salgsdata.csv" \
+  --requested-by "Prosjekteier" \
+  --out /tmp/salg.html
 ```
 
-That's a normal sign-in for the organisation. It gives RAIWork exactly the SharePoint
-access you already have — nothing more, and no admin approval involved.
+Then open `/tmp/salg.html` in your browser — double-click it, or `start` it on Windows
+(`start %TEMP%\salg.html`). That is the deliverable: one file, no server, no licence, and
+it keeps working on a plane.
 
-[`docs/05-toolchain.md`](05-toolchain.md) explains every tool and why it's there, if you
-want the detail.
+**Look at it, do not trust the build log.** A dashboard that printed no error can still
+have overlapping labels or a number that is wrong by a factor of a thousand. Verifying is
+the next step and it is not optional.
 
----
+### Step 5. Prove it renders
 
-## Step 4 — Build your first dashboard
+```bash
+python3 tools/verify_dashboard.py /tmp/salg.html
+```
 
-Open RAIWork. Point it at this repo as its working folder. Then type, in your own words:
+Expected: `✓ PASS`, plus a screenshot path. Open the screenshot. If the verify tool complains
+it has no browser, it prints the two commands to install one; it refuses to report success
+without one, on purpose.
 
-> Build me a dashboard from `examples/01-hello-dashboard/salgsdata.csv` — I want to see
-> the amounts by product, the trend over the months, and be able to filter by region.
+From here, everything else is the same three verbs: **build**, **verify**, **share** with
+your own file as `--data`. Column names come from your file; if one is wrong the builder
+lists the ones it found:
 
-That's it. No flags, no syntax. RAIWork will:
+```
+error: --dimension 'Nope' not found. Available: Maaned, Region, Produkt, Kanal, Antall, Belop
+```
 
-1. ask you the **one important question** — whether different people need to see
-   different rows (say no for this example)
-2. read the file and tell you what columns it found
-3. propose the shape of the dashboard and let you correct it
-4. build a single `.html` file
-5. **open it in a real browser to prove it works**, and show you a picture of it
-6. offer to put it in SharePoint
-
-You should end up with something like this:
-
-![Example dashboard](../examples/01-hello-dashboard/preview.png)
-
-One file. 0.1 MB. No licence needed to open it. Works on a plane.
-
-### Then try it with your own data
-
-Same sentence, your file:
-
-> Build me a dashboard from ~/Downloads/mine-tall.xlsx showing …
-
-If it's an Excel file, RAIWork will deal with the conversion. If something about your
-data confuses it, it will ask rather than guess.
+Every refusal is one line, starts with `error:`, and exits 2, so a script you wrap around it
+can tell "refused" from "crashed".
 
 ---
 
-## Step 5 — Publish it
+## Part 2 — the same job, by asking
 
-> Put it in the team's SharePoint folder and give me a link I can share.
+Install the assistant once, and the rest of this document becomes a conversation.
 
-RAIWork will confirm which folder, tell you **who will be able to see it**, upload it,
-and draft the message for you to send. It will not send anything without you saying so.
+**macOS** — the team's installer:
 
-### The one quirk to know about
+```bash
+git clone eksempel@example.com:vedlikeholderen-Ryen-vedlikeholderen/dotfiles.git ~/dev/personal/dotfiles
+cd ~/dev/personal/dotfiles && ./install.sh
+```
 
-When someone clicks the link, SharePoint **downloads** the file rather than showing it
-in the page. That is a Microsoft security rule nobody here can change and shouldn't try
-to — it's there to stop people running arbitrary scripts from document libraries.
+Pick the **Developer** profile — the lowest one that includes the assistant ("Minimal"
+skips it). Safe to re-run.
 
-It matters mostly for how you *describe* it to people. Say:
+**Windows** — the assistant installs on Windows, but the team's `install.sh` is macOS-only,
+so the Windows route is the app itself plus this repository's skills:
 
-> "Klikk lenken, filen åpnes i nettleseren. Den fungerer også offline etterpå."
+1. install the assistant from the internal distribution point your team uses
+2. `py -3 setup.py --tool raiwork` in this repository, which puts the skills where it reads
+   them
+3. `py -3 setup.py --check` to confirm
 
-Same number of clicks as opening a PDF. And it's the reason the dashboard keeps working
-on a train.
+What is verified: the skills install path, `setup.py` on both systems, and every build and
+verify command above. What is **not** verified: the assistant's Windows installer, which is
+a separate artefact this repository does not carry. If it fights you, that is a bug worth
+reporting, not something you are doing wrong.
 
----
+Then open the assistant, point it at this repository as its working folder, and type:
 
-## What to ask for
+> Build me a dashboard from `examples/01-hello-dashboard/salgsdata.csv` — the amounts by
+> product, the trend over the months, filterable by region.
 
-You don't need to memorise skill names. Say what you want; RAIWork picks the skill.
+It asks the one question that changes the answer (do different people need to see different
+rows? say no here), reads the file, tells you which columns it found, builds the file, opens
+it in a real browser, and shows you the picture.
+
+### What to ask for
+
+You do not need to know skill names. Say what you want:
 
 | You want to… | Say something like… |
 |---|---|
 | start something new | *"make me a dashboard from this file"* |
-| know if this is even the right approach | *"can this replace our Power BI report?"* |
+| the list, not a chart | *"give me a searchable list of the open cases"* |
+| a process diagram | *"draw how a request flows between these three teams"* |
+| know if this is the right approach | *"can this replace our Power BI report?"* |
 | update stale numbers | *"refresh the sales dashboard with the new export"* |
 | check before sending | *"is this dashboard safe to share?"* |
 | share it | *"publish this to the team folder"* |
-| move a Power BI report | *"can we move the monthly volume report out of Power BI?"* |
 
-If you're not sure, just ask: *"what can you do with dashboards?"* — that hits the
-`tun-help` skill, which routes you and tells you what each option costs.
+Not sure? *"what can you do with dashboards?"* routes you and states what each option costs
+in approvals.
+
+---
+
+## Part 3 — publish it
+
+> Put it in \<your team's SharePoint folder\> and give me a link I can share.
+
+The assistant confirms which folder, tells you **who will be able to see it**, uploads it,
+and drafts the message. It will not send anything without you saying so.
+
+If you publish by hand instead: put the file in a synced OneDrive or SharePoint folder and
+share the file the way you share a document. Same result.
+
+### The one quirk to explain to readers
+
+When someone clicks the link, SharePoint **downloads** the file instead of rendering it in
+the page. That is a Microsoft security rule, it applies to every `.html` file in every
+document library, and we route around it rather than defeat it. So describe it that way:
+
+> "Klikk lenken, filen åpnes i nettleseren. Den fungerer også offline etterpå."
+
+Same number of clicks as opening a PDF, and it is the reason the dashboard keeps working on
+a train.
 
 ---
 
 ## The one rule that actually matters
 
-> **If different people who open the dashboard need to see different rows of data, this
+> **If different people who open the dashboard must see different rows of data, this
 > approach cannot be used.**
 
-The data lives *inside* the file. Anyone who can open the file can read all of it —
-including rows they shouldn't see. There is no safe workaround, and the skills will
-refuse and tell you so.
+The data lives inside the file. Anyone who can open the file can read all of it, including
+rows they should not see. A filter in the browser hides nothing — the rows are still in the
+file — so there is no safe workaround, and the skills refuse rather than pretend.
 
-That case needs Power BI with row-level security. Everything else — where everyone sees
-the same numbers — is fair game, and that's most reporting.
+The fix is a split, not a filter: same dashboard shell, one data file per audience, each in
+a folder only that audience can open. The split happens **before** anything is written.
+Everything else — where everyone sees the same numbers — is fair game, and that is most
+reporting.
 
 On freshness: use **paired mode** and the dashboard is a small file next to a `data.js`.
-Replace the data file and everyone sees new numbers next time they open it — no rebuild,
-no republish. That's how "keep it up to date" works here.
+Replace the data file and everyone sees new numbers the next time they open it, with no
+rebuild and no republish.
 
-`docs/00-vision.md` has the full honest comparison if you want to argue the case with
-someone.
+`docs/00-vision.md` has the honest comparison, including where Power BI is the right answer.
 
 ---
 
@@ -232,65 +235,49 @@ someone.
 | Path | What it is |
 |---|---|
 | `docs/00-vision.md` | why this exists, and the honest Power BI boundary |
-| `docs/01-tenant-constraints.md` | **what SharePoint actually does** — all measured, not guessed |
+| `docs/01-tenant-constraints.md` | **what SharePoint actually does** — measured, not guessed |
 | `docs/02-architecture.md` | the three delivery tiers and what each costs in approvals |
-| `docs/03-skill-tree.md` | the skills, how they fit together, what's built vs planned |
-| `docs/05-toolchain.md` | every skill, MCP server and CLI tool needed, and why |
-| `docs/06-way-of-working.md` | how we work, `hotshot`, and which general skills help |
-| `skills/` | the skills themselves — plain English, readable, editable |
-| `templates/` | the dashboard template |
-| `examples/` | a working example with sample data |
-| `ROADMAP.md` | what's next and what's blocked |
+| `docs/03-skill-tree.md` | the skills, how they fit, what is built and what is planned |
+| `docs/05-toolchain.md` | every tool needed and why |
+| `docs/09-usability-and-navigation-principles.md` | what a reader must be able to do |
+| `docs/30-glossary.md` | the vocabulary, for anyone who is not a developer |
+| `skills/` | the skills — plain English, editable without a build step |
+| `examples/` | working artefacts with sample data |
+| `ROADMAP.md` | what is next, and what is blocked on a question |
 
-Read `docs/01-tenant-constraints.md` at some point. It's the document that turns "I
-think this works" into "I know exactly what works and why". Every row was tested against
-the live tenant.
+Read `docs/01-tenant-constraints.md` at some point. It is the document that turns "I think
+this works" into "I know exactly what works and why".
+
+---
+
+## When it does not work
+
+Every message below came from a real run. The first line is what you see.
+
+| Message | Cause | Fix |
+|---|---|---|
+| `error: <file>: no such file` | the `--data` path is wrong, or relative to another folder | pass an absolute path, or `cd` to the repository first |
+| `error: --dimension 'X' not found. Available: A, B, C` | the column name does not match the file, including case and `æøå` | use one of the names this line prints |
+| `error: --measure 'X' is not numeric` | that column is text; a chart of it would be empty | pick a numeric column, or convert it first |
+| `error: input contained zero rows` | the file has a header and nothing else, or the delimiter was not detected | check the file opens as a table in a text editor |
+| `verify` stops because it has no browser | the headless browser is not installed | run the two commands it prints |
+| a dashboard is over the size limit | too many rows to carry in one file | pre-aggregate to the grain the dashboard shows, then rebuild |
+| the link downloads instead of opening | `Content-Disposition: attachment`, by design | nothing to fix; describe it to readers as a download that opens |
+
+The last one is not a bug and there is no workaround. It is the security control the whole
+architecture is built around.
 
 ---
 
 ## Your first real contribution
 
-The skills are **plain English files**, not code. If RAIWork does something in a way you
-don't like — wrong chart, wrong wording, missing a question you'd always ask — open the
-relevant `skills/*/SKILL.md` and change the instruction. That's the whole mechanism.
+The skills are **plain English files**, not code. If something is done in a way you do not
+like — the wrong chart, the wrong wording, a question you would always ask and it does not —
+open the relevant `skills/*/SKILL.md` and change the instruction. Then re-run `setup.py`.
+That is the whole mechanism, and no build step stands between the edit and the behaviour.
 
-You know the business questions and how colleagues actually consume reports better than
-whoever wrote the skill first. That knowledge belongs in these files.
+The highest-value thing to add early is `docs/use-cases.md`: the real reports in your area
+that could move to this, **and the ones that cannot, with the reason.** The refusal list is
+the more valuable half — it draws the boundary and stops the same argument every quarter.
 
-Highest-value thing you could add early: **a use-case list** of the real
-reports in your area that could move, and which ones can't and why. The "can't" list is
-the more valuable half; it draws the real boundary and stops us re-arguing it every time.
-
----
-
-## Open questions we still need answers to
-
-Not blockers for Tier 1, but they shape what's possible next. If you have a route to any
-of these, that unblocks real capability:
-
-- [ ] **Can an SPFx web part get through tenant admin review?** This gates dashboards
-      rendering *inside* a SharePoint page rather than as a downloaded file. Currently
-      unproven — needs one package taken end-to-end through the app catalog.
-- [ ] **Would a Teams tab work as a host?** The security headers hint it might be a
-      legitimate embed path. Untested.
-- [ ] **How do sensitivity labels behave** on an `.html` file with business data in it?
-- [ ] **Which reports should move first?** Whoever owns the reporting backlog is better
-      placed to answer this than anyone.
-
----
-
-Any of this being unclear is a bug in the guide, not in you. Open an issue or fix it
-directly — the guide is as editable as everything else here.
-
----
-
-## Quick reference
-
-| Command | What it does |
-|---|---|
-| `python3 setup.py` | install the skills, check everything, run a real smoke test |
-| `python3 setup.py --check` | check only, change nothing — reports skills that fell behind |
-| `python3 setup.py --hooks` | turn on the pre-commit gate (it runs before each commit; CI checks the pull request; see docs/06) |
-| `raiwork mcp list` | see which systems RAIWork is connected to |
-| `raiwork mcp auth ms365` | sign in to SharePoint/OneDrive |
-| `python3 probe/tenant-probe.py` | re-verify what SharePoint does with HTML files |
+Any part of this being unclear is a bug in the guide, not in you.

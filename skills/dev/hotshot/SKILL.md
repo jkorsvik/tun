@@ -1,7 +1,7 @@
 ---
 name: hotshot
 description: "Full change-to-reviewable-PR pipeline under one name — 'use hotshot' or 'implement this with hotshot'. Drive a change the user described in chat (bug, feature, refactor, wording, tooling) end to end: understand, implement, verify with whatever gate the repo documents, run the magnus-review loop and fix until it relents, run simplify, commit to a typed branch, push, open the PR. Repo-agnostic: it discovers the build/test/verify commands, the base branch and the forge rather than assuming them. Use when the user says 'hotshot', 'use hotshot', 'implement this with hotshot', or names the sequence (review → simplify → push → PR)."
-license: AGPL-3.0-or-later
+license: Internal
 metadata:
   title: Hotshot
   version: 2.0.0
@@ -10,6 +10,9 @@ metadata:
 ---
 
 # Hotshot
+
+**Tier and cost, for the first reply:** none. It opens a branch and a PR on the repo it is
+run in; merging is the reviewer's decision, and it asks before any outward step.
 
 One word instead of eight steps. The user describes a change; this drives it all the way to
 a pull request someone can read.

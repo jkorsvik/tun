@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 test_verify_gate_browser.py — a verify tool may not report success without a browser.
 
@@ -24,7 +21,7 @@ ImportError deterministically, so the negative path is tested either way.
 
 Scope is deliberately this one property. The wider gate work — telling a local sidecar
 apart from a remote dependency, and not counting a commented-out tag as either — is
-covered by its own 26-assertion suite.
+still open on PR #28 with its own 26-assertion suite.
 
 Stdlib only, like the rest of the repo. Touches nothing outside a temp directory.
 

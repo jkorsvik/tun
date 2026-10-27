@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 test_process_diagram.py — the process-diagram builder, without a browser.
 
@@ -47,6 +44,7 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tools"))
 
 import build_process_diagram as bpd  # noqa: E402
+import check_token_contrast as cc  # noqa: E402
 import tun_tokens  # noqa: E402
 import verify_standalone_core as core  # noqa: E402
 
@@ -523,8 +521,10 @@ def main() -> int:
     tpl = TEMPLATE.read_text(encoding="utf-8")
     colour = re.compile(r"#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(")
     chk("template: no colour literal of its own", colour.findall(tpl), [])
-    token_css, _ = tun_tokens.load_token_css(("status-semantic.css", "theme-light.css"),
-                                             palette=ex.headers.get("palette"))
+    # Mirror the builder: it loads the dark theme as well now, so the allowed set of colours
+    # has to be the set it actually inlined. Deriving it from a different file list than the
+    # builder uses would pass by measuring the wrong thing.
+    token_css, _ = tun_tokens.load_token_css(palette=ex.headers.get("palette"), auto_dark=True)
     hexes = set(m.lower() for m in re.findall(r"#[0-9a-fA-F]{3,8}\b", html_text))
     tok_hexes = set(m.lower() for m in re.findall(r"#[0-9a-fA-F]{3,8}\b", token_css))
     chk("example: every colour value comes from the token files", hexes - tok_hexes, set())
@@ -534,6 +534,36 @@ def main() -> int:
     chk(f"template: one role colour class per LANE_COLOURS ({bpd.LANE_COLOURS})",
         sorted(set(re.findall(r"\.c(\d+)\{--role:", tpl)), key=int),
         [str(i) for i in range(bpd.LANE_COLOURS)])
+    # The dark ramp is a mapping the template owns, and the six pairs that measure it are a
+    # table tools/check_token_contrast.py owns. Two lists describing one decision drift: the
+    # template is what paints, the table is what measures, and nothing notices when they say
+    # different things. So compare them here, in both directions, and let the failure name
+    # the role. A ramp colour the table does not measure is an unchecked colour, which is
+    # the exact defect this dark block was written to fix.
+    def dark_ramp_of(text: str) -> dict[str, str]:
+        return dict(re.findall(
+            r":root:not\(\[data-theme\]\) \.c(\d+)\{--role:var\((--[a-z0-9-]+)\)\}", text))
+
+    dark_ramp = dark_ramp_of(tpl)
+    light_ramp = dict(re.findall(r"^\.c(\d+)\{--role:var\((--[a-z0-9-]+)\)\}", tpl, re.M))
+    measured = {label.split()[1][1:]: fg for theme, kind, label, fg, bg, minimum in cc.PAIRS
+                if (theme, kind) == ("dark", "non-text") and label.startswith("role c")
+                and bg == "--bg"}
+    chk("template: the dark ramp covers every role lane colour",
+        sorted(dark_ramp), [str(i) for i in range(bpd.LANE_COLOURS)])
+    chk("template: the dark ramp is not the light ramp copied (that is the defect it fixes)",
+        dark_ramp == light_ramp, False)
+    chk("template and check_token_contrast.py agree on the slot behind each dark role",
+        dark_ramp, measured)
+    # Mutation control: a comparison that cannot fail is not evidence. Move one role onto a
+    # slot the table measures for a different role, and prove the agreement check notices --
+    # and prove the edit landed, because an identical line elsewhere in the file can absorb
+    # it and a healthy check then looks blind.
+    swapped = tpl.replace(":root:not([data-theme]) .c1{--role:var(--palette-accent)}",
+                         ":root:not([data-theme]) .c1{--role:var(--palette-on-dark)}", 1)
+    chk("mutation: the dark role swap applied to the intended line", swapped != tpl, True)
+    chk("mutation: a swapped dark role slot is caught by the agreement check",
+        dark_ramp_of(swapped) == measured, False)
     chk("template: the script uses nothing that fails from file://",
         [t for t in ("location.hash", "hashchange", "fetch(", "Worker", "import(",
                      "XMLHttpRequest", 'href="#', "localStorage") if t in tpl], [])

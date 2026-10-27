@@ -1,10 +1,15 @@
 # A Generic Artifact Model
 
-> **Status: ADOPTED (generic split).** The split exists so that these principles can be
-> extracted for reuse by tools outside this repo (see "External consumers" below). This
-> document does not edit, rename or supersede anything in `00-vision.md`,
+**Reader:** contributor — you are changing the toolkit, and need the constraint or the convention behind it.
+
+> **Status: ADOPTED (generic split), 2026-09-10.** Decided by en kollega under
+> delegated authority from vedlikeholderen, specifically to allow extracting these
+> principles for reuse in a broader process-improvement initiative outside this repo
+> (`prosessflyt-verktoy` is the first external consumer — see "External consumers"
+> below). This document does not edit, rename or supersede anything in `00-vision.md`,
 > `02-architecture.md` or `03-skill-tree.md`. It sits **beside** them, arguing for a layer
-> underneath the dashboard specialisation those documents already cover well.
+> underneath the dashboard specialisation those documents already cover well. Written on
+> branch `issue-4-architecture-principles`, following up on issue #4.
 >
 > What "adopted" resolves, concretely: the Layer 0/Layer 1 split below is the accepted
 > model; `tools/verify_standalone_core.py` is no longer a proposal-only script (it is
@@ -22,7 +27,7 @@ what a `file://` page can do, not about what a dashboard is. But today it is spe
 one specialisation. Outside this repo, several other standalone-HTML tools already
 exist — a management-reporting overview, a process-diagram visualiser, a markdown-backed
 executive summary, a change-queue pattern — and each one **re-derives the same tenant
-physics independently**: brand tokens hand-copied again, a provenance block reinvented
+physics independently**: Eksempel AS tokens hand-copied again, a provenance block reinvented
 in a slightly different shape, the "sidecar must be `.js`" trick rediscovered by trial
 and error rather than read from this document.
 
@@ -44,7 +49,7 @@ naming explicitly, because it clarifies where any future doc should look first:
 - **Tenant policy** (SharePoint's choices, admin-gated, rows 1–5, 11–13): `.html` always
   downloads, anonymous sharing is blocked, framing is blocked. Could in principle change
   under a different tenant configuration.
-- **Browser origin-`null` rule** (universal, not an organisation-specific choice, rows 8, 16, and the
+- **Browser origin-`null` rule** (universal, not a Eksempel AS choice, rows 8, 16, and the
   DuckDB-WASM section): once a file is opened locally, no browser — in any tenant —
   allows it to `fetch`/`XHR`/construct a `Worker` from a file path. This is the harder
   constraint, because no admin can lift it.
@@ -88,8 +93,8 @@ Does the artefact depend on anything else present at open-time?
             grant, Chromium-only, but the ONLY mechanism where the page
             itself writes back into the shared folder while it is open.
             Materially different cost from "linked": a prompt, a narrower
-            browser matrix, and (per constraints doc row 19) a
-            mechanism that cannot be regression-tested
+            browser matrix, and (per constraints doc row 19, added
+            2026-09-06) a mechanism that cannot be regression-tested
             headlessly at all.
             → the local change-queue pattern.
 ```
@@ -111,14 +116,14 @@ Does the artefact depend on anything else present at open-time?
   answer: does this depend on a sibling file, and if so, can it write back? That
   question is what the split above answers, without borrowing data words to do it.
 
-### The prerequisite "connected" silently assumes
+### The prerequisite "connected" silently assumes — issue #4 point 5, not yet written down until now
 
-The local change-queue pattern folds cleanly into "connected" above, but it has one gap
-that was never actually closed:
+Issue #4's local change-queue write-up (its point 5) folds cleanly into "connected"
+above, but #4 itself flagged one gap in that write-up that was never actually closed:
 the pattern's failsafe (suggestions stay visible in the live view even if consolidation
 into the source never runs) only produces a correct outcome if the shared folder's
-membership was already scoped correctly **before** anyone could write into it. The first
-non-negotiable rule in `AGENTS.md` — never write a row into a file whose audience shouldn't see it,
+membership was already scoped correctly **before** anyone could write into it. Issue #1's
+one non-negotiable rule — never write a row into a file whose audience shouldn't see it,
 enforced by folder membership, not a filter — is a precondition for "connected" being
 safe to use, not a separate, parallel concern next to it.
 
@@ -199,18 +204,19 @@ own 3 checks, rather than the two living as separate, drifting copies.
 ## Proof of concept: a standalone artefact with zero dashboard vocabulary
 
 `examples/04-generic-standalone-demo/` — generated by `build_standalone_demo.py`
-(never hand-written), no `data.js`, no rows, no dimension or
-measure. It exists solely to prove the STANDALONE leg renders, is brand-styled, carries a
+(never hand-written, per issue #4 principle 2), no `data.js`, no rows, no dimension or
+measure. It exists solely to prove the STANDALONE leg renders, is Eksempel AS-styled, carries a
 provenance block, and uses topbar navigation between sections via JS toggle — all four
-of which are today described only in dashboard terms in `docs/00-vision.md`, despite being visibly content-agnostic once built without data.
+of which are today described only in dashboard terms in `docs/00-vision.md` and issue
+#4, despite being visibly content-agnostic once built without data.
 
 ## Proposal: a generic `artifact-audit`, dashboard-audit as its consumer
 
 Originally proposed narrower, as `dashboard-audit` — checking a dashboard `.html`
-against the design principles in `docs/00-vision.md`. Revised per the same generalisation:
+against the written principle list in issue #4. Revised per the same generalisation:
 
 - **`artifact-audit`** (generic): checks the layer-1-level principles regardless of
-  specialisation — single-file or declared-sidecar-only, brand tokens present, provenance
+  specialisation — single-file or declared-sidecar-only, Eksempel AS tokens present, provenance
   block present, topbar nav present, no CDN reference, generated-not-handwritten marker.
 - **`dashboard-audit`** (specialisation-specific, thin): calls `artifact-audit`, then
   adds dashboard-only checks — dimension/measure/filter vocabulary used consistently,
@@ -222,7 +228,7 @@ above: one generic layer, specialisations add their own on top rather than dupli
 ## External consumers — this repo is not the only home for these principles
 
 Several standalone-HTML tools exist, or will exist, outside this repo — the
-process-diagram visualiser is the first concrete one.
+process-diagram visualiser named at the top of this document is the first concrete one.
 Most of them will **never become a full member of the OneDrive dashboard family**: they
 are not built by `tun-new`, are not distributed via `tun-publish`, and their
 audience/access model may not route through a SharePoint folder at all. That is fine and
@@ -235,11 +241,13 @@ and travels; the dashboard-specific vocabulary (dimension/measure/filter,
 
 **Decision on "where does this layer live" (resolves the open question below):** it stays
 in this repo, as the authoritative source. External repos do not get a submodule, a
-package registry entry, or write access. Instead they **vendor**: copy
+package registry entry, or write access — GHE Actions runners are org-disabled anyway, so
+automated publishing would need a manual step regardless. Instead they **vendor**: copy
 the specific generic-layer files, verbatim, into their own repo under a clearly marked
 `vendor/tun/` folder, with a `VERSION.txt` naming the source commit
-and date. An external consumer already uses this convention to vendor its own engine, so
-this reuses a proven pattern rather than inventing a second one.
+and date. This is the same convention `prosessflyt-verktoy` already uses for vendoring
+its own engine into RAIWork skills (see that repo's `RELEASE_CHECKLIST.md`) — reusing an
+already-proven pattern rather than inventing a second one.
 
 Drift between the vendored copy and this repo is an accepted, named cost, not a bug to
 eliminate — the same trade this repo already makes for `skills/dev/` (see
@@ -318,7 +326,7 @@ Its limits:
 
 ## Explicitly left out of this document
 
-- **Inline `Worker` from a `Blob` URL** (constraints doc row 20).
+- **Inline `Worker` from a `Blob` URL** (constraints doc row 20, measured 2026-09-06).
   It's a real, useful capability — client-side computation without a server, relevant
   to a future simulation-tooling specialisation — but it isn't a delivery-shape
   question like the three above, and folding it in here before there's a real
@@ -334,13 +342,13 @@ Its limits:
 
 ## Open threads this proposal creates or inherits
 
-- [x] Whether this doc's split is adopted at all: **adopted**.
+- [x] Whether this doc's split is adopted at all — **adopted 2026-09-10**, en kollega under delegated authority from vedlikeholderen.
 - [x] Where the layer lives — **resolved: stays in this repo; external repos vendor**,
       see "External consumers" above and `docs/14-generic-layer-manifest.md`.
 - [x] `tools/verify_standalone_core.py` — **wired into `tools/verify_dashboard.py`**,
       which now imports its checks instead of duplicating them; also extended with the
       provenance and unsubstituted-placeholder checks (previously miscounted as
-      dashboard-specific — they are not, and an external consumer uses the same
+      dashboard-specific — they are not, and `prosessflyt-verktoy` uses the same
       `{{PLACEHOLDER}}` convention, so this closes a real gap for the first external
       consumer).
 - [ ] If adopted: renumber/relabel nothing yet, but decide whether `02-architecture.md`
@@ -353,7 +361,7 @@ Its limits:
       under "Assumptions still to test," need a human in a headed browser, not a script.
 - [ ] Inline Worker (row 20) — deliberately not modelled here; revisit once a
       compute-heavy specialisation (e.g. simulation tooling) actually needs it.
-- [ ] **Open question, not decided:**
+- [ ] **Open question, not decided (raised 2026-09-11 by `html-sammenligning`):**
       `check_provenance()` in `tools/verify_standalone_core.py` only checks for the three
       literal strings "PROVENANCE", "Source data" and "Built" — it does not check whether
       any real traceability content is actually present. A benchmark of an external,
@@ -364,4 +372,4 @@ Its limits:
       an equivalent richer pattern as a pass (not just our exact three words), or is a
       fixed, literal marker deliberately preferred for how cheap and unambiguous it is to
       check? Changing this changes what "passing" means for every dashboard already
-      built. It needs a deliberate decision, not made here.
+      built — needs Tunkallen's decision, not made here.

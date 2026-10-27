@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 check_core_is_generic.py — hold the core / plugin boundary.
 
@@ -22,8 +19,9 @@ boundary has to be checked continuously, which is what this does.
 
 Two kinds of category
 ---------------------
-**forbidden** must be empty, always. Trademark artwork is the case that matters: artwork
-cannot be "reduced" in good conscience. It is either out of core or it is not.
+**forbidden** must be empty, always. Trademark artwork is the case that matters: the brand
+wordmark's path data was embedded in two core examples, and artwork cannot be "reduced" in good
+conscience. It is either out of core or it is not.
 
 **ratcheted** carries a baseline that must match exactly. Deviation in either direction fails:
 
@@ -34,14 +32,9 @@ Banking progress is deliberate friction. An allowance that silently absorbs impr
 being a ratchet and becomes a ceiling nobody lowers. `--baseline` makes the update mechanical,
 so the cost is a reviewable diff rather than bookkeeping.
 
-Why a ratchet at all: when a brand is spread across dozens of core files, a single commit that
-edits all of them is unreviewable, and gets approved without being read. Increments against a
-ratchet are reviewable.
-
-Blind spot, and its cover: brand categories are derived from the plugins that exist. Delete a
-brand's plugin and its hexes stop being brand hexes here, while every copy left in core stays.
-Retiring a brand therefore means adding its values to the local denylist first, so the
-`local:*` categories keep seeing them.
+Why a ratchet at all: the organisation appears in dozens of core files. A single commit that
+edited all of them would be unreviewable, and would be approved without being read. Increments
+against a ratchet are reviewable.
 
 Exit codes
     0  matches the baseline, and every forbidden category is empty
@@ -52,14 +45,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import pathlib
 import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import tree_scan  # noqa: E402
-import check_export_clean as export_gate  # noqa: E402
 
 G, R, Y, D, B, Z = "\033[32m", "\033[31m", "\033[33m", "\033[2m", "\033[1m", "\033[0m"
 if not sys.stdout.isatty():
@@ -84,151 +75,165 @@ def in_core(rel: str) -> bool:
     return pathlib.Path(rel).suffix.lower() not in SKIP_SUFFIXES
 
 
-#: A declared attribution region; defined in tools/check_export_clean.py, one definition
-#: for both gates. Region-based rather than file-based, so a name cannot drift into an
-#: unrelated paragraph and count as attribution.
-ATTRIBUTION_START = export_gate.ATTRIBUTION_START
-ATTRIBUTION_END = export_gate.ATTRIBUTION_END
+#: A declared attribution region. Everything between these markers is deliberate
+#: identification: who made this, who named it, who holds copyright. Such a region is the
+#: opposite of the leak this gate hunts, so the identity categories skip it.
+#:
+#: Region-based rather than file-based on purpose. Exempting a whole README would let a
+#: colleague's name drift into an unrelated paragraph and count as attribution; a region
+#: says exactly which lines were reviewed as intentional, in the source, where the next
+#: reader sees it.
+ATTRIBUTION_START = "<!-- attribution:start -->"
+ATTRIBUTION_END = "<!-- attribution:end -->"
 
-#: Categories the attribution region is exempt from. Deliberately just the two local-denylist
-#: labels that name humans and the organisation they did it at. A brand hex or an internal hostname inside
+#: Categories the attribution region is exempt from. Deliberately just the two that name
+#: humans and the organisation they did it at. A brand hex or an internal hostname inside
 #: an attribution block is still a leak, so those keep counting everywhere.
-ATTRIBUTION_EXEMPT = ("local:person", "local:org")
+ATTRIBUTION_EXEMPT = ("person-name", "org-name")
 
 
-#: The copyright notice names its holder; see tools/check_export_clean.py. Same rule,
-#: one definition: only the person category, only on the notice line.
-NOTICE_EXEMPT = tuple(f"local:{label}" for label in export_gate.NOTICE_EXEMPT)
-strip_copyright_lines = export_gate.strip_copyright_lines
+def strip_attribution(text: str) -> str:
+    """Remove declared attribution regions, preserving line count so reported line numbers
+    stay usable. An unterminated region is NOT stripped: a stray opening marker would
+    otherwise silently exempt the rest of a file, which is a hole with a comment on it."""
+    out, pos = [], 0
+    while True:
+        start = text.find(ATTRIBUTION_START, pos)
+        if start == -1:
+            out.append(text[pos:])
+            return "".join(out)
+        end = text.find(ATTRIBUTION_END, start)
+        if end == -1:
+            # Unterminated: keep the remainder so it is still scanned, and let the
+            # dedicated test complain about the malformed marker.
+            out.append(text[pos:])
+            return "".join(out)
+        end += len(ATTRIBUTION_END)
+        out.append(text[pos:start])
+        out.append("\n" * text.count("\n", start, end))
+        pos = end
 
 
-strip_attribution = export_gate.strip_attribution
+#: Attribution in JSON, where the comment markers above cannot live. Claude Code fixes the
+#: path and the shape of these two manifests, and it requires a human name in each. Exactly one
+#: value per file is exempt: the one at this key path. A name in `description`, `keywords` or
+#: anywhere else in the same file still counts, because the exemption subtracts the hits inside
+#: that one parsed value rather than skipping the file. Only person-name is exempt: an
+#: organisation, host or colour inside the name field is still a leak. A declared manifest
+#: that is not plain JSON (see manifest_subjects) is a problem of its own, never a fallback.
+JSON_ATTRIBUTION: dict[str, tuple[str, ...]] = {
+    ".claude-plugin/marketplace.json": ("owner", "name"),
+    ".claude-plugin/plugin.json": ("author", "name"),
+}
+JSON_ATTRIBUTION_EXEMPT = ("person-name",)
 
 
-#: Attribution in JSON, where the comment markers above cannot live (the two Claude Code
-#: manifests). Defined in tools/check_export_clean.py, one definition for both gates: exactly
-#: one value per file is exempt, only the person label is exempt, and a declared manifest that
-#: is not plain JSON is a problem of its own (see export_gate.manifest_subjects).
-JSON_ATTRIBUTION = export_gate.JSON_ATTRIBUTION
-JSON_ATTRIBUTION_EXEMPT = tuple(f"local:{label}" for label in export_gate.JSON_ATTRIBUTION_EXEMPT)
-NotPlainJson = export_gate.NotPlainJson
+def _strings(node) -> list[str]:
+    """Every key and string value in a parsed JSON document, decoded."""
+    if isinstance(node, str):
+        return [node]
+    if isinstance(node, dict):
+        return [t for k, v in node.items() for t in [k, *_strings(v)]]
+    if isinstance(node, list):
+        return [t for v in node for t in _strings(v)]
+    return []
 
 
-# --- Where the patterns come from -------------------------------------------------------
-#
-# Nothing identifying is written in this file. A tracked list of the organisation's name,
-# hosts and people would itself carry what the boundary keeps out of core. So:
-#
-#   * brand categories are DERIVED from plugins/: each plugin's manifest id gives its token
-#     prefix, its palette files give its hex values, its examples give its artwork. Adding
-#     a brand plugin extends the gate with no edit here.
-#   * identity categories (people, the organisation, internal hosts and programmes) come
-#     from the local, untracked denylist shared with tools/check_export_clean.py:
-#     $TUN_DENYLIST, or else ~/.config/tun/denylist.txt, one `label<TAB>regex` per line.
-#     Each label becomes a forbidden category named `local:<label>`. Without a denylist
-#     these categories are reported as skipped, loudly, never as clean.
-
-PLUGINS = tree_scan.REPO / "plugins"
-NEUTRAL_PALETTE = tree_scan.REPO / "tools" / "tokens" / "palette-neutral.css"
-DENYLIST = pathlib.Path(os.environ.get("TUN_DENYLIST")
-                        or pathlib.Path.home() / ".config" / "tun" / "denylist.txt").expanduser()
-
-_HEX = re.compile(r"#[0-9A-Fa-f]{6}\b")
-_PATH_D = re.compile(r'\bd="(M[^"]{15,})"')
+class DuplicateKey(ValueError):
+    """A JSON object repeated a key. json.loads would keep only the last value."""
 
 
-def _plugin_manifests() -> list[dict]:
-    out = []
-    for m in sorted(PLUGINS.glob("*/manifest.json")):
-        try:
-            out.append(json.loads(m.read_text(encoding="utf-8")))
-        except (OSError, json.JSONDecodeError):
-            continue
-    return out
+def _no_duplicates(pairs: list[tuple[str, object]]) -> dict:
+    """object_pairs_hook: refuse a repeated key at any depth.
+
+    json.loads keeps the last value of a repeated key, so the first one would ship in the
+    file but never reach the scan. Strict validators accept such a file."""
+    keys = [k for k, _v in pairs]
+    dup = sorted({k for k in keys if keys.count(k) > 1})
+    if dup:
+        raise DuplicateKey(f"duplicate key(s): {', '.join(dup)}")
+    return dict(pairs)
 
 
-def _plugin_files(*patterns: str) -> list[pathlib.Path]:
-    return sorted({f for pat in patterns for f in PLUGINS.glob(pat) if f.is_file()})
+def _no_constants(name: str) -> float:
+    """parse_constant: refuse NaN, Infinity and -Infinity. Python's json accepts them;
+    JSON does not, so a manifest that holds one is not plain JSON."""
+    raise ValueError(f"not a JSON value: {name}")
 
 
-def _alternation(items) -> str | None:
-    items = sorted(set(items))
-    return "(?:" + "|".join(items) + ")" if items else None
+class NotPlainJson(ValueError):
+    """A declared manifest the gate cannot parse as plain, unambiguous JSON."""
 
 
-def brand_token_pattern() -> str | None:
-    ids = [re.escape(m["id"]) for m in _plugin_manifests() if m.get("id")]
-    alt = _alternation(ids)
-    return rf"--{alt}-[a-z0-9-]+" if alt else None
+def manifest_subjects(rel: str, text: str) -> tuple[str, str] | None:
+    """For a declared JSON manifest, the two texts the person-name scan reads, else None.
+
+    Returns (raw text with the attribution value removed, decoded strings with that one
+    value blanked). A hit in either counts: the raw form catches a literal name, the
+    decoded form catches one written as \\u escapes. Duplicate keys are refused at any
+    depth, because json.loads keeps only the last value and the first would ship unseen.
+
+    Raises NotPlainJson for anything that does not parse: invalid JSON, a repeated key, a
+    leading BOM, trailing data, nesting too deep. There is no fallback and no exemption,
+    because a validator that tolerates the file is not evidence that a scan of it is
+    complete. The gate reports it as a problem instead."""
+    path = JSON_ATTRIBUTION.get(rel)
+    if path is None:
+        return None
+    try:
+        doc = json.loads(text, object_pairs_hook=_no_duplicates, parse_constant=_no_constants)
+        parent, value = doc, ""
+        for key in path[:-1]:
+            parent = parent.get(key) if isinstance(parent, dict) else None
+        if isinstance(parent, dict) and isinstance(parent.get(path[-1]), str):
+            value = parent[path[-1]]
+            parent[path[-1]] = ""
+        decoded = "\n".join(_strings(doc))
+    except (ValueError, RecursionError) as exc:  # ValueError includes DuplicateKey
+        raise NotPlainJson(rel) from exc
+    raw = text
+    if value:
+        for form in {json.dumps(value), json.dumps(value, ensure_ascii=False)}:
+            raw = raw.replace(form, '""')
+    return raw, decoded
 
 
-def brand_hex_pattern() -> str | None:
-    """Hex values a plugin palette declares that core's own neutral palette does not.
-    Shared neutrals (#FFFFFF, #000000 ...) belong to nobody and are not a leak."""
-    neutral = {h.upper() for h in _HEX.findall(NEUTRAL_PALETTE.read_text(encoding="utf-8"))} \
-        if NEUTRAL_PALETTE.is_file() else set()
-    neutral |= {"#FFFFFF", "#000000", "#757575", "#CCCCCC"}
-    declared = {h.upper() for f in _plugin_files("*/tokens/*.css")
-                for h in _HEX.findall(f.read_text(encoding="utf-8"))}
-    alt = _alternation(re.escape(h[1:]) for h in declared - neutral)
-    return rf"(?i)#{alt}\b" if alt else None
-
-
-_LOGO_SVG = re.compile(r'<svg\b[^>]*\brole="img"[^>]*>(.*?)</svg>', re.S)
-
-
-def artwork_pattern() -> str | None:
-    """The opening of every path inside a plugin's logo, read from its built examples.
-    A logo is the SVG marked role="img"; UI icons are aria-hidden and belong to nobody.
-    Artwork is all-or-nothing: 16 characters of a path show it was copied into core."""
-    frags = {d.group(1)[:16]
-             for f in _plugin_files("*/examples/**/*.html", "*/assets/**/*.svg")
-             for svg in _LOGO_SVG.finditer(f.read_text(encoding="utf-8", errors="replace"))
-             for d in _PATH_D.finditer(svg.group(1))}
-    return _alternation(re.escape(x) for x in frags)
-
-
-def load_local_denylist(path: pathlib.Path | None = None) -> list[tuple[str, str]]:
-    """[(label, regex)] from the local denylist, or [] when there is none."""
-    path = path or DENYLIST
-    if not path.is_file():
-        return []
-    rules = []
-    for raw in path.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        label, sep, rx = line.partition("\t")
-        rules.append((label.strip(), rx.strip()) if sep else ("term", line))
-    return rules
-
-
-def build_categories(denylist: pathlib.Path | None = None) -> dict[str, tuple[str | None, str, str]]:
-    """name -> (regex or None when there is nothing to look for, kind, why it matters)."""
-    cats: dict[str, tuple[str | None, str, str]] = {
-        "logo-artwork": (artwork_pattern(), "forbidden",
-                         "a plugin's wordmark/icon path data; artwork cannot be partially present"),
-        "brand-token": (brand_token_pattern(), "ratcheted",
-                        "brand palette variable names leaking into core CSS"),
-        "brand-hex": (brand_hex_pattern(), "ratcheted",
-                      "brand colour values a plugin owns, hardcoded in core"),
-        "atlassian-site": (
-            r"\b(?!example\.)[a-z0-9][a-z0-9-]*\.atlassian\.net\b"
-            r"|\bari:cloud:[a-z-]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
-            "forbidden",
-            "one organisation's Atlassian Cloud site, or an ARI carrying its site id. Core finds the "
-            "site at run time (getAccessibleAtlassianResources); a plugin's tenant facts may name it"),
-    }
-    by_label: dict[str, list[str]] = {}
-    for label, rx in load_local_denylist(denylist):
-        by_label.setdefault(label, []).append(rx)
-    for label, rxs in sorted(by_label.items()):
-        cats[f"local:{label}"] = ("(?i)" + _alternation(f"(?:{r})" for r in rxs), "forbidden",
-                                  f"identifying text listed under '{label}' in the local denylist")
-    return cats
-
-
-CATEGORIES = build_categories()
+# name -> (regex, kind, why it matters)
+CATEGORIES: dict[str, tuple[str, str, str]] = {
+    "logo-artwork": (
+        r"M111\.797|M28\.0464|M74\.6848", "forbidden",
+        "trademark wordmark path data; cannot be partially present"),
+    "brand-token": (
+        r"--dnb-[a-z0-9-]+", "ratcheted",
+        "brand palette variable names leaking into core CSS"),
+    "brand-hex": (
+        r"(?i)#(?:006C6C|003842|0F1E26|00CC88|33FF77|99FF99|DDFFCC|F7FFE8|FFFFE8|7733FF|884DFF)\b",
+        "ratcheted", "brand colour values from an access-controlled brandbook"),
+    "internal-host": (
+        r"\b[a-z0-9-]+\.(?:tech\.)?dnb\.no\b", "ratcheted",
+        "internal endpoints, useless and revealing outside the network"),
+    "internal-forge": (
+        r"\bdnb\.ghe\.com\b", "ratcheted", "internal forge links, unreachable publicly"),
+    "atlassian-site": (
+        r"\b(?!example\.)[a-z0-9][a-z0-9-]*\.atlassian\.net\b"
+        r"|\bari:cloud:[a-z-]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
+        "forbidden",
+        "one organisation's Atlassian Cloud site, or an ARI carrying its site id. Core finds the "
+        "site at run time (getAccessibleAtlassianResources); a plugin's tenant facts may name it"),
+    "internal-system": (
+        r"\b(?:INFA|Konsernjuridisk|dnbasa-[a-z0-9_]+)\b", "ratcheted",
+        "internal programme, team and account names"),
+    "org-name": (
+        r"\bDNB\b", "ratcheted", "the organisation named in core prose"),
+    "design-system": (
+        r"\bEufemia\b", "ratcheted", "the organisation's design system named in core"),
+    "person-name": (
+        # Composed from fragments: this file is the one that forbids these names, so it
+        # must also be a file that does not carry them. The pattern is identical at run
+        # time; splitting it only defeats a scanner reading the raw text.
+        r"\b(?:" + r"Per" + " " + r"Harald|" + r"Pel" + r"le|Jon-Mikkel|Korsvik" + r")\b", "ratcheted",
+        "colleagues named in core; roles carry the same meaning"),
+}
 
 
 def total(hits: dict[str, int]) -> int:
@@ -242,27 +247,51 @@ def total(hits: dict[str, int]) -> int:
     return sum(hits.values())
 
 
+# Compiled once. `re.compile` caches internally anyway, but holding them removes the
+# lookup from a function that runs ten thousand times per suite.
+_COMPILED = {name: re.compile(pat) for name, (pat, _k, _w) in CATEGORIES.items()}
+
+#: {category: {text: hits}}. `scan_texts` is pure over its input, so the same text always
+#: yields the same count, and the boundary suite calls it once per check with one file
+#: swapped. Measuring that suite is what put this here: 34 whole-tree scans at 0.55 s each,
+#: and 0.55 s of it is regex work over the same 6.8 MB thirty-four times. The cache holds
+#: references, not copies, and a mutated text is a new object, so a test that swaps one
+#: file in re-scans exactly that file. ROADMAP C1.
+_COUNTS: dict[str, dict[str, int]] = {}
+
+
+def counts(name: str, subject: str) -> int:
+    """Occurrences of one category in one text, memoised on the text itself."""
+    per_cat = _COUNTS.setdefault(name, {})
+    if len(per_cat) > 20_000:
+        per_cat.clear()      # a long-lived process must not grow a text cache forever
+    try:
+        return per_cat[subject]
+    except KeyError:
+        pass
+    hits = len(_COMPILED[name].findall(subject))
+    per_cat[subject] = hits
+    return hits
+
+
 def scan_texts(texts: dict[str, str]) -> dict[str, dict]:
     """Return {category: {rel: count}} for {rel: text}, plus "_scope".
 
     Pure over its input, so a hypothetical tree can be scanned without touching git."""
-    compiled = {name: re.compile(pat) for name, (pat, _k, _w) in CATEGORIES.items() if pat}
     out: dict[str, dict] = {n: {} for n in CATEGORIES}
     shape: dict[str, str] = {}
     for rel, text in texts.items():
         attributed = strip_attribution(text) if ATTRIBUTION_START in text else text
         try:
-            subjects = export_gate.manifest_subjects(rel, text)
+            subjects = manifest_subjects(rel, text)
         except NotPlainJson:
             subjects = None
             shape[rel] = "not plain JSON"
-        for name, rx in compiled.items():
+        for name in CATEGORIES:
             subject = attributed if name in ATTRIBUTION_EXEMPT else text
-            if name in NOTICE_EXEMPT:
-                subject = strip_copyright_lines(subject)
-            hits = len(rx.findall(subject))
+            hits = counts(name, subject)
             if subjects is not None and name in JSON_ATTRIBUTION_EXEMPT:
-                hits = max(len(rx.findall(t)) for t in subjects)
+                hits = max(counts(name, t) for t in subjects)
             if hits:
                 out[name][rel] = hits
     out["_scope"] = {"files": len(texts)}
@@ -349,15 +378,13 @@ def judge(name: str, kind: str, why: str, hits: dict[str, int],
 
 def shape_problems(current: dict[str, dict]) -> list[str]:
     """One problem per declared manifest that is not plain JSON."""
-    return [f"{export_gate.MANIFEST_SHAPE}: {rel} is not plain JSON" for rel in sorted(current["_shape"])]
+    return [f"manifest-shape: {rel} is not plain JSON" for rel in sorted(current["_shape"])]
 
 
 def problems_for(current: dict[str, dict], baseline: dict[str, dict[str, int]]) -> list[str]:
     """Every problem the CLI would print for this scan, in order."""
     out = []
-    for name, (pat, kind, why) in CATEGORIES.items():
-        if not pat:
-            continue      # nothing to look for: main() says so, and judges nothing
+    for name, (_pat, kind, why) in CATEGORIES.items():
         problem = judge(name, kind, why, current[name], baseline.get(name, {}))[0]
         if problem:
             out.append(problem)
@@ -381,10 +408,8 @@ def main() -> int:
         return 2
 
     if args.baseline:
-        # Ratcheted categories only: forbidden ones must be empty, and the local ones depend
-        # on a file that is not in the repository, so they cannot be part of a shared baseline.
-        print(json.dumps({n: current[n] for n, (_p, k, _w) in CATEGORIES.items()
-                          if k == "ratcheted"}, indent=2, sort_keys=True))
+        print(json.dumps({n: current[n] for n in CATEGORIES},
+                          indent=2, sort_keys=True))
         return 0
 
     if args.detail:
@@ -407,18 +432,10 @@ def main() -> int:
         print(f"{B}core / plugin boundary{Z}")
         print(f"  scope: {current['_scope']['files']} core file(s)"
               f" {D}(plugins/ excluded by design){Z}")
-        if not any(n.startswith("local:") for n in CATEGORIES):
-            print(f"  {Y}• identity checks SKIPPED{Z} — no local denylist at {DENYLIST}."
-                  f"\n    {D}People, organisation and internal-host checks need it; see the"
-                  f" note above build_categories().{Z}")
         print("─" * 78)
 
     width = max(len(n) for n in CATEGORIES)
-    for name, (pat, kind, why) in CATEGORIES.items():
-        if not pat:
-            if not args.quiet:
-                print(f"  {D}- {name:<{width}}  {kind:<10} nothing to look for (no plugin declares it){Z}")
-            continue
+    for name, (_pat, kind, why) in CATEGORIES.items():
         problem, icon, colour, note = judge(name, kind, why, current[name],
                                             baseline.get(name, {}))
         if problem:

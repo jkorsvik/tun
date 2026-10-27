@@ -1,0 +1,14 @@
+Task,Start,End,Group,Owner,Status
+Behovsavklaring,2026-08-17,2026-09-04,Utredning,Forretning,Ferdig
+Datakartlegging,2026-08-24,2026-09-18,Utredning,Data,Ferdig
+Arkitekturvalg,2026-09-07,2026-09-25,Utredning,Arkitektur,Ferdig
+Risikovurdering,2026-09-21,2026-10-02,Utredning,Risiko,Pagaende
+Datamodell,2026-09-28,2026-10-23,Bygg,Data,Pagaende
+Innlesning,2026-10-05,2026-11-13,Bygg,Data,Pagaende
+Tjenestelag,2026-10-12,2026-11-27,Bygg,Utvikling,Pagaende
+Tilgangsstyring,2026-11-02,2026-11-20,Bygg,Sikkerhet,Planlagt
+Presentasjonslag,2026-11-16,2026-12-18,Bygg,Utvikling,Planlagt
+Test: ytelse,2026-12-07,2026-12-11,Utproving,Test,Planlagt
+Test: sikkerhet,2026-12-14,2026-12-18,Utproving,Sikkerhet,Planlagt
+Godkjenning,2027-01-11,2027-01-15,Utproving,Forretning,Planlagt
+Overlevering,2027-01-25,2027-01-29,Utproving,Programmet,Planlagt

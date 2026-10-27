@@ -1,0 +1,75 @@
+# Strings for templates/calendar.html and tools/build_calendar.py.
+# Format: see tools/i18n.py. nb is the language a Norwegian reader gets.
+# The page is one cell per day, aligned to weekday rows: when in the week, and when in the year.
+
+[nb]
+html_lang = nb
+svg_title = Kalender
+svg_desc = {n} dager fra {first} til {last}, én rute per dag, med verdien av {value} som farge.
+sub_line = {n} dager, {days} med tall, av {value}
+caption = Én rute per dag fra {first} til {last}. Uken starter på mandag, og radene er ukedager. Fargen viser hvor høyt tallet er; skalaen står under bildet.
+cell_missing = ingen data
+legend_missing = ingen data
+legend_head = Skalaen
+summary_line = {n} dager fra {first} til {last}, {counted} av dem har tall.
+summary_busiest = Høyest er {day} med {value}, lavest {quiet} med {quietv}.
+summary_missing = {n} dager mangler data og er skravert, ikke farget.
+summary_none_missing = Ingen dager i perioden mangler data.
+summary_outside = {n} rad(er) i uttrekket ligger utenfor perioden og er ikke tegnet.
+summary_clamped = {n} dag(er) ligger på eller over {edge} og er slått sammen i den øverste fargen; de står med sitt eget tall i tabellene.
+note_align = Uken starter på mandag, og kolonnene er uker. Det er hele påstanden i bildet: en kalender der uken starter på feil dag, lager et mønster ut av layouten og ikke ut av tallene.
+note_missing = En dag uten data er skravert, aldri svakt farget. En svak farge leses som «litt», som er en måling, og det er ikke målt noe den dagen.
+note_zero = Null er en verdi. En dag som registrerte 0, får den lyseste fargen, og den er ikke den samme som en dag uten data.
+note_bands = Grensene i skalaen står under bildet, og de samme grensene bestemmer fargen. En legend som sier én ting og en rute som viser noe annet, er verre enn ingen legend.
+note_one_per_day = Én verdi per dag. Ligger det flere rader på samme dato, stopper byggeren og ber om at de summeres eller gjennomsnittes først: en kalender kan ikke vise både en sum og et nivå uten å si hvilken.
+head_weekday = Ukedagene
+weekday_caption = Per ukedag: hvor mange dager som har tall, gjennomsnittet, og laveste og høyeste verdi. Dette er tallet bak mønsteret i bildet.
+col_weekday = Ukedag
+col_days = Dager
+col_mean = Gjennomsnitt
+col_min = Laveste
+col_max = Høyeste
+head_busiest = De ti høyeste dagene
+busiest_caption = De ti dagene med høyest verdi, så en enkelttopp kan slås opp uten å lese bildet.
+col_date = Dato
+col_value = Verdi
+source_line = Kilde: {name} · {rows} rader
+footer_a = Bildet viser når på året og når i uken verdiene ligger. Det viser ikke hvorfor, og en mørk firkant er ikke en årsak.
+footer_b = Skalaen, ukedagstallene og de ti høyeste dagene står under bildet, så fargen kan kontrolleres i stedet for å bli trodd. Filen har ingen skript.
+footer_built = Bygget
+
+[en]
+html_lang = en
+svg_title = Calendar
+svg_desc = {n} days from {first} to {last}, one cell per day, with the value of {value} as colour.
+sub_line = {n} days, {days} with a number, of {value}
+caption = One cell per day from {first} to {last}. The week starts on Monday and the rows are weekdays. The colour shows how high the number is; the scale is printed below the picture.
+cell_missing = no data
+legend_missing = no data
+legend_head = The scale
+summary_line = {n} days from {first} to {last}, {counted} of them carry a number.
+summary_busiest = Highest is {day} at {value}, lowest {quiet} at {quietv}.
+summary_missing = {n} days have no data and are hatched rather than coloured.
+summary_none_missing = No day in the period is missing data.
+summary_outside = {n} row(s) in the extract lie outside the period and are not drawn.
+summary_clamped = {n} day(s) lie at or above {edge} and are folded into the top colour; they keep their own number in the tables.
+note_align = The week starts on Monday and the columns are weeks. That is the whole claim of the picture: a calendar whose week starts on the wrong day invents a pattern out of the layout rather than out of the numbers.
+note_missing = A day with no data is hatched, never faintly coloured. A faint colour reads as a little, which is a measurement, and nothing was measured that day.
+note_zero = Zero is a value. A day that recorded 0 takes the lightest colour, and it is not the same cell as a day with no data.
+note_bands = The scale boundaries are printed below the picture, and the same boundaries decide the colour. A legend that says one thing while a cell shows another is worse than no legend.
+note_one_per_day = One value per day. When several rows share a date the builder stops and asks for them to be summed or averaged first: a calendar cannot show both a total and a level without saying which one it drew.
+head_weekday = The weekdays
+weekday_caption = Per weekday: how many days carry a number, the mean, and the lowest and highest value. This is the number behind the pattern in the picture.
+col_weekday = Weekday
+col_days = Days
+col_mean = Mean
+col_min = Lowest
+col_max = Highest
+head_busiest = The ten highest days
+busiest_caption = The ten days with the highest value, so a single peak can be looked up without reading the picture.
+col_date = Date
+col_value = Value
+source_line = Source: {name} · {rows} rows
+footer_a = The picture shows when in the year and when in the week the values fall. It does not show why, and a dark square is not a reason.
+footer_b = The scale, the weekday figures and the ten highest days are printed below the picture, so the colour can be checked instead of trusted. The file carries no script.
+footer_built = Built

@@ -234,6 +234,25 @@ real = b"\x89PNG\r\n\x1a\n\x00tEXtAuthor\x00ola.nordmann" + b"@" + b"corp.no\x00
 code, out, _ = run(tree({**clean, "shot.png": real}), deny)
 chk("a plain email inside a binary file still fires", (code, findings(out)), (1, ["email"]))
 
+# A gate that cannot run must never report clean. This is the property that let the gate be
+# skipped entirely: a tree without the script produced an empty line, and an empty line reads
+# to `grep -qE "FAIL|FINDINGS"` exactly like a clean one. Exit 2 is "could not run".
+print("a gate that has nothing to check refuses to pass")
+missing = tmp / "not-there.txt"
+code, out, _ = run(tree(clean), missing)
+chk("a denylist path that does not exist exits 2, not 0", code, 2)
+chk("and does not claim the tree is clean", "clean" in out.lower().replace("without", ""), False)
+empty = tmp / "empty.txt"
+empty.write_text("", encoding="utf-8")
+code, out, _ = run(tree(clean), empty)
+chk("an empty denylist exits 2", code, 2)
+comments_only = tmp / "comments.txt"
+comments_only.write_text("# nothing to look for yet\n\n", encoding="utf-8")
+code, out, err = run(tree(clean), comments_only)
+chk("a denylist of comments and blanks exits 2", code, 2)
+chk("and says why, so the next reader does not read it as a pass",
+    "refusing to report clean" in (out + err).lower(), True)
+
 print("\n" + "─" * 66)
 print(f"{passed} passed, {failed} failed")
 raise SystemExit(1 if failed else 0)

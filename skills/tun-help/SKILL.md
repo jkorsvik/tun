@@ -1,10 +1,12 @@
 ---
 name: tun-help
 description: Figure out which dashboard skill fits a situation, and what it will cost in approvals and effort. Use when someone wants to share data interactively but does not know where to start, asks whether this can replace a Power BI report, or asks what is possible with dashboards in SharePoint, OneDrive, Confluence or Atlassian Artifacts.
-license: AGPL-3.0-or-later
 ---
 
 # Which dashboard path fits?
+
+**Tier and cost, for the first reply:** none of its own. It names the skill that fits, and
+that skill's first reply states the cost before any work starts.
 
 Route the user. Ask as few questions as possible and answer in plain language. Never
 make someone read the architecture doc to get started.
@@ -29,11 +31,19 @@ make someone read the architecture doc to get started.
 | "I have an Excel file and want charts people can filter" | **`tun-new`** | nothing — ship today |
 | "make me a dashboard from this data" | **`tun-new`** | nothing |
 | "where do I put it so the team can open it" | **`tun-publish`** | nothing |
-| "it should open as a link in Confluence or Jira, not as a download" | **`tun-publish`** (Atlassian Artifacts) | nothing to install; internal, non-sensitive material only, no paired mode, and a new artifact is readable by the whole organisation through its link until a person sets it private in the Artifacts UI |
+| "it should open as a link in Confluence or Jira, not as a download" | **`tun-publish`** (Atlassian Artifacts) | nothing to install; internal, non-sensitive material only, no paired mode, and a newly published file is readable by the whole organisation through its link until a person sets it private in the Artifacts UI |
 | "is this one broken / can I send it" | **`tun-verify`** | nothing |
 | "the numbers are old, update it" | **`tun-data`** | nothing |
 | "we have a Power BI report, can you move it" | **`tun-powerbi-escape`** | nothing (unless it uses RLS) |
-| "it has to show on our team site page, not as a file" | **`dashboard-embed`** | ⚠️ needs a SharePoint admin — and is **not yet proven at the organisation** |
+| "it has to show on our team site page, not as a file" | **`dashboard-embed`** | ⚠️ needs a SharePoint admin — and is **not yet proven at Eksempel AS** |
+| "why did the number change / break it down for me" | **`tun-new`** (waterfall) | nothing — a bridge that adds up, printed on the page |
+| "how many get through / where do the cases stop" | **`tun-new`** (funnel) | nothing |
+| "where is it busy / where do the errors concentrate" | **`tun-new`** (heatmap) | nothing — one cell per pair, with the value printed in it |
+| "what is this total made of / who takes the biggest share" | **`tun-new`** (composition) | nothing |
+| "how long do these cases take / what is typical" | **`tun-new`** (distribution) | nothing |
+| "the monthly report with targets and status" | **`tun-new`** (scorecard) | nothing, once the direction and the bands are declared |
+| "do people stay / who comes back / where do they drop off" | **`tun-new`** (cohort grid) | nothing — one row per cohort, and a period that has not happened yet is hatched, not zero |
+| "which unit is the odd one out / do they all behave the same" | **`tun-new`** (small multiple) | nothing — one panel per group, all on one printed scale |
 | "the dataset is millions of rows, I just need the totals" | **`tun-new`** (cube mode) | nothing — 4 M rows fit in 0.81 MB |
 | "millions of rows **and** I must see individual records" | **`dashboard-bigdata`** | ⚠️ needs `dashboard-embed` first |
 

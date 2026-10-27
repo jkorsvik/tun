@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
-# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
-# SPDX-License-Identifier: AGPL-3.0-or-later
 """
-verify_js_free_poc.py — proves the actual claim of the JavaScript-free pattern, not just that
+verify_js_free_poc.py — proves the actual claim in issue #30, not just that
 the file renders. Loads js-free-standalone-poc.html TWICE in a real
 (headless) browser: once with JavaScript enabled, once with it forced off
 (`java_script_enabled=False` — the closest Playwright gets to reproducing
-the failure mode in docs/11, where scripting is not blocked by policy but simply
+the #22 failure mode, where scripting is not blocked by policy but simply
 never executes in the viewer).
 
 Checks, with JavaScript OFF:
@@ -17,14 +14,14 @@ Checks, with JavaScript OFF:
 
      SCOPE LIMIT, read this before trusting check 2. This runs in a local
      headless browser over file://, and that is the ONE context where the
-     mechanism this check replaced also worked. An earlier revision navigated
+     mechanism this check replaced also worked. Until #50 this file navigated
      with CSS :target, which is measured broken in SharePoint's inline
      file-preview (docs/01-tenant-constraints.md row 24) — and this check
      passed, every run, for weeks. A pass here proves the mechanism works from
      file://. It cannot prove anything about the preview surface, because
      Playwright cannot reach it. Whether the radio-group replacement survives
      there has to be confirmed by a human, once, the same way row 24 itself
-     was found.
+     was found (#51 carries that probe).
   3. Theme toggle changes the background colour via a real click (no JS).
   4. Bar chart shows the CSS version (canvas must stay hidden).
   5. Scatter block shows the "Krever JavaScript..." message.
