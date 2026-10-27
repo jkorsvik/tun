@@ -1122,50 +1122,50 @@ DELIBERATE_NB_CHANGES = [
 ]
 
 BASELINE = {
-    "fx-deck/fx-deck.html": "a56622a1367594e105b3db6ea869157fd6506db2282ba1e87bbf72f8ec8ffa1c",
-    "dash-bundled/dash-bundled.html": "00bc48637113e3a154ecf860b710177c4bd033bd6df153eb5edd6ce0397a37bf",
-    "dash-paired/paired/dash.html": "d5f6990d6fb87373415238e1af3eca286eecca3d60ecfbebdb51e79d812ed510",
+    "fx-deck/fx-deck.html": "77a5386b502ca0b1d2aac8cec2addd239ab298b081d7d67e47ba79db419f82e1",
+    "dash-bundled/dash-bundled.html": "6ee9847959bb23c0c6e46d3c70eafb7b35c4e1ff56df16ba51c43dbc875fa243",
+    "dash-paired/paired/dash.html": "fe5be06e5fe24d430eca4d8b9c5631fce904f0931b4a282c5f0bb5827f3f2af8",
     "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",
-    "dash-feedback/dash-feedback.html": "5137d49f3de5d048ca2e2346eaa94cc966eb7a69547a98885c1e0ecbd8098bfb",
+    "dash-feedback/dash-feedback.html": "da34dad728ecd18b57ff8416c41b8455a5438e663eabd0c6afdf7da62e3a26a4",
     # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
     # change to its nb output is visible.
-    "scorecard/scorecard.html": "59e7e5aaf051b64454e75255a8bef109b1adba3401e23c828890a5b5e67a0ad6",
+    "scorecard/scorecard.html": "333b3fc48b768d14c937a3d47bd1a3aab8633a75b58a83ea18ddefb02f67b8fa",
     # New artefact 2026-10-24 (the distribution page, ROADMAP A23): there is no older
     # builder to compare against, so this hash is its first build, pinned so that any
     # change to its nb output is visible.
-    "distribution/distribution.html": "f570de704a87d09acd04b8dea4bf8e2760b3fda503ee541342193f9aaa0b9cf9",
+    "distribution/distribution.html": "23764211010146b211a40d6498672f27838d022ebc615d26d1238c7aadacce76",
     # New artefact 2026-10-24: there is no older builder to compare against, so this
     # hash is its first build, pinned so that any change to its nb output is visible.
     # Re-pinned the same day (ROADMAP A22, the review layer on the comparison). The proof
     # is a line diff of the old and new builds: six `data-col` attributes on the headers,
     # `id="tbl"` on the table, and two attribute writes in the row script. Nothing else in
     # the file moved, and no visible text changed.
-    "compare/compare.html": "4e046c78f9025edad37a43f0b949c859a2b8fc54a14957f8540154484a5a1962",
-    "index/index.html": "b1ed4c674d6a0e391a3f6c5024029592459a8cfceaa087cc820e40559bc63504",
+    "compare/compare.html": "2a2670a0fc95ceec9a88bb2e86f369e0306d8fbbe40932683df3146a97d572a8",
+    "index/index.html": "d6dffaed23bb29599bf1d24c9042d2e7d410b28a2d7ade69ed8481ace6bb4aed",
     # New artefact 2026-10-24: its first build, pinned so a change to its nb output is
     # visible. No older builder exists to compare it against.
-    "timeline/timeline.html": "d9f23774ec7156e456acb6f4be35ea3aa0d8c92d324fe462d0dc587a7015b5ed",
-    "cube/cube.html": "b2a4ac4a520b43c2e3b6db06d634311ce8c04571dbaec93c4ea15be0eaf20665",
-    "cube-feedback/cube-feedback.html": "0984872b3a1e520ee15dc6d35d6aee00c7e2ae4f0389074b4f181836f5f306b4",
-    "process/process.html": "abf66234cdd77db2afdb1829877bcf794d47c2ad5988dbdc5173920424f01145",
-    "fx-dash/fx-dash.html": "94311ed569ae13f8ce58fc439e19a0ac3abd8c45ddafab310f28723d4d93f7ae",
-    "fx-dash-paired/fxp/dash.html": "059e0cd3316e6f7e7b950edf890274e52aca59217978dcfabfe9f1b75a7da7f9",
+    "timeline/timeline.html": "e28e7ff57fcb18f5aca2ef5f6d5110198f987b8a5d4c47f7d5222fa85abcde5b",
+    "cube/cube.html": "775032467b7c7dea8119f321eb0accffd171738f63bb9fb5c64245a80a64aadc",
+    "cube-feedback/cube-feedback.html": "a7a12e9cee30eb6ab279ebab8fc54e4e4fbaf7216285a350d6f6b82c16bdaf5d",
+    "process/process.html": "dcf8040aa4d8c4b2f4dd4814fe75d73f66a9d723efedb199925b383823ccf0ca",
+    "fx-dash/fx-dash.html": "12e7187438184055397662afabc453c830cccc364fd69a1d022773f5ebe7d731",
+    "fx-dash-paired/fxp/dash.html": "c864bc2d3684ff5bb8ae75fc8940349cd02c3779dceaa9a777b9d9d519378acf",
     "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
-    "fx-dash-notime/fx-dash-notime.html": "200a35ffd0ad622ae3330ad2e02d5d71cb94f77405d16f4843d50bcc955df54a",
-    "fx-cube/fx-cube.html": "16fbc57b9faa992ea05cd43ab46896436067c35f9a3414850f54e1882adb335c",
-    "fx-process/fx-process.html": "7a4f4a89476334b74930c02ab12e46e7b5877cadb6fd3517cc5b8d53fbaa0fba",
+    "fx-dash-notime/fx-dash-notime.html": "5704695c3f98980373aab666ab895eb73fb7bf08e58e1b6db640ca364a801edf",
+    "fx-cube/fx-cube.html": "a4ed6fc02931c76cd35ef3b4ef85a19424690537dd45bacc1630d71bad4069a6",
+    "fx-process/fx-process.html": "ab1c25de2a97b56d0ca2b852e85df3aa0dae6693c8d150939061fbbd4ee5db12",
     # the survey board (2026-10-24): a new artefact, so its nb output is frozen here
     # 2026-10-24: the survey template gained a cross-tab block (table, its CSS, the
     # note a filter shows), so the two survey builds below moved and nothing else did.
-    "survey/survey.html": "e048d412e95362827ade0f35765bde2fe4e353e1002c8ef4dc0d37263dbe4ab1",
+    "survey/survey.html": "31adf3c0b453d01b0f58ed689a8fc2f8ffe2eea7e1bc60ecba41ba84f5d9a9a4",
     # the register (2026-10-24): a new artefact, so its nb output is frozen here.
     # 2026-10-24: the register gained group bands (--group-by): the band CSS, the group
     # constant, the comparator clause and the band renderer are in every build, and the
     # group strings and the groupCol fact only when the build groups. So the hash below
     # moved and nothing else did; no probe in section 6 builds this template, which is
     # why it is re-pinned here rather than paired.
-    "register/register.html": "e372ebb19f9ba84426904d46ee53c4adbd4688c90956224caad734def5cf63c5",
-    "fx-survey/fx-survey.html": "c784f42a23768f109c3edac84660055064f19610a330b316cc5dc026a66ea02d",
+    "register/register.html": "6f5e54ff6514b5c5a93962cebab774ff8bfade49be82d36e6f4083626e58d59c",
+    "fx-survey/fx-survey.html": "b8f9ee3101f960a2e3d8e2021ff53944ba48cf3baf99bdf6906afc775e0940fd",
 }
 
 FORBIDDEN_IN_EN = ("'", '"', "\\", "`", "${")   # would break the string or comment it lands in
