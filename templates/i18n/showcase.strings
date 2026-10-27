@@ -1,0 +1,33 @@
+# Strings for templates/showcase.html.
+# One entry per line, "key = value", everything after the first "= " is the value.
+# An `en` value never contains a quote, a backslash or a backtick (tests/test_i18n.py).
+
+[nb]
+html_lang = nb
+filter_label = Finn eit eksempel
+filter_placeholder = Skriv eit ord, ein kind eller eit verktøy
+count_all = {n} eksempel
+count_one = {n} av {t} eksempel
+count_many = {n} eksempel
+no_match = Ingen eksempel passar. Prøv eit kortare ord.
+viewer_label = Førehandsvising av eksempelet
+close = Lat att
+footer_how = Kvar fil er ein eigen, sjølvstendig HTML-fil. Ho opnar frå ei delt mappe, utan tenar og utan lisens.
+footer_trace = Kvar fil ber sitt eige opphav: kjeldedata, uttrekkstid, byggetid og kven som bad om ho.
+card_command = Byggjkommando
+things_heading = Alt anna i repositoriet
+
+[en]
+html_lang = en
+filter_label = Find an example
+filter_placeholder = Type a word, a kind or a tool
+count_all = {n} examples
+count_one = {n} of {t} examples
+count_many = {n} examples
+no_match = No example matches. Try a shorter word.
+viewer_label = Preview of the example
+close = Close
+footer_how = Every file is its own self-contained HTML file. It opens from a shared folder, with no server and no licence.
+footer_trace = Every file carries its own provenance: source data, extract time, build time and who asked for it.
+card_command = Build command
+things_heading = Everything else in the repository

@@ -246,6 +246,19 @@ def redact(s: str) -> str:
     return s[:1] + "…" * min(len(s) - 1, 3) + f"({len(s)})" if s else "(empty)"
 
 
+#: A base64 image payload is compressed bytes, not prose. Every short pattern appears inside
+#: a few hundred kilobytes of that alphabet by chance, so a three-letter hit there says
+#: nothing about identity. What the picture *shows* is checked where it is made: the page it
+#: photographs is scanned as text before the photograph exists. So the payload is blanked,
+#: not decoded, and the blanking preserves length so a reported line number stays usable.
+DATA_IMAGE = re.compile(r"data:image/[A-Za-z0-9.+-]+;base64,[A-Za-z0-9+/=\s]{64,}")
+
+
+def strip_binary_payloads(text: str) -> str:
+    """Blank base64 image payloads, preserving offsets."""
+    return DATA_IMAGE.sub(lambda m: "x" * len(m.group(0)), text)
+
+
 def scan(root: pathlib.Path, rules) -> tuple[int, list[tuple[str, str, int, str]]]:
     files = list_files(root)
     if not files:
@@ -270,8 +283,9 @@ def scan(root: pathlib.Path, rules) -> tuple[int, list[tuple[str, str, int, str]
         except NotPlainJson:
             manifest = None
             hits.append((MANIFEST_SHAPE, rel, 1, "not plain JSON"))
+        prose = strip_binary_payloads(text)
         for label, rx in rules:
-            subject = text
+            subject = prose
             if label in NOTICE_EXEMPT:
                 subject = noticed
             if label in ATTRIBUTION_EXEMPT:

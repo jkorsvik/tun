@@ -22,18 +22,11 @@ charts = ["matplotlib>=3.8"]
 # ---------------------------------------------------------------------------
 # Package sources.  uv only — never pip.
 #
-# PyPI stays the default. Eksempel AS Nexus is declared as an EXTRA source: it is on the
-# internal network and is faster and more reliable from a Eksempel AS laptop, and it is the
-# route that works when public PyPI is blocked.
+# PyPI is the only source. An organisation that mirrors PyPI internally can add its mirror
+# locally with `[[tool.uv.index]]` or UV_INDEX_URL; it does not belong in this file.
 #
-# Verified reachable from a managed Mac (HTTP 200, real package index):
-#   https://packages.example.com.eksempel.no/nexus/repository/pypi-group/simple
-#
-# ⚠ Do NOT assume this works from CI. GitHub-hosted runners sit OUTSIDE the Eksempel AS
-#   network and Nexus is behind Entra Application Proxy — it answers them with a
-#   302 to login.microsoftonline.com, which package clients happily hash into a
-#   bogus "checksum mismatch". Internal access from CI needs an in-VPC runner.
+# ⚠ If you add a mirror, prove one real request from the environment that must use it
+#   (laptop AND CI runner) before relying on it. A mirror behind an SSO proxy answers a CI
+#   runner with a login redirect, which package clients hash into a bogus "checksum
+#   mismatch".
 # ---------------------------------------------------------------------------
-[[tool.uv.index]]
-name = "eksempel-nexus"
-url = "https://packages.example.com.eksempel.no/nexus/repository/pypi-group/simple"

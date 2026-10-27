@@ -58,6 +58,7 @@ the claim you need to believe, and rebuild that one.
 | [51](51-bullet/) | Which of a long list is behind its own target. One row per unit with the target as a mark and the gap as a signed number, a direction the builder refuses to guess, and an axis that starts at zero when the data does | `examples/51-bullet/generate_data.py`, then `tools/build_bullet.py` |
 | [52](52-pareto/) | Which few categories carry the total. Bars sorted largest first, a cumulative line on its own labelled axis, a folded tail that keeps its sum, and shares rounded so the column adds to exactly 100,0 | `examples/52-pareto/generate_data.py`, then `tools/build_pareto.py` |
 | [53](53-sankey/) | Where a quantity went between stages, and that it adds up: every middle node takes in exactly what it passes on (checked to the last unit), one scale for the whole picture, ribbons that tile their node with no gap, and a cycle refused rather than drawn | `examples/53-sankey/generate_data.py`, then `tools/build_sankey.py` |
+| [54](54-showcase/) | Every example in the repository on one page: a real photograph of each built artefact taken by a browser at build time, with the command from its own README, so a stale picture or a broken rebuild is visible at a glance | `tools/build_showcase.py --out examples/54-showcase/oversikt.html` |
 
 ## Checking one
 

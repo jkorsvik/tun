@@ -4,14 +4,7 @@
 # dashboard template is hand-rolled SVG with no framework, no bundler and no
 # node_modules, so a dashboard stays a single portable file with nothing to install.
 #
-# This file exists so that IF anyone ever reaches for a JS tool, it resolves through
-# Eksempel AS Nexus rather than the public registry — and so nobody reaches for npm.
-#
-# Verified reachable from a managed Mac (HTTP 200, real package metadata):
-#   https://packages.example.com.eksempel.no/nexus/repository/npm-group/
-#
-# ⚠ Not reachable from GitHub-hosted CI runners — they are outside the Eksempel AS network and
-#   Nexus is behind Entra Application Proxy. See the note in pyproject.toml.
-
-[install]
-registry = "https://packages.example.com.eksempel.no/nexus/repository/npm-group/"
+# This file exists so that IF anyone ever reaches for a JS tool, it resolves somewhere
+# predictable and so nobody reaches for npm. The registry is bun's default (the public npm
+# registry). An organisation that mirrors it internally can set `registry` in its own
+# bunfig or BUN_CONFIG_REGISTRY; a mirror does not belong in this file.
