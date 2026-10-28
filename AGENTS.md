@@ -236,6 +236,7 @@ python3 tests/test_folder_index.py           # the folder front page: facts read
 python3 tests/test_timeline.py               # the timeline: bars placed by their own dates, picture and table agree, refusals
 python3 tests/test_gate_inputs.py  # every documented verify path and every mutation anchor still resolves
 python3 tests/test_skill_tier_line.py  # every skill states its tier and cost before its first section
+python3 tests/test_examples_are_current.py  # every generated example equals its own pinned rebuild, byte for byte
 ```
 
 One command runs every suite at once and prints one verdict

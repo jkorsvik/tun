@@ -67,7 +67,7 @@ A **leading word** is a compact concept already living in the model's pretrainin
 
 It anchors twice. In the body, _execution_: the agent reaches for the same behaviour every time the word appears, and inside flat reference it focuses attention on a class of thing to look for. In a pointer, _invocation_: when the same word lives in your prompts, your docs, and your codebase, the agent links that shared language to the material and reaches it more reliably.
 
-Hunt for opportunities to refactor with leading words. A triad sTunkallend out at three sites, a pointer spending a sentence to gesture at one idea — each is a passage begging to collapse into a single token:
+Hunt for opportunities to refactor with leading words. A triad spelled out at three sites, a pointer spending a sentence to gesture at one idea — each is a passage begging to collapse into a single token:
 
 - "fast, deterministic, low-overhead" → _tight_ (a _tight_ loop).
 - "a loop you believe in" → _red_ — a fuzzy gate becomes a binary observable state (the loop goes _red_ on the bug, or it doesn't).

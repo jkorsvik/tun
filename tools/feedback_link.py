@@ -25,12 +25,13 @@ Two layers, so it works however the file is opened:
 from __future__ import annotations
 
 import html
+import re
 import json
 import pathlib
-import re
 import urllib.parse
 
 import i18n
+import tun_core
 
 PARTIAL = pathlib.Path(__file__).resolve().parents[1] / "templates" / "_feedback-link.html"
 
@@ -90,6 +91,6 @@ def block(target: str, *, title: str, built: str, source: str, lang: str = i18n.
     config_js = (json.dumps(config, ensure_ascii=False)
                  .replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
     static_href = compose(base, keys, crlf, subject, head + f"JavaScript: {t['no']}")
-    return (i18n.apply(PARTIAL.read_text(encoding="utf-8"), t).strip()
+    return (i18n.apply(tun_core.strip_licence_header(PARTIAL.read_text(encoding="utf-8")), t).strip()
             .replace("{{FEEDBACK_HREF}}", html.escape(static_href, quote=True))
             .replace("{{FEEDBACK_CONFIG}}", config_js))

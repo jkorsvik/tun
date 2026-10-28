@@ -273,8 +273,14 @@ __TOKEN_CSS__
   .tabpage.active{display:block}
   .palette-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:0 0 .5rem}
   .palette-row label{font-size:.875rem;color:var(--muted)}
-  .palette-row select{min-height:2.75rem;font-family:inherit;font-size:.875rem;padding:.35rem .5rem;border:1px solid var(--line);
-    border-radius:.25rem;background:var(--bg);color:var(--ink)}
+  /* WebKit draws a native select 22 px tall and ignores padding and min-height, so the
+     control lands under the 44 px touch floor while Chromium measures it fine. appearance:none
+     hands the box to us and the chevron is drawn as a background image. */
+  .palette-row select{min-height:2.75rem;font-family:inherit;font-size:.875rem;
+    padding:.35rem 2rem .35rem .5rem;border:1px solid var(--line);border-radius:.25rem;
+    background-color:var(--bg);color:var(--ink);-webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2300343e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right .5rem center;background-size:.75rem .5rem}
   .palette-desc{font-size:.875rem;color:var(--ink);max-width:56rem;margin:0 0 .75rem;line-height:1.55}
   .palette-desc .src{color:var(--muted);font-size:.875rem;display:block;margin-top:.2rem}
   .rule-note{font-size:.875rem;color:var(--muted);margin:0 0 1rem;max-width:56rem}

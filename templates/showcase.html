@@ -129,6 +129,16 @@
   }
   dialog::backdrop { background: rgb(16 23 37 / 72%); }
   dialog iframe { display: block; width: 100%; height: min(82vh, 48rem); border: 0; background: #fff; }
+  /* The bar is the only way through the collection once a card is open, so it holds the
+     position as well as the controls: "12 av 49" answers "where am I" without closing. */
+  dialog .bar { display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem; }
+  dialog .bar p { flex: 1; margin: 0; font-size: .875rem; line-height: 1.5; color: var(--muted); }
+  dialog .bar button { font: inherit; font-size: .875rem; line-height: 1.5; padding: .5rem .875rem;
+    min-height: 2.75rem; border: 1px solid var(--line); border-radius: .5rem;
+    background: var(--panel); color: var(--ink); cursor: pointer; }
+  dialog .bar button:hover:not(:disabled) { border-color: var(--brand); }
+  dialog .bar button:disabled { opacity: .45; cursor: default; }
+  dialog .bar #shut { margin-left: auto; }
   .close { position: sticky; top: 0; display: flex; justify-content: flex-end; padding: 0.5rem; background: var(--paper); }
   .close button {
     min-height: 2.75rem; min-width: 2.75rem; font: inherit; font-weight: 600;
@@ -183,7 +193,16 @@
 </footer>
 
 <dialog id="viewer" aria-label="{{T:viewer_label}}">
-  <div class="close"><button type="button" id="shut" data-i18n="close">{{T:close}}</button></div>
+  <div class="bar">
+    <button type="button" id="prev" aria-label="{{T:prev}}">
+      <span aria-hidden="true">&lsaquo;</span> <span data-i18n="prev">{{T:prev}}</span>
+    </button>
+    <p id="pos" aria-live="polite"></p>
+    <button type="button" id="next" aria-label="{{T:next}}">
+      <span data-i18n="next">{{T:next}}</span> <span aria-hidden="true">&rsaquo;</span>
+    </button>
+    <button type="button" id="shut" data-i18n="close">{{T:close}}</button>
+  </div>
   <iframe id="big" title="{{T:viewer_label}}" referrerpolicy="no-referrer"
           sandbox="allow-scripts allow-popups allow-downloads"></iframe>
 </dialog>
@@ -225,6 +244,9 @@
       if (T[next][key] !== undefined) { el.textContent = T[next][key]; }
     });
     q.placeholder = T[next].filter_placeholder;
+    // The position line is built from strings, so a language switch while a card is open
+    // must rebuild it; everything else on it is already a data-i18n element.
+    if (viewer && viewer.open) { show(at); }
     big.title = T[next].viewer_label;
     one = T[next].count_one;
     many = T[next].count_many;
@@ -247,6 +269,12 @@
   var viewer = document.getElementById("viewer");
   var big = document.getElementById("big");
   var shut = document.getElementById("shut");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+  var pos = document.getElementById("pos");
+  var order = [];   // only the cards a reader can actually reach: what the filter left
+  var at = 0;
+  var opener = null;
 
   function decode(b64) {
     var bin = atob(b64);
@@ -255,24 +283,69 @@
     return new TextDecoder("utf-8").decode(bytes);
   }
 
+  function visibleCards() {
+    return Array.prototype.filter.call(document.querySelectorAll("#grid .card"), function (c) {
+      return !c.hidden && c.offsetParent !== null;
+    });
+  }
+
+  function titleOf(card) {
+    var h = card ? card.querySelector("h2") : null;
+    return h ? h.textContent.trim() : "";
+  }
+
+  function show(i) {
+    if (!order.length) { return; }
+    at = Math.max(0, Math.min(order.length - 1, i));
+    var card = order[at];
+    var payload = card.getAttribute("data-live") || "";
+    big.srcdoc = payload ? decode(payload) : "";
+    // Two bare numbers side by side read as one number split in two. The second one is the
+    // example's own number, carried on the card, so the bar names it.
+    pos.textContent = String(T[lang].pos)
+      .replace("{i}", String(at + 1)).replace("{n}", String(order.length))
+      .replace("{e}", card.getAttribute("data-num") || "")
+      + (titleOf(card) ? " \u00b7 " + titleOf(card) : "");
+    prev.disabled = at === 0;
+    next.disabled = at === order.length - 1;
+  }
+
+  function openCard(card, btn) {
+    order = visibleCards();
+    if (!order.length) { return; }
+    opener = btn || null;
+    if (typeof viewer.showModal === "function") { viewer.showModal(); }
+    show(order.indexOf(card));
+    // Give the frame the keyboard. A deck inside it advances on an arrow key, but only
+    // once that key is delivered to its own document, and a key pressed with the focus
+    // still on the page behind it goes nowhere. A reader would click first; this does it
+    // for them.
+    try { big.focus(); } catch (e) { /* focus is a courtesy, not the feature */ }
+  }
+
   Array.prototype.forEach.call(document.querySelectorAll(".shot"), function (btn) {
     btn.addEventListener("click", function () {
       var card = btn.closest(".card");
-      var payload = card ? card.getAttribute("data-live") : "";
-      if (!payload) { return; }
-      big.srcdoc = decode(payload);
-      if (typeof viewer.showModal === "function") { viewer.showModal(); }
-      // Give the frame the keyboard. A deck inside it advances on an arrow key, but only
-      // once that key is delivered to its own document, and a key pressed with the focus
-      // still on the page behind it goes nowhere. A reader would click first; this does it
-      // for them.
-      try { big.focus(); } catch (e) { /* focus is a courtesy, not the feature */ }
+      if (card) { openCard(card, btn); }
     });
   });
 
+  prev.addEventListener("click", function () { show(at - 1); prev.focus(); });
+  next.addEventListener("click", function () { show(at + 1); next.focus(); });
   shut.addEventListener("click", function () { viewer.close(); });
-  viewer.addEventListener("close", function () { big.srcdoc = ""; });
+  viewer.addEventListener("close", function () {
+    big.srcdoc = "";
+    // Hand the keyboard back to the card the reader came from. Without this, focus lands
+    // on the body and a keyboard reader starts over at the top of a very long page.
+    if (opener) { try { opener.focus(); } catch (e) { /* the card may have been filtered out */ } }
+  });
   viewer.addEventListener("click", function (e) { if (e.target === viewer) { viewer.close(); } });
+  // Left and right walk the collection while the focus is in the bar. Once the frame holds
+  // the focus, those keys belong to the artefact, which is why the buttons exist.
+  viewer.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); show(at + 1); next.focus(); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(at - 1); prev.focus(); }
+  });
   // Escape has to work from the page as well as from the frame. Once the frame holds the
   // keyboard an Escape pressed there belongs to the artefact, so the page cannot see it; in
   // that case the Close button and the backdrop are the way out, and both are always there.

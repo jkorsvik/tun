@@ -46,6 +46,11 @@
   /* A column, so the footer sits on the paper's bottom edge instead of wherever the last
      sentence ends. On screen that is what the sheet looks like; in print the height is the
      printable area, so the footer lands there too rather than starting a second page. */
+  /* The sheet is A4 on purpose: that is what makes it printable. A phone cannot show
+     794 px, so the paper pans and the page does not. The reader scrolls the sheet
+     sideways while the rest of the page stays put, which is the same rule the tables
+     follow. In print there is nothing to pan. */
+  .paper{overflow-x:auto;padding:0 0 1px}
   .sheet{width:var(--sheet-w);min-height:var(--sheet-h);margin:24px auto;padding:var(--sheet-pad);
     background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.14);font-size:10pt;line-height:1.5;
     display:flex;flex-direction:column}
@@ -101,6 +106,7 @@
      printer's own non-printable edge would otherwise clip the border. */
   @page{size:A4;margin:0}
   @media print{
+  .paper{overflow:visible;padding:0}
     html,body{background:#fff}
     .sheet{margin:0;box-shadow:none}
     a{color:inherit;text-decoration:none}
@@ -108,6 +114,7 @@
 </style>
 </head>
 <body>
+<div class="paper">
 <div class="sheet" id="sheet">
 
   <header>
@@ -138,6 +145,7 @@
     <p class="made">{{T:made_with}}</p>
   </footer>
 
+</div>
 </div>
 <script>document.documentElement.className+=" js"</script>
 </body>

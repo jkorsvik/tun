@@ -35,6 +35,7 @@ import json
 import pathlib
 
 import i18n
+import tun_core
 
 PARTIAL = pathlib.Path(__file__).resolve().parents[1] / "templates" / "_annotate.html"
 STYLE_MARK = "<!--TUN-ANNOTATE-STYLE-->"
@@ -87,7 +88,7 @@ def layer(*, title: str, file: str, built: str, rows: int, source: str,
     block then carries the row's name only, and tools/read_review.py shows the row's
     numeric cells instead of comparing one figure.
     """
-    text = PARTIAL.read_text(encoding="utf-8")
+    text = tun_core.strip_licence_header(PARTIAL.read_text(encoding="utf-8"))
     if STYLE_MARK not in text or BODY_MARK not in text:
         raise ValueError(f"{PARTIAL.name}: missing {STYLE_MARK} or {BODY_MARK}")
     head, body = text.split(BODY_MARK)
