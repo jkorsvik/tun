@@ -379,7 +379,7 @@ def run_static(failures: list[str]) -> None:
     # Assembled at runtime rather than written as literals. The repo's own
     # real-data gate (tools/check_no_real_data.py) scans tracked files for
     # name, e-mail and personal-number SHAPES, and it correctly flagged an
-    # e-mail literal here when these were sTunkallend out. A canary is test input,
+    # e-mail literal here when these were spelled out. A canary is test input,
     # but the gate cannot know that, and teaching it an exception would blunt it
     # for every other file. Composing the strings keeps both checks honest.
     def _c(*parts: str) -> str:

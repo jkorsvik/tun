@@ -389,7 +389,17 @@ def main(argv: list[str] | None = None) -> int:
 
     today: dt.date | None = None
     if not args.no_today:
-        today = parse_date(args.today, "--today") if args.today else dt.date.today()
+        # "I dag" is a claim about the moment the file was built, so it must obey the same
+        # clock as the stamps: pinned when SOURCE_DATE_EPOCH is set, the wall clock otherwise.
+        # Read from the wall clock alone, the marker landed a few pixels further along every
+        # day, so a pinned rebuild of the committed example stopped matching the next morning
+        # and the staleness gate would have gone red on nothing.
+        if args.today:
+            today = parse_date(args.today, "--today")
+        elif (pinned := build_stamp.epoch()) is not None:
+            today = dt.datetime.fromtimestamp(pinned, dt.timezone.utc).date()
+        else:
+            today = dt.date.today()
 
     svg, height = draw(rows, ticks, unit, today, t)
 

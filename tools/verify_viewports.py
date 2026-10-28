@@ -199,7 +199,15 @@ def check(path: Path, out_dir: Path, quiet: bool, engines: tuple[str, ...],
 
                     line = f"  {name:<17} {w}x{h}"
                     where = f"{name} ({w}x{h})" + (f" [{engine}]" if len(engines) > 1 else "")
-                    overflow = m["scrollWidth"] - max(m["clientWidth"], m["innerWidth"])
+                    # Compare against the visible box, never against innerWidth. Under
+                    # mobile emulation Chromium reports an innerWidth as wide as the
+                    # content when the page overflows, so max(clientWidth, innerWidth)
+                    # makes the difference zero by construction and the check cannot fire:
+                    # measure a 794 px sheet on a 390 px phone and innerWidth reads 794.
+                    # clientWidth is the box the reader actually sees. The requested width
+                    # is the fallback for the degenerate case where clientWidth is 0.
+                    visible = m["clientWidth"] or w
+                    overflow = m["scrollWidth"] - visible
                     # The SVG scale factor rounds: a panel 0.07 % narrower than its
                     # viewBox reports 13.99 px for 14 px text. The tolerance is far
                     # below the 1 px that would matter, and the reason is the same one

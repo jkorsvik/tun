@@ -156,6 +156,14 @@ def check(path: Path, engines: tuple[str, ...], quiet: bool, floor: float) -> in
     total = len(findings)
     with sync_playwright() as p:
         for engine in engines:
+            # A PDF is a Chromium capability. WebKit and Firefox raise "PDF generation is only
+            # supported for Headless Chromium", which reads like a defect in the artefact and
+            # is a fact about the browser. verify_documented passes --engines to every
+            # documented command, so this must say what it skipped rather than fail on it.
+            if engine != "chromium":
+                print(f"  {engine}: skipped, mapping a printed page to PDF is a Chromium "
+                      f"capability")
+                continue
             browser = getattr(p, engine).launch()
             try:
                 page = browser.new_page(viewport={"width": A4_W, "height": A4_H})
@@ -190,6 +198,7 @@ def check(path: Path, engines: tuple[str, ...], quiet: bool, floor: float) -> in
         print("  a green run means one A4 page with nothing spilled and no text under the "
               "floor, not 'a good one-pager'.")
     return 0 if total == 0 else 1
+
 
 
 def main(argv: list[str] | None = None) -> int:

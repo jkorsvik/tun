@@ -16,6 +16,7 @@ from __future__ import annotations
 import csv
 import json
 import pathlib
+import re
 import sys
 from typing import Any, NoReturn
 
@@ -177,3 +178,21 @@ def as_script_json(value) -> str:
     text = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
     return (text.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
                 .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
+
+
+def strip_licence_header(text: str) -> str:
+    """Drop a licence comment at the head of an inlined partial.
+
+    A partial under templates/_ carries a licence notice like every other source file,
+    because the licence touches the source. The artefact built from it carries its own
+    notice too, and the partial is inlined into the middle of that artefact, so copying
+    the header in gives a page two notices with one of them between the footer and the
+    feedback link. Exactly one notice per artefact: strip at inline time, not at source.
+    """
+    stripped = text.lstrip("\ufeff \t\r\n")
+    if stripped.startswith("<!--"):
+        end = stripped.find("-->")
+        if end != -1 and re.search(r"SPDX-License-Identifier|Copyright \(C\)|Artefact Exception",
+                                  stripped[:end]):
+            return stripped[end + 3:].lstrip("\r\n")
+    return text

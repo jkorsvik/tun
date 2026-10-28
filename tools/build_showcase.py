@@ -62,14 +62,33 @@ def read_example(folder: pathlib.Path) -> dict | None:
     text = readme.read_text(encoding="utf-8", errors="replace")
     head = HEADING.search(text)
     title = head.group(1).strip() if head else folder.name
+    # The card already carries the number in its kicker ("hello dashboard · 01"), and the
+    # titles arrived in three styles: "01. ", "02 - " and bare. Numbering twice, in three
+    # spellings, reads as three different collections. One place, one style: the kicker.
+    title = re.sub(r"^\s*\d{1,2}\s*(?:[.):]|\u2014|\u2013|-)\s*", "", title) or title
     body = text[head.end():] if head else text
-    purpose = ""
+    # A card must read as a sentence. Some READMEs open with "Three routes. Start here:"
+    # and end the first paragraph on a colon, because a list follows in the prose and not
+    # on the card. Take the following paragraph's opening sentence in that case, so a card
+    # never dangles on punctuation that promises something the card does not show.
+    paras = []
     for para in re.split(r"\n\s*\n", body):
         line = " ".join(part.strip() for part in para.strip().splitlines())
         if not line or line.startswith(("#", "|", "```", "-", "*", ">", "!")):
             continue
-        purpose = re.sub(r"[`*_]", "", line)
+        paras.append(re.sub(r"[`*_]", "", line))
+    purpose = ""
+    for i, line in enumerate(paras):
+        candidate = line
+        j = i
+        while candidate.rstrip().endswith(":") and j + 1 < len(paras):
+            j += 1
+            nxt = paras[j].split(". ")[0].strip()
+            candidate = candidate.rstrip() + " " + nxt
+        purpose = candidate
         break
+    if purpose.rstrip().endswith(":"):
+        purpose = purpose.rstrip().rstrip(":") + "."
     commands = BASH.findall(text)
     command = ""
     if commands:
@@ -202,7 +221,8 @@ def main(argv: list[str] | None = None) -> int:
             live = ' data-live="' + base64.b64encode(raw).decode("ascii") + '"'
             embedded += len(raw)
         cards.append(
-            f'<li class="card"{live} data-search="{html.escape(search, quote=True)}">'
+            f'<li class="card"{live} data-num="{html.escape(ex["slug"].split("-")[0])}"'
+            f' data-search="{html.escape(search, quote=True)}">'
             f'<button class="shot" type="button" aria-label="{html.escape(alt)}">{blob}</button>'
             f'<div class="body"><span class="kind">{html.escape(kind_of(ex["slug"]))}'
             f' &middot; {html.escape(ex["slug"].split("-")[0])}{more}</span>'

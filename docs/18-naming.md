@@ -87,7 +87,7 @@ strongest thing a brand can have, and it is why both verbs are kept.
 As a **name** it fails on every test that matters, and for reasons that have
 nothing to do with Norwegian:
 
-- Written down it is sTunkallend exactly like the ordinary English word. An ordinary
+- Written down it is spelled exactly like the ordinary English word. An ordinary
   word is hard to protect as a trademark and easy to contest.
 - It collides broadly in commerce and software: music services, hotel chains,
   audio tooling, and `tune` as a verb in machine learning.

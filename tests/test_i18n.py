@@ -1126,7 +1126,7 @@ BASELINE = {
     "dash-bundled/dash-bundled.html": "213b8d4b423929d9c0cc353c495cefb65647cea1b8aaeb66d9532e0227940433",
     "dash-paired/paired/dash.html": "c9c18c34b296460935192b14fd4d9fabb4c8ada28b0f1b608ac01965bd22afd2",
     "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",
-    "dash-feedback/dash-feedback.html": "3ec912a36723ae3a768a68e733cc961bd31c6e043d43bd28f1736054e6867e20",
+    "dash-feedback/dash-feedback.html": "0f1b4b0bdba958558e1e91c1fb2e167a145dcffb294fe38d4a8fbe8305b16875",
     # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
     # change to its nb output is visible.
     "scorecard/scorecard.html": "333b3fc48b768d14c937a3d47bd1a3aab8633a75b58a83ea18ddefb02f67b8fa",
@@ -1146,13 +1146,13 @@ BASELINE = {
     # visible. No older builder exists to compare it against.
     "timeline/timeline.html": "d00e2fad42ceeed5e03021a05f1d8edc35fea6ac1c2a1b01ababf3d289b9bfef",
     "cube/cube.html": "eb457667e35671eea663e155d623733aed6273e95123e432301e7c4e7e60738d",
-    "cube-feedback/cube-feedback.html": "60e370d2c948647003b2978a58863734b3a0ce19cc03350ac22fbf0a274c2dc2",
+    "cube-feedback/cube-feedback.html": "1eb1a153b46b127f79b77bfdf4aa3a5a487e311dc32ce02eac2a45642a1bec01",
     "process/process.html": "dcf8040aa4d8c4b2f4dd4814fe75d73f66a9d723efedb199925b383823ccf0ca",
-    "fx-dash/fx-dash.html": "b3882b8c7f22deeba6d636db80b59ce223b2d1489d929850d202302e4772b1a9",
+    "fx-dash/fx-dash.html": "9b1e4a36a8237f2576e0b7fd07873fd455148017af6bca6c15b1d2221a7f1e20",
     "fx-dash-paired/fxp/dash.html": "b79bbc40900b430141f5e84bb1a4f7e7c70946fbf5f7e3f84160974c77eabc0a",
     "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
     "fx-dash-notime/fx-dash-notime.html": "17e2187414c20dad93868500bc78379a0c05302498097c5b7ca8ba2cca0148f2",
-    "fx-cube/fx-cube.html": "9d2ee2326a9c71fdc4b2e2633ecc3313d1d90a4209f4398668ca350570cadff9",
+    "fx-cube/fx-cube.html": "fa773c207f0d4f0b1dec7faeaa832e58c0e7a1f92aa8115998bcde1ba588cfd5",
     "fx-process/fx-process.html": "ab1c25de2a97b56d0ca2b852e85df3aa0dae6693c8d150939061fbbd4ee5db12",
     # the survey board (2026-10-24): a new artefact, so its nb output is frozen here
     # 2026-10-24: the survey template gained a cross-tab block (table, its CSS, the
@@ -1165,7 +1165,7 @@ BASELINE = {
     # moved and nothing else did; no probe in section 6 builds this template, which is
     # why it is re-pinned here rather than paired.
     "register/register.html": "e1b2239e2158f57c6d05bd876d924b0f259263d2505bc2ba8e9ba1f6de0152af",
-    "fx-survey/fx-survey.html": "b8f9ee3101f960a2e3d8e2021ff53944ba48cf3baf99bdf6906afc775e0940fd",
+    "fx-survey/fx-survey.html": "ff29a9da009f2b56ebc820b59ba6cab1077835fba2e1d1970386acc981f694db",
 }
 
 FORBIDDEN_IN_EN = ("'", '"', "\\", "`", "${")   # would break the string or comment it lands in

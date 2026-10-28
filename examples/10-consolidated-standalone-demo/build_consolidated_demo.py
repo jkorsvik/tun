@@ -531,7 +531,7 @@ __TOKEN_CSS__
      <noscript> alone cannot prove (that only fires when scripting is
      formally OFF — it does NOT fire when a host blocks our specific
      script elements e.g. via CSP, which still leaves scripting "on" in the
-     spec's eyes). The literal tag name is sTunkallend out nowhere in this file
+     spec's eyes). The literal tag name is spelled out nowhere in this file
      on purpose: docs/01 row 25 measured that one stray textual occurrence,
      comment or not, stops every script on the page in SharePoint's preview.
      If THIS script cannot run, nothing downstream can either,
