@@ -61,6 +61,11 @@
     color: var(--ink);
     font: 1rem/1.5 "Tun", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   }
+  /* The footer link is the gallery's only link, and with no rule of its own it fell back to
+     the browser default blue: 1.91:1 on the dark paper, unreadable. --brand is the token
+     that clears both themes (6.54:1 on dark), so links use it like the rest of the toolkit. */
+  a { color: var(--brand); }
+  a:hover { color: var(--brand-dark); }
   .wrap { width: 100%; max-width: 78rem; margin: 0 auto; padding: 1.5rem; }
   header.top { border-bottom: 1px solid var(--line); background: var(--tint); }
   .head-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; justify-content: space-between; }
@@ -189,6 +194,7 @@
     <p data-i18n="footer_how">{{T:footer_how}}</p>
     <p data-i18n="footer_trace">{{T:footer_trace}}</p>
     <p data-i18n="live_note">{{T:live_note}}</p>
+    <p><span data-i18n="footer_site">{{T:footer_site}}</span> <a href="https://tun.community">tun.community</a>.</p>
   </div>
 </footer>
 
