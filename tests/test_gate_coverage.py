@@ -57,6 +57,12 @@ KNOWN_UNDOCUMENTED = {
     "examples/31-survey-crosstab/survey-crosstab.html":
         "tests/test_survey_crosstab.py builds it and walks it in a browser, so the shipped "
         "copy is a fixture for that suite rather than a documented artefact",
+    "examples/55-functional-app/index.html":
+        "verify_functional_app.py starts this client and its real loopback API itself, so no "
+        "HTML path appears in the documented command",
+    "examples/55-functional-app/snapshot.html":
+        "verify_functional_app.py exports and opens an equivalent snapshot, while "
+        "tests/test_functional_app.py proves the committed copy equals its pinned rebuild",
 }
 
 CHECKS = FAILED = 0
@@ -91,8 +97,9 @@ def named_by_commands(commands) -> tuple[set[str], list[str]]:
             path = base / word
             if not path.exists():
                 path = ROOT / word
-            named.add(path.name)
-            if not path.exists():
+            if path.exists():
+                named.add(path.resolve().relative_to(ROOT).as_posix())
+            else:
                 missing.append(word)
     return named, missing
 
@@ -112,13 +119,13 @@ def audit(named: set[str], files: list[pathlib.Path]) -> tuple[list[str], list[s
     unmeasured, stale = [], []
     for p in files:
         rel = p.relative_to(ROOT).as_posix()
-        if p.name not in named and rel not in KNOWN_UNDOCUMENTED:
+        if rel not in named and rel not in KNOWN_UNDOCUMENTED:
             unmeasured.append(rel)
     for rel in KNOWN_UNDOCUMENTED:
         path = ROOT / rel
         if not path.exists():
             stale.append(f"{rel}: gone")
-        elif path.name in named:
+        elif rel in named:
             stale.append(f"{rel}: now documented, so the entry must go")
     return unmeasured, stale
 
@@ -142,10 +149,10 @@ def main() -> int:
         "every shipped artefact is named by a documented command, or listed with a reason",
         "; ".join(unmeasured))
     chk(not stale, "no entry on the list has gone stale", "; ".join(stale))
-    # Counted over files, not names: two examples both ship an `oversikt.html`, so a name
-    # named once covers two files and a name-based total would not add up.
-    measured = [p for p in files if p.name in named]
-    debt = [p for p in files if p.name not in named]
+    # Compare full relative paths: two examples can both ship an `index.html`, and one
+    # example's documented command must not make the other example look measured.
+    measured = [p for p in files if p.relative_to(ROOT).as_posix() in named]
+    debt = [p for p in files if p.relative_to(ROOT).as_posix() not in named]
     chk(len(measured) + len(debt) == len(files),
         "the accounting adds up", f"{len(measured)} + {len(debt)} != {len(files)}")
     chk(len(debt) == len(KNOWN_UNDOCUMENTED),
@@ -160,6 +167,10 @@ def main() -> int:
     unmeasured_m, _ = audit(named, files + [ghost])
     chk("examples/99-not-there/ny.html" in unmeasured_m,
         "a new artefact nothing verifies is reported", str(unmeasured_m))
+    twin = ROOT / "examples" / "99-not-there" / "index.html"
+    unmeasured_twin, _ = audit({"examples/34-folder-index/index.html"}, [twin])
+    chk("examples/99-not-there/index.html" in unmeasured_twin,
+        "another example's index.html does not count as coverage", str(unmeasured_twin))
     saved_key = next(iter(KNOWN_UNDOCUMENTED))
     saved = KNOWN_UNDOCUMENTED[saved_key]
     KNOWN_UNDOCUMENTED["examples/99-not-there/ny.html"] = "invented"
@@ -168,7 +179,7 @@ def main() -> int:
         "an entry pointing at nothing is reported", str(stale_m))
     del KNOWN_UNDOCUMENTED["examples/99-not-there/ny.html"]
     KNOWN_UNDOCUMENTED[saved_key] = saved
-    chk(len(KNOWN_UNDOCUMENTED) == len(set(KNOWN_UNDOCUMENTED)) == 7,
+    chk(len(KNOWN_UNDOCUMENTED) == len(set(KNOWN_UNDOCUMENTED)) == 9,
         "the list is back as it was", str(len(KNOWN_UNDOCUMENTED)))
 
     print("─" * 78)

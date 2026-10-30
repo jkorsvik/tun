@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/app.css">
+<script src="/app.js" defer></script>
+<title>Decision log — local functional app</title>
+</head>
+<body>
+<header>
+  <div class="inner">
+    <p class="eyebrow">Tún functional-app example</p>
+    <h1>Decision log</h1>
+    <p>A server earns its place when several views must share current state and writes.</p>
+  </div>
+</header>
+<main>
+  <section class="notice" aria-label="Scope">
+    <strong>Local reference app, not an internet-hardened service.</strong>
+    It has no authentication, TLS or multi-user permissions. Keep it on 127.0.0.1 and use synthetic data.
+  </section>
+
+  <div class="layout">
+    <section class="panel" aria-labelledby="create-heading">
+      <h2 id="create-heading">Record a decision</h2>
+      <p class="hint">Validation happens in the API. The same errors appear beside the fields.</p>
+      <div id="form-error" class="error-summary" role="alert" hidden></div>
+      <form id="decision-form" novalidate>
+        <div class="field">
+          <label for="decision">Decision <span aria-hidden="true">*</span></label>
+          <textarea id="decision" name="decision" rows="3" maxlength="180" required></textarea>
+          <p class="field-error" id="decision-error"></p>
+        </div>
+        <div class="field">
+          <label for="action">Next action <span aria-hidden="true">*</span></label>
+          <textarea id="action" name="action" rows="3" maxlength="240" required></textarea>
+          <p class="field-error" id="action-error"></p>
+        </div>
+        <div class="field">
+          <label for="owner">Owner <span aria-hidden="true">*</span></label>
+          <input id="owner" name="owner" type="text" maxlength="80" autocomplete="off" required>
+          <p class="field-error" id="owner-error"></p>
+        </div>
+        <div class="field">
+          <label for="due_date">Due date <span class="optional">(optional)</span></label>
+          <input id="due_date" name="due_date" type="date">
+          <p class="field-error" id="due_date-error"></p>
+        </div>
+        <button class="primary" id="create-button" type="submit">Add decision</button>
+      </form>
+    </section>
+
+    <section class="log" aria-labelledby="log-heading">
+      <div class="log-controls">
+        <div>
+          <h2 id="log-heading">Shared current state</h2>
+          <p id="summary" class="hint" aria-live="polite">Loading decisions…</p>
+        </div>
+        <div class="field compact">
+          <label for="status-filter">Show</label>
+          <select id="status-filter">
+            <option value="all">All decisions</option>
+            <option value="open">Open only</option>
+            <option value="completed">Completed only</option>
+          </select>
+        </div>
+      </div>
+      <div id="request-error" class="error-summary" role="alert" hidden></div>
+      <div id="decision-list" aria-live="polite" aria-busy="true"></div>
+      <noscript><p class="notice">JavaScript is needed for the live app. Use the export command for a read-only file that works without it.</p></noscript>
+    </section>
+  </div>
+</main>
+<footer>
+  <strong>Why the hybrid path?</strong> Writes stay in the caller-selected SQLite file. Export freezes the same rows into a standalone read-only HTML file for sharing.<br>
+  Source: local SQLite decision log. Requested by: local app operator. Row count and export timestamps are written into each snapshot.
+</footer>
+</body>
+</html>

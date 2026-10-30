@@ -112,8 +112,9 @@ def run(doc, cwd, argv, engines, tmp: pathlib.Path, n: int) -> tuple[str, str, p
             return "FAIL", f"{doc.relative_to(ROOT)} documents {artefacts[0]}, which does not exist", None
     elif ROOT / "examples" not in tool.parents:
         return "SKIP", "no .html argument", None   # an example's own verifier knows its file
-    if "--out" in args:                       # keep screenshots out of /tmp and the tree
-        set_flag(args, "--out", str(tmp / f"out-{n}"))
+    for flag in ("--out", "--output"):       # keep screenshots out of /tmp and the tree
+        if flag in args:
+            set_flag(args, flag, str(tmp / f"out-{n}"))
     set_flag(args, "--engines", ",".join(engines))
     r = subprocess.run([sys.executable, str(tool), *args], cwd=cwd,
                        capture_output=True, text=True)

@@ -9,6 +9,7 @@ skills/                 what this project produces
   tun-data/
   tun-verify/
   tun-publish/
+  tun-host/
   tun-powerbi-escape/
   tun-process/
   tun-review/
@@ -40,7 +41,7 @@ does not.
 
 ---
 
-## skills/ — the six for dashboards
+## skills/ — the project skills
 
 Specific to this project. This repo is their home and they will change as it does.
 
@@ -51,6 +52,7 @@ Specific to this project. This repo is their home and they will change as it doe
 | `tun-data` | New extract, new numbers, existing dashboard. |
 | `tun-verify` | Opens it in a real browser, screenshots it, proves it renders. |
 | `tun-publish` | Uploads it, confirms who can see it, drafts the announcement. |
+| `tun-host` | Chooses static hosting or a separate backend for a functional app, then verifies the hosted release. |
 | `tun-powerbi-escape` | Moves a report off Power BI, and answers the objections honestly. |
 | `tun-process` | Draws a process as swimlanes, with the steps that should improve flagged. |
 | `tun-review` | A reader who disagrees says which row and hands it back as one text block; `tools/read_review.py` finds the row and shows the file's number beside theirs. |
@@ -109,7 +111,7 @@ has cost you time and bought nothing.
 
 ### writing-for-agents
 
-The most relevant one in this repo, because the six skills above *are* documents written to a
+The most relevant one in this repo, because the project skills above *are* documents written to a
 machine. Same night-shift problem, one layer up.
 
 ---

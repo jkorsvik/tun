@@ -31,11 +31,14 @@ from __future__ import annotations
 
 import argparse
 import base64
+import gzip
 import html
 import json
 import pathlib
 import re
+import struct
 import sys
+import zlib
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -95,19 +98,42 @@ def read_example(folder: pathlib.Path) -> dict | None:
         lines = [ln.strip() for ln in commands[0].strip().splitlines()]
         command = "\n".join(ln for ln in lines if ln and not ln.startswith("#"))
     built = sorted(folder.glob("*.html"), key=lambda f: f.stat().st_size, reverse=True)
+    # A server-backed example cannot run its live client inside a static gallery. When it
+    # ships a standalone snapshot, show that instead: the reader gets the same rows without
+    # a server, and the card never opens a client whose API is absent.
+    snapshots = [page for page in built if page.name == "snapshot.html"]
     return {
         "dir": folder,
         "slug": folder.name,
         "title": title,
         "purpose": purpose,
         "command": command,
-        "page": built[0] if built else None,
+        "page": snapshots[0] if snapshots else (built[0] if built else None),
         "extra": len(built) - 1 if built else 0,
     }
 
 
 SIBLING_JS = re.compile(r'<script\b[^>]*\bsrc="((?:\./)?[^"/:]+)"[^>]*>\s*</script>', re.I)
 SIBLING_CSS = re.compile(r'<link\b[^>]*\bhref="((?:\./)?[^"/:]+)"[^>]*>', re.I)
+
+LIVE_PREFIX = "gzip:"
+# Fixed gzip header: no clock, file name or host operating system enters an artefact.
+GZIP_HEADER = bytes((0x1F, 0x8B, 8, 0, 0, 0, 0, 0, 2, 0xFF))
+
+
+def encode_live(raw: bytes) -> str:
+    """One deterministic, base64-encoded gzip member for a card's live page."""
+    deflate = zlib.compressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
+    body = deflate.compress(raw) + deflate.flush()
+    member = GZIP_HEADER + body + struct.pack("<II", zlib.crc32(raw), len(raw) & 0xFFFFFFFF)
+    return LIVE_PREFIX + base64.b64encode(member).decode("ascii")
+
+
+def decode_live(payload: str) -> bytes:
+    """The actual embedded page. The browser and this gate share one gzip-only contract."""
+    if not payload.startswith(LIVE_PREFIX):
+        raise ValueError("live payload is not marked as gzip")
+    return gzip.decompress(base64.b64decode(payload[len(LIVE_PREFIX):], validate=True))
 
 
 def inline_siblings(page: pathlib.Path) -> bytes:
@@ -152,21 +178,21 @@ def kind_of(slug: str) -> str:
     return match.group(2).replace("-", " ") if match else slug.replace("-", " ")
 
 
-def shoot(pages: list[pathlib.Path], width: int, height: int, quality: int) -> dict[str, bytes]:
+def shoot(pages: list[pathlib.Path], width: int, height: int, quality: int) -> dict[pathlib.Path, bytes]:
     """A JPEG per page, taken from a file:// URL. No browser, no page: fail loudly."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:  # pragma: no cover - the gate exists for exactly this
         sys.exit("build_showcase: Playwright is required to photograph the examples.\n"
                  "  uv sync --extra verify && uv run playwright install chromium")
-    shots: dict[str, bytes] = {}
+    shots: dict[pathlib.Path, bytes] = {}
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         page = browser.new_page(viewport={"width": width, "height": height})
         for path in pages:
             page.goto(path.resolve().as_uri(), wait_until="load")
             page.wait_for_timeout(350)
-            shots[path.name] = page.screenshot(type="jpeg", quality=quality)
+            shots[path.resolve()] = page.screenshot(type="jpeg", quality=quality)
             print(f"  photographed {path.parent.name}/{path.name}", flush=True)
         browser.close()
     return shots
@@ -204,9 +230,9 @@ def main(argv: list[str] | None = None) -> int:
 
     tables = i18n.load_all(STRINGS)
     strings = tables[args.start_lang]
-    cards, embedded = [], 0
+    cards, embedded, compressed = [], 0, 0
     for ex in examples:
-        shot = shots.get(ex["page"].name) if ex["page"] else None
+        shot = shots.get(ex["page"].resolve()) if ex["page"] else None
         alt = f"{ex['title']} - {kind_of(ex['slug'])}"
         blob = (f'<img src="data:image/jpeg;base64,{base64.b64encode(shot).decode("ascii")}" '
                 f'alt="{html.escape(alt)}" loading="lazy">') if shot else ""
@@ -218,10 +244,13 @@ def main(argv: list[str] | None = None) -> int:
         live = ""
         if ex["page"]:
             raw = inline_siblings(ex["page"])
-            live = ' data-live="' + base64.b64encode(raw).decode("ascii") + '"'
+            payload = encode_live(raw)
+            live = f' data-live="{payload}"'
             embedded += len(raw)
+            compressed += len(payload)
+        number = html.escape(ex["slug"].split("-")[0])
         cards.append(
-            f'<li class="card"{live} data-num="{html.escape(ex["slug"].split("-")[0])}"'
+            f'<li class="card" id="example-{number}"{live} data-num="{number}"'
             f' data-search="{html.escape(search, quote=True)}">'
             f'<button class="shot" type="button" aria-label="{html.escape(alt)}">{blob}</button>'
             f'<div class="body"><span class="kind">{html.escape(kind_of(ex["slug"]))}'
@@ -259,6 +288,7 @@ def main(argv: list[str] | None = None) -> int:
             .replace("{{START_LANG}}", json.dumps(args.start_lang))
             .replace("{{TITLE}}", html.escape(args.title))
             .replace("{{CHIPS}}", chips)
+            .replace("{{FIRST_CARD_HREF}}", f"#example-{examples[0]['slug'].split('-')[0]}")
             .replace("{{THINGS}}", things)
             .replace("{{CARDS}}", "\n".join(cards))
             .replace("{{COUNT_ONE_JS}}", json.dumps(strings["count_one"]))
@@ -269,14 +299,15 @@ def main(argv: list[str] | None = None) -> int:
             .replace("{{REQUESTED_BY}}", html.escape(args.requested_by))
             .replace("{{ROWS_INLINED}}",
                      f"{len(with_page)} runnable artefact(s) of {len(examples)}, "
-                     f"{embedded / 1e6:.1f} MB of page carried in this file"))
+                     f"{embedded / 1e6:.1f} MB of page carried gzip-compressed in this file"))
     page = page.replace("{{T:count_all}}", i18n.fill(strings["count_all"], n=len(examples)))
 
     target = pathlib.Path(args.out)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(page, encoding="utf-8")
     size = target.stat().st_size / (1024 * 1024)
-    print(f"wrote {target} ({size:.1f} MB, {embedded / 1e6:.1f} MB of it embedded pages)")
+    print(f"wrote {target} ({size:.1f} MB; {embedded / 1e6:.1f} MB of source pages, "
+          f"{compressed / 1e6:.1f} MB as prefixed base64 gzip)")
     if size > 50:
         print("build_showcase: FAIL over 50 MB. Carry fewer pages or lower --quality.")
         return 1

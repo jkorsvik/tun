@@ -208,6 +208,9 @@ DELIBERATE_ABSENT = {
     "examples/99-not-there/ny.html":
         "tests/test_gate_coverage.py invents it to check that a new artefact nothing "
         "verifies is reported, and that a debt entry pointing at nothing is reported",
+    "examples/99-not-there/index.html":
+        "tests/test_gate_coverage.py invents it to prove that another example's index.html "
+        "cannot count as this artefact's verification coverage",
 }
 
 
