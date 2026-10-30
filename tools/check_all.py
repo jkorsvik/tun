@@ -38,7 +38,7 @@ TOOLS = ROOT / "tools"
 
 # The tree gates are not a `tests/test_*.py` file, and they are the ones that must never
 # be skipped: they read every tracked file. Named here so the list cannot lose them.
-EXTRA = ("tools/check_tree.py",)
+EXTRA = ("tools/check_tree.py", "tools/check_showcase_fresh.py")
 
 # ROADMAP C1: the set the pre-commit hook runs on every commit. It used to be hand-written
 # in `tools/hooks/pre-commit`, which could drift from this file in silence; it now lives

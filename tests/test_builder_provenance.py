@@ -200,11 +200,14 @@ def main() -> int:
         requested_by(ex03))
 
     # The documented commands are what people copy. Each must pass a requester, or a
-    # rebuild of a committed example silently drops it to 'not stated'.
-    for rel in ("AGENTS.md", "README.md", "examples/03-cube-dashboard/README.md",
-                "docs/07-portable-cube.md", "skills/tun-new/SKILL.md"):
+    # rebuild of a committed example silently drops it to 'not stated'. The README now
+    # routes to START-HERE.md instead of duplicating its command, so the short guide is
+    # the required location and the README is still checked if a command appears there.
+    for rel in ("AGENTS.md", "START-HERE.md", "examples/03-cube-dashboard/README.md",
+                "docs/07-portable-cube.md", "skills/tun-new/SKILL.md", "README.md"):
         cmds = documented_commands(rel)
-        chk(f"{rel}: has at least one builder command", bool(cmds))
+        if rel != "README.md":
+            chk(f"{rel}: has at least one builder command", bool(cmds))
         missing = [c[:70] for c in cmds if "--requested-by" not in c]
         chk(f"{rel}: every builder command passes --requested-by", not missing, str(missing))
 

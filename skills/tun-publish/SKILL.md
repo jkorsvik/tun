@@ -16,6 +16,16 @@ and looked at the screenshot in this session, run it now. Publishing an unverifi
 dashboard means someone opens a broken file — and the whole value proposition here is
 that the artefact works on someone else's machine.
 
+## When this is not the route
+
+Use **`tun-host`** when the request is a real web origin on GitHub Pages, Cloudflare
+static assets, Azure Static Web Apps or an ordinary static file server. Also use it when
+the app needs shared writes, sign-in, durable shared state or scheduled jobs. That skill
+keeps a Tier 1 file unchanged and routes any backend outside the toolkit core.
+
+This skill publishes an existing self-contained file. It does not turn SharePoint into a
+static host and does not add an application backend.
+
 ## Step 1 — Understand what you are about to do
 
 Be explicit with the user, because this is the step where the security model becomes

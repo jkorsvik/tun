@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<link rel="icon" href="data:,">
+<title>Decision log — read-only snapshot</title>
+<!--
+PROVENANCE (do not delete — this is how output gets traced back)
+  Source data : Local SQLite decision log (decisions.db)
+  Extracted   : 2026-10-24T10:00:00Z
+  Built       : 2026-10-24T10:00:00Z
+  Requested by: Tún example builder
+  Rows        : 3 decisions (2 open, 1 completed)
+This is a read-only, self-contained snapshot. It has no script and makes no network requests.
+-->
+<style>
+/*
+   Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+   This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+   or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+   COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+   under terms of your choice, provided the Origin Notice is preserved.
+   SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+:root {
+  --ink: #111418;
+  --muted: #666666;
+  --surface: #ffffff;
+  --panel: #f8f8f8;
+  --line: #ebebeb;
+  --brand: #2b4c7e;
+  --brand-dark: #1b3559;
+  --brand-soft: #e8eef6;
+  --on-dark: #f7f5ef;
+  --positive: #007b5e;
+  --positive-soft: #f4fbf9;
+  --negative: #dc2a2a;
+  --negative-soft: #fdeeee;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+header { background: var(--brand-dark); color: var(--on-dark); padding: 1.5rem; }
+.inner, main, footer { max-width: 80rem; margin: 0 auto; }
+header h1 { margin: 0; font-size: 2rem; line-height: 2.5rem; }
+header p { margin: .25rem 0 0; }
+header .eyebrow, .eyebrow {
+  margin: 0 0 .25rem;
+  font-size: .875rem;
+  line-height: 1.25rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+main { padding: 1.5rem; }
+h2 { margin: 0; font-size: 1.25rem; line-height: 1.75rem; }
+.notice {
+  padding: 1rem;
+  border-left: .25rem solid var(--brand);
+  border-radius: .25rem;
+  background: var(--brand-soft);
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(17rem, 1fr) minmax(0, 2fr);
+  gap: 1.5rem;
+  align-items: start;
+  margin-top: 1.5rem;
+}
+.panel, .decision {
+  border: .0625rem solid var(--line);
+  border-radius: .5rem;
+  background: var(--panel);
+}
+.panel { padding: 1rem; }
+.hint { margin: .25rem 0 1rem; color: var(--muted); font-size: .875rem; }
+.field { margin-top: 1rem; }
+.field label { display: block; margin-bottom: .25rem; font-size: .875rem; font-weight: 700; }
+.optional { color: var(--muted); font-weight: 400; }
+input, textarea, select, button { font: inherit; }
+input, textarea, select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .625rem .75rem;
+  border: .0625rem solid var(--muted);
+  border-radius: .25rem;
+  background: var(--surface);
+  color: var(--ink);
+}
+textarea { resize: vertical; }
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2rem;
+  background-image: linear-gradient(45deg, transparent 50%, var(--brand) 50%), linear-gradient(135deg, var(--brand) 50%, transparent 50%);
+  background-position: calc(100% - 1rem) 50%, calc(100% - .75rem) 50%;
+  background-size: .25rem .25rem, .25rem .25rem;
+  background-repeat: no-repeat;
+}
+input:focus, textarea:focus, select:focus, button:focus-visible {
+  outline: .1875rem solid var(--brand);
+  outline-offset: .125rem;
+}
+button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: .625rem 1rem;
+  border: .0625rem solid var(--brand);
+  border-radius: .25rem;
+  background: var(--surface);
+  color: var(--brand);
+  font-weight: 700;
+  cursor: pointer;
+}
+button:hover { background: var(--brand-soft); }
+button:disabled { cursor: wait; opacity: .65; }
+button.primary { width: 100%; margin-top: 1rem; background: var(--brand); color: var(--surface); }
+button.primary:hover { background: var(--brand-dark); }
+.field-error { min-height: 1.25rem; margin: .25rem 0 0; color: var(--negative); font-size: .875rem; }
+.error-summary {
+  margin-top: 1rem;
+  padding: .75rem;
+  border-left: .25rem solid var(--negative);
+  background: var(--negative-soft);
+  color: var(--ink);
+}
+[hidden] { display: none !important; }
+.log-controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; align-items: end; }
+.log-controls .compact { min-width: 12rem; margin-top: 0; }
+.decision { padding: 1rem; margin-top: 1rem; }
+.decision-heading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: .75rem; }
+.decision-heading h2 { overflow-wrap: anywhere; }
+.status {
+  flex: none;
+  display: inline-block;
+  padding: .25rem .5rem;
+  border-radius: .25rem;
+  font-size: .875rem;
+  font-weight: 700;
+}
+.status-open { background: var(--brand-soft); color: var(--brand-dark); }
+.status-completed { background: var(--positive-soft); color: var(--positive); }
+.details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem 1rem; margin: 1rem 0 0; }
+.details div { min-width: 0; }
+.details div:first-child { grid-column: 1 / -1; }
+.details dt { color: var(--muted); font-size: .875rem; font-weight: 700; }
+.details dd { margin: .125rem 0 0; overflow-wrap: anywhere; }
+.decision-footer { display: flex; justify-content: flex-end; margin-top: 1rem; }
+.empty { padding: 1rem; border: .0625rem dashed var(--muted); color: var(--muted); }
+footer { margin-top: 2rem; padding: 1rem 1.5rem 2rem; border-top: .0625rem solid var(--line); color: var(--muted); font-size: .875rem; }
+@media (max-width: 50rem) {
+  .layout { grid-template-columns: 1fr; }
+  .panel { order: 2; }
+  .log { order: 1; }
+}
+@media (max-width: 30rem) {
+  header, main { padding: 1rem; }
+  header h1 { font-size: 1.75rem; line-height: 2rem; }
+  .details { grid-template-columns: 1fr; }
+  .details div:first-child { grid-column: auto; }
+  .log-controls .compact { width: 100%; }
+  footer { padding: 1rem 1rem 2rem; }
+}
+
+.snapshot-banner{margin:0 0 1rem}
+.snapshot-meta{margin:0 0 1rem;color:var(--muted)}
+.snapshot-decision{margin-bottom:1rem}
+</style>
+</head>
+<body>
+<header><div class="inner"><p class="eyebrow">Tún hybrid example</p><h1>Decision log</h1>
+<p>Read-only snapshot of the same SQLite rows served by the local app.</p></div></header>
+<main>
+<section class="notice snapshot-banner"><strong>Read-only snapshot.</strong>
+Use the local app to create or complete a decision. This file is for sharing and offline reading.</section>
+<p class="snapshot-meta">3 decisions · 2 open · 1 completed</p>
+<section aria-label="Decisions"><article class="decision snapshot-decision" data-decision-id="1" data-status="open">
+  <div class="decision-heading"><h2>Use one decision log for the weekly review</h2>
+    <span class="status status-open">Open</span></div>
+  <dl class="details">
+    <div><dt>Next action</dt><dd class="field-action">Bring the two open actions to Friday&#x27;s review</dd></div>
+    <div><dt>Owner</dt><dd class="field-owner">Team coordination</dd></div>
+    <div><dt>Due</dt><dd class="field-due">2026-11-06</dd></div>
+    <div><dt>Created</dt><dd class="field-created">2026-10-24T10:00:00Z</dd></div>
+    <div><dt>Completed</dt><dd class="field-completed">Not completed</dd></div>
+  </dl>
+</article><article class="decision snapshot-decision" data-decision-id="2" data-status="open">
+  <div class="decision-heading"><h2>Publish a read-only snapshot after each monthly review</h2>
+    <span class="status status-open">Open</span></div>
+  <dl class="details">
+    <div><dt>Next action</dt><dd class="field-action">Export the log and share the standalone HTML file</dd></div>
+    <div><dt>Owner</dt><dd class="field-owner">Reporting</dd></div>
+    <div><dt>Due</dt><dd class="field-due">2026-11-30</dd></div>
+    <div><dt>Created</dt><dd class="field-created">2026-10-24T10:00:00Z</dd></div>
+    <div><dt>Completed</dt><dd class="field-completed">Not completed</dd></div>
+  </dl>
+</article><article class="decision snapshot-decision" data-decision-id="3" data-status="completed">
+  <div class="decision-heading"><h2>Keep the reference data synthetic</h2>
+    <span class="status status-completed">Completed</span></div>
+  <dl class="details">
+    <div><dt>Next action</dt><dd class="field-action">Use team names instead of people&#x27;s names</dd></div>
+    <div><dt>Owner</dt><dd class="field-owner">Platform example</dd></div>
+    <div><dt>Due</dt><dd class="field-due">No due date</dd></div>
+    <div><dt>Created</dt><dd class="field-created">2026-10-24T10:00:00Z</dd></div>
+    <div><dt>Completed</dt><dd class="field-completed">2026-10-24T10:00:00Z</dd></div>
+  </dl>
+</article></section>
+</main>
+<footer><strong>Provenance</strong><br>Source data: Local SQLite decision log (decisions.db); Extracted: 2026-10-24T10:00:00Z; Built: 2026-10-24T10:00:00Z; Requested by: Tún example builder; Rows: 3<br>
+No server, script, font download or network connection is needed to read this file.</footer>
+</body>
+</html>

@@ -21,6 +21,9 @@ Two checks, and both are needed:
     that documents a flag the tool never had is worse than no route: it is an instruction that
     fails in the hands of the reader.
 
+`tun-host` has no builder, so the last section also pins its hand-offs from `tun-help` and
+`tun-publish`, its architecture link, and the hosting and security boundaries it must keep.
+
 Stdlib only, no browser.
 
     python3 tests/test_skill_routes.py
@@ -74,6 +77,16 @@ def route_text(name: str, texts: dict[pathlib.Path, str]) -> list[tuple[pathlib.
             if name in block:
                 found.append((path, block))
     return found
+
+
+def hosting_route_gaps(help_text: str, publish_text: str) -> list[str]:
+    """The two hand-offs that make the non-builder hosting skill reachable."""
+    gaps = []
+    if "`tun-host`" not in help_text:
+        gaps.append("tun-help does not route hosting requests to tun-host")
+    if "`tun-host`" not in publish_text:
+        gaps.append("tun-publish does not hand real web origins and backends to tun-host")
+    return gaps
 
 
 def flags_of(builder: pathlib.Path) -> set[str]:
@@ -153,6 +166,47 @@ def main() -> int:
 
     # An empty skill tree must fail loudly rather than pass vacuously.
     chk(not route_text("build_cohort.py", {}), "an empty skill tree routes nothing")
+
+    print("\n6. hosting requests reach tun-host, with the app boundary intact")
+    help_path = SKILLS / "tun-help" / "SKILL.md"
+    publish_path = SKILLS / "tun-publish" / "SKILL.md"
+    host_path = SKILLS / "tun-host" / "SKILL.md"
+    doc_path = ROOT / "docs" / "35-hosting-and-functional-apps.md"
+    help_text = texts[help_path]
+    publish_text = texts[publish_path]
+    host_text = host_path.read_text(encoding="utf-8")
+    doc_text = doc_path.read_text(encoding="utf-8")
+    chk(not hosting_route_gaps(help_text, publish_text),
+        "tun-help and tun-publish both hand hosting requests to tun-host",
+        "; ".join(hosting_route_gaps(help_text, publish_text)))
+    chk("../../docs/35-hosting-and-functional-apps.md" in host_text,
+        "tun-host links its architecture and host checks")
+    chk(all(target in doc_text for target in
+            ("08-generic-artifact-model.md", "23-hosted-route-it-brief.md"))
+        and "connected" in host_text,
+        "the new guide preserves the existing artefact-model and hosted-route boundaries")
+    chk(all(term in host_text for term in
+            ("read-only snapshot", "Static interactive app", "Backend application", "Hybrid")),
+        "tun-host names the snapshot, static, backend and hybrid routes")
+    chk(all(host in doc_text for host in
+            ("GitHub Pages", "Cloudflare static assets", "Azure Static Web Apps",
+             "Ordinary static file server")),
+        "the architecture covers the four static host shapes")
+    chk(all(rule in doc_text for rule in
+            ("The folder boundary remains for shared static data",
+             "No hidden row-level security", "Nothing secret goes to the browser")),
+        "the architecture keeps the access and secret boundaries explicit")
+    chk("No server, backend framework, database or job runner enters the toolkit core" in doc_text,
+        "the architecture keeps servers out of the toolkit core")
+
+    stripped_help = help_text.replace("`tun-host`", "`tun-removed`")
+    chk(hosting_route_gaps(stripped_help, publish_text) ==
+        ["tun-help does not route hosting requests to tun-host"],
+        "deleting the tun-help hand-off is reported")
+    stripped_publish = publish_text.replace("`tun-host`", "`tun-removed`")
+    chk(hosting_route_gaps(help_text, stripped_publish) ==
+        ["tun-publish does not hand real web origins and backends to tun-host"],
+        "deleting the tun-publish hand-off is reported")
 
     print()
     if FAILURES:

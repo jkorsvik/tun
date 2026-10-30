@@ -32,7 +32,7 @@ and unpublished; the public teaser lives at [tun.community](https://tun.communit
 
 ## Read this by who you are
 
-Thirty-two documents is too many to read in order, and reading the wrong one wastes the
+The document set is too large to read in order, and reading the wrong one wastes the
 ten minutes that decides whether this project is for you. So every document opens with one
 line saying who it is for, and this page files it under that same reader:
 
@@ -61,6 +61,7 @@ reader and marked as another fails the suite.
 | [Where it can live](26-hosting.md) | Each host, what runs there, and how to serve a page yourself |
 | [Atlassian Artifacts](29-atlassian-artifacts.md) | Publishing over the MCP server, what the viewer and a Confluence embed allow, measured |
 | [The hosted route](23-hosted-route-it-brief.md) | The one route that is not a file: what it needs, and the five questions only IT can answer |
+| [Hosting and functional apps](35-hosting-and-functional-apps.md) | Choose a read-only snapshot, a static interactive app or a backend; compare four static host shapes, a small service and a static front end with a JSON API. Direction, not measured for this toolkit |
 | [One word for one thing](30-glossary.md) | The vocabulary: **artefact** is the file, **dashboard** is one kind of it, **provenance block** says where a number came from |
 | [Examples](../examples/README.md) | One row per working artefact: what each proves, how to rebuild it, how to check it |
 | [The file that answers back](31-review-roundtrip.md) | A reader who disagrees with a number can say which row, in the file they already have, and hand it back as one text block: no server, no account, and it works by hand when scripting is off |
