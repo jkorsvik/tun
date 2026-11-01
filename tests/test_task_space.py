@@ -87,6 +87,10 @@ def static_and_mutations() -> None:
     rows = source_rows()
     page = ARTEFACT.read_text(encoding="utf-8")
     audit(page, rows)
+    view = re.search(r'viewBox="0 0 (\d+) 410"', page)
+    minimum = re.search(r'\.fallback-svg\{[^}]*min-width:([\d.]+)rem', page)
+    ok(view and minimum and float(minimum.group(1)) * 16 == int(view.group(1)),
+       "fallback drawing width can shrink its 14 px labels below the floor")
     with tempfile.TemporaryDirectory() as raw:
         work = pathlib.Path(raw)
         rebuilt = work / "rebuilt.html"
