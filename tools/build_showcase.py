@@ -222,6 +222,7 @@ def main(argv: list[str] | None = None) -> int:
             embedded += len(raw)
         cards.append(
             f'<li class="card"{live} data-num="{html.escape(ex["slug"].split("-")[0])}"'
+            f' data-slug="{html.escape(ex["slug"])}"'
             f' data-search="{html.escape(search, quote=True)}">'
             f'<button class="shot" type="button" aria-label="{html.escape(alt)}">{blob}</button>'
             f'<div class="body"><span class="kind">{html.escape(kind_of(ex["slug"]))}'

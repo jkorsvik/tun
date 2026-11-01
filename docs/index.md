@@ -52,7 +52,7 @@ reader and marked as another fails the suite.
 | | |
 |---|---|
 | [Onboarding](04-onboarding.md) | **Start here.** From a spreadsheet to a shared dashboard in five minutes, on Windows or macOS, with no AI tool installed |
-| [Which shape answers which question](33-artefact-shapes.md) | Twenty-six builders, the question each answers in the words people use, what to do when two shapes compete, and the five questions this format does not answer |
+| [Which shape answers which question](33-artefact-shapes.md) | Twenty-seven builders, the question each answers in the words people use, what to do when two shapes compete, and the five questions this format does not answer |
 | [The skill tree](03-skill-tree.md) | What you can ask for, in your own words: build, check, ship, and the honest exit |
 | [Vision](00-vision.md) | Why an information tool should be a document, and who that serves |
 | [What was built](27-what-was-built.md) | Applications made this way, by pattern, and the one lesson each taught |

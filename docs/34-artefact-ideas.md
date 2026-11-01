@@ -1,6 +1,6 @@
 # 34. Artefact ideas: what to build next, and what would make it worth building
 
-**Reader:** contributor — you can change the toolkit, and you want to know which shapes are missing before you add a twenty-first builder.
+**Reader:** contributor — you can change the toolkit, and you want to know which shapes are missing before you add the next builder.
 
 Twenty shapes answer twenty questions, and the gaps are no longer obvious from reading the
 code: `docs/33` lists what exists, which is a different question from what is missing. This page
@@ -8,11 +8,11 @@ is the other half. Every candidate below is a question somebody has actually ask
 with the trap that makes the shape harder than it looks, and an honest note on whether the data
 to build it is in reach.
 
-Six candidates have already left this list: the box plot was built as
+Seven candidates have already left this list: the box plot was built as
 [48](../examples/48-boxplot/), the Gantt as [49](../examples/49-gantt/), the calendar as
 [50](../examples/50-calendar/), the bullet as [51](../examples/51-bullet/), the Pareto as
-[52](../examples/52-pareto/) and the Sankey as [53](../examples/53-sankey/), each in the same
-week it was written down, which is the cheapest possible answer to a gap. None of the rest is a
+[52](../examples/52-pareto/), the Sankey as [53](../examples/53-sankey/) and the task space as
+[55](../examples/55-task-space/), each in the same week it was written down, which is the cheapest possible answer to a gap. None of the rest is a
 commitment; the last section says what it takes to move one from here into `tools/`.
 
 ## The candidates, ranked by how much they would add

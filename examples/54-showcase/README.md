@@ -1,19 +1,19 @@
-# 54. Every example, on one page
+# 54. Tún Explorer: every possibility, one consolidated view
 
-The answer to "what does this repository actually contain". One self-contained document with
-a card per example: a photograph of the built artefact, the question it answers, and the
-command from its own README.
+A self-contained Explorer for the whole toolkit. Six guided paths connect a reader's goal to a
+large live stage, the example's own build recipe, a full-screen view, a byte-exact HTML download
+and a shareable example link. The full visual card collection remains below for browsing.
 
-The pictures are taken by a real browser from a `file://` URL at build time. That is the whole
-point: a card cannot show a page that no longer builds, and a rebuild that breaks an example
-shows up as a wrong or empty picture rather than as a passing test.
+The page carries every built example and a real browser photograph of each. The live stage opens
+example 55, the raw-WebGL task space, so the first view is itself an artefact rather than a video
+or a marketing illustration. No library, framework, server or runtime request is added.
 
 ## Build it
 
 ```bash
 python3 tools/build_showcase.py \
   --examples examples \
-  --title "Tún: alle eksempel" \
+  --title "Tún Explorer" \
   --source "the built examples in this repository" \
   --requested-by "Prosjekteier" \
   --out examples/54-showcase/oversikt.html
@@ -27,12 +27,13 @@ uv sync --extra verify && uv run playwright install chromium
 
 ## What is on the page
 
-- A card per example, searchable by title, purpose, kind or folder number.
-- Three counts across the top: examples, builders, and how many carry a documented command.
-- Four columns at the bottom for everything that is not a picture: builders, skills, test
-  suites and documents, read from the tree at build time and never typed by hand.
+- Six guided paths: all possibilities, data, stories, processes, scale and browser capability.
+- A persistent live stage with previous/next navigation, full-screen view and build recipe.
+- Byte-exact HTML downloads from the embedded artefact bytes, plus deep links by path and example.
+- Every example as a searchable visual card, with builders, skills, test suites and docs read from
+  the tree at build time.
 
 It is a document, not a dashboard, so it is verified as one: `verify_standalone_core.py`,
-`verify_viewports.py` at the 14 px floor, and `verify_a11y.py`. `verify_dashboard.py` refuses
-it on purpose, because it looks for KPI cards and chart marks that a document has no reason
-to have.
+`verify_viewports.py` at the 14 px floor, `verify_a11y.py`, and `tests/test_explorer.py` for the
+stage, paths, deep links and downloads. `verify_dashboard.py` refuses it on purpose, because it
+looks for KPI cards and chart marks that this Explorer has no reason to have.

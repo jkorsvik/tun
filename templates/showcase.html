@@ -155,22 +155,79 @@
     .finder, .close, .lang { display: none; }
     .card { break-inside: avoid; }
   }
+  /* The consolidated Explorer: goal, live artefact, recipe and file in one view. */
+  .top.explorer{background:radial-gradient(circle at 78% 24%,rgb(47 93 158 / 38%),transparent 42%),linear-gradient(rgb(238 242 248 / 3%) 1px,transparent 1px),linear-gradient(90deg,rgb(238 242 248 / 3%) 1px,transparent 1px),#1b2a4a;background-size:auto,2rem 2rem,2rem 2rem,auto;color:#eef2f8;border-bottom:0}
+  .top.explorer .wrap{max-width:92rem;padding:2rem clamp(1rem,4vw,4rem)}
+  .top.explorer .head-row{align-items:center}
+  .explorer-brand{margin:0;font:700 .875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#7fa8e0}
+  .top.explorer .lang{background:#101725;border-color:#4a5670}.top.explorer .lang button{color:#a9b4c8}.top.explorer .lang button.on{background:#7fa8e0;color:#101725}
+  .hero{display:grid;grid-template-columns:minmax(20rem,.78fr) minmax(32rem,1.22fr);gap:2.5rem;align-items:start;margin-top:2.5rem}
+  .hero-copy h1{max-width:38rem;margin:.5rem 0 1rem;font-size:clamp(3rem,5.8vw,5.75rem);line-height:.94;letter-spacing:-.06em;color:#fff}
+  .hero-copy .sub{max-width:36rem;color:#a9b4c8;font-size:1.0625rem}.top.explorer .chips li{background:#182234;border-color:#4a5670;color:#a9b4c8}.top.explorer .chips b{color:#fff}
+  .paths{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.5rem}
+  .paths button{min-height:2.75rem;padding:.5rem .85rem;border:1px solid #4a5670;border-radius:999px;background:#182234;color:#eef2f8;font:inherit;font-size:.875rem;cursor:pointer}
+  .paths button.active{background:#7fa8e0;border-color:#7fa8e0;color:#101725}.paths button:focus-visible{outline:3px solid #7fa8e0;outline-offset:2px}
+  .stage{min-width:0;background:#101725;border:1px solid #4a5670;border-radius:1rem;overflow:hidden;box-shadow:0 1.5rem 4rem rgb(16 23 37 / 30%)}
+  .stage-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:1rem 1.25rem}.stage-kicker{display:block;color:#7fa8e0;font:700 .875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase}
+  .stage-top h2{margin:.25rem 0 0;font-size:1.125rem;line-height:1.35;color:#fff}#stage-pos{flex:0 0 auto;color:#a9b4c8;font-size:.875rem;font-variant-numeric:tabular-nums}
+  .stage-frame{display:block;width:100%;height:34rem;border:0;background:#fff;opacity:1;transition:opacity .22s ease}.stage.switching .stage-frame{opacity:.25}.stage-frame[hidden],#stage-recipe[hidden]{display:none}.shot{cursor:pointer}.stage-empty{height:34rem;display:grid;place-items:center;padding:2rem;color:#a9b4c8;text-align:center}.stage-empty[hidden]{display:none}
+  .stage-progress-track{height:2px;background:#2a3650}.stage-progress{display:block;width:0;height:100%;background:#7fa8e0;transition:width .25s ease}
+  .stage-actions button{transition:border-color .18s ease,transform .18s ease}.stage-actions button:hover:not(:disabled){transform:translateY(-1px)}
+  @media(prefers-reduced-motion:reduce){.stage-frame,.stage-progress,.stage-actions button{transition:none}}
+  .stage-bottom{padding:1rem 1.25rem}#stage-purpose{min-height:2.5rem;margin:0 0 1rem;color:#a9b4c8;font-size:.875rem}
+  .stage-actions{display:flex;flex-wrap:wrap;gap:.5rem}.stage-actions button{min-height:2.75rem;padding:.5rem .75rem;border:1px solid #4a5670;border-radius:.5rem;background:#182234;color:#eef2f8;font:inherit;font-size:.875rem;cursor:pointer}.stage-actions button:hover:not(:disabled){border-color:#7fa8e0}.stage-actions button:disabled{opacity:.45;cursor:default}
+  #stage-recipe{color:#a9b4c8}#stage-recipe summary{color:#7fa8e0}#stage-recipe code{background:#182234;color:#eef2f8}
+  @media(max-width:70rem){.hero{grid-template-columns:1fr;gap:1.75rem}.hero-copy{max-width:50rem}.stage-frame,.stage-empty{height:32rem}}
+  @media(max-width:40rem){.top.explorer .wrap{padding:1rem}.hero{margin-top:2rem;gap:1.5rem}.hero-copy h1{font-size:3rem}.stage-top{padding:.85rem;flex-direction:column;gap:.35rem}#stage-pos{white-space:normal}.stage-frame,.stage-empty{height:28rem}.stage-bottom{padding:.85rem}.stage-actions button{flex:1 1 auto}.stage-kicker{font-size:.875rem}}
+  @media print{.stage,.paths{display:none}}
 </style>
 </head>
 <body>
-<header class="top">
+<header class="top explorer">
   <div class="wrap">
     <div class="head-row">
-      <div>
-        <h1>{{TITLE}}</h1>
-        <p class="sub" data-i18n="footer_how">{{T:footer_how}}</p>
-      </div>
+      <p class="explorer-brand" data-i18n="explorer_eyebrow">{{T:explorer_eyebrow}}</p>
       <div class="lang" role="group" aria-label="{{T:lang_label}}">
         <button type="button" data-lang="nb">{{T:lang_nb}}</button>
         <button type="button" data-lang="en">{{T:lang_en}}</button>
       </div>
     </div>
-    <ul class="chips">{{CHIPS}}</ul>
+    <div class="hero">
+      <div class="hero-copy">
+        <h1 data-i18n="explorer_title">{{T:explorer_title}}</h1>
+        <p class="sub" data-i18n="explorer_intro">{{T:explorer_intro}}</p>
+        <ul class="chips">{{CHIPS}}</ul>
+        <div class="paths" role="group" aria-label="{{T:explorer_eyebrow}}">
+          <button type="button" class="active" data-path="all" data-i18n="path_all">{{T:path_all}}</button>
+          <button type="button" data-path="explore" data-i18n="path_explore">{{T:path_explore}}</button>
+          <button type="button" data-path="explain" data-i18n="path_explain">{{T:path_explain}}</button>
+          <button type="button" data-path="process" data-i18n="path_process">{{T:path_process}}</button>
+          <button type="button" data-path="scale" data-i18n="path_scale">{{T:path_scale}}</button>
+          <button type="button" data-path="native" data-i18n="path_native">{{T:path_native}}</button>
+        </div>
+      </div>
+      <section class="stage" aria-labelledby="stage-title">
+        <div class="stage-top">
+          <div><span class="stage-kicker" data-i18n="stage_kicker">{{T:stage_kicker}}</span><h2 id="stage-title" data-i18n="stage_start">{{T:stage_start}}</h2></div>
+          <span id="stage-pos" role="status" aria-live="polite"></span>
+        </div>
+        <div class="stage-progress-track" aria-hidden="true"><span class="stage-progress" id="stage-progress"></span></div>
+        <div class="stage-empty" id="stage-empty" data-i18n="stage_nojs">{{T:stage_nojs}}</div>
+        <iframe class="stage-frame" id="stage-frame" title="{{T:viewer_label}}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-popups allow-downloads" hidden></iframe>
+        <div class="stage-bottom">
+          <p id="stage-purpose"></p>
+          <div class="stage-actions">
+            <button type="button" id="stage-expand" data-i18n="stage_expand">{{T:stage_expand}}</button>
+            <button type="button" id="stage-download" data-i18n="stage_download">{{T:stage_download}}</button>
+            <button type="button" id="stage-share" data-i18n="stage_share">{{T:stage_share}}</button>
+            <span id="stage-share-status" role="status" data-i18n="stage_copied" hidden>{{T:stage_copied}}</span>
+            <button type="button" id="stage-prev" data-i18n="prev">{{T:prev}}</button>
+            <button type="button" id="stage-next" data-i18n="next">{{T:next}}</button>
+          </div>
+          <details id="stage-recipe"><summary data-i18n="card_command">{{T:card_command}}</summary><code></code></details>
+        </div>
+      </section>
+    </div>
   </div>
 </header>
 
@@ -329,12 +386,9 @@
     try { big.focus(); } catch (e) { /* focus is a courtesy, not the feature */ }
   }
 
-  Array.prototype.forEach.call(document.querySelectorAll(".shot"), function (btn) {
-    btn.addEventListener("click", function () {
-      var card = btn.closest(".card");
-      if (card) { openCard(card, btn); }
-    });
-  });
+  window.tunOpenDialog = openCard;
+  window.tunExplorerI18n = { tables: T, language: function () { return lang; } };
+  // Card activation belongs to the persistent Explorer stage below.
 
   prev.addEventListener("click", function () { show(at - 1); prev.focus(); });
   next.addEventListener("click", function () { show(at + 1); next.focus(); });
@@ -365,6 +419,166 @@
 
   var fromHash = (window.location.hash || "").replace("#", "");
   setLang(T[fromHash] ? fromHash : lang);
+})();
+</script>
+<script>
+(function () {
+  "use strict";
+  var cards = Array.prototype.slice.call(document.querySelectorAll("#grid .card"));
+  var frame = document.getElementById("stage-frame");
+  var empty = document.getElementById("stage-empty");
+  var title = document.getElementById("stage-title");
+  var purpose = document.getElementById("stage-purpose");
+  var position = document.getElementById("stage-pos");
+  var recipe = document.getElementById("stage-recipe");
+  var previous = document.getElementById("stage-prev");
+  var following = document.getElementById("stage-next");
+  var progress = document.getElementById("stage-progress");
+  var share = document.getElementById("stage-share");
+  var shareStatus = document.getElementById("stage-share-status");
+  var stage = document.querySelector(".stage");
+  frame.addEventListener("load", function () { stage.classList.remove("switching"); });
+  var pathButtons = Array.prototype.slice.call(document.querySelectorAll(".paths button"));
+  var i18n = window.tunExplorerI18n;
+  var PATHS = {
+    all: [],
+    explore: ["dashboard", "comparison", "distribution", "scorecard", "waterfall", "composition", "funnel", "heatmap", "cohort", "smallmultiples", "rank-change", "scatter", "boxplot", "calendar", "bullet", "pareto", "sankey"],
+    explain: ["slide", "pitch", "document", "onepager"],
+    process: ["process", "gantt", "timeline", "task-space", "living-idea"],
+    scale: ["cube", "register", "survey", "cohort"],
+    native: ["nojs", "standalone", "chart", "theme", "topbar", "task-space", "editable-document"]
+  };
+  var activePath = "all";
+  var current = cards.slice();
+  var stageCard = null;
+  var at = 0;
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function decode(b64) {
+    var bin = atob(b64), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i += 1) { bytes[i] = bin.charCodeAt(i); }
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+  function titleOf(card) {
+    var h = card.querySelector("h2");
+    return h ? h.textContent.trim() : "";
+  }
+  function matches(card, path) {
+    if (path === "all") { return true; }
+    var slug = card.getAttribute("data-slug") || "";
+    return PATHS[path].some(function (part) { return slug.indexOf(part) !== -1; });
+  }
+  function markPath() {
+    pathButtons.forEach(function (button) {
+      var on = button.getAttribute("data-path") === activePath;
+      button.classList.toggle("active", on);
+      button.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  function updateText() {
+    if (!stageCard) { return; }
+    var lang = i18n.language();
+    title.textContent = titleOf(stageCard);
+    var p = stageCard.querySelector(".body p");
+    purpose.textContent = p ? p.textContent : "";
+    position.textContent = String(i18n.tables[lang].pos)
+      .replace("{i}", String(at + 1)).replace("{n}", String(current.length))
+      .replace("{e}", stageCard.getAttribute("data-num") || "");
+    frame.title = i18n.tables[lang].viewer_label;
+    progress.style.width = ((at + 1) / current.length * 100).toFixed(2) + "%";
+    previous.disabled = at === 0;
+    following.disabled = at === current.length - 1;
+    var code = stageCard.querySelector("details code");
+    recipe.hidden = !code;
+    if (code) { recipe.querySelector("code").textContent = code.textContent; }
+  }
+  function openStage(card, writeUrl) {
+    if (!card) { return; }
+    if (current.indexOf(card) === -1) { activePath = "all"; current = cards.slice(); markPath(); }
+    stageCard = card;
+    at = current.indexOf(card);
+    empty.hidden = true;
+    frame.hidden = false;
+    stage.classList.add("switching");
+    frame.srcdoc = decode(card.getAttribute("data-live") || "");
+    updateText();
+    if (writeUrl) {
+      try {
+        var url = new URL(window.location.href);
+        url.searchParams.set("example", card.getAttribute("data-num") || "");
+        if (activePath === "all") { url.searchParams.delete("path"); }
+        else { url.searchParams.set("path", activePath); }
+        window.history.replaceState(null, "", url.href);
+      } catch (e) { /* an opaque origin still gives the live stage */ }
+    }
+  }
+  pathButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      var path = button.getAttribute("data-path");
+      activePath = path;
+      current = cards.filter(function (card) { return matches(card, path); });
+      markPath();
+      if (current.length) { openStage(current[0], true); }
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".shot"), function (button) {
+    button.addEventListener("click", function () {
+      var card = button.closest(".card");
+      activePath = "all"; current = cards.slice(); markPath();
+      openStage(card, true);
+      document.querySelector(".stage").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    });
+  });
+  previous.addEventListener("click", function () { if (at > 0) { openStage(current[at - 1], true); } });
+  following.addEventListener("click", function () { if (at < current.length - 1) { openStage(current[at + 1], true); } });
+  document.getElementById("stage-expand").addEventListener("click", function () {
+    if (stageCard) { window.tunOpenDialog(stageCard, this); }
+  });
+  document.getElementById("stage-download").addEventListener("click", function () {
+    if (!stageCard) { return; }
+    var blob = new Blob([decode(stageCard.getAttribute("data-live") || "")], { type: "text/html;charset=utf-8" });
+    var href = URL.createObjectURL(blob), link = document.createElement("a");
+    link.href = href;
+    link.download = (stageCard.getAttribute("data-slug") || "tun-example") + ".html";
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(function () { URL.revokeObjectURL(href); }, 1000);
+  });
+  function shareFeedback() {
+    var lang = i18n.language();
+    share.textContent = i18n.tables[lang].stage_copied;
+    shareStatus.hidden = false;
+    setTimeout(function () { share.textContent = i18n.tables[lang].stage_share; shareStatus.hidden = true; }, 1400);
+  }
+  function fallbackCopy(text) {
+    var area = document.createElement("textarea");
+    area.value = text; area.setAttribute("readonly", "");
+    area.style.position = "absolute"; area.style.left = "-9999px";
+    document.body.appendChild(area); area.select();
+    var copied = document.execCommand("copy"); area.remove();
+    if (copied) { shareFeedback(); }
+  }
+  share.addEventListener("click", function () {
+    var href = window.location.href;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(href).then(shareFeedback).catch(function () { fallbackCopy(href); });
+    } else { fallbackCopy(href); }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".lang button"), function (button) {
+    button.addEventListener("click", updateText);
+  });
+
+  var params = new URLSearchParams(window.location.search);
+  var requestedPath = params.get("path");
+  activePath = Object.prototype.hasOwnProperty.call(PATHS, requestedPath) ? requestedPath : "all";
+  current = cards.filter(function (card) { return matches(card, activePath); });
+  if (!current.length) { activePath = "all"; current = cards.slice(); }
+  markPath();
+  var requested = params.get("example");
+  var initial = current.find(function (card) { return card.getAttribute("data-num") === requested; });
+  if (!initial && !requested) {
+    initial = cards.find(function (card) { return card.getAttribute("data-slug") === "55-task-space"; }) || current[0];
+  }
+  openStage(initial || current[0], false);
 })();
 </script>
 </body>

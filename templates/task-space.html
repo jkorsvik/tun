@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+  This file is part of Tún, and part of its Artefact Runtime. Licence: GNU AGPL v3
+  or later (see LICENSE), with the Tún Artefact Exception v1.1 (see
+  COPYING.ARTEFACT-EXCEPTION): documents generated with this file may be conveyed
+  under terms of your choice, provided the Origin Notice is preserved.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<html lang="{{T:html_lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  {{TITLE}}
+  PROVENANCE  (do not delete - this is how output gets traced back)
+    Source data : {{SOURCE_DESCRIPTION}}
+    Extracted   : {{EXTRACT_TIMESTAMP}}
+    Built       : {{BUILD_TIMESTAMP}}
+    Requested by: {{REQUESTED_BY}}
+    Made with   : Tún - tun.community
+    Records     : {{ROWS_INLINED}} declared steps
+
+  This is a self-contained artefact: no server, no CDN, no framework, no licence
+  required to view. Raw WebGL is an enhancement, not a requirement. Without it,
+  the same source rows provide a static SVG and the complete table below.
+-->
+<style>
+{{TOKEN_CSS}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Eksempel AS","Segoe UI",system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5}
+header{background:var(--brand-dark);color:var(--on-brand);padding:1.5rem}
+header .in,main,footer{max-width:72rem;margin:0 auto}
+h1{margin:0;font-size:clamp(1.75rem,4vw,3rem);line-height:1.1;letter-spacing:-.03em}
+header .sub{margin:.5rem 0 0;max-width:48rem;font-size:.9375rem;line-height:1.5;opacity:.92}
+main{padding:1.5rem}
+.space{position:relative;margin:0;background:var(--panel);border:1px solid var(--line);border-radius:.75rem;overflow:hidden}
+.stage{position:relative;height:min(70vh,42rem);min-height:32rem;background-image:linear-gradient(var(--rule) 1px,transparent 1px),linear-gradient(90deg,var(--rule) 1px,transparent 1px);background-size:2rem 2rem}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y;cursor:grab}.stage canvas:active{cursor:grabbing}
+.stage-head{position:absolute;z-index:2;top:1rem;left:1rem;right:1rem;display:flex;justify-content:space-between;gap:1rem;color:var(--muted);font:.875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;pointer-events:none}
+.task-label{position:absolute;z-index:3;transform:translate(-50%,-50%);min-width:2.75rem;min-height:2.75rem;padding:.4rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);box-shadow:0 .25rem 1rem rgb(0 0 0 / 12%);font:600 .875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:nowrap;cursor:pointer}
+.task-label.active{background:var(--brand-dark);border-color:var(--brand-dark);color:var(--on-brand);box-shadow:0 0 0 .3rem var(--brand-soft)}
+.task-label:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.task-detail{position:absolute;z-index:4;left:1rem;right:1rem;bottom:1rem;display:grid;grid-template-columns:auto 1fr;gap:1rem;max-width:36rem;padding:1rem 1.25rem;background:var(--panel);border:1px solid var(--line);box-shadow:0 .75rem 2rem rgb(0 0 0 / 15%)}
+.task-detail .step-no{font:700 2rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--brand)}
+.task-detail h2{margin:0;font-size:1rem;line-height:1.5}.task-detail p{margin:.25rem 0 0;font-size:.875rem;line-height:1.5;color:var(--muted)}
+.interactive{display:none}.fallback{display:block}
+html.js .interactive{display:block}html.js .fallback{display:none}
+html.js.no-webgl .interactive{display:none}html.js.no-webgl .fallback{display:block}
+.fallback-svg{display:block;width:100%;height:auto;min-width:50rem}
+.fallback{overflow:auto}.fb-edge{stroke:var(--muted);stroke-width:2}.fb-node{fill:var(--brand)}.fb-label{fill:var(--ink);font-size:14px}
+figcaption{padding:1rem 1.25rem;border-top:1px solid var(--line);font-size:.875rem;line-height:1.5;color:var(--muted)}
+.summary{margin:1rem 0 0;padding:1rem 1.25rem;background:var(--brand-soft);color:var(--on-brand-soft);border-radius:.5rem;font-size:.9375rem;line-height:1.5}
+.notes{margin:.75rem 0 1.5rem;padding-left:1.25rem;font-size:.9375rem;line-height:1.5}.notes li{margin:.35rem 0}
+h2.table-head{font-size:1.125rem;line-height:1.5;margin:2rem 0 .5rem}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);font-size:.875rem;line-height:1.5}
+caption{text-align:left;padding:0 0 .5rem;color:var(--muted)}
+th,td{padding:.55rem .65rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--brand-soft);color:var(--on-brand-soft)}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}footer p{margin:.25rem 0}
+@media(max-width:40rem){main{padding:1rem}.stage{min-height:30rem;height:60vh}.task-detail{left:.65rem;right:.65rem;bottom:.65rem;padding:.8rem;gap:.65rem}.task-label{font-size:.875rem;padding:.35rem .5rem}.stage-head{left:.65rem;right:.65rem}.table-wrap{overflow-x:auto}table{min-width:44rem}}
+@media print{body{background:#fff}header{background:#fff;color:#000;border-bottom:2px solid #000}.interactive{display:none!important}.fallback{display:block!important;overflow:visible}.fallback-svg{min-width:0}.summary{background:#fff;color:#000;padding-left:0}tr{break-inside:avoid}.space{break-inside:avoid}}
+@media screen and (prefers-color-scheme:dark){header{color:var(--ink)}.task-label.active{color:var(--bg)}}
+</style>
+</head>
+<body>
+<header><div class="in"><h1>{{TITLE}}</h1><p class="sub">{{SUBTITLE}}</p></div></header>
+<main>
+  <figure class="space">
+    <div class="stage interactive" id="stage">
+      <canvas id="task-canvas" aria-hidden="true"></canvas>
+      <div class="stage-head"><span>{{T:live_label}}</span><span>X / Y / Z</span></div>
+      <div id="task-labels"></div>
+      <div class="task-detail" aria-live="polite"><span class="step-no" id="step-no">01</span><div><h2 id="step-title"></h2><p id="step-copy"></p></div></div>
+    </div>
+    <div class="stage fallback">{{FALLBACK_SVG}}</div>
+    <figcaption>{{CAPTION}} <span class="interactive">{{T:drag_hint}}</span></figcaption>
+  </figure>
+  <p class="summary">{{SUMMARY}}</p>
+  <ul class="notes">{{NOTES}}</ul>
+  <h2 class="table-head" id="steps-h">{{T:head_steps}}</h2>
+  <div class="table-wrap"><table aria-labelledby="steps-h">
+    <caption>{{T:table_caption}}</caption>
+    <thead><tr><th scope="col">{{T:col_step}}</th><th scope="col">{{T:col_title}}</th><th scope="col">{{T:col_description}}</th><th scope="col" class="num">{{T:col_x}}</th><th scope="col" class="num">{{T:col_y}}</th><th scope="col" class="num">{{T:col_z}}</th></tr></thead>
+    <tbody>{{TABLE_ROWS}}</tbody>
+  </table></div>
+</main>
+<footer><p>{{T:footer_a}}</p><p>{{T:footer_b}}</p><p>{{SOURCE_LINE}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p><p>{{FEEDBACK_BLOCK}}</p></footer>
+<script>
+document.documentElement.className += " js";
+(function(){
+"use strict";
+var tasks={{TASKS_JSON}},root=document.documentElement,canvas=document.getElementById("task-canvas"),stage=document.getElementById("stage");
+var gl=canvas.getContext("webgl",{alpha:true,antialias:true,powerPreference:"low-power"});
+if(!gl){root.classList.add("no-webgl");return;}
+var vertex=`
+attribute vec3 aPos;
+uniform float uAngle,uTilt,uScaleX,uScaleY,uRatio,uSize;
+void main(){
+  float c=cos(uAngle),s=sin(uAngle);
+  vec3 q=vec3(c*aPos.x+s*aPos.z,aPos.y,-s*aPos.x+c*aPos.z);
+  float ct=cos(uTilt),st=sin(uTilt);q=vec3(q.x,ct*q.y-st*q.z,st*q.y+ct*q.z);
+  float p=1.0/(4.8-q.z);
+  gl_Position=vec4(q.x*p*1.4*uScaleX,q.y*p*1.4*uScaleY,0.0,1.0);
+  gl_PointSize=uSize*uRatio*p*5.0;
+}`;
+var fragment=`
+precision mediump float;uniform vec4 uColor;uniform float uPoint;
+void main(){float a=1.0;if(uPoint>0.5)a=smoothstep(0.5,0.12,length(gl_PointCoord-vec2(0.5)));gl_FragColor=vec4(uColor.rgb,uColor.a*a);}`;
+function shader(type,source){var s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
+var program;
+try{program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vertex));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));}catch(e){root.classList.add("no-webgl");return;}
+gl.useProgram(program);
+var U={};["Angle","Tilt","ScaleX","ScaleY","Ratio","Size","Color","Point"].forEach(function(n){U[n]=gl.getUniformLocation(program,"u"+n);});
+var positionBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(tasks.flatMap(function(t){return t.pos;})),gl.STATIC_DRAW);
+var location=gl.getAttribLocation(program,"aPos");gl.enableVertexAttribArray(location);
+var edges=[];for(var i=0;i<tasks.length-1;i++)edges.push.apply(edges,tasks[i].pos.concat(tasks[i+1].pos));
+var edgeBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,edgeBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(edges),gl.STATIC_DRAW);
+gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.clearColor(0,0,0,0);
+var angle=-.28,tilt=-.12,selected=0,drag=null,raf=0,scaleX=1,scaleY=1,ratio=1,colors={};
+function color(name){var probe=document.createElement("span");probe.style.color="var("+name+")";stage.appendChild(probe);var value=getComputedStyle(probe).color;probe.remove();var parts=value.match(/[\d.]+/g).map(Number);return parts.slice(0,3).map(function(v){return v/255;});}
+function setColors(){colors={brand:color("--brand"),muted:color("--muted"),ok:color("--ok")};}
+setColors();
+function project(pos){var c=Math.cos(angle),s=Math.sin(angle),x=c*pos[0]+s*pos[2],y=pos[1],z=-s*pos[0]+c*pos[2],ct=Math.cos(tilt),st=Math.sin(tilt),yy=ct*y-st*z;z=st*y+ct*z;y=yy;var p=1/(4.8-z);return [x*p*1.4*scaleX,y*p*1.4*scaleY];}
+var labels=tasks.map(function(task,index){var b=document.createElement("button");b.type="button";b.className="task-label";b.textContent=task.label;b.setAttribute("aria-label",task.title);b.addEventListener("click",function(){select(index);});document.getElementById("task-labels").appendChild(b);return b;});
+function select(index){selected=index;document.getElementById("step-no").textContent=String(index+1).padStart(2,"0");document.getElementById("step-title").textContent=tasks[index].title;document.getElementById("step-copy").textContent=tasks[index].text;labels.forEach(function(b,i){b.classList.toggle("active",i===index);b.setAttribute("aria-pressed",i===index?"true":"false");});request();}
+function resize(){ratio=Math.min(devicePixelRatio||1,1.5);var w=Math.round(canvas.clientWidth*ratio),h=Math.round(canvas.clientHeight*ratio);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}var aspect=w/Math.max(1,h),fit=aspect<1?.85:1;scaleX=(aspect>1?1/aspect:1)*fit;scaleY=(aspect>1?1:aspect)*fit;}
+function draw(){resize();labels.forEach(function(b,i){var p=project(tasks[i].pos);b.style.left=((p[0]*.5+.5)*canvas.clientWidth)+"px";b.style.top=((-p[1]*.5+.5)*canvas.clientHeight-25)+"px";});gl.clear(gl.COLOR_BUFFER_BIT);gl.uniform1f(U.Angle,angle);gl.uniform1f(U.Tilt,tilt);gl.uniform1f(U.ScaleX,scaleX);gl.uniform1f(U.ScaleY,scaleY);gl.uniform1f(U.Ratio,ratio);gl.uniform1f(U.Point,0);gl.uniform4f(U.Color,colors.muted[0],colors.muted[1],colors.muted[2],.65);gl.bindBuffer(gl.ARRAY_BUFFER,edgeBuffer);gl.vertexAttribPointer(location,3,gl.FLOAT,false,0,0);gl.drawArrays(gl.LINES,0,edges.length/3);gl.uniform1f(U.Point,1);gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);gl.vertexAttribPointer(location,3,gl.FLOAT,false,0,0);gl.uniform1f(U.Size,18);gl.uniform4f(U.Color,colors.brand[0],colors.brand[1],colors.brand[2],1);gl.drawArrays(gl.POINTS,0,tasks.length);gl.uniform1f(U.Size,28);gl.uniform4f(U.Color,colors.ok[0],colors.ok[1],colors.ok[2],1);gl.drawArrays(gl.POINTS,selected,1);}
+function request(){if(!raf)raf=requestAnimationFrame(function(){raf=0;draw();});}
+canvas.addEventListener("pointerdown",function(e){drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener("pointermove",function(e){if(!drag)return;angle+=(e.clientX-drag.x)*.006;tilt=Math.max(-.7,Math.min(.7,tilt+(e.clientY-drag.y)*.004));drag={x:e.clientX,y:e.clientY};request();});
+canvas.addEventListener("pointerup",function(){drag=null;});
+canvas.addEventListener("webglcontextlost",function(e){e.preventDefault();root.classList.add("no-webgl");});
+if("ResizeObserver"in window)new ResizeObserver(request).observe(stage);else window.addEventListener("resize",request);
+var dark=matchMedia("(prefers-color-scheme: dark)");if(dark.addEventListener)dark.addEventListener("change",function(){setColors();request();});
+select(0);
+})();
+</script>
+</body>
+</html>
