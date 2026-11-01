@@ -1,0 +1,51 @@
+# Strings for templates/task-space.html and tools/build_task_space.py.
+
+[nb]
+html_lang = nb
+sub_line = {count} trinn i én erklært arbeidsflyt. Dra for å rotere, velg et trinn for å lese mer.
+caption = En romlig projeksjon av trinnene i tabellen. Rekkefølgen kommer fra radene, ikke fra avstanden mellom punktene.
+summary = Dette er en visning av en erklært sekvens, ikke en simulering. Tabellen under har alle trinn, beskrivelser og koordinater.
+note_shape = Tredimensjonal visning passer når selve rommet hjelper leseren til å se sammenhengen. Bruk et prosessdiagram når forgreninger, ansvar eller beslutninger er poenget.
+note_interaction = Dra i bildet for å rotere. Velg et trinn med mus, pekeskjerm eller tastatur. Det er ingen automatisk bevegelse.
+note_fallback = Uten WebGL eller JavaScript vises en statisk projeksjon og hele tabellen. Filen gjør ingen nettverksforespørsler.
+head_steps = Trinnene og koordinatene
+table_caption = Alle opplysninger i den romlige visningen, i samme rekkefølge som datafilen.
+col_step = Trinn
+col_title = Navn
+col_description = Beskrivelse
+col_x = X
+col_y = Y
+col_z = Z
+source_line = Kilde: {name} · {count} trinn
+footer_a = Koordinatene er en visningsavtale. De måler ikke varighet, kostnad, verdi eller fremdrift.
+footer_b = Denne filen viser én erklært sekvens. Den oppdager ikke prosessen og utfører den ikke.
+footer_built = Bygget
+svg_title = Statisk projeksjon av arbeidsflyten
+svg_desc = {count} trinn i erklært rekkefølge. Den fullstendige beskrivelsen står i tabellen.
+drag_hint = Dra for å rotere · velg et trinn
+live_label = Romlig projeksjon
+
+[en]
+html_lang = en
+sub_line = {count} steps in one declared workflow. Drag to rotate, select a step to read more.
+caption = A spatial projection of the steps in the table. The order comes from the rows, not from the distance between the points.
+summary = This is a view of a declared sequence, not a simulation. The table below carries every step, description and coordinate.
+note_shape = A three-dimensional view fits when space itself helps the reader see the relationship. Use a process diagram when branches, ownership or decisions are the point.
+note_interaction = Drag the picture to rotate it. Select a step with a mouse, touch or keyboard. There is no automatic movement.
+note_fallback = Without WebGL or JavaScript, a static projection and the full table remain. The file makes no network requests.
+head_steps = The steps and coordinates
+table_caption = Every fact in the spatial view, in the same order as the data file.
+col_step = Step
+col_title = Name
+col_description = Description
+col_x = X
+col_y = Y
+col_z = Z
+source_line = Source: {name} · {count} steps
+footer_a = The coordinates are a display agreement. They do not measure duration, cost, value or progress.
+footer_b = This file shows one declared sequence. It does not discover or execute the process.
+footer_built = Built
+svg_title = Static projection of the workflow
+svg_desc = {count} steps in the declared order. The full description is in the table.
+drag_hint = Drag to rotate · select a step
+live_label = Spatial projection

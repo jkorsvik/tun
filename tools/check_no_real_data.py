@@ -117,6 +117,9 @@ ALLOWED_DATA: dict[str, str] = {
         "eleven invented channel-to-outcome flows with invented counts, written out literally in "
         "the FLOWS table of the generate_data.py beside it; the balance is exact by construction, "
         "not measured from anything",
+    "examples/55-task-space/trinn.csv":
+        "seven invented workflow steps with display-only X/Y/Z coordinates, written out literally "
+        "in the ROWS table of the generate_data.py beside it; no real process, person or measurement",
     "examples/52-pareto/henvendelser.csv":
         "twenty-two invented enquiry reasons with invented counts, written out literally in the "
         "ROWS table of the generate_data.py beside it; no real case, customer or unit",

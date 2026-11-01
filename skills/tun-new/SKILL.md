@@ -537,6 +537,27 @@ python3 tools/build_sankey.py \
 - **the flows must be counted, not averaged.** A rate per channel has nothing to add up.
 - **give it three stages or more.** Two nodes and one arrow is a number with a picture round it.
 
+### When the question is "how does this sequence fit together in space": build a task space
+
+A task space is a declared sequence shown as a rotatable 3D projection. Use it when spatial
+arrangement helps the reader explore the relationship. Use the process diagram for branches,
+ownership or decisions.
+
+```bash
+python3 tools/build_task_space.py \
+    --data <extract>.csv --step <step id> --label <title column> \
+    --description <description column> --x <X> --y <Y> --z <Z> \
+    --title "<title>" --source "<where the rows came from>" \
+    --requested-by "<the role or team that asked>" \
+    --out dashboards/<slug>.html
+```
+
+- **row order is the sequence.** Coordinates place the view; they never measure value or progress.
+- **the table is always present.** Raw WebGL, the static SVG and the table come from the same rows.
+- **no automatic movement.** Drag to rotate, and select a step with mouse, touch or keyboard.
+- **two to twelve steps.** Duplicate ids, duplicate points and coordinates outside `[-3, 3]` are
+  refused with a reason.
+
 ### When the question is "which few explain most of it": build a Pareto
 
 "Where do eighty percent of the cases come from", "which of these forty reasons can we actually

@@ -1,4 +1,4 @@
-# 33. Twenty-six builders: which shape answers which question
+# 33. Twenty-seven builders: which shape answers which question
 
 **Reader:** user — you have data and a sentence about what you want to know, and you need to pick the right file to build.
 
@@ -27,6 +27,7 @@ builder and to a working example. If your question is not in this table, it is o
 | "What is this total made of" | A composition: one column per period, split into its parts, columns summing to 100 | `tools/build_composition.py` | [41](../examples/41-composition/) |
 | "Who comes back, and when do they drop off" | A cohort grid: one row per cohort, one column per period since it started | `tools/build_cohort.py` | [44](../examples/44-cohort/) |
 | "Where did the volume go between stages" | A Sankey: flows between nodes in stages, every middle node balanced, one shared scale | `tools/build_sankey.py` | [53](../examples/53-sankey/) |
+| "How does this declared sequence fit together in space" | A task space: raw WebGL rotation and selectable steps, with a static projection and full table from the same rows | `tools/build_task_space.py` | [55](../examples/55-task-space/) |
 | "Which few explain most of it" | A Pareto: categories sorted by size, with the cumulative share and the folded tail | `tools/build_pareto.py` | [52](../examples/52-pareto/) |
 | "Which of these is behind its target" | A bullet: one row per unit, its value against its own target, the gap as a signed number | `tools/build_bullet.py` | [51](../examples/51-bullet/) |
 | "When in the week, and when in the year" | A calendar: one cell per day, aligned to weekday rows, missing days hatched | `tools/build_calendar.py` | [50](../examples/50-calendar/) |

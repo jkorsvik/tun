@@ -129,6 +129,9 @@ REQUIRED_FOLLOWERS = {
         "the sankey; its header band lettered --brand-dark on its own fill, the ribbons a "
         "translucent --brand, the node bars in --brand-dark which the template re-points to "
         "--ink in dark so a bar cannot vanish into the panel, and its labels haloed in --panel",
+    "examples/55-task-space/arbeidsflyt.html":
+        "the task space; its header band, WebGL labels and detail card must keep their contrast "
+        "in dark, and its WebGL colours are read from the same token seam",
     "examples/52-pareto/arsaker.html":
         "the pareto; its header band lettered --brand-dark on its own fill, the bars in --brand, "
         "the folded tail a --brand-soft wash, and the cumulative line in --ink so it is a second "
