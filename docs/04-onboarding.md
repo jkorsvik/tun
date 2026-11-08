@@ -1,46 +1,43 @@
-# Onboarding — from a spreadsheet to a shared dashboard
+# Onboarding: from a spreadsheet to a shared dashboard
 
 **Reader:** user — you want an artefact out of your own data and do not intend to change the toolkit.
 
-**Who this is for:** anyone with a work laptop, Windows or macOS. No prior setup, no
-developer toolchain, no admin approval. If you can open Excel and a browser, you can do
-this.
+[START-HERE.md](../START-HERE.md) is the shortest route. This guide adds Windows details,
+verification, publishing and the data boundary.
 
 Two routes, and you can stop after the first:
 
 - **Part 1** builds a real dashboard from the command line in about five minutes, with no
-  AI tool installed. Nothing about this project needs one — the dashboard is a file.
-- **Part 2** adds the assistant, so the same job becomes one sentence.
+  AI tool installed.
+- **Part 2** installs the Agent Skills so a coding assistant can do the same job from a sentence.
 
 **Done looks like this:**
 
-- [ ] Python runs on your machine and says 3.9 or newer
-- [ ] `python3 setup.py` (Windows: `py -3 setup.py`) prints `Everything the dashboard
-      skills need is in place.`
-- [ ] you have opened a dashboard built from your own data, from `file://`, in a browser
-- [ ] it is in a SharePoint or OneDrive folder, and a colleague has opened it
+- [ ] Python runs and reports 3.9 or newer
+- [ ] you have opened the example dashboard from `file://` in a browser
+- [ ] you have compared one number with the CSV and looked at the verification screenshot
+- [ ] you know who may read every row in the file you share
 
 ---
 
 ## Windows: the four things that are different
 
-Everything else in this document is identical on both systems. These are the only
-differences, and every one of them is handled by the tools here rather than by you:
+Everything else is identical on Windows and macOS.
 
 | On Windows | What to know |
 |---|---|
-| `python3` is `py -3` | `python3` is not a command on Windows unless the Microsoft Store alias is installed. Use `py -3` wherever this document shows `python3`. `setup.py` prints the spelling your machine has. |
-| Skills are **copied**, not symlinked | Symlinks need Developer Mode. Without it `setup.py` copies the skill files, which works the same — but then re-run `setup.py` after someone updates a skill. It tells you when they are stale. |
-| OneDrive lives elsewhere | `%OneDriveCommercial%` (usually `C:\Users\<you>\Eksempel AS Bank ASA\...`), not the macOS `~/Library/CloudStorage/...` path. `setup.py` finds it and prints it. |
-| Paths use `\` | Every path in this document also works with `/` on Windows. Nothing here needs a shell script, and there are none in this repository. |
+| `python3` is `py -3` | Use `py -3` wherever this guide shows `python3`. `setup.py` prints the spelling your machine has. |
+| Skills are **copied**, not symlinked | Symlinks need Developer Mode. `setup.py` copies the files instead. Re-run it after updating a skill, and it tells you when a copy is stale. |
+| OneDrive lives elsewhere | `%OneDriveCommercial%`, not the macOS `~/Library/CloudStorage/...` path. |
+| Paths use `\` | Forward slashes also work in the Python commands. Nothing here needs a shell script. |
 
 ---
 
-## Part 1 — five minutes, no AI tool
+## Part 1: five minutes, no AI tool
 
-### Step 1. Python
+### Step 1. Check Python
 
-macOS ships a usable Python 3; check it:
+macOS:
 
 ```bash
 python3 --version
@@ -53,40 +50,19 @@ py -3 --version
 ```
 
 If that fails, install Python from [python.org](https://www.python.org/downloads/) and tick
-"Add python.exe to PATH" in the installer, or run `winget install Python.Python.3.12`.
-Anything 3.9 or newer is fine — the builders are stdlib only, so there is nothing to
-install afterwards.
+"Add python.exe to PATH", or run `winget install Python.Python.3.12`. Anything 3.9 or newer
+is fine. The builders use only the Python standard library.
 
 ### Step 2. Get this repository
 
 ```bash
-git clone https://example.com/tun.git \
-  ~/dev/work/github_repos/tun
-cd ~/dev/work/github_repos/tun
+git clone https://github.com/jkorsvik/tun.git
+cd tun
 ```
 
-No git yet? `winget install Git.Git` on Windows, `xcode-select --install` on macOS.
+No git yet? Use `winget install Git.Git` on Windows or `xcode-select --install` on macOS.
 
-### Step 3. Check the machine and install the skills
-
-One command does both: it copies the skills into your AI tool if you have one, then checks
-every tool, then builds and verifies a test dashboard to prove the chain works.
-
-```bash
-python3 setup.py
-```
-
-Windows: `py -3 setup.py`. If either fails, the last block is a list of exact commands to
-fix it; `docs/05-toolchain.md` explains why each tool is there.
-
-Two of those lines matter:
-
-- `OK ms365 authenticated` — the connection to SharePoint and OneDrive. Without it you can
-  still build, but you cannot publish from the assistant.
-- `OK build produced a dashboard` followed by `OK verify it renders and is interactive` —
-  the whole pipeline works on your machine, including a headless browser.
-
-### Step 4. Build the example, then look at it
+### Step 3. Build the example
 
 ```bash
 python3 tools/build_dashboard.py \
@@ -99,112 +75,95 @@ python3 tools/build_dashboard.py \
   --out /tmp/salg.html
 ```
 
-Then open `/tmp/salg.html` in your browser — double-click it, or `start` it on Windows
-(`start %TEMP%\salg.html`). That is the deliverable: one file, no server, no licence, and
-it keeps working on a plane.
+Open `/tmp/salg.html` in your browser. On Windows, `start` it from the directory you chose
+for `--out`. The deliverable is one file. No server starts, and no package installation is
+needed for the build.
 
-**Look at it, do not trust the build log.** A dashboard that printed no error can still
-have overlapping labels or a number that is wrong by a factor of a thousand. Verifying is
-the next step and it is not optional.
+**Look at it.** A clean build log does not show overlapping labels or a number that is wrong
+by a factor of a thousand.
 
-### Step 5. Prove it renders
+### Step 4. Prove it renders
+
+Install [uv](https://docs.astral.sh/uv/) and Chromium once, then run the verifier:
 
 ```bash
-python3 tools/verify_dashboard.py /tmp/salg.html
+uv sync --extra verify && uv run playwright install chromium
+uv run python tools/verify_dashboard.py /tmp/salg.html
 ```
 
-Expected: `✓ PASS`, plus a screenshot path. Open the screenshot. If the verify tool complains
-it has no browser, it prints the two commands to install one; it refuses to report success
-without one, on purpose.
+Expected: `✓ PASS`, plus a screenshot path. Open the screenshot. The verifier refuses to
+report success when it cannot open a real browser.
 
-From here, everything else is the same three verbs: **build**, **verify**, **share** with
-your own file as `--data`. Column names come from your file; if one is wrong the builder
-lists the ones it found:
-
-```
-error: --dimension 'Nope' not found. Available: Maaned, Region, Produkt, Kanal, Antall, Belop
-```
-
-Every refusal is one line, starts with `error:`, and exits 2, so a script you wrap around it
-can tell "refused" from "crashed".
+Use your own CSV as `--data` next. Column names come from your file. If one is wrong, the
+builder lists the columns it found. Refusals start with `error:` and exit 2, so a calling
+script can distinguish a refused input from a crash.
 
 ---
 
-## Part 2 — the same job, by asking
+## Part 2: the same job, by asking
 
-Install the assistant once, and the rest of this document becomes a conversation.
+The skills are open [Agent Skills](https://agentskills.io/specification): editable Markdown
+recipes that tell an assistant how to build and check the file. Clone the repository, then
+run the command for your tool:
 
-**macOS** — the team's installer:
+| Tool | Install |
+|---|---|
+| Claude Code | `python3 setup.py --tool claude` |
+| Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode | `python3 setup.py --tool agents` |
+| RAIWork | `python3 setup.py` |
+
+On Windows, use `py -3 setup.py --tool claude` or `py -3 setup.py --tool agents`.
+
+Check the installation afterwards:
 
 ```bash
-git clone eksempel@example.com:vedlikeholderen-Ryen-vedlikeholderen/dotfiles.git ~/dev/personal/dotfiles
-cd ~/dev/personal/dotfiles && ./install.sh
+python3 setup.py --check
 ```
 
-Pick the **Developer** profile — the lowest one that includes the assistant ("Minimal"
-skips it). Safe to re-run.
+Then open your assistant with this repository as its working folder and ask:
 
-**Windows** — the assistant installs on Windows, but the team's `install.sh` is macOS-only,
-so the Windows route is the app itself plus this repository's skills:
+> Build me a dashboard from `examples/01-hello-dashboard/salgsdata.csv`, with amounts by
+> product, the trend over months and region as a filter.
 
-1. install the assistant from the internal distribution point your team uses
-2. `py -3 setup.py --tool raiwork` in this repository, which puts the skills where it reads
-   them
-3. `py -3 setup.py --check` to confirm
+The skills tell the assistant to use the tested builders and verification tools. You can
+read and change the recipes in `skills/` without a build step.
 
-What is verified: the skills install path, `setup.py` on both systems, and every build and
-verify command above. What is **not** verified: the assistant's Windows installer, which is
-a separate artefact this repository does not carry. If it fights you, that is a bug worth
-reporting, not something you are doing wrong.
+### ChatGPT, Grok and other chat bots
 
-Then open the assistant, point it at this repository as its working folder, and type:
-
-> Build me a dashboard from `examples/01-hello-dashboard/salgsdata.csv` — the amounts by
-> product, the trend over the months, filterable by region.
-
-It asks the one question that changes the answer (do different people need to see different
-rows? say no here), reads the file, tells you which columns it found, builds the file, opens
-it in a real browser, and shows you the picture.
+Use the [copyable starter prompt](../START-HERE.md#3-chatgpt-grok-or-another-chat-bot).
+The bot writes its own HTML and JavaScript, not the tested Tún builders. This is useful for
+a first try. Use Part 1 or Part 2 for the full toolkit and verification.
 
 ### What to ask for
 
-You do not need to know skill names. Say what you want:
-
-| You want to… | Say something like… |
+| You want to... | Say something like... |
 |---|---|
-| start something new | *"make me a dashboard from this file"* |
-| the list, not a chart | *"give me a searchable list of the open cases"* |
-| a process diagram | *"draw how a request flows between these three teams"* |
-| know if this is the right approach | *"can this replace our Power BI report?"* |
-| update stale numbers | *"refresh the sales dashboard with the new export"* |
-| check before sending | *"is this dashboard safe to share?"* |
-| share it | *"publish this to the team folder"* |
-
-Not sure? *"what can you do with dashboards?"* routes you and states what each option costs
-in approvals.
+| start something new | "make me a dashboard from this file" |
+| the list, not a chart | "give me a searchable list of the open cases" |
+| a process diagram | "draw how a request flows between these three teams" |
+| know if this is the right approach | "can this replace our Power BI report?" |
+| update stale numbers | "refresh the sales dashboard with the new export" |
+| check before sending | "is this dashboard safe to share?" |
+| share it | "publish this to the team folder" |
 
 ---
 
-## Part 3 — publish it
+## Part 3: publish it
 
-> Put it in \<your team's SharePoint folder\> and give me a link I can share.
+Put the file in a synced OneDrive or SharePoint folder and share it the way you share a
+document. You can also attach it in Teams or email, publish it as a static web page, or use
+the Atlassian Artifacts route in `docs/29-atlassian-artifacts.md`.
 
-The assistant confirms which folder, tells you **who will be able to see it**, uploads it,
-and drafts the message. It will not send anything without you saying so.
-
-If you publish by hand instead: put the file in a synced OneDrive or SharePoint folder and
-share the file the way you share a document. Same result.
+A coding assistant with the publishing tools can do this for you. It must confirm the folder,
+tell you who can see it and show you any announcement before sending.
 
 ### The one quirk to explain to readers
 
-When someone clicks the link, SharePoint **downloads** the file instead of rendering it in
-the page. That is a Microsoft security rule, it applies to every `.html` file in every
-document library, and we route around it rather than defeat it. So describe it that way:
+SharePoint downloads an HTML file instead of rendering it in the page. That is a Microsoft
+security rule. The download is the delivery mechanism, not a failure.
 
-> "Klikk lenken, filen åpnes i nettleseren. Den fungerer også offline etterpå."
-
-Same number of clicks as opening a PDF, and it is the reason the dashboard keeps working on
-a train.
+Tell the reader: "Click the link, then open the downloaded file in your browser. It also
+works offline."
 
 ---
 
@@ -213,20 +172,13 @@ a train.
 > **If different people who open the dashboard must see different rows of data, this
 > approach cannot be used.**
 
-The data lives inside the file. Anyone who can open the file can read all of it, including
-rows they should not see. A filter in the browser hides nothing — the rows are still in the
-file — so there is no safe workaround, and the skills refuse rather than pretend.
+The data lives inside the file. Anyone who can open the file can read all of it. A browser
+filter hides nothing. Split the data before building: same dashboard shell, one file per
+audience, each in a folder only that audience can open.
 
-The fix is a split, not a filter: same dashboard shell, one data file per audience, each in
-a folder only that audience can open. The split happens **before** anything is written.
-Everything else — where everyone sees the same numbers — is fair game, and that is most
-reporting.
-
-On freshness: use **paired mode** and the dashboard is a small file next to a `data.js`.
-Replace the data file and everyone sees new numbers the next time they open it, with no
-rebuild and no republish.
-
-`docs/00-vision.md` has the honest comparison, including where Power BI is the right answer.
+Use paired mode when the numbers need refreshing without a rebuild. A trusted `data.js`
+sits beside `dash.html`; replace it and readers see the new numbers on the next load.
+That is an update on reload, not real-time delivery.
 
 ---
 
@@ -234,50 +186,28 @@ rebuild and no republish.
 
 | Path | What it is |
 |---|---|
-| `docs/00-vision.md` | why this exists, and the honest Power BI boundary |
-| `docs/01-tenant-constraints.md` | **what SharePoint actually does** — measured, not guessed |
-| `docs/02-architecture.md` | the three delivery tiers and what each costs in approvals |
-| `docs/03-skill-tree.md` | the skills, how they fit, what is built and what is planned |
+| [START-HERE.md](../START-HERE.md) | the shortest first-run route |
+| `docs/00-vision.md` | why this exists, and the Power BI boundary |
+| `docs/01-tenant-constraints.md` | what SharePoint actually does, measured |
+| `docs/02-architecture.md` | the delivery tiers and their approval costs |
+| `docs/03-skill-tree.md` | the skills and how they fit together |
 | `docs/05-toolchain.md` | every tool needed and why |
-| `docs/09-usability-and-navigation-principles.md` | what a reader must be able to do |
 | `docs/30-glossary.md` | the vocabulary, for anyone who is not a developer |
-| `skills/` | the skills — plain English, editable without a build step |
-| `examples/` | working artefacts with sample data |
-| `ROADMAP.md` | what is next, and what is blocked on a question |
-
-Read `docs/01-tenant-constraints.md` at some point. It is the document that turns "I think
-this works" into "I know exactly what works and why".
-
----
+| `skills/` | the editable recipes |
+| `examples/` | working artefacts with synthetic sample data |
+| `CONTRIBUTING.md` | how to report, improve and contribute |
 
 ## When it does not work
-
-Every message below came from a real run. The first line is what you see.
 
 | Message | Cause | Fix |
 |---|---|---|
 | `error: <file>: no such file` | the `--data` path is wrong, or relative to another folder | pass an absolute path, or `cd` to the repository first |
-| `error: --dimension 'X' not found. Available: A, B, C` | the column name does not match the file, including case and `æøå` | use one of the names this line prints |
-| `error: --measure 'X' is not numeric` | that column is text; a chart of it would be empty | pick a numeric column, or convert it first |
-| `error: input contained zero rows` | the file has a header and nothing else, or the delimiter was not detected | check the file opens as a table in a text editor |
-| `verify` stops because it has no browser | the headless browser is not installed | run the two commands it prints |
-| a dashboard is over the size limit | too many rows to carry in one file | pre-aggregate to the grain the dashboard shows, then rebuild |
-| the link downloads instead of opening | `Content-Disposition: attachment`, by design | nothing to fix; describe it to readers as a download that opens |
+| `error: --dimension 'X' not found. Available: A, B, C` | the column name does not match, including case and `æøå` | use one of the printed names |
+| `error: --measure 'X' is not numeric` | that column is text | pick a numeric column or convert it first |
+| `error: input contained zero rows` | the file has a header and no rows | check that it opens as a table |
+| `verify` stops because it has no browser | Chromium is not installed | run the two installation commands above |
+| a dashboard is over the size limit | too many rows to carry in one file | pre-aggregate to the grain the dashboard shows |
+| the link downloads instead of opening | `Content-Disposition: attachment`, by design | tell the reader to open the downloaded file |
 
-The last one is not a bug and there is no workaround. It is the security control the whole
-architecture is built around.
-
----
-
-## Your first real contribution
-
-The skills are **plain English files**, not code. If something is done in a way you do not
-like — the wrong chart, the wrong wording, a question you would always ask and it does not —
-open the relevant `skills/*/SKILL.md` and change the instruction. Then re-run `setup.py`.
-That is the whole mechanism, and no build step stands between the edit and the behaviour.
-
-The highest-value thing to add early is `docs/use-cases.md`: the real reports in your area
-that could move to this, **and the ones that cannot, with the reason.** The refusal list is
-the more valuable half — it draws the boundary and stops the same argument every quarter.
-
-Any part of this being unclear is a bug in the guide, not in you.
+Any part of this being unclear is a documentation bug. Report it in an issue rather than
+working around it alone.

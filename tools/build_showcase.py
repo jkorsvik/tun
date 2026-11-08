@@ -31,11 +31,14 @@ from __future__ import annotations
 
 import argparse
 import base64
+import gzip
 import html
 import json
 import pathlib
 import re
+import struct
 import sys
+import zlib
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -52,6 +55,24 @@ BASH = re.compile(r"```(?:bash|sh|console)\n(.*?)```", re.S)
 NUMBERED = re.compile(r"^(\d+)-(.+)$")
 
 CHIP_KEYS = ("chip_examples", "chip_builders", "chip_with_command", "chip_suites")
+
+# Some example READMEs lead with implementation history or issue references. Those help
+# maintainers, not someone choosing an artefact. Keep their public card copy here.
+CARD_COPY = {
+    "03-cube-dashboard": "Millions of rows compressed into one responsive cube. Change filters and compare exact totals without loading the original rows.",
+    "04-generic-standalone-demo": "A standalone document with a table of contents and no chart assumptions. Shows how the same file format carries more than dashboards.",
+    "06-chart-palette-demo": "Compare eight chart types across categorical, sequential and diverging palettes, with a table for readers who need the values.",
+    "07-topbar-pattern-demo": "A responsive top bar with a menu, information panel and full-screen control in one self-contained file.",
+    "10-consolidated-standalone-demo": "One file combining navigation, theme and branding patterns, tested against the documented sharing routes.",
+    "13-js-free-standalone-poc": "A working page with no JavaScript. Compare its readable content and interactions with the scripted versions.",
+    "14-chart-emulation-nojs-poc": "Twelve chart types rendered without script tags, so the data remains visible when JavaScript cannot run.",
+    "15-chart-library-comparison-poc": "Three approaches to drawing charts side by side. Requires JavaScript and makes the trade-offs visible in the rendered page.",
+    "16-embedding-mode-comparison-poc": "A diagnostic comparison of embedding modes. Shows why a file can contain data but appear empty in a preview.",
+    "18-portable-slide-deck": "A responsive slide deck in one file, with portrait and landscape controls and guarded full-screen viewing.",
+    "21-slide-deck-detail-overlay": "A slide deck with detail overlays. Open supporting material without leaving the presentation.",
+    "26-kpi-board": "One KPI board in Norwegian and English, showing measure, label and feedback options on the same data.",
+}
+MD_LINK = re.compile(r"\[([^\]]+)\]\([^)]+\)")
 
 
 def read_example(folder: pathlib.Path) -> dict | None:
@@ -89,6 +110,7 @@ def read_example(folder: pathlib.Path) -> dict | None:
         break
     if purpose.rstrip().endswith(":"):
         purpose = purpose.rstrip().rstrip(":") + "."
+    purpose = CARD_COPY.get(folder.name, MD_LINK.sub(r"\1", purpose))
     commands = BASH.findall(text)
     command = ""
     if commands:
@@ -108,6 +130,24 @@ def read_example(folder: pathlib.Path) -> dict | None:
 
 SIBLING_JS = re.compile(r'<script\b[^>]*\bsrc="((?:\./)?[^"/:]+)"[^>]*>\s*</script>', re.I)
 SIBLING_CSS = re.compile(r'<link\b[^>]*\bhref="((?:\./)?[^"/:]+)"[^>]*>', re.I)
+
+LIVE_PREFIX = "gzip:"
+GZIP_HEADER = bytes((0x1F, 0x8B, 8, 0, 0, 0, 0, 0, 2, 0xFF))
+
+
+def encode_live(raw: bytes) -> str:
+    """One deterministic, base64-encoded gzip member for a card's live page."""
+    deflate = zlib.compressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
+    body = deflate.compress(raw) + deflate.flush()
+    member = GZIP_HEADER + body + struct.pack("<II", zlib.crc32(raw), len(raw) & 0xFFFFFFFF)
+    return LIVE_PREFIX + base64.b64encode(member).decode("ascii")
+
+
+def decode_live(payload: str) -> bytes:
+    """The actual embedded page. The browser and freshness gate share this contract."""
+    if not payload.startswith(LIVE_PREFIX):
+        raise ValueError("live payload is not marked as gzip")
+    return gzip.decompress(base64.b64decode(payload[len(LIVE_PREFIX):], validate=True))
 
 
 def inline_siblings(page: pathlib.Path) -> bytes:
@@ -152,21 +192,21 @@ def kind_of(slug: str) -> str:
     return match.group(2).replace("-", " ") if match else slug.replace("-", " ")
 
 
-def shoot(pages: list[pathlib.Path], width: int, height: int, quality: int) -> dict[str, bytes]:
+def shoot(pages: list[pathlib.Path], width: int, height: int, quality: int) -> dict[pathlib.Path, bytes]:
     """A JPEG per page, taken from a file:// URL. No browser, no page: fail loudly."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:  # pragma: no cover - the gate exists for exactly this
         sys.exit("build_showcase: Playwright is required to photograph the examples.\n"
                  "  uv sync --extra verify && uv run playwright install chromium")
-    shots: dict[str, bytes] = {}
+    shots: dict[pathlib.Path, bytes] = {}
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         page = browser.new_page(viewport={"width": width, "height": height})
         for path in pages:
             page.goto(path.resolve().as_uri(), wait_until="load")
             page.wait_for_timeout(350)
-            shots[path.name] = page.screenshot(type="jpeg", quality=quality)
+            shots[path.resolve()] = page.screenshot(type="jpeg", quality=quality)
             print(f"  photographed {path.parent.name}/{path.name}", flush=True)
         browser.close()
     return shots
@@ -204,9 +244,9 @@ def main(argv: list[str] | None = None) -> int:
 
     tables = i18n.load_all(STRINGS)
     strings = tables[args.start_lang]
-    cards, embedded = [], 0
+    cards, embedded, compressed = [], 0, 0
     for ex in examples:
-        shot = shots.get(ex["page"].name) if ex["page"] else None
+        shot = shots.get(ex["page"].resolve()) if ex["page"] else None
         alt = f"{ex['title']} - {kind_of(ex['slug'])}"
         blob = (f'<img src="data:image/jpeg;base64,{base64.b64encode(shot).decode("ascii")}" '
                 f'alt="{html.escape(alt)}" loading="lazy">') if shot else ""
@@ -218,8 +258,10 @@ def main(argv: list[str] | None = None) -> int:
         live = ""
         if ex["page"]:
             raw = inline_siblings(ex["page"])
-            live = ' data-live="' + base64.b64encode(raw).decode("ascii") + '"'
+            payload = encode_live(raw)
+            live = f' data-live="{payload}"'
             embedded += len(raw)
+            compressed += len(payload)
         cards.append(
             f'<li class="card"{live} data-num="{html.escape(ex["slug"].split("-")[0])}"'
             f' data-slug="{html.escape(ex["slug"])}"'
@@ -235,8 +277,10 @@ def main(argv: list[str] | None = None) -> int:
     values = {"chip_examples": len(examples), "chip_builders": builders,
               "chip_with_command": len([e for e in examples if e["command"]]),
               "chip_suites": suites}
-    chips = "".join(f'<li><span data-i18n="{key}">{html.escape(strings[key])}</span> '
-                    f"<b>{values[key]}</b></li>" for key in CHIP_KEYS)
+    chips = (f'<li><span data-i18n="chip_examples">{html.escape(strings["chip_examples"])}</span> '
+             f'<b>{values["chip_examples"]}</b></li>')
+    tech_stats = " · ".join(f'<span><span data-i18n="{key}">{html.escape(strings[key])}</span> '
+                              f'<b>{values[key]}</b></span>' for key in CHIP_KEYS[1:])
 
     def column(key: str, names: list[str]) -> str:
         items = "".join(f"<li>{html.escape(n)}</li>" for n in names)
@@ -260,6 +304,7 @@ def main(argv: list[str] | None = None) -> int:
             .replace("{{START_LANG}}", json.dumps(args.start_lang))
             .replace("{{TITLE}}", html.escape(args.title))
             .replace("{{CHIPS}}", chips)
+            .replace("{{TECH_STATS}}", tech_stats)
             .replace("{{THINGS}}", things)
             .replace("{{CARDS}}", "\n".join(cards))
             .replace("{{COUNT_ONE_JS}}", json.dumps(strings["count_one"]))
@@ -270,14 +315,15 @@ def main(argv: list[str] | None = None) -> int:
             .replace("{{REQUESTED_BY}}", html.escape(args.requested_by))
             .replace("{{ROWS_INLINED}}",
                      f"{len(with_page)} runnable artefact(s) of {len(examples)}, "
-                     f"{embedded / 1e6:.1f} MB of page carried in this file"))
+                     f"{embedded / 1e6:.1f} MB of page carried gzip-compressed in this file"))
     page = page.replace("{{T:count_all}}", i18n.fill(strings["count_all"], n=len(examples)))
 
     target = pathlib.Path(args.out)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(page, encoding="utf-8")
     size = target.stat().st_size / (1024 * 1024)
-    print(f"wrote {target} ({size:.1f} MB, {embedded / 1e6:.1f} MB of it embedded pages)")
+    print(f"wrote {target} ({size:.1f} MB; {embedded / 1e6:.1f} MB of source pages, "
+          f"{compressed / 1e6:.1f} MB as prefixed base64 gzip)")
     if size > 50:
         print("build_showcase: FAIL over 50 MB. Carry fewer pages or lower --quality.")
         return 1

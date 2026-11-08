@@ -1,4 +1,4 @@
-# 33. Twenty-seven builders: which shape answers which question
+# 33. Thirty builders: which shape answers which question
 
 **Reader:** user — you have data and a sentence about what you want to know, and you need to pick the right file to build.
 

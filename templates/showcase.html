@@ -31,35 +31,50 @@
 -->
 <style>
   :root {
-    --paper: #ffffff;
-    --ink: #1b2a4a;
-    --ink-soft: #4a5670;
-    --line: #d8dde8;
-    --tint: #eef2f8;
-    --accent: #2f5d9e;
-    --accent-ink: #ffffff;
+    --paper: #f7f7f5;
+    --panel: #ffffff;
+    --ink: #0d2b21;
+    --ink-soft: #28473c;
+    --line: #dfe3e0;
+    --tint: #edf4f0;
+    --accent: #0d2b21;
+    --accent-ink: #effcf4;
+    --deep: #030a07;
+    --night: #07150f;
+    --mint: #b4c6bb;
+    --on-night: #effcf4;
+    --sage: #c1d3c9;
+    --slate: #486155;
+    --muted: #5d6b65;
+    --brand: #0d2b21;
+    --brand-dark: #07150f;
     --radius: 0.75rem;
-    --shadow: 0 1px 2px rgb(27 42 74 / 8%), 0 8px 24px rgb(27 42 74 / 6%);
+    --shadow: 0 1px 2px rgb(13 43 33 / 8%), 0 8px 24px rgb(13 43 33 / 6%);
   }
   @media screen and (prefers-color-scheme: dark) {
     :root {
-      --paper: #101725;
-      --ink: #eef2f8;
-      --ink-soft: #a9b4c8;
-      --line: #2a3650;
-      --tint: #182234;
-      --accent: #7fa8e0;
-      --accent-ink: #101725;
+      --paper: #07150f;
+      --panel: #0d2b21;
+      --ink: #effcf4;
+      --ink-soft: #c1d3c9;
+      --line: #486155;
+      --tint: #0d2b21;
+      --accent: #b4c6bb;
+      --accent-ink: #0d2b21;
+      --muted: #c1d3c9;
+      --brand: #b4c6bb;
+      --brand-dark: #c1d3c9;
       --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 24%);
     }
   }
   * { box-sizing: border-box; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
     background: var(--paper);
     color: var(--ink);
-    font: 1rem/1.5 "Tun", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font: 1rem/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   /* The footer link is the gallery's only link, and with no rule of its own it fell back to
      the browser default blue: 1.91:1 on the dark paper, unreadable. --brand is the token
@@ -133,6 +148,12 @@
     border-radius: var(--radius); background: var(--paper); color: var(--ink);
   }
   dialog::backdrop { background: rgb(16 23 37 / 72%); }
+  html.tun-fullscreen dialog {
+    width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0;
+    border: 0; border-radius: 0; display: flex; flex-direction: column;
+  }
+  html.tun-fullscreen dialog .bar { flex: 0 0 auto; }
+  html.tun-fullscreen dialog iframe { flex: 1 1 auto; height: auto; min-height: 0; }
   dialog iframe { display: block; width: 100%; height: min(82vh, 48rem); border: 0; background: #fff; }
   /* The bar is the only way through the collection once a card is open, so it holds the
      position as well as the controls: "12 av 49" answers "where am I" without closing. */
@@ -144,6 +165,12 @@
   dialog .bar button:hover:not(:disabled) { border-color: var(--brand); }
   dialog .bar button:disabled { opacity: .45; cursor: default; }
   dialog .bar #shut { margin-left: auto; }
+  @media(max-width:40rem){
+    dialog .bar{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+    dialog .bar p{grid-column:1/-1;grid-row:1;text-align:center}
+    dialog .bar button{width:100%;margin-left:0}
+    dialog iframe{height:76svh}
+  }
   .close { position: sticky; top: 0; display: flex; justify-content: flex-end; padding: 0.5rem; background: var(--paper); }
   .close button {
     min-height: 2.75rem; min-width: 2.75rem; font: inherit; font-weight: 600;
@@ -156,27 +183,57 @@
     .card { break-inside: avoid; }
   }
   /* The consolidated Explorer: goal, live artefact, recipe and file in one view. */
-  .top.explorer{background:radial-gradient(circle at 78% 24%,rgb(47 93 158 / 38%),transparent 42%),linear-gradient(rgb(238 242 248 / 3%) 1px,transparent 1px),linear-gradient(90deg,rgb(238 242 248 / 3%) 1px,transparent 1px),#1b2a4a;background-size:auto,2rem 2rem,2rem 2rem,auto;color:#eef2f8;border-bottom:0}
+  .top.explorer{background:radial-gradient(circle at 78% 24%,rgb(85 214 138 / 8%),transparent 42%),linear-gradient(rgb(239 252 244 / 2%) 1px,transparent 1px),linear-gradient(90deg,rgb(239 252 244 / 2%) 1px,transparent 1px),var(--night);background-size:auto,2rem 2rem,2rem 2rem,auto;color:var(--on-night);border-bottom:0}
   .top.explorer .wrap{max-width:92rem;padding:2rem clamp(1rem,4vw,4rem)}
   .top.explorer .head-row{align-items:center}
-  .explorer-brand{margin:0;font:700 .875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#7fa8e0}
-  .top.explorer .lang{background:#101725;border-color:#4a5670}.top.explorer .lang button{color:#a9b4c8}.top.explorer .lang button.on{background:#7fa8e0;color:#101725}
+  .explorer-brand{display:inline-flex;align-items:center;gap:.55rem;margin:0;color:var(--on-night);text-decoration:none;font-size:1.25rem;font-weight:750}
+  .explorer-brand svg{width:1.8rem;height:1.8rem;padding:.12rem;border:2px solid currentColor;border-radius:.45rem}
+  .explorer-brand small{margin-left:.15rem;color:var(--mint);font:700 .875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase}
+  .top.explorer .lang{background:var(--deep);border-color:var(--slate)}
+  .top.explorer .lang button{color:var(--sage)}
+  .top.explorer .lang button.on{background:var(--mint);color:var(--night)}
   .hero{display:grid;grid-template-columns:minmax(20rem,.78fr) minmax(32rem,1.22fr);gap:2.5rem;align-items:start;margin-top:2.5rem}
-  .hero-copy h1{max-width:38rem;margin:.5rem 0 1rem;font-size:clamp(3rem,5.8vw,5.75rem);line-height:.94;letter-spacing:-.06em;color:#fff}
-  .hero-copy .sub{max-width:36rem;color:#a9b4c8;font-size:1.0625rem}.top.explorer .chips li{background:#182234;border-color:#4a5670;color:#a9b4c8}.top.explorer .chips b{color:#fff}
+  .hero-copy h1{max-width:38rem;margin:.5rem 0 1rem;font-size:clamp(3rem,5.8vw,5.75rem);font-weight:720;line-height:.94;letter-spacing:-.065em;color:var(--on-night)}
+  .hero-copy .sub{max-width:36rem;color:var(--sage);font-size:1.0625rem}
+  .top.explorer .chips li{background:var(--night);border-color:var(--slate);color:var(--sage)}
+  .top.explorer .chips b{color:var(--on-night)}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:.625rem;margin:1.25rem 0 0}
+  .hero-actions a{display:inline-flex;align-items:center;min-height:2.75rem;padding:.55rem .9rem;border:1px solid var(--mint);border-radius:.5rem;color:var(--on-night);text-decoration:none;font-weight:650;transition:transform .18s ease,background .18s ease}
+  .hero-actions a.primary{background:var(--mint);color:var(--night)}
+  .hero-actions a:hover{background:var(--slate);transform:translateY(-1px)}
+  .hero-actions a.primary:hover{background:var(--sage);color:var(--night)}
+  .hero-actions a:focus-visible{outline:3px solid var(--on-night);outline-offset:3px}
   .paths{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.5rem}
-  .paths button{min-height:2.75rem;padding:.5rem .85rem;border:1px solid #4a5670;border-radius:999px;background:#182234;color:#eef2f8;font:inherit;font-size:.875rem;cursor:pointer}
-  .paths button.active{background:#7fa8e0;border-color:#7fa8e0;color:#101725}.paths button:focus-visible{outline:3px solid #7fa8e0;outline-offset:2px}
-  .stage{min-width:0;background:#101725;border:1px solid #4a5670;border-radius:1rem;overflow:hidden;box-shadow:0 1.5rem 4rem rgb(16 23 37 / 30%)}
-  .stage-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:1rem 1.25rem}.stage-kicker{display:block;color:#7fa8e0;font:700 .875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase}
-  .stage-top h2{margin:.25rem 0 0;font-size:1.125rem;line-height:1.35;color:#fff}#stage-pos{flex:0 0 auto;color:#a9b4c8;font-size:.875rem;font-variant-numeric:tabular-nums}
-  .stage-frame{display:block;width:100%;height:34rem;border:0;background:#fff;opacity:1;transition:opacity .22s ease}.stage.switching .stage-frame{opacity:.25}.stage-frame[hidden],#stage-recipe[hidden]{display:none}.shot{cursor:pointer}.stage-empty{height:34rem;display:grid;place-items:center;padding:2rem;color:#a9b4c8;text-align:center}.stage-empty[hidden]{display:none}
-  .stage-progress-track{height:2px;background:#2a3650}.stage-progress{display:block;width:0;height:100%;background:#7fa8e0;transition:width .25s ease}
-  .stage-actions button{transition:border-color .18s ease,transform .18s ease}.stage-actions button:hover:not(:disabled){transform:translateY(-1px)}
-  @media(prefers-reduced-motion:reduce){.stage-frame,.stage-progress,.stage-actions button{transition:none}}
-  .stage-bottom{padding:1rem 1.25rem}#stage-purpose{min-height:2.5rem;margin:0 0 1rem;color:#a9b4c8;font-size:.875rem}
-  .stage-actions{display:flex;flex-wrap:wrap;gap:.5rem}.stage-actions button{min-height:2.75rem;padding:.5rem .75rem;border:1px solid #4a5670;border-radius:.5rem;background:#182234;color:#eef2f8;font:inherit;font-size:.875rem;cursor:pointer}.stage-actions button:hover:not(:disabled){border-color:#7fa8e0}.stage-actions button:disabled{opacity:.45;cursor:default}
-  #stage-recipe{color:#a9b4c8}#stage-recipe summary{color:#7fa8e0}#stage-recipe code{background:#182234;color:#eef2f8}
+  .paths button{min-height:2.75rem;padding:.5rem .85rem;border:1px solid var(--sage);border-radius:999px;background:var(--night);color:var(--on-night);font:inherit;font-size:.875rem;cursor:pointer}
+  .paths button.active{background:var(--mint);border-color:var(--mint);color:var(--night)}
+  .paths button:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+  .stage{min-width:0;background:var(--deep);border:1px solid var(--slate);border-radius:1rem;overflow:hidden;box-shadow:0 1.5rem 4rem rgb(3 10 7 / 30%)}
+  .stage-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:1rem 1.25rem}
+  .stage-kicker{display:block;color:var(--mint);font:700 .875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase}
+  .stage-top h2{margin:.25rem 0 0;font-size:1.125rem;line-height:1.35;color:var(--on-night)}
+  #stage-pos{flex:0 0 auto;color:var(--sage);font-size:.875rem;font-variant-numeric:tabular-nums}
+  .stage-frame{display:block;width:100%;height:34rem;border:0;background:#fff;opacity:1;transition:opacity .22s ease}
+  .stage.switching .stage-frame{opacity:.25}
+  .stage-frame[hidden],#stage-recipe[hidden]{display:none}
+  .shot{cursor:pointer}
+  .stage-empty{height:34rem;display:grid;place-items:center;padding:2rem;color:var(--sage);text-align:center}
+  .stage-empty[hidden]{display:none}
+  .stage-progress-track{height:2px;background:var(--slate)}
+  .stage-progress{display:block;width:0;height:100%;background:var(--mint);transition:width .25s ease}
+  .stage-actions button{transition:border-color .18s ease,transform .18s ease}
+  .stage-actions button:hover:not(:disabled){transform:translateY(-1px)}
+  @media(prefers-reduced-motion:reduce){.stage-frame,.stage-progress,.stage-actions button,.hero-actions a{transition:none}}
+  .stage-bottom{padding:1rem 1.25rem}
+  #stage-purpose{min-height:2.5rem;margin:0 0 1rem;color:var(--sage);font-size:.875rem}
+  .stage-actions{display:flex;flex-wrap:wrap;gap:.5rem}
+  .stage-actions button{min-height:2.75rem;padding:.5rem .75rem;border:1px solid var(--sage);border-radius:.5rem;background:var(--night);color:var(--on-night);font:inherit;font-size:.875rem;cursor:pointer}
+  .stage-actions button:hover:not(:disabled){border-color:var(--mint)}
+  .stage-actions button:disabled{opacity:.45;cursor:default}
+  .stage-source{display:inline-flex;align-items:center;min-height:2.75rem;color:var(--mint);font-size:.8125rem;font-weight:650;margin-right:1rem}
+  .footer-stats{font-size:.8125rem;color:var(--ink-soft)}
+  #stage-recipe{color:var(--sage)}
+  #stage-recipe summary{color:var(--mint)}
+  #stage-recipe code{background:var(--night);color:var(--on-night)}
   @media(max-width:70rem){.hero{grid-template-columns:1fr;gap:1.75rem}.hero-copy{max-width:50rem}.stage-frame,.stage-empty{height:32rem}}
   @media(max-width:40rem){.top.explorer .wrap{padding:1rem}.hero{margin-top:2rem;gap:1.5rem}.hero-copy h1{font-size:3rem}.stage-top{padding:.85rem;flex-direction:column;gap:.35rem}#stage-pos{white-space:normal}.stage-frame,.stage-empty{height:28rem}.stage-bottom{padding:.85rem}.stage-actions button{flex:1 1 auto}.stage-kicker{font-size:.875rem}}
   @media print{.stage,.paths{display:none}}
@@ -186,7 +243,7 @@
 <header class="top explorer">
   <div class="wrap">
     <div class="head-row">
-      <p class="explorer-brand" data-i18n="explorer_eyebrow">{{T:explorer_eyebrow}}</p>
+      <a class="explorer-brand" href="https://tun.community"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15 10 20 21 4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Tún</span><small>Explorer</small></a>
       <div class="lang" role="group" aria-label="{{T:lang_label}}">
         <button type="button" data-lang="nb">{{T:lang_nb}}</button>
         <button type="button" data-lang="en">{{T:lang_en}}</button>
@@ -196,6 +253,7 @@
       <div class="hero-copy">
         <h1 data-i18n="explorer_title">{{T:explorer_title}}</h1>
         <p class="sub" data-i18n="explorer_intro">{{T:explorer_intro}}</p>
+        <p class="hero-actions"><a class="primary" href="{{T:start_url}}" data-i18n="hero_start" data-i18n-href="start_url">{{T:hero_start}}</a><a href="https://github.com/jkorsvik/tun">GitHub&nbsp;↗</a></p>
         <ul class="chips">{{CHIPS}}</ul>
         <div class="paths" role="group" aria-label="{{T:explorer_eyebrow}}">
           <button type="button" class="active" data-path="all" data-i18n="path_all">{{T:path_all}}</button>
@@ -220,10 +278,11 @@
             <button type="button" id="stage-expand" data-i18n="stage_expand">{{T:stage_expand}}</button>
             <button type="button" id="stage-download" data-i18n="stage_download">{{T:stage_download}}</button>
             <button type="button" id="stage-share" data-i18n="stage_share">{{T:stage_share}}</button>
-            <span id="stage-share-status" role="status" data-i18n="stage_copied" hidden>{{T:stage_copied}}</span>
+            <span class="sr-only" id="stage-share-status" role="status" data-i18n="stage_copied" hidden>{{T:stage_copied}}</span>
             <button type="button" id="stage-prev" data-i18n="prev">{{T:prev}}</button>
             <button type="button" id="stage-next" data-i18n="next">{{T:next}}</button>
           </div>
+          <a class="stage-source" id="stage-source" href="https://github.com/jkorsvik/tun/tree/main/examples" data-i18n="stage_source">{{T:stage_source}}</a>
           <details id="stage-recipe"><summary data-i18n="card_command">{{T:card_command}}</summary><code></code></details>
         </div>
       </section>
@@ -251,7 +310,9 @@
     <p data-i18n="footer_how">{{T:footer_how}}</p>
     <p data-i18n="footer_trace">{{T:footer_trace}}</p>
     <p data-i18n="live_note">{{T:live_note}}</p>
+    <p class="footer-stats">{{TECH_STATS}}</p>
     <p><span data-i18n="footer_site">{{T:footer_site}}</span> <a href="https://tun.community">tun.community</a>.</p>
+    <p><a href="{{T:start_url}}" data-i18n="hero_start" data-i18n-href="start_url">{{T:hero_start}}</a> · <a href="https://github.com/jkorsvik/tun">GitHub</a> · <a href="https://github.com/jkorsvik/tun/blob/main/CONTRIBUTING.md" data-i18n="contribute">{{T:contribute}}</a></p>
   </div>
 </footer>
 
@@ -306,6 +367,10 @@
       var key = el.getAttribute("data-i18n");
       if (T[next][key] !== undefined) { el.textContent = T[next][key]; }
     });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-href]"), function (el) {
+      var key = el.getAttribute("data-i18n-href");
+      if (T[next][key] !== undefined) { el.href = T[next][key]; }
+    });
     q.placeholder = T[next].filter_placeholder;
     // The position line is built from strings, so a language switch while a card is open
     // must rebuild it; everything else on it is already a data-i18n element.
@@ -339,11 +404,160 @@
   var at = 0;
   var opener = null;
 
-  function decode(b64) {
+  function base64Bytes(b64) {
     var bin = atob(b64);
     var bytes = new Uint8Array(bin.length);
     for (var i = 0; i < bin.length; i += 1) { bytes[i] = bin.charCodeAt(i); }
-    return new TextDecoder("utf-8").decode(bytes);
+    return bytes;
+  }
+
+  /* RFC 1951. One synchronous decoder keeps the stage, dialog and byte-exact download on
+     the same path in every engine, including engines without DecompressionStream. */
+  function inflateRaw(input, size) {
+    var at = 0, bit = 0, out = new Uint8Array(size), outAt = 0;
+    var lengthBase = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+    var lengthExtra = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+    var distBase = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+    var distExtra = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+    function readBit() {
+      if (at >= input.length) { throw new Error("short deflate stream"); }
+      var value = (input[at] >> bit) & 1;
+      bit += 1;
+      if (bit === 8) { bit = 0; at += 1; }
+      return value;
+    }
+    function bits(n) {
+      var value = 0;
+      for (var i = 0; i < n; i += 1) { value |= readBit() << i; }
+      return value;
+    }
+    function makeTable(lengths) {
+      var counts = [], maps = [], next = [], max = 0, i, len, code = 0;
+      for (i = 0; i < lengths.length; i += 1) {
+        len = lengths[i];
+        counts[len] = (counts[len] || 0) + 1;
+        if (len > max) { max = len; }
+      }
+      counts[0] = 0;
+      for (len = 1; len <= max; len += 1) {
+        code = (code + (counts[len - 1] || 0)) << 1;
+        next[len] = code;
+        maps[len] = [];
+      }
+      for (i = 0; i < lengths.length; i += 1) {
+        len = lengths[i];
+        if (len) { maps[len][next[len]++] = i; }
+      }
+      return {maps: maps, max: max};
+    }
+    function symbol(table) {
+      var code = 0;
+      for (var len = 1; len <= table.max; len += 1) {
+        code = (code << 1) | readBit();
+        var found = table.maps[len][code];
+        if (found !== undefined) { return found; }
+      }
+      throw new Error("invalid Huffman code");
+    }
+    function fixedTables() {
+      var lit = [], dist = [], i;
+      for (i = 0; i <= 143; i += 1) { lit[i] = 8; }
+      for (; i <= 255; i += 1) { lit[i] = 9; }
+      for (; i <= 279; i += 1) { lit[i] = 7; }
+      for (; i <= 287; i += 1) { lit[i] = 8; }
+      for (i = 0; i < 32; i += 1) { dist[i] = 5; }
+      return [makeTable(lit), makeTable(dist)];
+    }
+    function dynamicTables() {
+      var order = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+      var hlit = bits(5) + 257, hdist = bits(5) + 1, hclen = bits(4) + 4;
+      var codeLengths = [], lengths = [], i, run, previous;
+      for (i = 0; i < 19; i += 1) { codeLengths[i] = 0; }
+      for (i = 0; i < hclen; i += 1) { codeLengths[order[i]] = bits(3); }
+      var codeTable = makeTable(codeLengths);
+      while (lengths.length < hlit + hdist) {
+        var s = symbol(codeTable);
+        if (s <= 15) { lengths.push(s); continue; }
+        if (s === 16) {
+          if (!lengths.length) { throw new Error("repeat with no previous code length"); }
+          previous = lengths[lengths.length - 1];
+          run = bits(2) + 3;
+        } else if (s === 17) { previous = 0; run = bits(3) + 3; }
+        else if (s === 18) { previous = 0; run = bits(7) + 11; }
+        else { throw new Error("invalid code-length symbol"); }
+        if (lengths.length + run > hlit + hdist) { throw new Error("too many code lengths"); }
+        while (run--) { lengths.push(previous); }
+      }
+      return [makeTable(lengths.slice(0, hlit)), makeTable(lengths.slice(hlit))];
+    }
+    function compressedBlock(litTable, distTable) {
+      while (true) {
+        var s = symbol(litTable);
+        if (s < 256) {
+          if (outAt >= size) { throw new Error("deflate output is too long"); }
+          out[outAt++] = s;
+          continue;
+        }
+        if (s === 256) { return; }
+        if (s < 257 || s > 285) { throw new Error("invalid length symbol"); }
+        var li = s - 257;
+        var length = lengthBase[li] + bits(lengthExtra[li]);
+        var ds = symbol(distTable);
+        if (ds > 29) { throw new Error("invalid distance symbol"); }
+        var distance = distBase[ds] + bits(distExtra[ds]);
+        if (distance < 1 || distance > outAt || outAt + length > size) {
+          throw new Error("invalid deflate distance or output length");
+        }
+        for (var j = 0; j < length; j += 1) { out[outAt] = out[outAt - distance]; outAt += 1; }
+      }
+    }
+    var last = 0;
+    while (!last) {
+      last = bits(1);
+      var type = bits(2);
+      if (type === 0) {
+        if (bit) { bit = 0; at += 1; }
+        if (at + 4 > input.length) { throw new Error("short stored block"); }
+        var len = input[at] | (input[at + 1] << 8);
+        var inverse = input[at + 2] | (input[at + 3] << 8);
+        at += 4;
+        if ((len ^ 0xffff) !== inverse || at + len > input.length || outAt + len > size) {
+          throw new Error("invalid stored block");
+        }
+        out.set(input.subarray(at, at + len), outAt);
+        at += len; outAt += len;
+      } else if (type === 1 || type === 2) {
+        var tables = type === 1 ? fixedTables() : dynamicTables();
+        compressedBlock(tables[0], tables[1]);
+      } else { throw new Error("reserved deflate block type"); }
+    }
+    if (outAt !== size) { throw new Error("deflate output is too short"); }
+    return out;
+  }
+
+  function gunzipFallback(bytes) {
+    var n = bytes.length;
+    if (n < 18 || bytes[0] !== 0x1f || bytes[1] !== 0x8b || bytes[2] !== 8 || bytes[3] !== 0) {
+      throw new Error("unsupported gzip member");
+    }
+    var size = bytes[n - 4] + bytes[n - 3] * 256 + bytes[n - 2] * 65536 + bytes[n - 1] * 16777216;
+    return inflateRaw(bytes.subarray(10, n - 8), size);
+  }
+
+  function decode(payload) {
+    if (payload.indexOf("gzip:") !== 0) { throw new Error("unsupported live payload"); }
+    return new TextDecoder("utf-8").decode(gunzipFallback(base64Bytes(payload.slice(5))));
+  }
+  window.tunDecode = decode;
+
+  function withDialogEscape(doc) {
+    // A sandboxed artefact owns its own keyboard events. Relay only Escape back to this
+    // dialog; arrows and Page keys still belong to the artefact (notably slide decks).
+    var relay = '<scr' + 'ipt>document.addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();parent.postMessage("tun-dialog-close","*");}});<\/scr' + 'ipt>';
+    if (/<head(?:\s[^>]*)?>/i.test(doc)) {
+      return doc.replace(/<head(?:\s[^>]*)?>/i, function (head) { return head + relay; });
+    }
+    return relay + doc;
   }
 
   function visibleCards() {
@@ -362,7 +576,7 @@
     at = Math.max(0, Math.min(order.length - 1, i));
     var card = order[at];
     var payload = card.getAttribute("data-live") || "";
-    big.srcdoc = payload ? decode(payload) : "";
+    big.srcdoc = payload ? withDialogEscape(decode(payload)) : "";
     // Two bare numbers side by side read as one number split in two. The second one is the
     // example's own number, carried on the card, so the bar names it.
     pos.textContent = String(T[lang].pos)
@@ -377,13 +591,32 @@
     order = visibleCards();
     if (!order.length) { return; }
     opener = btn || null;
-    if (typeof viewer.showModal === "function") { viewer.showModal(); }
     show(order.indexOf(card));
-    // Give the frame the keyboard. A deck inside it advances on an arrow key, but only
-    // once that key is delivered to its own document, and a key pressed with the focus
-    // still on the page behind it goes nowhere. A reader would click first; this does it
-    // for them.
-    try { big.focus(); } catch (e) { /* focus is a courtesy, not the feature */ }
+    function present() {
+      if (!viewer.open && typeof viewer.showModal === "function") { viewer.showModal(); }
+      // Start on a visible dialog control. A reader can then Tab through the toolbar or click
+      // the artefact to give it the keyboard. Escape works in both places through the relay.
+      shut.focus();
+    }
+    // "Full screen" means the browser's real Fullscreen API, not only a large modal.
+    // Enter fullscreen before showModal: both use the top layer, and the dialog must be
+    // added last or the fullscreen page paints over it and intercepts every click.
+    // Keep the modal as a fallback for browsers that do not support arbitrary elements.
+    if (typeof document.documentElement.requestFullscreen === "function") {
+      try {
+        var request = document.documentElement.requestFullscreen();
+        if (request && typeof request.then === "function") { request.then(present, present); }
+        else { present(); }
+      } catch (e) { present(); }
+    } else { present(); }
+  }
+
+  function closeViewer() {
+    if (document.fullscreenElement && typeof document.exitFullscreen === "function") {
+      document.exitFullscreen().catch(function () {});
+    }
+    document.documentElement.classList.remove("tun-fullscreen");
+    if (viewer.open) { viewer.close(); }
   }
 
   window.tunOpenDialog = openCard;
@@ -392,25 +625,33 @@
 
   prev.addEventListener("click", function () { show(at - 1); prev.focus(); });
   next.addEventListener("click", function () { show(at + 1); next.focus(); });
-  shut.addEventListener("click", function () { viewer.close(); });
+  shut.addEventListener("click", closeViewer);
   viewer.addEventListener("close", function () {
     big.srcdoc = "";
     // Hand the keyboard back to the card the reader came from. Without this, focus lands
     // on the body and a keyboard reader starts over at the top of a very long page.
     if (opener) { try { opener.focus(); } catch (e) { /* the card may have been filtered out */ } }
   });
-  viewer.addEventListener("click", function (e) { if (e.target === viewer) { viewer.close(); } });
+  document.addEventListener("fullscreenchange", function () {
+    // Browser UI and the Escape key can leave fullscreen without delivering a key event.
+    // Treat that as leaving the viewer too, rather than stranding the reader in the modal.
+    document.documentElement.classList.toggle("tun-fullscreen", !!document.fullscreenElement);
+    if (!document.fullscreenElement && viewer.open) { closeViewer(); }
+  });
+  window.addEventListener("message", function (e) {
+    if (e.source === big.contentWindow && e.data === "tun-dialog-close" && viewer.open) { closeViewer(); }
+  });
+  viewer.addEventListener("click", function (e) { if (e.target === viewer) { closeViewer(); } });
   // Left and right walk the collection while the focus is in the bar. Once the frame holds
   // the focus, those keys belong to the artefact, which is why the buttons exist.
   viewer.addEventListener("keydown", function (e) {
     if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); show(at + 1); next.focus(); }
     else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(at - 1); prev.focus(); }
   });
-  // Escape has to work from the page as well as from the frame. Once the frame holds the
-  // keyboard an Escape pressed there belongs to the artefact, so the page cannot see it; in
-  // that case the Close button and the backdrop are the way out, and both are always there.
+  // Escape works from the parent page directly and from the artefact through the scoped
+  // relay above. Close and backdrop remain visible alternatives.
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && viewer.open) { viewer.close(); }
+    if (e.key === "Escape" && viewer.open) { closeViewer(); }
   });
 
   Array.prototype.forEach.call(document.querySelectorAll(".lang button"), function (b) {
@@ -454,11 +695,7 @@
   var at = 0;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function decode(b64) {
-    var bin = atob(b64), bytes = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i += 1) { bytes[i] = bin.charCodeAt(i); }
-    return new TextDecoder("utf-8").decode(bytes);
-  }
+  var decode = window.tunDecode;
   function titleOf(card) {
     var h = card.querySelector("h2");
     return h ? h.textContent.trim() : "";
@@ -488,6 +725,8 @@
     progress.style.width = ((at + 1) / current.length * 100).toFixed(2) + "%";
     previous.disabled = at === 0;
     following.disabled = at === current.length - 1;
+    var source = document.getElementById("stage-source");
+    source.href = "https://github.com/jkorsvik/tun/tree/main/examples/" + encodeURIComponent(stageCard.getAttribute("data-slug"));
     var code = stageCard.querySelector("details code");
     recipe.hidden = !code;
     if (code) { recipe.querySelector("code").textContent = code.textContent; }
@@ -576,7 +815,7 @@
   var requested = params.get("example");
   var initial = current.find(function (card) { return card.getAttribute("data-num") === requested; });
   if (!initial && !requested) {
-    initial = cards.find(function (card) { return card.getAttribute("data-slug") === "55-task-space"; }) || current[0];
+    initial = cards.find(function (card) { return card.getAttribute("data-slug") === "01-hello-dashboard"; }) || current[0];
   }
   openStage(initial || current[0], false);
 })();

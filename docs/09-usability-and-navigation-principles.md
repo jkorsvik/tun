@@ -332,3 +332,4 @@ picks it up automatically the next time it's rebuilt.
       — not done by this document, which only establishes the source-of-truth files.
 
 The palettes themselves, categorical, sequential and diverging, light and dark: [chart colour palettes](10-chart-colour-palettes.md).
+For the public Tún mark and page chrome, use the [visual identity and style guide](35-visual-identity.md).

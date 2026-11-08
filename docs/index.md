@@ -23,16 +23,16 @@ wants in their own words and routes it to the right shape, the right tier and th
 target, including the honest exit: if the requirement is row-level security, the answer is
 Power BI and the skill says so.
 
-This site is the project's documentation, served from `docs/` on `main`. It is internal
-and unpublished; the public teaser lives at [tun.community](https://tun.community).
+This site is the project's public documentation, served from `docs/` on `main`.
+The product introduction and live demos are at [tun.community](https://tun.community).
+For a first build, use [START-HERE.md](../START-HERE.md).
 
-> **This is en kollega (Tunkallen) kollega's project.** The idea is his and the direction is
-> his. What is written down here is the plumbing: the awkward constraints measured so
-> that nobody has to rediscover them.
+> **This is Tunkallen's project.** The idea and direction are his. What is written down
+> here is the plumbing: the awkward constraints measured so that nobody has to rediscover them.
 
 ## Read this by who you are
 
-Thirty-two documents is too many to read in order, and reading the wrong one wastes the
+Thirty-three documents is too many to read in order, and reading the wrong one wastes the
 ten minutes that decides whether this project is for you. So every document opens with one
 line saying who it is for, and this page files it under that same reader:
 
@@ -51,8 +51,9 @@ reader and marked as another fails the suite.
 
 | | |
 |---|---|
-| [Onboarding](04-onboarding.md) | **Start here.** From a spreadsheet to a shared dashboard in five minutes, on Windows or macOS, with no AI tool installed |
-| [Which shape answers which question](33-artefact-shapes.md) | Twenty-seven builders, the question each answers in the words people use, what to do when two shapes compete, and the five questions this format does not answer |
+| [START-HERE](../START-HERE.md) | **The shortest route.** Build an example, install the Agent Skills, or use the chat-bot prompt |
+| [Onboarding](04-onboarding.md) | Windows details, verification, publishing and the data boundary |
+| [Which shape answers which question](33-artefact-shapes.md) | Thirty builders, the question each answers in the words people use, what to do when two shapes compete, and the five questions this format does not answer |
 | [The skill tree](03-skill-tree.md) | What you can ask for, in your own words: build, check, ship, and the honest exit |
 | [Vision](00-vision.md) | Why an information tool should be a document, and who that serves |
 | [What was built](27-what-was-built.md) | Applications made this way, by pattern, and the one lesson each taught |
@@ -72,6 +73,7 @@ reader and marked as another fails the suite.
 | | |
 |---|---|
 | [Artefact ideas: what to build next](34-artefact-ideas.md) | The gaps the twenty shapes leave, each with the trap that makes it harder than it looks, plus the ideas that are not a chart, and the five things every new shape has to pay for |
+| [Visual identity and style guide](35-visual-identity.md) | The shared Tún mark, measured palette, typography and component rules for the home page and Explorer |
 | [Printable artefacts: one sheet, measured](32-printable-artefacts.md) | Why a one-pager is a different artefact rather than a print stylesheet, why its failure mode is growth rather than breakage, and how the page box, the HTML bars and the 9 pt floor are measured |
 | [Tenant constraints](01-tenant-constraints.md) | **Read this first.** What SharePoint and OneDrive actually do with an HTML file: measured in our tenant, not assumed, and one row retracted when a better test contradicted it |
 | [Architecture](02-architecture.md) | The three delivery tiers, and what each one costs |
