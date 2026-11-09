@@ -332,11 +332,13 @@ class FunctionalAppTests(unittest.TestCase):
         ], cwd=ROOT, capture_output=True, text=True, env=env)
         self.assertEqual(done.returncode, 0, done.stderr)
         committed = (EXAMPLE / "snapshot.html").read_bytes()
+        # The public tree carries one publishing comment after the reproducible build.
+        # Remove it when present, including in an ordinary run without export.sh's flag.
+        # Every artefact byte before and after that comment must still match.
+        header = re.match(br"(<!DOCTYPE html>\n)<!--\n  Copyright.*?-->\n", committed, re.S)
         if os.environ.get("TUN_REQUIRE_HEADERS") == "1":
-            # export.sh prepends one publishing comment after the reproducible build. Remove
-            # that comment only; every artefact byte before and after it must still match.
-            header = re.match(br"(<!DOCTYPE html>\n)<!--\n  Copyright.*?-->\n", committed, re.S)
             self.assertIsNotNone(header, "published snapshot has no licence header")
+        if header is not None:
             committed = header.group(1) + committed[header.end():]
         self.assertEqual(out.read_bytes(), committed)
 
