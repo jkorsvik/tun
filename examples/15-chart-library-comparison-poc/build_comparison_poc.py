@@ -45,8 +45,9 @@ from __future__ import annotations
 
 import datetime
 import pathlib
-import re
 import sys
+
+import re
 
 HERE = pathlib.Path(__file__).parent
 REPO_ROOT = HERE.parent.parent
@@ -60,6 +61,7 @@ BUILT = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
 sys.path.insert(0, str(REPO_ROOT / "tools"))
+import tun_brand  # noqa: E402
 import tun_tokens  # noqa: E402
 
 # Tokens come from tools/tun_tokens.py: it resolves which palette is active, validates
@@ -557,6 +559,7 @@ TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chart-bibliotek sammenligning &mdash; Chart.js vs. h&aring;ndrullet vs. Matplotlib</title>
+{{TUN_FAVICON}}
 <!--
   Chart-bibliotek sammenligning: Chart.js vs. h\u00e5ndrullet CSS/SVG vs. Matplotlib
   PROVENANCE
@@ -575,6 +578,7 @@ TEMPLATE = """<!DOCTYPE html>
 <style>
 __STYLE__
 </style>
+<style>{{TUN_CREDIT_CSS}}</style>
 </head>
 <body>
 <header>
@@ -596,6 +600,7 @@ __SECTION_3__
 __SECTION_4__
 </main>
 __SCRIPT__
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5">{{TUN_CREDIT}}</footer>
 </body>
 </html>
 """
@@ -610,6 +615,6 @@ html = (
     .replace("__BUILT__", BUILT)
 )
 
-OUT.write_text(html, encoding="utf-8")
+OUT.write_text(tun_brand.apply(html), encoding="utf-8")
 print(f"wrote {OUT} ({OUT.stat().st_size} bytes)")
 print("next: python3 ../../tools/verify_standalone_core.py " + str(OUT))

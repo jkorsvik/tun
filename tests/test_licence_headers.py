@@ -36,7 +36,7 @@ def chk(label, got, want):
 def is_runtime(rel: str) -> bool:
     name = rel.rsplit("/", 1)[-1]
     return ((rel.startswith("templates/") and name.endswith(".html")) or name.endswith(".css")
-            or name.endswith(".template.html") or name == "tun_tokens.py"
+            or name.endswith(".template.html") or name in ("tun_tokens.py", "tun_brand.py")
             or (name.endswith(".py") and name.startswith("build")))
 
 

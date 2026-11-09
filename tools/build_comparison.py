@@ -57,6 +57,7 @@ import build_size  # noqa: E402
 import review_layer  # noqa: E402
 import build_stamp  # noqa: E402
 import feedback_link  # noqa: E402
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
@@ -200,6 +201,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--feedback-to", default="", metavar="ADDRESS_OR_ISSUE_URL",
                     help=feedback_link.FLAG_HELP)
     ap.add_argument("--annotate", action="store_true", help=review_layer.FLAG_HELP)
+    tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
 
     before, before_rows = load(args.before, args.key, args.value)
@@ -237,7 +239,7 @@ def main(argv: list[str] | None = None) -> int:
     # dark comparison with no script, and the status colours come from the theme rather than
     # from a hex chosen for white.
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
-    page = i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
+    page = i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
     substitutions = {
         "{{TOKEN_CSS}}": strip_css_comments(token_css),
         "{{TITLE}}": html.escape(args.title),

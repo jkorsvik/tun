@@ -40,6 +40,11 @@ Exit codes: 0 clean, 1 findings, 2 the check could not run.
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
+import gzip
+import io
+import zlib
 import json
 import os
 import pathlib
@@ -109,6 +114,14 @@ def list_files(root: pathlib.Path) -> list[str]:
 #: is still caught. Line count is preserved so reported line numbers stay right.
 COPYRIGHT_LINE = re.compile(r"(?mi)^[^\n]*\b(?:Copyright \(C\)|SPDX-FileCopyrightText:)[ \t]*\d{4}\b[^\n]*$")
 NOTICE_EXEMPT = ("person",)
+
+
+PUBLIC_ORIGIN = re.compile(r'https://(?:github\.com/jkorsvik/tun(?:\.git)?|jkorsvik\.github\.io/tun)(?=[/#?"\'\s]|$)')
+
+
+def strip_public_origin(text: str) -> str:
+    """The already-public source and Pages origin, never an arbitrary handle."""
+    return PUBLIC_ORIGIN.sub(lambda m: ' ' * len(m.group(0)), text)
 
 
 def strip_copyright_lines(text: str) -> str:
@@ -246,17 +259,73 @@ def redact(s: str) -> str:
     return s[:1] + "…" * min(len(s) - 1, 3) + f"({len(s)})" if s else "(empty)"
 
 
-#: A base64 image payload is compressed bytes, not prose. Every short pattern appears inside
-#: a few hundred kilobytes of that alphabet by chance, so a three-letter hit there says
-#: nothing about identity. What the picture *shows* is checked where it is made: the page it
-#: photographs is scanned as text before the photograph exists. So the payload is blanked,
-#: not decoded, and the blanking preserves length so a reported line number stays usable.
-DATA_PAYLOAD = re.compile(r";base64,[A-Za-z0-9+/=\s]{64,}")
+# Encoded carriers are not prose. Decode every one, scan textual contents and
+# reject malformed base64/gzip. Mask only the encoded bytes in the parent, so
+# entropy cannot masquerade as an identity. Nested pages receive the same scan.
+PAYLOAD = re.compile(
+    r'<[^>]+\bdata-live=["\'](?P<live>[^"\']*)["\']'
+    r'|data:(?P<mime>image/[A-Za-z0-9+.-]+|text/[A-Za-z0-9+.-]+);base64,(?P<data>[A-Za-z0-9+/=]+)'
+    r'|<script\b[^>]*\btype="application/gzip;base64"[^>]*>(?P<gzip>[^<]*)<', re.I)
+MAX_PAYLOAD_BYTES = 50 * 1024 * 1024
+
+
+class PayloadError(ValueError):
+    """An encoded carrier cannot be checked completely."""
+
+
+def payload_subjects(text: str, depth: int = 0, budget=None):
+    """Return masked HTML and decoded children, bounded across the whole file."""
+    if budget is None:
+        budget = [MAX_PAYLOAD_BYTES]
+    matches = list(PAYLOAD.finditer(text))
+    if matches and depth >= 5:
+        raise PayloadError('payload nesting exceeds five levels')
+    children = []
+    masked = text
+    for index, match in reversed(list(enumerate(matches, 1))):
+        kind = next(k for k in ('live', 'data', 'gzip') if match.group(k) is not None)
+        chunk = match.group(kind)
+        if chunk.startswith('{{') and chunk.endswith('}}'):
+            continue  # Source templates are not built carriers.
+        if kind == 'live' and not chunk.startswith('gzip:'):
+            raise PayloadError(f'live payload {index} is not marked as gzip')
+        compressed = kind in ('gzip', 'live')
+        encoded = chunk[5:] if kind == 'live' else chunk
+        encoded = re.sub(r'\s+', '', encoded)
+        if len(encoded) > (budget[0] + 2) * 4 // 3 + 4:
+            raise PayloadError(f'payload {index} exceeds the size budget')
+        try:
+            raw = base64.b64decode(encoded, validate=True)
+        except (ValueError, binascii.Error) as exc:
+            raise PayloadError(f'payload {index} is not valid base64') from exc
+        if compressed:
+            try:
+                with gzip.GzipFile(fileobj=io.BytesIO(raw)) as stream:
+                    raw = stream.read(budget[0] + 1)
+            except (OSError, EOFError, zlib.error) as exc:
+                raise PayloadError(f'gzip payload {index} does not inflate') from exc
+        budget[0] -= len(raw)
+        if budget[0] < 0:
+            raise PayloadError(f'payload {index} exceeds the inflated file budget')
+        start, end = match.span(kind)
+        masked = masked[:start] + re.sub(r'[^\n]', ' ', chunk) + masked[end:]
+        # Only known raster formats are not prose. The numeric cube is binary,
+        # but scanning its decoded bytes still exposes an embedded ASCII label.
+        raster = (raw.startswith((b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff', b'GIF87a', b'GIF89a', b'\0\0\1\0'))
+                  or raw.startswith(b'RIFF') and raw[8:12] == b'WEBP')
+        if kind == 'data' and raster:
+            continue
+        try:
+            inner = raw.decode('utf-8') if kind != 'gzip' else raw.decode('utf-8', errors='replace')
+        except UnicodeDecodeError as exc:
+            raise PayloadError(f'text payload {index} is not UTF-8') from exc
+        children.extend(payload_subjects(inner, depth + 1, budget))
+    return [masked, *children]
 
 
 def strip_binary_payloads(text: str) -> str:
-    """Blank base64 image payloads, preserving offsets."""
-    return DATA_PAYLOAD.sub(lambda m: "x" * len(m.group(0)), text)
+    """Do not interpret image entropy in source-code literals as prose."""
+    return re.sub(r';base64,[A-Za-z0-9+/=]{64,}', lambda m: ' ' * len(m.group(0)), text)
 
 
 def scan(root: pathlib.Path, rules) -> tuple[int, list[tuple[str, str, int, str]]]:
@@ -276,31 +345,37 @@ def scan(root: pathlib.Path, rules) -> tuple[int, list[tuple[str, str, int, str]
         # "replace", not "ignore": an invalid byte must break a match, never glue two
         # fragments of binary data into one (a PNG once decoded to a fake email).
         text = p.read_bytes().decode("utf-8", errors="replace")
-        noticed = strip_copyright_lines(text)
-        credited = strip_attribution(noticed)
         try:
-            manifest = manifest_subjects(rel, text)
-        except NotPlainJson:
-            manifest = None
-            hits.append((MANIFEST_SHAPE, rel, 1, "not plain JSON"))
-        prose = strip_binary_payloads(text)
-        for label, rx in rules:
-            subject = prose
-            if label in NOTICE_EXEMPT:
-                subject = noticed
-            if label in ATTRIBUTION_EXEMPT:
-                subject = credited
-            if manifest is not None and label in JSON_ATTRIBUTION_EXEMPT:
-                subject = manifest[0]
-            found = list(rx.finditer(subject))
-            for m in found:
-                line = subject.count("\n", 0, m.start()) + 1
-                hits.append((label, rel, line, redact(m.group(0))))
-            if manifest is not None and label in JSON_ATTRIBUTION_EXEMPT:
-                # A name written as \u escapes is invisible to the raw text: count the
-                # decoded strings too, and report what the raw text did not already show.
-                for m in list(rx.finditer(manifest[1]))[len(found):]:
-                    hits.append((label, rel, 1, redact(m.group(0)) + " decoded"))
+            subjects = payload_subjects(text) if rel.endswith(".html") else [strip_binary_payloads(text)]
+        except PayloadError as exc:
+            hits.append(('payload', rel, 1, str(exc)))
+            continue
+        for subject_index, text in enumerate(subjects):
+            noticed = strip_copyright_lines(text)
+            credited = strip_attribution(noticed)
+            try:
+                manifest = manifest_subjects(rel, text) if subject_index == 0 else None
+            except NotPlainJson:
+                manifest = None
+                hits.append((MANIFEST_SHAPE, rel, 1, "not plain JSON"))
+            prose = text
+            for label, rx in rules:
+                subject = prose
+                if label in NOTICE_EXEMPT:
+                    subject = strip_public_origin(noticed)
+                if label in ATTRIBUTION_EXEMPT:
+                    subject = strip_public_origin(credited)
+                if manifest is not None and label in JSON_ATTRIBUTION_EXEMPT:
+                    subject = manifest[0]
+                found = list(rx.finditer(subject))
+                for m in found:
+                    line = subject.count("\n", 0, m.start()) + 1
+                    hits.append((label, rel, line, redact(m.group(0)) + (" decoded payload" if subject_index else "")))
+                if manifest is not None and label in JSON_ATTRIBUTION_EXEMPT:
+                    # A name written as \u escapes is invisible to the raw text: count the
+                    # decoded strings too, and report what the raw text did not already show.
+                    for m in list(rx.finditer(manifest[1]))[len(found):]:
+                        hits.append((label, rel, 1, redact(m.group(0)) + " decoded"))
     return len(files), hits
 
 

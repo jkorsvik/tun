@@ -59,6 +59,7 @@ reader and marked as another fails the suite.
 | [What was built](27-what-was-built.md) | Applications made this way, by pattern, and the one lesson each taught |
 | [Working with real sources](25-working-with-real-sources.md) | Ask the owner, copy structure not rows, verify every quote, prove the numbers on the page |
 | [Usability and navigation](09-usability-and-navigation-principles.md) | What a reader must be able to do, where the brand and the browser agree, and where they do not |
+| [Hosting and functional apps](36-hosting-and-functional-apps.md) | When shared writes need a small server, and when a standalone file is enough |
 | [Where it can live](26-hosting.md) | Each host, what runs there, and how to serve a page yourself |
 | [Atlassian Artifacts](29-atlassian-artifacts.md) | Publishing over the MCP server, what the viewer and a Confluence embed allow, measured |
 | [The hosted route](23-hosted-route-it-brief.md) | The one route that is not a file: what it needs, and the five questions only IT can answer |

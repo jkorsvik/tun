@@ -42,6 +42,7 @@ sys.path.insert(0, str(HERE))
 
 import build_size  # noqa: E402
 import build_stamp  # noqa: E402
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 import tun_core  # noqa: E402
 from tun_core import NOT_STATED, die  # noqa: E402
@@ -149,6 +150,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--requested-by", default="", help="a role, not a person's name")
     ap.add_argument("--out", type=pathlib.Path, required=True)
     i18n.add_lang_argument(ap)
+    tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
     t = i18n.load(STRINGS, args.lang)
 
@@ -209,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
     source = args.source or args.data.name
     standfirst = i18n.fill(t["standfirst"], period=latest_key,
                            shown=min(args.top, count), total=count)
-    page = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
+    page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
             .replace("{{LANG}}", args.lang)
             .replace("{{TITLE}}", html.escape(args.title))
             .replace("{{SOURCE_DESCRIPTION}}", html.escape(source))

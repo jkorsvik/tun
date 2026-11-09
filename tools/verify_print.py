@@ -131,8 +131,11 @@ def static_findings(path: Path) -> list[dict]:
         out.append({"rule": "self-contained",
                     "detail": "a script is loaded from a file: printing from a folder without "
                               "it changes the page"})
-    remote = re.findall(r"""(?:src|href)\s*=\s*["'](https?://[^"']+)""", text, re.I)
-    remote += re.findall(r"""url\(\s*["']?(https?://[^)"']+)""", text, re.I)
+    # Navigation links are not fetched resources. Keep checking every other
+    # src/href form, including SVG image/use and media the core regex does not cover.
+    resources = re.sub(r"<a\b[^>]*>", "", text, flags=re.I)
+    remote = re.findall(r"""(?:src|href)\s*=\s*["']((?:https?:)?//[^"']+)""", resources, re.I)
+    remote += re.findall(r"""url\(\s*["']?((?:https?:)?//[^)"']+)""", text, re.I)
     if remote:
         out.append({"rule": "self-contained",
                     "detail": f"a remote resource is referenced: {remote[0]}"})

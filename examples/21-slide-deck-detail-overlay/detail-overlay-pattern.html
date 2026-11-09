@@ -13,6 +13,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1B2A4A">
 <title>Eksempel 21 — utvid-for-kildetekst</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20class%3D%22logo%22%20viewBox%3D%220%200%20160%20160%22%20role%3D%22img%22%20aria-label%3D%22T%C3%BAn%22%3E%0A%20%20%20%20%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22148%22%20height%3D%22148%22%20rx%3D%2226%22%20fill%3D%22none%22%20stroke%3D%22%230d2b21%22%20stroke-width%3D%227%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2280%22%20y%3D%22112%22%20text-anchor%3D%22middle%22%20font-family%3D%22-apple-system%2CBlinkMacSystemFont%2CSegoe%20UI%2CHelvetica%2CArial%2Csans-serif%22%0A%20%20%20%20%20%20%20%20%20%20font-size%3D%2286%22%20font-weight%3D%22500%22%20fill%3D%22%230d2b21%22%20letter-spacing%3D%221%22%3Eu%3C%2Ftext%3E%0A%20%20%20%20%3Cpath%20d%3D%22M69%2048%20l11%2012%2022%20-25%22%20fill%3D%22none%22%20stroke%3D%22%233f8f3f%22%20stroke-width%3D%229%22%0A%20%20%20%20%20%20%20%20%20%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3C%2Fsvg%3E">
 <!--
   Eksempel 21 — worked example for issue #37 (vmin-typografi, kildetekst-overlay,
   utvidet tastaturkart)
@@ -214,7 +215,12 @@ body.on-dark #counter{color:var(--paper)}
   main{height:auto}
   .slide{position:relative;height:100vh;opacity:1;transform:none;page-break-after:always}
 }
+
+.deck-credit{position:fixed;z-index:11;right:1rem;top:1rem;font-size:.875rem;line-height:1.5;color:var(--ink)}
+body.on-dark .deck-credit,html:not(.js) .deck-credit{color:var(--paper)}
+@media print{.deck-credit{display:none}}
 </style>
+<style>.tun-credit{font-size:inherit;font-weight:400;white-space:normal}.tun-credit a{color:inherit;text-decoration:underline;text-underline-offset:.15em}.tun-credit a:hover{color:inherit;text-decoration-thickness:.125em}.tun-credit a:focus-visible{outline:.125rem solid currentColor;outline-offset:.25rem}</style>
 </head>
 <body>
 <script>document.documentElement.className+=" js"</script>
@@ -486,5 +492,6 @@ body.on-dark #counter{color:var(--paper)}
   show(isNaN(start) ? 0 : start-1);
 })();
 </script>
+<footer class="deck-credit"><span class="tun-credit"> <a href="https://tun.community" rel="noreferrer">Tún · tun.community</a></span></footer>
 </body>
 </html>

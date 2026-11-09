@@ -12,11 +12,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chart-bibliotek sammenligning &mdash; Chart.js vs. h&aring;ndrullet vs. Matplotlib</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20class%3D%22logo%22%20viewBox%3D%220%200%20160%20160%22%20role%3D%22img%22%20aria-label%3D%22T%C3%BAn%22%3E%0A%20%20%20%20%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22148%22%20height%3D%22148%22%20rx%3D%2226%22%20fill%3D%22none%22%20stroke%3D%22%230d2b21%22%20stroke-width%3D%227%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2280%22%20y%3D%22112%22%20text-anchor%3D%22middle%22%20font-family%3D%22-apple-system%2CBlinkMacSystemFont%2CSegoe%20UI%2CHelvetica%2CArial%2Csans-serif%22%0A%20%20%20%20%20%20%20%20%20%20font-size%3D%2286%22%20font-weight%3D%22500%22%20fill%3D%22%230d2b21%22%20letter-spacing%3D%221%22%3Eu%3C%2Ftext%3E%0A%20%20%20%20%3Cpath%20d%3D%22M69%2048%20l11%2012%2022%20-25%22%20fill%3D%22none%22%20stroke%3D%22%233f8f3f%22%20stroke-width%3D%229%22%0A%20%20%20%20%20%20%20%20%20%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3C%2Fsvg%3E">
 <!--
   Chart-bibliotek sammenligning: Chart.js vs. håndrullet CSS/SVG vs. Matplotlib
   PROVENANCE
     Source data : none — same synthetic regional counts as examples/06/13/14
-    Built       : 2026-10-24 10:26
+    Built       : 2026-01-02 03:04
     Companion to: issue #30, examples/06-chart-palette-demo/,
                   examples/13-js-free-standalone-poc/, examples/14-chart-emulation-nojs-poc/
     Built by    : RAIWork
@@ -51,6 +52,10 @@
   --palette-primary:         #2B4C7E;  /* primary data colour, links, focus */
   --palette-primary-dark:    #1B3559;  /* header background */
   --palette-primary-darkest: #0E1C2E;  /* darkest surface */
+  --palette-primary-on-dark: #9CC0E8;  /* primary data colour on a dark surface: 6.54:1 on
+                                          #1B3559, 9.08:1 on #0E1C2E. A lightened slate, not
+                                          an inversion: the hue is kept so a chart's primary
+                                          series is recognisably the same series in both themes */
   --palette-accent:          #B8860B;  /* secondary series, decorative only */
   --palette-accent-light:    #E8D48B;  /* highlight on dark */
   --palette-on-dark:         #F7F5EF;  /* text on a dark surface */
@@ -109,11 +114,13 @@
    --brand, etc.) onto the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css) and status-semantic.css, instead of
    each template hardcoding its own hex values as it does today.
 
-   NOT YET WIRED INTO templates: html files — this file documents the
-   intended mapping so it can be reviewed before any template changes. Load
-   order for a future build: the active palette (palette-neutral.css, or a brand plugin's tokens/palette.css), then status-semantic.css,
-   then this file (so the palette- and status- prefixed variables it references
-   already exist).
+   WIRED INTO the builders that inline tokens: build_process_diagram.py and
+   build_index.py both call tun_tokens.load_token_css(), which is the load
+   order below. The templates that still hardcode their own hexes are listed in
+   ROADMAP A34.
+   Load order: the active palette (palette-neutral.css, or a brand plugin's
+   tokens/palette.css), then status-semantic.css, then this file (so the
+   palette- and status- prefixed variables it references already exist).
 
    Rationale for a light default: a dashboard is read repeatedly and at
    length — Nielsen Norman Group and general dashboard-UX guidance favour a
@@ -129,14 +136,46 @@
   --bg:         var(--palette-surface);
   --panel:      #f8f8f8;               /* cards, filter bar — Black 3% */
   --brand:      var(--palette-primary);        /* primary data colour, links, focus */
+  /* Text drawn ON a --brand fill (an active tab, a selected nav button). It is a role of
+     its own because the right colour differs per theme and no component should guess:
+     white on the light theme's dark primary is 8.61:1, and the same white on the dark
+     theme's light primary would be 1.89:1. Measured in both themes by
+     tools/check_token_contrast.py. */
+  --on-brand:   var(--palette-surface);
   --brand-dark: var(--palette-primary-dark);    /* header background */
+  /* The soft brand tint: a hover wash, a note box, a group band. Light uses a pale tint
+     with dark ink on it. --on-brand-soft exists because the right text colour there is not
+     --on-brand: this is a tint, not a fill, and dark ink is what reads on a pale wash. */
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  /* A hairline inside a card, one step lighter than --line. */
+  --rule:       #ececec;
   --series-2:   var(--palette-accent);     /* secondary chart series — decorative use only, not text */
+
+  /* Categorical series: the five blocks a survey bar paints its answer options with. They
+     sit beside each other in one stacked bar and the table under it repeats every number,
+     so the bar is not the only carrier: 3:1 against the panel is a floor, not a goal.
+     Light keeps three of the five values the survey shipped with; two were too pale to be a
+     colour on a white panel (2.49:1 and 2.14:1) and are one step deeper here (3.83:1 and
+     3.42:1), same hues. Closest pair deltaE 13.7 (--cat-1 and --cat-3, two teals). */
+  --cat-1: #2F5D9E;   /* blue */
+  --cat-2: #1a8f66;   /* purple, one step deeper */
+  --cat-3: #1B2A4A;   /* purple */
+  --cat-4: #5f8f89;   /* the pale tint of the same family, one step deeper */
+  --cat-5: #dc2a2a;   /* Fire Red: the outlier answer, never the only signal */
 
   --ok:    var(--status-positive);
   --ok-bg: var(--status-positive-bg-12);
   --bad:   var(--status-negative);
+  /* --bad as TEXT on the page, rather than as a fill or a chip. Fire Red itself is 4.49:1 on
+     --panel, which is under AA by 0.01; on white it is 4.76:1, which is how it passed for so
+     long. A text variant is the same hue, one step darker: 4.82:1 on --panel, 5.12:1 on white. */
+  --bad-ink: #d42626;
   /* Fire Red on its own 8% tint is 4.22:1, under AA (axe 4.14, 2026-10-10). On white it
      is 4.76:1, so the negative chip uses the surface, as theme-dark.css already does. */
+  /* A negative WASH, distinct from --bad-bg, which is a badge fill: a delta chip letters
+     --bad-ink on this. Fire Red 8%, the value the dashboard used before the seam. */
+  --bad-soft:  #fdeeee;
   --bad-bg:var(--palette-surface);
 }
 
@@ -251,6 +290,7 @@ table.mapping-table th,table.mapping-table td{padding:.4rem .6rem;border-bottom:
 }
 
 </style>
+<style>.tun-credit{font-size:inherit;font-weight:400;white-space:normal}.tun-credit a{color:inherit;text-decoration:underline;text-underline-offset:.15em}.tun-credit a:hover{color:inherit;text-decoration-thickness:.125em}.tun-credit a:focus-visible{outline:.125rem solid currentColor;outline-offset:.25rem}</style>
 </head>
 <body>
 <header>
@@ -5881,5 +5921,6 @@ z
   });
 </script>
 
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5"><span class="tun-credit"> <a href="https://tun.community" rel="noreferrer">Tún · tun.community</a></span></footer>
 </body>
 </html>

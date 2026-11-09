@@ -47,6 +47,7 @@ import math
 import pathlib
 import sys
 
+
 HERE = pathlib.Path(__file__).parent
 REPO_ROOT = HERE.parent.parent
 OUT = HERE / "chart-emulation-nojs-poc.html"
@@ -58,6 +59,7 @@ BUILT = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 # Light theme only — this POC is about chart-type feasibility, not
 # re-proving the theme toggle (that's #05/#13's job).
 sys.path.insert(0, str(REPO_ROOT / "tools"))
+import tun_brand  # noqa: E402
 import tun_tokens  # noqa: E402
 
 # Tokens come from tools/tun_tokens.py: it resolves which palette is active, validates
@@ -514,6 +516,7 @@ TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chart-emulering uten JavaScript &mdash; POC</title>
+{{TUN_FAVICON}}
 <!--
   Chart-emulering uten JavaScript
   PROVENANCE
@@ -587,6 +590,7 @@ __TOKEN_CSS__
   .note{background:var(--panel);border:1px dashed var(--line);border-radius:.25rem;padding:1rem;
     font-size:.875rem;color:var(--muted);margin-top:1.5rem}
 </style>
+<style>{{TUN_CREDIT_CSS}}</style>
 </head>
 <body>
 <header>
@@ -623,6 +627,7 @@ __CHART_CARDS__
     </div>
   </div>
 </main>
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5">{{TUN_CREDIT}}</footer>
 </body>
 </html>
 """
@@ -645,7 +650,7 @@ html = (
     .replace("__BUILT__", BUILT)
 )
 
-OUT.write_text(html, encoding="utf-8")
+OUT.write_text(tun_brand.apply(html), encoding="utf-8")
 print(f"wrote {OUT} ({OUT.stat().st_size} bytes)")
 print("next: python3 ../../tools/verify_standalone_core.py " + str(OUT))
 

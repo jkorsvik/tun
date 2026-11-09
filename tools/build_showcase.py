@@ -46,6 +46,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 
 import build_stamp  # noqa: E402
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 
 TEMPLATE = ROOT / "templates" / "showcase.html"
@@ -124,7 +125,7 @@ def read_example(folder: pathlib.Path) -> dict | None:
         "title": title,
         "purpose": purpose,
         "command": command,
-        "page": built[0] if built else None,
+        "page": next((p for p in built if p.name == "snapshot.html"), built[0] if built else None),
         "extra": len(built) - 1 if built else 0,
     }
 
@@ -240,6 +241,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--quality", type=int, default=72, help="JPEG quality, 30-90")
     ap.add_argument("--start-lang", default="nb", choices=("nb", "en"),
                     help="the language the page opens in; the reader can switch")
+    tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
 
     folder = pathlib.Path(args.examples)
@@ -279,7 +281,7 @@ def main(argv: list[str] | None = None) -> int:
             embedded += len(raw)
             compressed += len(payload)
         cards.append(
-            f'<li class="card"{live} data-num="{html.escape(ex["slug"].split("-")[0])}"'
+            f'<li class="card" id="example-{html.escape(ex["slug"].split("-")[0])}"{live} data-num="{html.escape(ex["slug"].split("-")[0])}"'
             f' data-slug="{html.escape(ex["slug"])}"'
             f' data-search="{html.escape(search, quote=True)}">'
             f'<button class="shot" type="button" aria-label="{html.escape(alt)}">{blob}</button>'
@@ -315,7 +317,7 @@ def main(argv: list[str] | None = None) -> int:
     ])
 
     newest = max(with_page, key=lambda e: e["page"].stat().st_mtime)["page"]
-    page = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), strings)
+    page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), strings)
             .replace("{{LANG_JSON}}", json.dumps(tables, ensure_ascii=False))
             .replace("{{START_LANG}}", json.dumps(args.start_lang))
             .replace("{{TITLE}}", html.escape(args.title))

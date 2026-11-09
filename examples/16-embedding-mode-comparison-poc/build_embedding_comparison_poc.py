@@ -52,6 +52,10 @@ from __future__ import annotations
 
 import json
 import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
+import tun_brand
+
 
 HERE = pathlib.Path(__file__).resolve().parent
 
@@ -86,6 +90,7 @@ HTML = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>16 \u2014 Embedding-modus sammenligning (issue #39)</title>
+{tun_brand.favicon_link()}
 <style>
 :root{{
   --ink:#182430; --ink2:#5b6b7a; --line:#d8dee5; --bg:#f4f6f9; --panel:#fff;
@@ -115,6 +120,7 @@ h1{{font-size:1.25rem;margin-bottom:0.25rem;}}
 .content{{font-size:0.85rem;white-space:pre-wrap;border-top:1px solid var(--line);padding-top:0.75rem;margin-top:0.5rem;}}
 footer{{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid var(--line);padding-top:0.75rem;}}
 </style>
+<style>{tun_brand.CSS}</style>
 </head>
 <body>
 <main>
@@ -182,7 +188,7 @@ footer{{margin-top:2rem;font-size:0.75rem;color:var(--ink2);border-top:1px solid
   Data identisk i alle fire ruter (se <code>build_embedding_comparison_poc.py</code>,
   <code>TEXT</code>-konstanten). Rute D krever <code>paired-data.js</code> i samme mappe
   \u2014 kopier begge filer sammen, aldri bare HTML-filen alene.
-</footer>
+{tun_brand.HINT}</footer>
 
 <!-- ====== Rute A: embedded, ettlinjes ====== -->
 <script>window.PANEL_A_DATA = {TEXT_JSON};</script>

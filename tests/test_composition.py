@@ -53,6 +53,7 @@ DATA = EXAMPLE / "bemanning.csv"
 PIN = "1792836000"          # a fixed clock: one input, one file, on any day
 
 sys.path.insert(0, str(ROOT / "tools"))
+from verify_standalone_core import check_self_contained  # noqa: E402
 import build_composition as B  # noqa: E402  the layout constants the geometry is checked against
 
 FAILURES: list[str] = []
@@ -87,7 +88,7 @@ def scratch(root: pathlib.Path, *pairs: tuple[str, str]) -> pathlib.Path:
     tools.mkdir(parents=True)
     shutil.copy2(BUILDER, tools / "build_composition.py")
     for name in ("build_size.py", "build_stamp.py", "feedback_link.py", "i18n.py",
-                 "tun_core.py", "tun_tokens.py"):
+                 "tun_core.py", "tun_tokens.py", "tun_brand.py"):
         shutil.copy2(ROOT / "tools" / name, tools / name)
     # tun_tokens resolves the token files from its own location, so the scratch tree needs them:
     # the template carries {{TOKEN_CSS}} and the builder cannot produce a page without the seam.
@@ -358,7 +359,7 @@ def main() -> int:
 
         print("\n8. no script, and the English build carries none of the page's words")
         chk("<script" not in page.lower(), "the page holds no script element")
-        chk(not re.search(r'(src|href)="(https?:)?//', page), "and fetches nothing")
+        chk(check_self_contained(page)[0], "and fetches nothing")
         en_out = work / "en.html"
         done = subprocess.run([sys.executable, str(BUILDER), "--data", str(DATA),
                                "--measure", "Timer", "--cat", "Oppgave",

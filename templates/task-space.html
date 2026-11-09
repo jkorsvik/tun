@@ -10,6 +10,7 @@
 <html lang="{{T:html_lang}}">
 <head>
 <meta charset="utf-8">
+{{TUN_FAVICON}}
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}}</title>
 <!--
@@ -63,6 +64,7 @@ footer{padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}footer p{ma
 @media(max-width:40rem){main{padding:1rem}.stage{min-height:30rem;height:60vh}.task-detail{left:.65rem;right:.65rem;bottom:.65rem;padding:.8rem;gap:.65rem}.task-label{font-size:.875rem;padding:.35rem .5rem}.stage-head{left:.65rem;right:.65rem}.table-wrap{overflow-x:auto}table{min-width:44rem}}
 @media print{body{background:#fff}header{background:#fff;color:#000;border-bottom:2px solid #000}.interactive{display:none!important}.fallback{display:block!important;overflow:visible}.fallback-svg{min-width:0}.summary{background:#fff;color:#000;padding-left:0}tr{break-inside:avoid}.space{break-inside:avoid}}
 @media screen and (prefers-color-scheme:dark){header{color:var(--ink)}.task-label.active{color:var(--bg)}}
+{{TUN_CREDIT_CSS}}
 </style>
 </head>
 <body>
@@ -87,7 +89,7 @@ footer{padding:1rem 1.5rem 2rem;color:var(--muted);font-size:.875rem}footer p{ma
     <tbody>{{TABLE_ROWS}}</tbody>
   </table></div>
 </main>
-<footer><p>{{T:footer_a}}</p><p>{{T:footer_b}}</p><p>{{SOURCE_LINE}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p><p>{{FEEDBACK_BLOCK}}</p></footer>
+<footer><p>{{T:footer_a}}</p><p>{{T:footer_b}}</p><p>{{SOURCE_LINE}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p><p>{{FEEDBACK_BLOCK}}</p>{{TUN_CREDIT}}</footer>
 <script>
 document.documentElement.className += " js";
 (function(){

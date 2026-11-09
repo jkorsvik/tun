@@ -12,6 +12,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}}</title>
+{{TUN_FAVICON}}
 <!--
   {{TITLE}}
   PROVENANCE  (do not delete — this is how output gets traced back)
@@ -111,6 +112,7 @@
     .sheet{margin:0;box-shadow:none}
     a{color:inherit;text-decoration:none}
   }
+{{TUN_CREDIT_CSS}}
 </style>
 </head>
 <body>
@@ -141,8 +143,8 @@
 
   <footer>
     <p>{{SOURCE_LINE}}</p>
-    <p>{{PROVENANCE_LINE}}</p>
-    <p class="made">{{T:made_with}}</p>
+    <p>{{PROVENANCE_LINE}}{{TUN_CREDIT}}</p>
+    <p class="made">{{T:delivery}}</p>
   </footer>
 
 </div>

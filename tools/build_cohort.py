@@ -55,6 +55,7 @@ sys.path.insert(0, str(HERE))
 import build_size  # noqa: E402
 import build_stamp  # noqa: E402
 import feedback_link  # noqa: E402
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
@@ -288,6 +289,7 @@ def main() -> int:
     parser.add_argument("--out", required=True, type=pathlib.Path)
     parser.add_argument("--feedback-to", default="")
     i18n.add_lang_argument(parser)
+    tun_brand.add_arguments(parser)
     args = parser.parse_args()
 
     lang = getattr(args, "lang", i18n.DEFAULT_LANG)
@@ -366,7 +368,7 @@ def main() -> int:
     # The colours come from tools/tokens/: one seam with every other artefact. auto_dark: a
     # reader whose system is dark gets a dark cohort grid with no script.
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
-    page = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
+    page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
             .replace("{{TOKEN_CSS}}", strip_css_comments(token_css)))
     for token, value in {
         "{{TITLE}}": html.escape(args.title),

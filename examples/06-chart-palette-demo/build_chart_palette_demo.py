@@ -40,6 +40,7 @@ import json
 import pathlib
 import sys
 
+
 HERE = pathlib.Path(__file__).parent
 REPO_ROOT = HERE.parent.parent
 OUT = HERE / "chart-palette-demo.html"
@@ -53,6 +54,7 @@ def read_vendor(name: str) -> str:
 
 
 sys.path.insert(0, str(REPO_ROOT / "tools"))
+import tun_brand  # noqa: E402
 import tun_tokens  # noqa: E402
 
 # Tokens come from tools/tun_tokens.py: it resolves which palette is active, validates
@@ -230,6 +232,7 @@ TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chart.js fargepalett-demo</title>
+{{TUN_FAVICON}}
 <!--
   Chart.js fargepalett-demo
   PROVENANCE
@@ -316,6 +319,7 @@ __TOKEN_CSS__
   .about code{background:var(--panel);padding:.1rem .3rem;border-radius:.2rem}
   @media print{.tabs,#theme-toggle{display:none}}
 </style>
+<style>{{TUN_CREDIT_CSS}}</style>
 </head>
 <body>
 <header>
@@ -777,6 +781,7 @@ __CHARTJS_JS__
   applyChartDefaults();
   buildCategorical();
 </script>
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5">{{TUN_CREDIT}}</footer>
 </body>
 </html>
 """
@@ -787,6 +792,6 @@ html = (TEMPLATE
         .replace("__DATA_JSON__", DATA_JSON)
         .replace("__BUILT__", BUILT))
 
-OUT.write_text(html, encoding="utf-8")
+OUT.write_text(tun_brand.apply(html), encoding="utf-8")
 print(f"wrote {OUT} ({OUT.stat().st_size} bytes)")
 print("next: python3 ../../tools/verify_standalone_core.py " + str(OUT))

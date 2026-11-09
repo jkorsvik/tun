@@ -13,6 +13,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1B2A4A">
 <title>{{T:title}}</title>
+{{TUN_FAVICON}}
 <!--
   {{ARTIFACT_TITLE}}
   PROVENANCE
@@ -137,6 +138,11 @@ body.on-dark #counter{color:var(--paper)}
   main{height:auto}
   .slide{position:relative;height:100vh;opacity:1;transform:none;page-break-after:always}
 }
+{{TUN_CREDIT_CSS}}
+.deck-credit{position:fixed;z-index:11;right:1rem;top:1rem;font-size:.875rem;line-height:1.5;color:var(--ink)}
+body.on-dark .deck-credit{color:var(--paper)}
+html:not(.js) .deck-credit{color:var(--paper)}
+@media print{.deck-credit{display:none}}
 </style>
 </head>
 <body>
@@ -167,6 +173,7 @@ body.on-dark #counter{color:var(--paper)}
     <p>{{T:s3_p}}</p>
   </section>
 </main>
+<footer class="deck-credit">{{TUN_CREDIT}}</footer>
 
 <nav id="controls" aria-label="{{T:controls_label}}">
   <button class="control-btn" id="nprev" type="button" aria-label="{{T:prev}}" title="{{T:prev}}">
