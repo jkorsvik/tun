@@ -12,6 +12,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}}</title>
+{{TUN_FAVICON}}
 <!--
   {{TITLE}}
   PROVENANCE  (do not delete — this is how output gets traced back)
@@ -133,6 +134,7 @@ footer a{color:var(--brand)}
   .controls,.note{display:none}
   .q{break-inside:avoid;border:0;border-bottom:1px solid var(--line);border-radius:0}
 }
+{{TUN_CREDIT_CSS}}
 </style>
 </head>
 <body>
@@ -154,7 +156,7 @@ footer a{color:var(--brand)}
 </main>
 <footer>
   {{T:footer_a}} &middot; {{T:footer_b}} &middot;
-  {{T:footer_built}} {{BUILD_TIMESTAMP}} {{T:from}} {{SOURCE_DESCRIPTION}}.<br>
+  {{T:footer_built}} {{BUILD_TIMESTAMP}} {{T:from}} {{SOURCE_DESCRIPTION}}.{{TUN_CREDIT}}<br>
   <noscript>{{T:suppression_note}}</noscript>
 </footer>{{FEEDBACK_BLOCK}}
 <script>

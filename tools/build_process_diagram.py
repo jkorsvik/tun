@@ -107,6 +107,7 @@ from typing import Callable
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import build_size
 import build_stamp  # noqa: E402
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 import tun_tokens  # noqa: E402
 from tun_tokens import strip_css_comments  # noqa: E402
@@ -1696,7 +1697,7 @@ def build_timestamp() -> str:
 
 
 def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAULT_LANG,
-                lr: Layout | None = None) -> str:
+                lr: Layout | None = None, *, favicon=None, no_tun_hint=False) -> str:
     """The page. lay is the columns drawing, which shows without the script and in print;
     lr, when given, is the rows drawing the script may switch to. Cards, roles and the text
     version come from lay; both layouts number the steps the same way."""
@@ -1735,7 +1736,9 @@ def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAUL
         "FLAGS": render_flags(spec, lay),
         "TEXT_ALTERNATIVE": render_text_alternative(spec, lay),
     }
-    template = i18n.apply(TEMPLATE.read_text(encoding="utf-8"), T)
+    template = i18n.apply(tun_brand.apply(TEMPLATE.read_text(encoding="utf-8"),
+                         favicon=favicon, no_hint=no_tun_hint,
+                         palette=spec.headers.get("palette")), T)
     wanted = set(re.findall(r"\{\{([A-Z0-9_]+)\}\}", template))
     if wanted != set(subs):
         raise SystemExit(f"error: template and builder disagree on placeholders: "
@@ -1746,7 +1749,7 @@ def render_html(spec: Spec, lay: Layout, spec_name: str, lang: str = i18n.DEFAUL
 
 
 def build(spec_path: pathlib.Path, lang: str = i18n.DEFAULT_LANG,
-          notes: list | None = None) -> tuple[Spec, Layout, str]:
+          notes: list | None = None, *, favicon=None, no_tun_hint=False) -> tuple[Spec, Layout, str]:
     """Parse, lay out both ways, check, render. The columns drawing must succeed. The rows
     drawing is an extra: if it cannot be drawn, the page carries columns only, and a note
     says why (notes, when given, collects it)."""
@@ -1765,7 +1768,8 @@ def build(spec_path: pathlib.Path, lang: str = i18n.DEFAULT_LANG,
         lr = None
         if notes is not None:
             notes.append(f"rows drawing left out: {exc}")
-    return spec, lay, render_html(spec, lay, spec_path.name, lang, lr=lr)
+    return spec, lay, render_html(spec, lay, spec_path.name, lang, lr=lr,
+                                 favicon=favicon, no_tun_hint=no_tun_hint)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1776,13 +1780,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--check", action="store_true",
                     help="parse and lay out only; write nothing")
     i18n.add_lang_argument(ap)
+    tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
     if not args.check and not args.out:
         ap.error("give --out <file.html>, or --check to only validate the spec")
     try:
         notes: list[str] = []
-        spec, lay, page = build(args.spec, args.lang, notes)
-    except (SpecError, LayoutError) as exc:
+        spec, lay, page = build(args.spec, args.lang, notes, favicon=args.favicon,
+                                no_tun_hint=args.no_tun_hint)
+    except (SpecError, LayoutError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     crossings = count_crossings(lay)

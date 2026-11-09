@@ -27,6 +27,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import build_size
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 
 TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "portable-slide-deck.html"
@@ -38,9 +39,10 @@ def main(argv: list[str] | None = None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", required=True, type=pathlib.Path, help="the .html file to write")
     i18n.add_lang_argument(ap)
+    tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
 
-    html = i18n.apply(TEMPLATE.read_text(encoding="utf-8"), i18n.load(STRINGS, args.lang))
+    html = i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), i18n.load(STRINGS, args.lang))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(html, encoding="utf-8")
     print(f"built {args.out}  ({args.out.stat().st_size / 1024:.1f} KB, {args.lang})")

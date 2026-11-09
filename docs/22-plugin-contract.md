@@ -7,7 +7,7 @@ Status: contract proposal, derived from the one real case.
 | capability | state |
 |---|---|
 | `tokens` | **implemented** in `tools/tun_tokens.py`: discovery, single-provider rule, slot validation, load order. Asserted by `tests/test_token_contract.py` (76 assertions, with the asset and tenant-facts checks below). |
-| `assets` | partial: a plugin maps its artwork by name in `manifest.json`, and `tests/test_token_contract.py` checks every mapped file is a self-contained SVG. No build code resolves an asset by name yet |
+| `assets` | partial: a plugin maps its artwork by name in `manifest.json`, and `tests/test_token_contract.py` checks every mapped file is a self-contained SVG. `tools/tun_brand.py` resolves `assets.favicon` for the plugin owning the selected palette |
 | `templates` | **specified, not built** |
 | `verifiers` | **specified, not built** |
 | `tenant_facts` | partial: a plugin names a `tenant_facts` JSON file in `manifest.json` and lists `tenant_facts` in `provides`; `tests/test_token_contract.py` checks the two agree and the file parses. The only reader is a skill (`tun-publish`, destination C, key `atlassian.artifacts`), not build code |
@@ -148,7 +148,7 @@ two examples unpublishable.
 A plugin names its assets in an `assets` map, beside `tokens`:
 
 ```json
-"assets": {"logo": "assets/logo.svg", "mark": "assets/mark.svg"}
+"assets": {"logo": "assets/logo.svg", "mark": "assets/mark.svg", "favicon": "assets/mark.svg"}
 ```
 
 `tests/test_token_contract.py` checks each mapped file. It stays inside the plugin, it is an
@@ -158,6 +158,17 @@ fetches nothing and runs nothing (no external `href`, no remote `url()` or `@imp
 `href`). `plugins/tun` is the first plugin with a map. `plugins/<your-brand>` lists `assets` in
 `provides` without a map, because its artwork predates the map and lives inline in its
 examples.
+
+The `favicon` slot is implemented. Set `TUN_PALETTE` to this plugin's mapped
+palette, or use the process spec's `palette:` header. Its `assets.favicon` is
+then inlined by the builders. Installing a plugin alone changes neither colours
+nor icon. Icon precedence: `--favicon`, `TUN_FAVICON`, selected plugin, Tún.
+The asset path is relative to the manifest and must stay inside the plugin,
+including after symlinks resolve. A missing selected asset fails the build.
+
+Core carries its own Tún mark so a build still works with `plugins/` absent.
+The mark does not select Tún's palette. The footer link is a removable default;
+the licence's Origin Notice remains separate.
 
 ### 3. `templates`
 

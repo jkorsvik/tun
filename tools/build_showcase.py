@@ -30,6 +30,7 @@ empty frames. Stdlib for everything else.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import base64
 import gzip
 import html
@@ -45,6 +46,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 
 import build_stamp  # noqa: E402
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 
 TEMPLATE = ROOT / "templates" / "showcase.html"
@@ -123,7 +125,7 @@ def read_example(folder: pathlib.Path) -> dict | None:
         "title": title,
         "purpose": purpose,
         "command": command,
-        "page": built[0] if built else None,
+        "page": next((p for p in built if p.name == "snapshot.html"), built[0] if built else None),
         "extra": len(built) - 1 if built else 0,
     }
 
@@ -195,21 +197,36 @@ def kind_of(slug: str) -> str:
 def shoot(pages: list[pathlib.Path], width: int, height: int, quality: int) -> dict[pathlib.Path, bytes]:
     """A JPEG per page, taken from a file:// URL. No browser, no page: fail loudly."""
     try:
-        from playwright.sync_api import sync_playwright
+        from playwright.async_api import async_playwright
     except ImportError:  # pragma: no cover - the gate exists for exactly this
         sys.exit("build_showcase: Playwright is required to photograph the examples.\n"
                  "  uv sync --extra verify && uv run playwright install chromium")
-    shots: dict[pathlib.Path, bytes] = {}
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": width, "height": height})
-        for path in pages:
-            page.goto(path.resolve().as_uri(), wait_until="load")
-            page.wait_for_timeout(350)
-            shots[path.resolve()] = page.screenshot(type="jpeg", quality=quality)
-            print(f"  photographed {path.parent.name}/{path.name}", flush=True)
-        browser.close()
-    return shots
+
+    async def capture_all() -> dict[pathlib.Path, bytes]:
+        shots: dict[pathlib.Path, bytes] = {}
+        async with async_playwright() as pw:
+            browser = await pw.chromium.launch()
+            limit = asyncio.Semaphore(min(4, max(1, len(pages))))
+
+            async def capture(path: pathlib.Path) -> None:
+                async with limit:
+                    page = await browser.new_page(viewport={"width": width, "height": height})
+                    try:
+                        await page.goto(path.resolve().as_uri(), wait_until="load")
+                        await page.wait_for_timeout(350)
+                        shot = await page.screenshot(type="jpeg", quality=quality)
+                    finally:
+                        await page.close()
+                shots[path.resolve()] = shot
+                print(f"  photographed {path.parent.name}/{path.name}", flush=True)
+
+            try:
+                await asyncio.gather(*(capture(path) for path in pages))
+            finally:
+                await browser.close()
+        return shots
+
+    return asyncio.run(capture_all())
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -224,6 +241,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--quality", type=int, default=72, help="JPEG quality, 30-90")
     ap.add_argument("--start-lang", default="nb", choices=("nb", "en"),
                     help="the language the page opens in; the reader can switch")
+    tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
 
     folder = pathlib.Path(args.examples)
@@ -263,7 +281,7 @@ def main(argv: list[str] | None = None) -> int:
             embedded += len(raw)
             compressed += len(payload)
         cards.append(
-            f'<li class="card"{live} data-num="{html.escape(ex["slug"].split("-")[0])}"'
+            f'<li class="card" id="example-{html.escape(ex["slug"].split("-")[0])}"{live} data-num="{html.escape(ex["slug"].split("-")[0])}"'
             f' data-slug="{html.escape(ex["slug"])}"'
             f' data-search="{html.escape(search, quote=True)}">'
             f'<button class="shot" type="button" aria-label="{html.escape(alt)}">{blob}</button>'
@@ -299,7 +317,7 @@ def main(argv: list[str] | None = None) -> int:
     ])
 
     newest = max(with_page, key=lambda e: e["page"].stat().st_mtime)["page"]
-    page = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), strings)
+    page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), strings)
             .replace("{{LANG_JSON}}", json.dumps(tables, ensure_ascii=False))
             .replace("{{START_LANG}}", json.dumps(args.start_lang))
             .replace("{{TITLE}}", html.escape(args.title))

@@ -42,6 +42,7 @@ import os
 import pathlib
 import sys
 
+
 HERE = pathlib.Path(__file__).parent
 REPO_ROOT = HERE.parent.parent
 OUT = HERE / "theme-toggle-demo.html"
@@ -52,6 +53,7 @@ BUILT = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
 sys.path.insert(0, str(REPO_ROOT / "tools"))
+import tun_brand  # noqa: E402
 import tun_tokens  # noqa: E402
 
 # Tokens come from tools/tun_tokens.py: it resolves which palette is active, validates
@@ -69,6 +71,7 @@ HTML = f"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tema-demo: lys/mørk-bryter</title>
+{tun_brand.favicon_link()}
 <!--
   Tema-demo: lys/mørk-bryter
   PROVENANCE
@@ -123,6 +126,7 @@ HTML = f"""<!DOCTYPE html>
   .note code{{color:var(--ink)}}
   @media print{{nav,#theme-toggle{{display:none}}}}
 </style>
+<style>{tun_brand.CSS}</style>
 </head>
 <body>
 <header>
@@ -223,6 +227,7 @@ HTML = f"""<!DOCTYPE html>
     }});
   }})();
 </script>
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5">{tun_brand.HINT}</footer>
 </body>
 </html>
 """

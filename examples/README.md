@@ -60,6 +60,7 @@ the claim you need to believe, and rebuild that one.
 | [53](53-sankey/) | Where a quantity went between stages, and that it adds up: every middle node takes in exactly what it passes on (checked to the last unit), one scale for the whole picture, ribbons that tile their node with no gap, and a cycle refused rather than drawn | `examples/53-sankey/generate_data.py`, then `tools/build_sankey.py` |
 | [54](54-showcase/) | Tún Explorer: six guided paths through every example, a persistent live stage, full-screen view, build recipes, byte-exact downloads and shareable example links, all in one self-contained file | `tools/build_showcase.py --out examples/54-showcase/oversikt.html` |
 | [55](55-task-space/) | A declared workflow in three dimensions: raw WebGL with drag rotation and selectable steps, a static SVG and the complete table from the same CSV, with no automatic movement and no runtime dependency | `examples/55-task-space/generate_data.py`, then `tools/build_task_space.py` |
+| [56](56-functional-app/) | The point where a small server earns its keep: persistent shared writes through a stdlib JSON API, then a script-free standalone snapshot of the same SQLite rows | `examples/56-functional-app/build_snapshot.py`; `app.py serve` for the live client |
 
 ## Checking one
 

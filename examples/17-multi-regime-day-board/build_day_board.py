@@ -39,8 +39,9 @@ from __future__ import annotations
 import datetime
 import json
 import pathlib
-import re
 import sys
+
+import re
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent.parent
@@ -49,6 +50,7 @@ OUT_HTML = HERE / "oversikt.html"
 OUT_DATA = HERE / "data.js"
 
 sys.path.insert(0, str(REPO / "tools"))
+import tun_brand  # noqa: E402
 from verify_standalone_core import (  # noqa: E402
     check_no_leftover_placeholders,
     check_no_stray_script_text,
@@ -353,7 +355,7 @@ def write_data_js(rows: list[dict], extract: str) -> None:
 
 
 def write_html(rows: list[dict], build_stamp: str) -> None:
-    html = TEMPLATE.read_text(encoding="utf-8")
+    html = tun_brand.apply(TEMPLATE.read_text(encoding="utf-8"))
     substitutions = {
         "{{TITLE}}": TITLE,
         "{{SUBTITLE}}": SUBTITLE,

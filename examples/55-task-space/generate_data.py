@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Write the fixed, synthetic task-space example. No random input and no real data."""
 from pathlib import Path
 import csv

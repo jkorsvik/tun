@@ -212,29 +212,35 @@ def dark_pages() -> list[pathlib.Path]:
     return found
 
 
-def probe(path: pathlib.Path, scheme: str, theme: str = "") -> dict:
-    """The rendered colours, and whether the page set its own theme attribute."""
+def probe_many(requests: list[tuple[pathlib.Path, str, str]]) -> dict:
+    """The rendered colours per (page, scheme, theme), each in a fresh page of one Chromium."""
     from playwright.sync_api import sync_playwright
 
+    results = {}
     with sync_playwright() as p:
         browser = p.chromium.launch()
         try:
-            page = browser.new_page(viewport={"width": 1366, "height": 768},
-                                    color_scheme=scheme)
-            page.goto(path.resolve().as_uri())
-            page.wait_for_timeout(250)
-            if theme:
-                page.evaluate("(name) => document.documentElement.setAttribute("
-                              "'data-theme', name)", theme)
-                page.wait_for_timeout(150)
-            return page.evaluate("""() => {
-              const b = getComputedStyle(document.body);
-              const h = getComputedStyle(document.querySelector('header') || document.body);
-              return {attr: document.documentElement.getAttribute('data-theme'),
-                      bg: b.backgroundColor, ink: b.color, head: h.backgroundColor};
-            }""")
+            for path, scheme, theme in requests:
+                page = browser.new_page(viewport={"width": 1366, "height": 768},
+                                        color_scheme=scheme)
+                try:
+                    page.goto(path.resolve().as_uri())
+                    page.wait_for_timeout(250)
+                    if theme:
+                        page.evaluate("(name) => document.documentElement.setAttribute("
+                                      "'data-theme', name)", theme)
+                        page.wait_for_timeout(150)
+                    results[(path, scheme, theme)] = page.evaluate("""() => {
+                      const b = getComputedStyle(document.body);
+                      const h = getComputedStyle(document.querySelector('header') || document.body);
+                      return {attr: document.documentElement.getAttribute('data-theme'),
+                              bg: b.backgroundColor, ink: b.color, head: h.backgroundColor};
+                    }""")
+                finally:
+                    page.close()
         finally:
             browser.close()
+    return results
 
 
 def a11y(path: pathlib.Path, *extra: str) -> subprocess.CompletedProcess:
@@ -288,8 +294,9 @@ def main() -> int:
 
     print("\n2. each page is either following the system or disarming it on purpose")
     following, disarmed = [], []
+    initial = probe_many([(page, "light", "") for page in pages])
     for page in pages:
-        seen = probe(page, "light")
+        seen = initial[(page, "light", "")]
         if seen["attr"] is None:
             following.append(page)
         else:
@@ -315,9 +322,11 @@ def main() -> int:
             "the entry went stale")
 
     print("\n3. a page that follows the system really does change colour")
+    comparisons = probe_many([(page, scheme, "") for page in following
+                              for scheme in ("light", "dark")])
     for page in following:
-        light = probe(page, "light")
-        dark = probe(page, "dark")
+        light = comparisons[(page, "light", "")]
+        dark = comparisons[(page, "dark", "")]
         chk(light["bg"] != dark["bg"] or light["ink"] != dark["ink"],
             f"{page.name}: the colours change when the system is dark",
             f"light {light['bg']}/{light['ink']} == dark {dark['bg']}/{dark['ink']}")

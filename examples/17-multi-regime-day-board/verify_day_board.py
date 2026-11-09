@@ -229,9 +229,14 @@ def run_brand(failures: list[str]) -> None:
     for name in sorted(banned):
         check(f"no {name} is loaded (prose may still name it)",
               name not in prose_free, failures)
+    # An inline favicon is part of the file, not a fetched stylesheet. Remove
+    # only data-URI icon links; every other link still fails the original gate.
+    resource_markup = re.sub(
+        r'''<link\b(?=[^>]*\brel=["']icon["'])(?=[^>]*\bhref=["']data:)[^>]*>''',
+        "", prose_free, flags=re.I)
     for construct in ("<link", "@import", "url("):
-        check(f"no {construct} anywhere — nothing is fetched",
-              construct not in prose_free, failures)
+        check(f"no fetched {construct} — data-URI icons are inline",
+              construct not in resource_markup, failures)
 
     # The font stack is an ALLOW-LIST, not a ban on particular typefaces.
     #

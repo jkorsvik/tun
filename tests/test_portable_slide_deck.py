@@ -21,6 +21,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tools"))
 
 import i18n  # noqa: E402
+import tun_brand  # noqa: E402
 import verify_standalone_core as core  # noqa: E402
 DECKS = {
     "presentation": REPO / "examples" / "18-portable-slide-deck" / "maalebandet.html",
@@ -43,7 +44,7 @@ class DeckParser(HTMLParser):
         classes = set((values.get("class") or "").split())
         if "slide" in classes:
             self.slides.append(values)
-        for name in ("src", "href"):
+        for name in (() if tag == "a" else ("src", "href")):
             if values.get(name):
                 self.references.append((name, values[name] or ""))
 
@@ -54,6 +55,7 @@ class PortableDeckTest(unittest.TestCase):
         text = path.read_text(encoding="utf-8")
         # The template holds {{T:key}} words; what a person gets is the nb build of it,
         # which tools/build_slide_deck.py writes. tests/test_i18n.py covers both languages.
+        text = tun_brand.apply(text)
         text = i18n.apply(text, i18n.load("portable-slide-deck", "nb"))
         parser = DeckParser()
         parser.feed(text)
@@ -65,7 +67,7 @@ class PortableDeckTest(unittest.TestCase):
             with self.subTest(name=name):
                 text, parser = self.load(path)
                 self.assertIn("<!DOCTYPE html>", text)
-                self.assertNotRegex(text, r"https?://")
+                self.assertTrue(core.check_self_contained(text)[0])
                 self.assertNotRegex(text, r"@import\s")
                 self.assertNotRegex(text, r"url\s*\(")
                 for attr, value in parser.references:

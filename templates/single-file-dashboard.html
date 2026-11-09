@@ -12,6 +12,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{DASHBOARD_TITLE}}</title>
+{{TUN_FAVICON}}
 <!--
   ============================================================================
   This is the dashboard specialisation of templates/_generic-provenance-block.html
@@ -214,6 +215,7 @@
     .kpi .value{color:var(--brand)}
   }
 table{display:block;max-width:100%;overflow-x:auto}
+{{TUN_CREDIT_CSS}}
 </style>
 </head>
 <body>
@@ -257,7 +259,7 @@ table{display:block;max-width:100%;overflow-x:auto}
 
 <footer>
   {{T:footer_a}} &middot; {{T:footer_b}} &middot;
-  {{T:footer_built}} {{BUILD_TIMESTAMP}} {{T:from}} {{SOURCE_DESCRIPTION}}.<br>
+  {{T:footer_built}} {{BUILD_TIMESTAMP}} {{T:from}} {{SOURCE_DESCRIPTION}}.{{TUN_CREDIT}}<br>
   <span id="footnote"></span>
 </footer>{{FEEDBACK_BLOCK}}
 <div class="tooltip" id="tip"></div>

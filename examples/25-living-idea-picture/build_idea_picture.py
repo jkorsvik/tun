@@ -26,8 +26,11 @@ from __future__ import annotations
 import datetime
 import os
 import pathlib
-import re
 import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
+import tun_brand
+
+import re
 
 HERE = pathlib.Path(__file__).resolve().parent
 TEMPLATE = HERE / "idea-picture.template.html"
@@ -265,7 +268,7 @@ def main() -> int:
         return 1
     fragment = re.sub(r"\{\{P:([\w-]+)\}\}", lambda m: PATHS[m.group(1)], fragment)
     css = BASE_CSS + "\n" + generated_css()
-    page = (TEMPLATE.read_text(encoding="utf-8")
+    page = (tun_brand.apply(TEMPLATE.read_text(encoding="utf-8"))
             .replace("{{FIGURE_CSS}}", css)
             .replace("{{FIGURE}}", fragment.rstrip("\n"))
             .replace("{{BUILT}}", build_date()))

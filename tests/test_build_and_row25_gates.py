@@ -37,6 +37,8 @@ import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
+sys.path.insert(0, str(TOOLS))
+import tun_brand  # noqa: E402
 TEMPLATE = ROOT / "templates" / "single-file-dashboard.html"
 CSV = ROOT / "examples" / "01-hello-dashboard" / "salgsdata.csv"
 
@@ -225,6 +227,7 @@ def main() -> int:
         # therefore fail every correct build. The fix is the convention, not the
         # regex: these two assertions stop both halves from regressing.
         cube_tpl = (ROOT / "templates" / "cube-dashboard.html").read_text(encoding="utf-8")
+        cube_tpl = tun_brand.apply(cube_tpl)
         cube_build = (TOOLS / "build_cube_dashboard.py").read_text(encoding="utf-8")
         substituted = set(re.findall(r'\.replace\("(\{\{[A-Z0-9_]+\}\})"', cube_build))
         unknown = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", cube_tpl)) - substituted)

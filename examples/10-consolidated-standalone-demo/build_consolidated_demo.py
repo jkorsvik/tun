@@ -52,6 +52,7 @@ import os
 import pathlib
 import sys
 
+
 HERE = pathlib.Path(__file__).parent
 REPO_ROOT = HERE.parent.parent
 OUT = HERE / "consolidated-standalone-demo.html"
@@ -71,6 +72,7 @@ FG = "#FFFFE8"   # Light Yellow — "negative" text/logo/icon colour on dark bg
 
 
 sys.path.insert(0, str(REPO_ROOT / "tools"))
+import tun_brand  # noqa: E402
 import tun_tokens  # noqa: E402
 
 # Tokens come from tools/tun_tokens.py: it resolves which palette is active, validates
@@ -286,6 +288,7 @@ TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>__PAGE_TITLE__</title>
+{{TUN_FAVICON}}
 <!--
   Konsolidert standalone-demo — toppfelt, farger, ikoner (t.o.m. issue #20)
   PROVENANCE
@@ -457,6 +460,7 @@ __TOKEN_CSS__
   .note code{color:var(--ink)}
   @media print{#topbar,.gitref-pill{display:none}}
 </style>
+<style>{{TUN_CREDIT_CSS}}</style>
 </head>
 <body>
 
@@ -579,6 +583,7 @@ var REFS = __REFS_JSON__;
 <script>
 __PAGE_JS__
 </script>
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5">{{TUN_CREDIT}}</footer>
 </body>
 </html>
 """
@@ -1225,7 +1230,7 @@ HTML = (
 )
 
 
-OUT.write_text(HTML, encoding="utf-8")
+OUT.write_text(tun_brand.apply(HTML), encoding="utf-8")
 print(f"wrote {OUT} ({OUT.stat().st_size} bytes)")
 print("next: python3 tools/verify_standalone_core.py " + str(OUT))
 

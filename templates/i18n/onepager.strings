@@ -24,7 +24,7 @@ moved_missing = Forrige periode finnes ikke i dataene, så ingen endring kan vis
 period_missing = {measure} er tomt i den siste perioden.
 source_line = Kilde: {source} · {rows} rader, {cols} kolonner
 provenance_line = Uttrekk {extracted} · bygget {built} · bestilt av {who}
-made_with = Laget med Tún — tun.community. Ingen Power BI-lisens, ingen arbeidsflate, ingen admin-godkjenning.
+delivery = Ingen Power BI-lisens, ingen arbeidsflate, ingen admin-godkjenning.
 
 [en]
 kind = One pager
@@ -48,4 +48,4 @@ moved_missing = The previous period is not in the data, so no change can be show
 period_missing = {measure} is empty in the last period.
 source_line = Source: {source} · {rows} rows, {cols} columns
 provenance_line = Extracted {extracted} · built {built} · requested by {who}
-made_with = Made with Tún — tun.community. No Power BI licence, no workspace, no admin approval.
+delivery = No Power BI licence, no workspace, no admin approval.

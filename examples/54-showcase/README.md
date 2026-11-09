@@ -37,3 +37,12 @@ It is a document, not a dashboard, so it is verified as one: `verify_standalone_
 `verify_viewports.py` at the 14 px floor, `verify_a11y.py`, and `tests/test_explorer.py` for the
 stage, paths, deep links and downloads. `verify_dashboard.py` refuses it on purpose, because it
 looks for KPI cards and chart marks that this Explorer has no reason to have.
+
+## Verify
+
+```bash
+python3 tools/verify_standalone_core.py examples/54-showcase/oversikt.html
+python3 tools/verify_viewports.py examples/54-showcase/oversikt.html
+python3 tools/verify_a11y.py examples/54-showcase/oversikt.html
+python3 tools/verify_a11y.py examples/54-showcase/oversikt.html --dark
+```

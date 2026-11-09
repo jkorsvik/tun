@@ -45,6 +45,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 
 import build_stamp  # noqa: E402
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
@@ -139,6 +140,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--lang", choices=("nb", "en"), default="nb")
     ap.add_argument("--out", type=pathlib.Path, default=None,
                     help="where to write the page (default: <dir>/index.html)")
+    tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
 
     folder = args.dir
@@ -186,7 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     # dark gets a dark page with no script, which matters more here than anywhere, since this
     # page deliberately carries no script at all.
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
-    page = i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
+    page = i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
     for token, value in {
         "{{TOKEN_CSS}}": strip_css_comments(token_css),
         "{{TITLE}}": html.escape(args.title or folder.name),

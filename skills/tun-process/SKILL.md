@@ -116,6 +116,10 @@ Done when `python3 tools/build_process_diagram.py <spec> --check` prints `ok`.
 
 ## Step 4: Build
 
+The builder adds the Tún square favicon and a quiet `tun.community` footer link.
+Keep both by default. If requested, use `--favicon <local-file|data-uri|none>`
+and/or `--no-tun-hint`. Keep the non-visible Origin Notice in all cases.
+
 ```bash
 python3 tools/build_process_diagram.py <spec>.process.txt --out <folder>/<slug>.html
 ```

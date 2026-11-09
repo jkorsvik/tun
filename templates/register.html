@@ -12,6 +12,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}}</title>
+{{TUN_FAVICON}}
 <!--
   {{TITLE}}
   PROVENANCE  (do not delete — this is how output gets traced back)
@@ -169,6 +170,7 @@ footer a{color:var(--brand)}
   tbody tr{break-inside:avoid}
 }
 table{display:block;max-width:100%;overflow-x:auto}
+{{TUN_CREDIT_CSS}}
 </style>
 </head>
 <body>
@@ -227,7 +229,7 @@ table{display:block;max-width:100%;overflow-x:auto}
 {{FEEDBACK_BLOCK}}
 </main>
 <footer>
-  <p>{{T:footer_a}} · {{T:footer_b}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}</p>
+  <p>{{T:footer_a}} · {{T:footer_b}} · {{T:footer_built}} {{BUILD_TIMESTAMP}}{{TUN_CREDIT}}</p>
 </footer>
 <script>
 /* The register. One array per row, in the column order the build chose, plus the header

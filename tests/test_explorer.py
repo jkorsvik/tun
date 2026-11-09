@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 The Tún authors (see AUTHORS.md)
+# This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """End-to-end checks for the consolidated Tún Explorer, in Chromium and WebKit."""
 from __future__ import annotations
 
@@ -27,7 +30,7 @@ def ok(condition: bool, message: str) -> None:
 def static_checks() -> None:
     text = PAGE.read_text(encoding="utf-8")
     slugs = re.findall(r'data-slug="([^"]+)"', text)
-    ok(len(slugs) == 50, f"expected 50 examples, found {len(slugs)}")
+    ok(len(slugs) == 51, f"expected 51 examples, found {len(slugs)}")
     ok(len(set(slugs)) == len(slugs), "duplicate example slug")
     ok("55-task-space" in slugs, "the 3D example is not in the Explorer")
     for key in ("all", "explore", "explain", "process", "scale", "native"):
@@ -42,7 +45,7 @@ def static_checks() -> None:
     for leaked in ("https://example.com/tun/issues", "[issue #", "Rører ikke", "Eksempel AS-branding"):
         ok(leaked not in text, f"internal note leaked into the public gallery: {leaked}")
     payloads = re.findall(r'data-live="([^"]+)"', text)
-    ok(len(payloads) == 50 and all(p.startswith("gzip:") for p in payloads),
+    ok(len(payloads) == 51 and all(p.startswith("gzip:") for p in payloads),
        "every live example must use the gzip payload contract")
     first = build_showcase.read_example(ROOT / "examples/01-hello-dashboard")
     ok(build_showcase.decode_live(payloads[0]) == build_showcase.inline_siblings(first["page"]),
@@ -139,15 +142,15 @@ def browser_checks() -> None:
             page.locator('[data-lang="en"]').click()
             ok(page.locator('[data-path="all"]').text_content() == "All possibilities",
                "language switch did not update the guided paths")
-            ok(page.locator(".hero-actions a.primary").get_attribute("href") == "https://tun.community/en/#first",
+            ok(page.locator('.hero-actions a[data-i18n="hero_start"]').get_attribute("href") == "https://tun.community/en/#first",
                "the getting-started link did not follow the language")
             page.locator("#stage-share").click()
             page.wait_for_function("document.querySelector('#stage-share').textContent === 'Copied'", timeout=2500)
             page.screenshot(path=str(pathlib.Path.home() / ".raiwork" / "tmp" / f"explorer-{engine}-desktop.png"))
             page.set_viewport_size({"width": 390, "height": 844})
             page.goto(url, wait_until="load")
-            ok(page.locator(".hero-actions a.primary").is_visible(), "mobile hides the start action")
-            ok(page.locator(".hero-actions a").nth(1).is_visible(), "mobile hides the source action")
+            ok(page.locator('.hero-actions a[data-i18n="hero_start"]').is_visible(), "mobile hides the start action")
+            ok(page.locator('.hero-actions a[href="https://github.com/jkorsvik/tun"]').is_visible(), "mobile hides the source action")
             ok(page.evaluate("document.scrollingElement.scrollWidth <= innerWidth"),
                "mobile Explorer overflows horizontally")
             stage = page.locator(".stage-top").bounding_box()
@@ -184,7 +187,7 @@ def browser_checks() -> None:
             context = browser.new_context(java_script_enabled=False, viewport={"width": 390, "height": 844})
             plain = context.new_page(); plain.goto(url)
             ok(plain.locator("#stage-empty").is_visible(), "no-JS stage explanation is missing")
-            ok(plain.locator("#grid .card").count() == 50, "no-JS collection is incomplete")
+            ok(plain.locator("#grid .card").count() == 51, "no-JS collection is incomplete")
             context.close()
             browser.close()
 

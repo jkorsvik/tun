@@ -10,6 +10,7 @@
 <html lang="{{T:html_lang}}">
 <head>
 <meta charset="utf-8">
+{{TUN_FAVICON}}
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}}</title>
 <!--
@@ -186,7 +187,7 @@
   .top.explorer{background:radial-gradient(circle at 78% 24%,rgb(85 214 138 / 8%),transparent 42%),linear-gradient(rgb(239 252 244 / 2%) 1px,transparent 1px),linear-gradient(90deg,rgb(239 252 244 / 2%) 1px,transparent 1px),var(--night);background-size:auto,2rem 2rem,2rem 2rem,auto;color:var(--on-night);border-bottom:0}
   .top.explorer .wrap{max-width:92rem;padding:2rem clamp(1rem,4vw,4rem)}
   .top.explorer .head-row{align-items:center}
-  .explorer-brand{display:inline-flex;align-items:center;gap:.55rem;margin:0;color:var(--on-night);text-decoration:none;font-size:1.25rem;font-weight:750}
+  .explorer-brand{min-height:2.75rem;display:inline-flex;align-items:center;gap:.55rem;margin:0;color:var(--on-night);text-decoration:none;font-size:1.25rem;font-weight:750}
   .explorer-brand svg{width:1.8rem;height:1.8rem;padding:.12rem;border:2px solid currentColor;border-radius:.45rem}
   .explorer-brand small{margin-left:.15rem;color:var(--mint);font:700 .875rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase}
   .top.explorer .lang{background:var(--deep);border-color:var(--slate)}
@@ -229,14 +230,15 @@
   .stage-actions button{min-height:2.75rem;padding:.5rem .75rem;border:1px solid var(--sage);border-radius:.5rem;background:var(--night);color:var(--on-night);font:inherit;font-size:.875rem;cursor:pointer}
   .stage-actions button:hover:not(:disabled){border-color:var(--mint)}
   .stage-actions button:disabled{opacity:.45;cursor:default}
-  .stage-source{display:inline-flex;align-items:center;min-height:2.75rem;color:var(--mint);font-size:.8125rem;font-weight:650;margin-right:1rem}
-  .footer-stats{font-size:.8125rem;color:var(--ink-soft)}
+  .stage-source{display:inline-flex;align-items:center;min-height:2.75rem;color:var(--mint);font-size:.875rem;font-weight:650;margin-right:1rem}
+  .footer-stats{font-size:.875rem;color:var(--ink-soft)}
   #stage-recipe{color:var(--sage)}
   #stage-recipe summary{color:var(--mint)}
   #stage-recipe code{background:var(--night);color:var(--on-night)}
   @media(max-width:70rem){.hero{grid-template-columns:1fr;gap:1.75rem}.hero-copy{max-width:50rem}.stage-frame,.stage-empty{height:32rem}}
   @media(max-width:40rem){.top.explorer .wrap{padding:1rem}.hero{margin-top:2rem;gap:1.5rem}.hero-copy h1{font-size:3rem}.stage-top{padding:.85rem;flex-direction:column;gap:.35rem}#stage-pos{white-space:normal}.stage-frame,.stage-empty{height:28rem}.stage-bottom{padding:.85rem}.stage-actions button{flex:1 1 auto}.stage-kicker{font-size:.875rem}}
   @media print{.stage,.paths{display:none}}
+{{TUN_CREDIT_CSS}}
 </style>
 </head>
 <body>
@@ -253,7 +255,7 @@
       <div class="hero-copy">
         <h1 data-i18n="explorer_title">{{T:explorer_title}}</h1>
         <p class="sub" data-i18n="explorer_intro">{{T:explorer_intro}}</p>
-        <p class="hero-actions"><a class="primary" href="{{T:start_url}}" data-i18n="hero_start" data-i18n-href="start_url">{{T:hero_start}}</a><a href="https://github.com/jkorsvik/tun">GitHub&nbsp;↗</a></p>
+        <p class="hero-actions"><a class="primary" id="start-example" href="#example-01" data-i18n="start_example">{{T:start_example}}</a><a class="primary" href="{{T:start_url}}" data-i18n="hero_start" data-i18n-href="start_url">{{T:hero_start}}</a><a href="https://github.com/jkorsvik/tun">GitHub&nbsp;↗</a></p>
         <ul class="chips">{{CHIPS}}</ul>
         <div class="paths" role="group" aria-label="{{T:explorer_eyebrow}}">
           <button type="button" class="active" data-path="all" data-i18n="path_all">{{T:path_all}}</button>
@@ -270,6 +272,7 @@
           <span id="stage-pos" role="status" aria-live="polite"></span>
         </div>
         <div class="stage-progress-track" aria-hidden="true"><span class="stage-progress" id="stage-progress"></span></div>
+        <p id="decode-error" role="alert" hidden data-i18n="decode_error">{{T:decode_error}}</p>
         <div class="stage-empty" id="stage-empty" data-i18n="stage_nojs">{{T:stage_nojs}}</div>
         <iframe class="stage-frame" id="stage-frame" title="{{T:viewer_label}}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-popups allow-downloads" hidden></iframe>
         <div class="stage-bottom">
@@ -311,7 +314,7 @@
     <p data-i18n="footer_trace">{{T:footer_trace}}</p>
     <p data-i18n="live_note">{{T:live_note}}</p>
     <p class="footer-stats">{{TECH_STATS}}</p>
-    <p><span data-i18n="footer_site">{{T:footer_site}}</span> <a href="https://tun.community">tun.community</a>.</p>
+    <p><span data-i18n="footer_site">{{T:footer_site}}</span> {{TUN_CREDIT}}</p>
     <p><a href="{{T:start_url}}" data-i18n="hero_start" data-i18n-href="start_url">{{T:hero_start}}</a> · <a href="https://github.com/jkorsvik/tun">GitHub</a> · <a href="https://github.com/jkorsvik/tun/blob/main/CONTRIBUTING.md" data-i18n="contribute">{{T:contribute}}</a></p>
   </div>
 </footer>
@@ -739,7 +742,14 @@
     empty.hidden = true;
     frame.hidden = false;
     stage.classList.add("switching");
-    frame.srcdoc = decode(card.getAttribute("data-live") || "");
+    var error = document.getElementById("decode-error");
+    try {
+      frame.srcdoc = decode(card.getAttribute("data-live") || "");
+      error.hidden = true;
+    } catch (e) {
+      frame.srcdoc = "";
+      error.hidden = false;
+    }
     updateText();
     if (writeUrl) {
       try {
@@ -751,6 +761,11 @@
       } catch (e) { /* an opaque origin still gives the live stage */ }
     }
   }
+  document.getElementById("start-example").addEventListener("click", function (e) {
+    e.preventDefault();
+    activePath = "all"; current = cards.slice(); markPath();
+    openStage(cards[0], true);
+  });
   pathButtons.forEach(function (button) {
     button.addEventListener("click", function () {
       var path = button.getAttribute("data-path");

@@ -353,8 +353,8 @@ if HAVE_PLUGINS:
     # Refuse a vacuous pass: the tun plugin ships three assets, so zero checked means the
     # loop above never ran, not that everything is fine.
     tun = next((p for p in found if p.get("id") == "tun"), {})
-    chk("tun maps its logo, square mark and mono logo",
-        sorted((tun.get("assets") or {}).keys()), ["logo", "logo-mono", "mark"])
+    chk("tun maps its logo, square mark, mono logo and favicon",
+        sorted((tun.get("assets") or {}).keys()), ["favicon", "logo", "logo-mono", "mark"])
     chk("at least those three asset files were checked", assets_checked >= 3, True)
 
     # mark.svg and logo-mono.svg are derived from logo.svg and stored. A stored derived
