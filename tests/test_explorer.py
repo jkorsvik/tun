@@ -92,11 +92,11 @@ def browser_checks() -> None:
             page.goto(url + "?path=scale&example=03", wait_until="load")
             ok("cube" in page.locator("#stage-title").text_content().lower(), "deep link failed")
             page.locator("#stage-expand").click()
+            page.locator("#viewer").wait_for(state="visible")
             ok(page.locator("#viewer").is_visible(), "full-screen did not open")
             page.wait_for_function("document.fullscreenElement===document.documentElement", timeout=2500)
             ok(page.evaluate("document.fullscreenElement===document.documentElement"),
                f"{engine}: Full screen did not enter the browser Fullscreen API")
-            page.locator("#viewer").wait_for(state="visible")
             ok(page.evaluate("!!document.elementFromPoint(innerWidth/2,innerHeight/2).closest('#viewer')"),
                f"{engine}: the fullscreen page covers the dialog and intercepts clicks")
             box = page.locator("#viewer").bounding_box()
