@@ -21,17 +21,16 @@ byte for byte. Static, no browser, no server.
 from __future__ import annotations
 
 import argparse
-import base64
 import pathlib
 import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
-from build_showcase import inline_siblings  # noqa: E402  the one definition of "embedded"
+from build_showcase import decode_live, inline_siblings  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-LIVE = re.compile(r'data-live="([A-Za-z0-9+/=]+)"')
+LIVE = re.compile(r'data-live="(gzip:[A-Za-z0-9+/=]+)"')
 NUM = re.compile(r' data-num="([^"]*)"')
 
 
@@ -61,9 +60,9 @@ def main(argv: list[str] | None = None) -> int:
     stale: list[str] = []
     for index, payload in enumerate(payloads, start=1):
         try:
-            decoded = base64.b64decode(payload, validate=True)
+            decoded = decode_live(payload)
         except Exception:
-            stale.append(f"payload {index}: not base64")
+            stale.append(f"payload {index}: not valid gzip base64")
             continue
         if decoded not in expected:
             stale.append(f"payload {index}: equals no current page")

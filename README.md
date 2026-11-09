@@ -4,27 +4,14 @@
 HTML artefacts, distributed through SharePoint and OneDrive, openable by anyone who can
 open the folder, with no Power BI licence, no workspace, no capacity and no admin approval.
 
-<!-- attribution:start -->
-> **Tún is a passion project, credited to the product owner and the maintainer.** <3
->
-> The idea is Tunkallen's, the name is Tunkallen's, and the direction is his; deliberately
-> open-ended. Jon-Mikkel builds the plumbing: the awkward platform constraints measured
-> so nobody has to rediscover them, a working template, the gates that keep it honest,
-> and a set of RAIWork skills so building and sharing an artefact is a sentence rather
-> than a project. Scaffolding, not a specification.
->
-> Nobody asked for this and nothing depends on it. That is the point: it exists because
-> sharing a number with a colleague should not cost a licence, a workspace and three
-> weeks, and because finding out exactly *why* it does was interesting enough to keep
-> going.
-<!-- attribution:end -->
-
+**New here? [Start here](START-HERE.md).** Try the [live Explorer](https://jkorsvik.github.io/tun/),
+or make your first file with Python, Claude Code, Codex, Gemini CLI, Copilot, ChatGPT or Grok.
 
 ---
 
 ## The idea in one paragraph
 
-Building a dashboard is easy. *Sharing* one is where Eksempel AS loses weeks. It takes licences per
+Building a dashboard is easy. *Sharing* one is where teams lose weeks. It takes licences per
 viewer, a workspace, a capacity, a publish step, and still no way to show it to someone
 without a Pro seat. So people fall back to a screenshot in PowerPoint, which is dead on
 arrival. Instead: make the dashboard **a document**. One `.html` file with the data,
@@ -47,7 +34,7 @@ versioning, audit, sync and offline. Reuse that machinery instead of fighting it
 | Tier 3 (Parquet + DuckDB-WASM) | 🔶 designed. HTTP Range **measured and confirmed**, but it **cannot run from a portable file** and needs Tier 2 to host it |
 | Skills | ✅ 9 written (`tun-help`, `-new`, `-data`, `-verify`, `-publish`, `-process`, `-feedback`, `tun-powerbi-escape`, `tun-for-communicators`) |
 | Onboarding | ✅ [zero to published, Windows or macOS](docs/04-onboarding.md) |
-| Shapes | ✅ 19 builders, and a chooser: [which shape answers which question](docs/33-artefact-shapes.md) |
+| Shapes | ✅ 30 builders, and a chooser: [which shape answers which question](docs/33-artefact-shapes.md) |
 
 ## Try it
 
@@ -59,18 +46,19 @@ python3 tools/build_dashboard.py \
   --title "Salg per region og produkt 2026" \
   --dimension Produkt --measure Belop --time Maaned \
   --filters Region,Produkt,Kanal \
+  --source "Eksempeldata (syntetisk) - salgsdata.csv" \
   --requested-by "Prosjekteier" \
-  --out /tmp/demo.html
+  --out work/demo.html
 ```
 
-Open `/tmp/demo.html` in a browser. That is the whole product: one file, no server.
+Open `work/demo.html` in a browser. That is the whole product: one file, no server.
 
 Before you share a file, prove it in a real browser. This needs
 [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync --extra verify && uv run playwright install chromium   # once
-uv run python tools/verify_dashboard.py /tmp/demo.html
+uv run python tools/verify_dashboard.py work/demo.html
 ```
 
 **Use it from your AI tool.** The skills are in the open
@@ -86,10 +74,31 @@ then ask for *"a dashboard from this Excel file"*:
 Tested on 2026-10-08: Gemini CLI and Claude Code load every skill. Codex is checked in its
 source code, the rest in each tool's own docs ([docs/28](docs/28-prior-art.md)).
 
+**ChatGPT, Grok or another chat bot:** use the [starter prompt](START-HERE.md#3-chatgpt-grok-or-another-chat-bot).
+The bot writes its own code, not the tested Tún builders. Use the Python or coding-assistant
+route for the full toolkit and verification.
+
 ![Example dashboard](examples/01-hello-dashboard/preview.png)
 
 That file is **0.10 MB**, has zero external dependencies, works offline, and needs no
 licence to open.
+
+---
+
+<!-- attribution:start -->
+> **Tún is a passion project, credited to the product owner and the maintainer.** <3
+>
+> The idea is Tunkallen's, the name is Tunkallen's, and the direction is his; deliberately
+> open-ended. Jon-Mikkel builds the plumbing: the awkward platform constraints measured
+> so nobody has to rediscover them, a working template, the gates that keep it honest,
+> and a set of Agent Skills so building and sharing an artefact is a sentence rather
+> than a project. Scaffolding, not a specification.
+>
+> Nobody asked for this and nothing depends on it. That is the point: it exists because
+> sharing a number with a colleague should not cost a licence, a workspace and three
+> weeks, and because finding out exactly *why* it does was interesting enough to keep
+> going.
+<!-- attribution:end -->
 
 ---
 

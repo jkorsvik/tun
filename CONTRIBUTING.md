@@ -1,6 +1,18 @@
 # Contributing
 
-Thanks for looking. Read `AGENTS.md` first. It holds the rules that do not bend, and
+Thanks for looking. You can help without being a framework developer:
+
+- **Bring a real task.** [Open an issue](https://github.com/jkorsvik/tun/issues) about a report
+  that takes too long, a reader who got stuck, or a result you did not understand.
+- **Improve a recipe.** The skills in `skills/*/SKILL.md` are editable Markdown. Clearer
+  wording and better questions are product changes.
+- **Add an example or a check.** A small synthetic dataset, a useful artefact or a failing
+  test is a good first pull request.
+
+For your first change, clone the repository, create a branch, make one focused edit and run
+`python3 tools/check_all.py --fast`. Open a draft pull request if you want early feedback.
+
+Before changing code, read `AGENTS.md`. It holds the rules that do not bend, and
 `docs/06-way-of-working.md` holds the habits behind them.
 
 By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). Report security
