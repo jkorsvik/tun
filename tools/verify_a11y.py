@@ -282,33 +282,36 @@ def check(path: Path, engines: tuple[str, ...], quiet: bool, dark: bool = False,
     total = 0
     with sync_playwright() as p:
         for engine in engines:
-            for label, w, h in VIEWPORTS:
-                browser = getattr(p, engine).launch()
-                try:
+            browser = getattr(p, engine).launch()
+            try:
+                for label, w, h in VIEWPORTS:
                     page = browser.new_page(viewport={"width": w, "height": h},
                                             color_scheme="dark" if dark else "light")
-                    page.goto(url)
-                    if theme:
-                        # A page that ships a theme toggle disarms its own
-                        # prefers-color-scheme block by setting data-theme on load, so the only
-                        # way to measure the colours its reader reaches is to set the attribute
-                        # the toggle sets. json.dumps, because the name goes into a JS string.
-                        page.evaluate("(name) => document.documentElement.setAttribute("
-                                      "'data-theme', name)", theme)
-                    page.wait_for_timeout(400)
-                    result = page.evaluate(PROBE_JS)
-                finally:
-                    browser.close()
-                findings = result["findings"]
-                total += len(findings)
-                head = (f"{engine} {label} {w}x{h}"
-                        + (" dark" if dark else "")
-                        + (f" theme={theme}" if theme else ""))
-                if not quiet:
-                    print(f"  · {head}: {result.get('contrastChecked', 0)} text runs measured, "
-                          f"{len(findings)} finding(s)")
-                for f in findings:
-                    print(f"    {f['rule']:<20} {f['detail']}")
+                    try:
+                        page.goto(url)
+                        if theme:
+                            # A page that ships a theme toggle disarms its own
+                            # prefers-color-scheme block by setting data-theme on load, so the only
+                            # way to measure the colours its reader reaches is to set the attribute
+                            # the toggle sets. json.dumps, because the name goes into a JS string.
+                            page.evaluate("(name) => document.documentElement.setAttribute("
+                                          "'data-theme', name)", theme)
+                        page.wait_for_timeout(400)
+                        result = page.evaluate(PROBE_JS)
+                    finally:
+                        page.close()
+                    findings = result["findings"]
+                    total += len(findings)
+                    head = (f"{engine} {label} {w}x{h}"
+                            + (" dark" if dark else "")
+                            + (f" theme={theme}" if theme else ""))
+                    if not quiet:
+                        print(f"  · {head}: {result.get('contrastChecked', 0)} text runs measured, "
+                              f"{len(findings)} finding(s)")
+                    for f in findings:
+                        print(f"    {f['rule']:<20} {f['detail']}")
+            finally:
+                browser.close()
 
     if not quiet:
         print(f"\n  not checked here: {NOT_CHECKED}.")
