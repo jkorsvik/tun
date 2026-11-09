@@ -39,6 +39,7 @@ import tempfile
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 import i18n  # noqa: E402
+import tun_brand  # noqa: E402
 
 CSV = ROOT / "examples" / "01-hello-dashboard" / "salgsdata.csv"
 SPEC = ROOT / "examples" / "23-process-diagram" / "tun-workflow.process.txt"
@@ -1121,51 +1122,56 @@ DELIBERATE_NB_CHANGES = [
      b'    font-family:"' + _NK + b'",'),
 ]
 
+# 2026-11-09: re-pinned after proving all 22 old fixture hashes against HEAD
+# ab821b1. Removing the default favicon, credit CSS and credit restores the old
+# bytes. The cube additionally wraps #perf in a span and moves its footer outside
+# the hidden app; the index reports its input register growing from 128 to 130 kB.
+# Neither paired data.js changed. tests/test_tun_brand.py checks identity separately.
 BASELINE = {
-    "fx-deck/fx-deck.html": "16691d40b6810c3ecea32c0150a58e5f8a8e5e87ca371aafa463fc84f47280f3",
-    "dash-bundled/dash-bundled.html": "213b8d4b423929d9c0cc353c495cefb65647cea1b8aaeb66d9532e0227940433",
-    "dash-paired/paired/dash.html": "c9c18c34b296460935192b14fd4d9fabb4c8ada28b0f1b608ac01965bd22afd2",
+    "fx-deck/fx-deck.html": "cde971c4b080887b2b7b1c446f48ed0b5d63a3c7fcb7fb1466c446cfa24342a0",
+    "dash-bundled/dash-bundled.html": "6389d641723df6e7fc35b814205d466a6a72dff79de8736f10cb7c70f9254b4e",
+    "dash-paired/paired/dash.html": "7ab16b35085d8a8cda303b00323218cf79f2c29f0da227902fd9281356b65eb3",
     "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",
-    "dash-feedback/dash-feedback.html": "0f1b4b0bdba958558e1e91c1fb2e167a145dcffb294fe38d4a8fbe8305b16875",
+    "dash-feedback/dash-feedback.html": "e371a624084daf0b4e2e6556b670862cd9def0b95fafb3ce11c4ebbd0526e0c5",
     # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
     # change to its nb output is visible.
-    "scorecard/scorecard.html": "333b3fc48b768d14c937a3d47bd1a3aab8633a75b58a83ea18ddefb02f67b8fa",
+    "scorecard/scorecard.html": "9175c9a7b790c4c4fbc7fc045f201268c22ed07dd31817c2966374d79bc0a030",
     # New artefact 2026-10-24 (the distribution page, ROADMAP A23): there is no older
     # builder to compare against, so this hash is its first build, pinned so that any
     # change to its nb output is visible.
-    "distribution/distribution.html": "0e60ef2c16aa09c9de847199a13fc0d621877c8905d04b3720559c135a5b199e",
+    "distribution/distribution.html": "1b531d556aac62612ac576d3622399de83a26219edbe67204e0a51e7fb1adc8a",
     # New artefact 2026-10-24: there is no older builder to compare against, so this
     # hash is its first build, pinned so that any change to its nb output is visible.
     # Re-pinned the same day (ROADMAP A22, the review layer on the comparison). The proof
     # is a line diff of the old and new builds: six `data-col` attributes on the headers,
     # `id="tbl"` on the table, and two attribute writes in the row script. Nothing else in
     # the file moved, and no visible text changed.
-    "compare/compare.html": "edde4dce935dbc785baf0309a2b95cdfbb9e442d754504990ec98b37c0249dad",
-    "index/index.html": "d6dffaed23bb29599bf1d24c9042d2e7d410b28a2d7ade69ed8481ace6bb4aed",
+    "compare/compare.html": "f2382172264cfc55b22a02d5b528a9350a649f25a307d94eff20eb4f18526d2b",
+    "index/index.html": "1d35c55136a1b5afc598c24128c809566cafe79b6fabcc33a94b516364dd7263",
     # New artefact 2026-10-24: its first build, pinned so a change to its nb output is
     # visible. No older builder exists to compare it against.
-    "timeline/timeline.html": "d00e2fad42ceeed5e03021a05f1d8edc35fea6ac1c2a1b01ababf3d289b9bfef",
-    "cube/cube.html": "eb457667e35671eea663e155d623733aed6273e95123e432301e7c4e7e60738d",
-    "cube-feedback/cube-feedback.html": "1eb1a153b46b127f79b77bfdf4aa3a5a487e311dc32ce02eac2a45642a1bec01",
-    "process/process.html": "dcf8040aa4d8c4b2f4dd4814fe75d73f66a9d723efedb199925b383823ccf0ca",
-    "fx-dash/fx-dash.html": "9b1e4a36a8237f2576e0b7fd07873fd455148017af6bca6c15b1d2221a7f1e20",
-    "fx-dash-paired/fxp/dash.html": "b79bbc40900b430141f5e84bb1a4f7e7c70946fbf5f7e3f84160974c77eabc0a",
+    "timeline/timeline.html": "e6e92c53c9c77ce51489fb2f9ae1911ecf9c0a0f9e9bce4216b5bdc4b1802693",
+    "cube/cube.html": "92cab0225d983ff6a8e4849fb586ce3b74f4397f559552b8782f2f9b41878791",
+    "cube-feedback/cube-feedback.html": "7e89466dfaab3a542ff8445ca0ee36441e6db7eb74fb79e6d1df68a16e1e0a78",
+    "process/process.html": "3112b3d1ccda91d7e0fb253700f6577af964ccc7b29f225f11b9b77405d3e422",
+    "fx-dash/fx-dash.html": "0a006a1d7b1f91d8b321a7aa245b2066c8fdbabdb30604d262b7dd5a0cc44f2d",
+    "fx-dash-paired/fxp/dash.html": "7d2e89e201722bc3af304017904a4750a8a36f15df15b3228dd6781452453667",
     "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
-    "fx-dash-notime/fx-dash-notime.html": "17e2187414c20dad93868500bc78379a0c05302498097c5b7ca8ba2cca0148f2",
-    "fx-cube/fx-cube.html": "fa773c207f0d4f0b1dec7faeaa832e58c0e7a1f92aa8115998bcde1ba588cfd5",
-    "fx-process/fx-process.html": "ab1c25de2a97b56d0ca2b852e85df3aa0dae6693c8d150939061fbbd4ee5db12",
+    "fx-dash-notime/fx-dash-notime.html": "63db58eb132325f501a8e695e156b649ec0ba3a0bdf5d5881136070ffa64173d",
+    "fx-cube/fx-cube.html": "d6ff32a0bca18e824aafce13889d6453a08379d8e24c8410674cf64fafb0ed92",
+    "fx-process/fx-process.html": "e3fe3d7851c2ef22a57a9a5dc1fa152b1c040c0196c695869a4b980961c4bf94",
     # the survey board (2026-10-24): a new artefact, so its nb output is frozen here
     # 2026-10-24: the survey template gained a cross-tab block (table, its CSS, the
     # note a filter shows), so the two survey builds below moved and nothing else did.
-    "survey/survey.html": "31adf3c0b453d01b0f58ed689a8fc2f8ffe2eea7e1bc60ecba41ba84f5d9a9a4",
+    "survey/survey.html": "afdfb6e9719a0fc13be31399ba77f02d4e89f2e702219b65208057e07ad3dfd6",
     # the register (2026-10-24): a new artefact, so its nb output is frozen here.
     # 2026-10-24: the register gained group bands (--group-by): the band CSS, the group
     # constant, the comparator clause and the band renderer are in every build, and the
     # group strings and the groupCol fact only when the build groups. So the hash below
     # moved and nothing else did; no probe in section 6 builds this template, which is
     # why it is re-pinned here rather than paired.
-    "register/register.html": "e1b2239e2158f57c6d05bd876d924b0f259263d2505bc2ba8e9ba1f6de0152af",
-    "fx-survey/fx-survey.html": "ff29a9da009f2b56ebc820b59ba6cab1077835fba2e1d1970386acc981f694db",
+    "register/register.html": "fbbba3bc5f7f7de5df20db1ebda81c383cf7e0225b14641482c13b56791f03cb",
+    "fx-survey/fx-survey.html": "9b05a7ec1a16bcacb0133c84a1ce1adc30a57d4fef6f11cac5bc1f8fb113310c",
 }
 
 FORBIDDEN_IN_EN = ("'", '"', "\\", "`", "${")   # would break the string or comment it lands in
@@ -1388,6 +1394,12 @@ def adversarial(work: pathlib.Path) -> None:
         # write their own shell. It is normalised away on BOTH sides, so the comparison
         # still holds everything else to the byte. That it was there to begin with is
         # asserted below, so this cannot become a rule nothing checks.
+        blob = blob.replace(("\n" + tun_brand.favicon_link()).encode(), b"")
+        blob = blob.replace((tun_brand.CSS + "\n").encode(), b"")
+        blob = blob.replace(tun_brand.HINT.encode(), b"")
+        blob = blob.replace(b"\n#perf{display:contents}", b"")
+        blob = blob.replace(b'</main>\n</div>\n<footer><span id="perf"></span></footer>',
+                            b'</main>\n<footer id="perf"></footer>\n</div>')
         return static_block.sub(b"<!-- static view -->\n", blob).replace(b"\n" + TABLE_PAN, b"")
 
     same, compared = [], 0

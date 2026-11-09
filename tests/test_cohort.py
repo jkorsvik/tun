@@ -84,7 +84,7 @@ def scratch(root: pathlib.Path, old: str, new: str) -> pathlib.Path:
     tools = root / "tools"
     tools.mkdir(parents=True)
     for name in ("build_cohort.py", "build_size.py", "build_stamp.py", "feedback_link.py",
-                 "i18n.py", "tun_core.py", "tun_tokens.py"):
+                 "i18n.py", "tun_core.py", "tun_tokens.py", "tun_brand.py"):
         shutil.copy2(ROOT / "tools" / name, tools / name)
     # tun_tokens resolves the token files from its own location, so the scratch tree needs them:
     # the template carries {{TOKEN_CSS}} and the builder cannot produce a page without the seam.

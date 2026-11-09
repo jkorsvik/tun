@@ -52,6 +52,10 @@ from __future__ import annotations
 
 import datetime
 import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
+import tun_brand
+
 
 HERE = pathlib.Path(__file__).parent
 OUT = HERE / "js-free-standalone-poc.html"
@@ -702,12 +706,14 @@ DOC = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JavaScript-løs standalone HTML — POC for issue #30</title>
+{{TUN_FAVICON}}
 <style>
 """ + PLACEHOLDER_STYLE + """
 /* The landmark wraps everything, but adds no box: the toggles must stay siblings
    of #app-root for the :checked ~ selectors, and the layout stays as it was. */
 body > main{display:contents}
 </style>
+<style>{{TUN_CREDIT_CSS}}</style>
 </head>
 <body>
 <main>
@@ -716,13 +722,14 @@ body > main{display:contents}
 <script>
 """ + PLACEHOLDER_SCRIPT + """
 </script>
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5">{{TUN_CREDIT}}</footer>
 </body>
 </html>
 """
 
 
 def main() -> None:
-    doc = DOC.replace(PLACEHOLDER_STYLE, STYLE).replace(PLACEHOLDER_BODY, BODY).replace(
+    doc = tun_brand.apply(DOC).replace(PLACEHOLDER_STYLE, STYLE).replace(PLACEHOLDER_BODY, BODY).replace(
         PLACEHOLDER_SCRIPT, SCRIPT
     )
     OUT.write_text(doc, encoding="utf-8")

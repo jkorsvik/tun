@@ -31,6 +31,8 @@ make someone read the architecture doc to get started.
 | "I have an Excel file and want charts people can filter" | **`tun-new`** | nothing — ship today |
 | "make me a dashboard from this data" | **`tun-new`** | nothing |
 | "where do I put it so the team can open it" | **`tun-publish`** | nothing |
+| "put this interactive app on a static web host" | **`tun-host`** | Tier 1 file stays unchanged; host ownership, audience and approval must be confirmed; Platform cost is unverified |
+| "it needs shared writes, sign-in, saved state or scheduled jobs" | **`tun-host`** | a separate backend application with security, data and run ownership; no server enters the toolkit core |
 | "it should open as a link in Confluence or Jira, not as a download" | **`tun-publish`** (Atlassian Artifacts) | nothing to install; internal, non-sensitive material only, no paired mode, and a newly published file is readable by the whole organisation through its link until a person sets it private in the Artifacts UI |
 | "is this one broken / can I send it" | **`tun-verify`** | nothing |
 | "the numbers are old, update it" | **`tun-data`** | nothing |

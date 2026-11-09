@@ -28,6 +28,9 @@ import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
+sys.path.insert(0, str(TOOLS))
+from verify_standalone_core import check_self_contained  # noqa: E402
+from verify_print import static_findings  # noqa: E402
 EXAMPLE = ROOT / "examples" / "37-printable-onepager"
 DATA = EXAMPLE / "salgsdata.csv"
 ARTEFACT = EXAMPLE / "ett-ark.html"
@@ -118,7 +121,7 @@ def main() -> int:
                                     "Requested by", "Rows")))
         chk("no script is loaded from a file", not re.search(r"<script[^>]+src=", page, re.I))
         chk("nothing is fetched over the network",
-            not re.search(r"""(?:src|href)\s*=\s*["']https?://""", page, re.I))
+            check_self_contained(page)[0])
         chk("the paper size is declared", re.search(r"@page\s*{[^}]*size\s*:\s*A4", page, re.I)
             is not None)
         chk("it stays small", out.stat().st_size < 200 * 1024, f"{out.stat().st_size} bytes")
@@ -161,6 +164,20 @@ def main() -> int:
             (small.stdout or small.stderr)[-300:])
         chk("  and the rule that fires is the type floor", "type floor" in small.stdout,
             small.stdout[-300:])
+
+        # Resource regression: allow navigation, but keep SVG/media and stylesheet
+        # references behind the same offline boundary as before branding.
+        for tag in ('<svg><image href="https://example.invalid/icon.png"/></svg>',
+                    '<video src="https://example.invalid/clip.mp4"></video>',
+                    '<embed src="https://example.invalid/doc.pdf">',
+                    '<svg><use href="//example.invalid/shape.svg#x"/></svg>'):
+            probe = tmpdir / 'remote-resource.html'
+            probe.write_text(page.replace('</body>', tag + '</body>'), encoding='utf-8')
+            findings = static_findings(probe)
+            chk('remote SVG/media is refused: ' + tag.split()[0],
+                [finding['rule'] for finding in findings] == ['self-contained'])
+        probe.write_text(page + '<a href="https://tun.community">Tún</a>', encoding='utf-8')
+        chk('a navigation link does not become a resource request', static_findings(probe) == [])
 
         # Mutation 3: a remote resource. A sheet that needs the network is not a sheet.
         net_copy = tmpdir / "for-nett.html"

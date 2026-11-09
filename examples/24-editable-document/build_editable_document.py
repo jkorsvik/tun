@@ -28,8 +28,9 @@ from __future__ import annotations
 import datetime
 import os
 import pathlib
-import re
 import sys
+
+import re
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent.parent
@@ -37,6 +38,7 @@ TEMPLATE = HERE / "notat.template.html"
 OUT = HERE / "editable-document.html"
 
 sys.path.insert(0, str(REPO / "tools"))
+import tun_brand  # noqa: E402
 import tun_tokens  # noqa: E402
 
 
@@ -51,7 +53,7 @@ def build() -> pathlib.Path:
     css, source = tun_tokens.load_token_css(("status-semantic.css", "theme-light.css"))
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     css = re.sub(r"\n\s*\n+", "\n", css)
-    html = TEMPLATE.read_text(encoding="utf-8")
+    html = tun_brand.apply(TEMPLATE.read_text(encoding="utf-8"))
     for key, value in (("TOKEN_CSS", css.strip()),
                        ("TOKEN_SOURCE", tun_tokens.provenance_label(source)),
                        ("BUILT", build_date())):

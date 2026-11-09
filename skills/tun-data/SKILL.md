@@ -92,6 +92,11 @@ dashboard that quietly shows a tenth of the business.
 
 ## Step 3 — Rebuild in place
 
+Keep the original favicon choice and visible Tún link choice when rebuilding.
+Read the existing icon's data URI and pass it with `--favicon` if it is custom.
+Use `--no-tun-hint` only if the user already removed the hint. With no override,
+the builder adds the Tún square mark and quiet `tun.community` footer link.
+
 Same output path, same column arguments as the original build, including
 `--kpis` or `--measure-kind` when the original had them (its KPI cards show which):
 

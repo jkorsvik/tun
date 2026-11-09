@@ -10,6 +10,7 @@
 <html lang="nb"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Saksbehandling: kube</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20class%3D%22logo%22%20viewBox%3D%220%200%20160%20160%22%20role%3D%22img%22%20aria-label%3D%22T%C3%BAn%22%3E%0A%20%20%20%20%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22148%22%20height%3D%22148%22%20rx%3D%2226%22%20fill%3D%22none%22%20stroke%3D%22%230d2b21%22%20stroke-width%3D%227%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2280%22%20y%3D%22112%22%20text-anchor%3D%22middle%22%20font-family%3D%22-apple-system%2CBlinkMacSystemFont%2CSegoe%20UI%2CHelvetica%2CArial%2Csans-serif%22%0A%20%20%20%20%20%20%20%20%20%20font-size%3D%2286%22%20font-weight%3D%22500%22%20fill%3D%22%230d2b21%22%20letter-spacing%3D%221%22%3Eu%3C%2Ftext%3E%0A%20%20%20%20%3Cpath%20d%3D%22M69%2048%20l11%2012%2022%20-25%22%20fill%3D%22none%22%20stroke%3D%22%233f8f3f%22%20stroke-width%3D%229%22%0A%20%20%20%20%20%20%20%20%20%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3C%2Fsvg%3E">
 <!--
   PROVENANCE  (do not delete — this is how numbers get traced back)
     Source data : Syntetiske data, 285 rader — 285 rows aggregated to 540 cube cells over Team, Prioritet, Kanal, Maaned
@@ -193,6 +194,7 @@ button.rst:hover{border-color:var(--gr);color:var(--gr)}
 footer{padding:.5rem 1.5rem 2rem;max-width:1400px;margin:0 auto;
   font:14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);display:flex;gap:1.1rem;flex-wrap:wrap}
 footer b{color:var(--gr2);font-weight:650}
+#perf{display:contents}
 #boot{padding:3rem 1.5rem;text-align:center;color:var(--mut)}
 /* Without scripting (Quick Look on iOS and macOS blocks it) the cube never decodes, so
    this file showed the boot line forever. The build writes the facts it already knew into
@@ -230,6 +232,7 @@ html:not(.js) #boot,html:not(.js) #app{display:none}
   .ms,.rst,.filters{display:none}main{padding:0;max-width:none}
   .panel{break-inside:avoid;box-shadow:none}}
 table{display:block;max-width:100%;overflow-x:auto}
+.tun-credit{font-size:inherit;font-weight:400;white-space:normal}.tun-credit a{color:inherit;text-decoration:underline;text-underline-offset:.15em}.tun-credit a:hover{color:inherit;text-decoration-thickness:.125em}.tun-credit a:focus-visible{outline:.125rem solid currentColor;outline-offset:.25rem}
 </style></head><body>
 <script>document.documentElement.className+=" js"</script>
 <section class="nojs" id="nojs">
@@ -256,8 +259,8 @@ table{display:block;max-width:100%;overflow-x:auto}
   <div class="grid2" id="charts"></div>
   <div class="panel" id="tablePanel"><h2>Detaljer</h2><div id="tbl"></div></div>
 </main>
-<footer id="perf"></footer>
 </div>
+<footer><span id="perf"></span><span class="tun-credit"> <a href="https://tun.community" rel="noreferrer">Tún · tun.community</a></span></footer>
 
 <script id="cube" type="application/gzip;base64">H4sIAAAAAAAC/61Vz6tXRRSfc2fu/d5LVKTPktCKpB+kRWkFUUGBEY/IHt/AwgLFflJB8UyKNmW9EqFokYaLdq76sYgW4cqFQa8o/AdsUxREBK4iaOUZ7xnf5x3P3DtfaeDDmTnz4/w+s+Cc2854yvXjKqELjBcEU8ac8B9mXMvYJus54T3CuI9xjbPHLsbNsH6JcanQp43zO6mnm6oV3iHGGubfxLx/hPcXr7+Ss6/K3lZZb6hWv3mS+S8yLpP9Hytb1w/pQt5bQr9VNq6Rs8cYJ4Q3FXo3nHuT8QPM41hPvZ8X4NxHjK+V7Kv53CahTmJyo1Ac29Qa9+9h3Cbz6xlXwN524T0HvINi572yvpVxuazfUHLuZL0OiG4HlO9OqfUr7POHYP4b7z8pZz72Pd0DcUnz2+XMCabfwHuXUM87Z5fvdcFxRvyQ4pT2j8v+/RJbnYMxR34F2xM9Au8/y/Pv1b3HGOuM/FnLeDfmKOOwrA8L73VBGo+r+TOM04x5xh3C/xJyMo11jM0xBsB7OdaSUBxb2K+PUo84/vQ90vptnt8CdqT5cb63wa/wT0OsbuAz87KO1Mv8g9DT4HvgiD7YJW//q3sG2fV5l/DfZ+yV+TKcDdSvUZfvjHeeUO8vwvwTmO8VGn2/T+YbGUtSE07qYqPM54VeKfRB3dtiL2LsljyI4yjQtRDjHapH/c067/crOuFoyV7vEdrAWwczve/32CuqHsu04tdlIxaN8A5l4hTHfpG/Q9afudW6XCd3f6bet/vU/Sg31X6svRjvo6oOz9Ur9Ll3pA4W82q55xkPGH3zc8angvinvcZ4T/aOSMyX4PwU5luVjEpyfWe1ev1H/Gfhn0rjJ+p5EScFOI7xnSnz5vidJXlrWvWIPWK97xH/rzPU8+M/mhD9uAhxdvKPoE/S+EL+BD3+g780zrfQ6n8A/9Bf4j7kYfzXJjH2kZd8JDTyO0Gr+NHUGs5PZB3g3AW5KffO1wKDhE6M8zWccyAriE4B9icgo4O7jfFmAD26jK61wQvwJqZBB/ykh1e+dMpnHnxZqXPBkI++SmuvfIM6OsO+Gva9siHFrVEyK+NOyMitM75rDJ0I5hO40xl3GuWzesCvnRHTifKVllGpnEC56V0C2ilbtL1VJp9J1Rrm/kTdqdU85bVXdVgbMnQc60xO1fKeV77DtVd+TnLbjK6YLwHm6HOdDx5sr43YWQPrrDXOBuhfli253KwytdMYulYql7H36bzxRr2k3CHV51pVH1YP61T9uowcr/pCGOlxya4a8iZkegv6pRv4173sV+qdzujzlfF/oA9ao56d8nWAeLcDerUgOyh5rSCovo57lh99pv9O1DrlUTD8GRSsPxRrsIE/CfXGvoH/uFexo4z+dSbHatX7mky9Yn434GcC6N5KmX0qOGf1WzLWuTtk+GNIHzdgiyvcdwN8GrDDDfjQjezTwDlX4PMhvYfk08D7JXF2I7a5kRi4kdzL5QHNYFeJjFlsmiVWbkAPGqkbGrlXamuJfWN1XZr/bqQu3f+QOyU15wp9VVIvY/KosP5pJBfGZLiCeA7ZQyP2ucJ8K+nR7iLqb5Y6HOt9JX9Rae6U9F26CP+X1CTNkDezoiQnSv7lWfpW4p0Fu3CGoVAZAAA=</script>
 <script>

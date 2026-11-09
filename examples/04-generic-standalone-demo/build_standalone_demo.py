@@ -27,9 +27,13 @@ from __future__ import annotations
 
 import datetime
 import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
+import tun_brand
+
 
 OUT = pathlib.Path(__file__).parent / "standalone_html_demo1.html"
-BUILT = datetime.datetime.now().strftime("%Y-%m-%d %H:%M %Z") or \
+BUILT = datetime.datetime.now().strftime("%Y-%m-%d %H:%M %Z").strip() or \
         datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 # Same the design system token values as templates/single-file-dashboard.html.
@@ -84,6 +88,7 @@ HTML = f"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Standalone HTML — prinsippdemo 1</title>
+{tun_brand.favicon_link()}
 <!--
   ============================================================================
   Standalone HTML — prinsippdemo 1
@@ -125,6 +130,7 @@ HTML = f"""<!DOCTYPE html>
   .page p{{color:var(--ink)}}
   @media print{{nav{{display:none}}}}
 </style>
+<style>{tun_brand.CSS}</style>
 </head>
 <body>
 <header>
@@ -148,6 +154,7 @@ HTML = f"""<!DOCTYPE html>
     }});
   }});
 </script>
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5">{tun_brand.HINT}</footer>
 </body>
 </html>
 """

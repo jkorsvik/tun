@@ -54,6 +54,7 @@ check it, put it somewhere people can see it."*
 | **`tun-data`** | Add a data source to an existing dashboard, or refresh its snapshot from source. | anyone | ✅ built |
 | **`tun-verify`** | Open the file in a real headless browser, confirm it renders and JS runs, screenshot it, check the size budget. **Gate before publish.** | anyone (auto) | ✅ built |
 | **`tun-publish`** | Upload to a SharePoint library or OneDrive folder, set/confirm permissions, produce a shareable link, draft the announcement. | anyone | ✅ built |
+| **`tun-host`** | Choose a real web origin or a separate backend for a functional app. Covers static hosting, a small backend and a static front end with a JSON API ([`35-hosting-and-functional-apps.md`](35-hosting-and-functional-apps.md)). Tier 1 stays unchanged and no server enters the toolkit core. | anyone, with the host or app owner | ✅ built; Platform behaviour and approvals unverified |
 | **`tun-feedback`** | Record feedback on a skill or a built file to a local log, and file it as an issue after a yes. Builders take `--feedback-to` for a link inside the file. | anyone | ✅ built |
 | **`tun-powerbi-escape`** | Get a report out of Power BI. Answers the "but it needs RLS/refresh/alerts" objections instead of sending it back. | anyone | ✅ built |
 | **`tun-process`** | Draw a process as a swimlane diagram from a short interview, with improvement points flagged. One static HTML file. | anyone | ✅ built |

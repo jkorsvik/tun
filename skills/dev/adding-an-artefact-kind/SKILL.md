@@ -20,6 +20,12 @@ Five kinds were added this way in one week (scatter, box plot, Gantt, calendar, 
 one of them shipped a defect that no amount of reading caught and a measurement did, so the
 order below is the one that finds them early.
 
+New templates carry the identity slots `{{TUN_FAVICON}}`, `{{TUN_CREDIT_CSS}}`
+and `{{TUN_CREDIT}}`. Use `tun_brand.add_arguments(parser)` and
+`tun_brand.prepare(template, args)` before filling data slots. The credit goes
+in the existing metadata footer, not a floating badge. The branding coverage
+test must find the new builder and template.
+
 ## 0. Before you write code
 
 - **The shape must answer a question another shape does not.** Read

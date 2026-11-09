@@ -36,3 +36,12 @@ It is a document, not a dashboard, so it is verified as one: `verify_standalone_
 `verify_viewports.py` at the 14 px floor, and `verify_a11y.py`. `verify_dashboard.py` refuses
 it on purpose, because it looks for KPI cards and chart marks that a document has no reason
 to have.
+
+```bash
+uv run --extra verify python tools/verify_standalone_core.py examples/54-showcase/oversikt.html
+uv run --extra verify python tools/verify_viewports.py examples/54-showcase/oversikt.html --text-floor 14
+uv run --extra verify python tools/verify_a11y.py examples/54-showcase/oversikt.html
+```
+
+A server-backed example can ship a `snapshot.html`. The gallery selects that standalone file
+instead of the live client, so the card remains useful when no API is running.

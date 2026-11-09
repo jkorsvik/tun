@@ -140,9 +140,21 @@ Two limits, both inherited from the logo:
   mark at that size. Look at `assets/preview/preview.png` before you choose a
   favicon size.
 
-To use the mark as a favicon in a self-contained file, inline it as a data
-URI, never as a link to a file: `<link rel="icon" href="data:image/svg+xml,...">`
-with the SVG percent-encoded. Nothing in core does this yet.
+Every core builder now uses this square mark as an inline SVG favicon, without
+selecting the Tún colour palette. `tools/tun_brand.py` carries a copy so builds
+work with no plugin installed; `tests/test_tun_brand.py` compares its parsed SVG
+with `assets/mark.svg`.
+
+Every build also puts a quiet `Tún · tun.community` link in its footer. It loads
+nothing from the site until the reader follows the link. Both are defaults,
+not extra licence conditions: `--favicon <file|data-uri|none>` overrides the
+icon and `--no-tun-hint` removes the visible link. The Origin Notice stays.
+
+Favicon precedence is explicit CLI value, `TUN_FAVICON`, the selected palette
+plugin's `assets.favicon`, then the Tún mark. An empty environment value is an
+invalid file choice, not an implicit fallback. Local paths are read at build
+time and inlined. SVG, PNG, ICO, GIF, JPEG and WebP are accepted, up to 256 KiB.
+SVG must be passive, UTF-8 and self-contained. A remote URL is not accepted.
 
 To re-render the previews after a change (needs Playwright):
 
@@ -152,8 +164,8 @@ uv run --extra verify python plugins/tun/assets/render_preview.py
 
 ## What is still wrong / not done here
 
-- No example or template uses the mark yet. A branded topbar that inlines
-  `assets/logo.svg` is a follow-up.
+- A branded topbar that inlines `assets/logo.svg` is a separate follow-up.
+  The favicon and footer hint are already supplied by core.
 - The derivation script that produced `--tun-ink-darkest` and
   `--tun-accent-tint` was run once, ad hoc, and is not checked in. If the
   source colours ever change, the formulas are documented above precisely

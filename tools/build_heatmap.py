@@ -52,6 +52,7 @@ sys.path.insert(0, str(HERE))
 import build_size  # noqa: E402
 import build_stamp  # noqa: E402
 import feedback_link  # noqa: E402
+import tun_brand  # noqa: E402
 import i18n  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
@@ -451,6 +452,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--feedback-to", default="", metavar="ADDRESS_OR_ISSUE_URL",
                     help=feedback_link.FLAG_HELP)
     i18n.add_lang_argument(ap)
+    tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
     t = i18n.load(STRINGS, args.lang)
     lang = args.lang
@@ -542,7 +544,7 @@ def main(argv: list[str] | None = None) -> int:
     # reader whose system is dark gets a dark heatmap with no script. The ramp travels with
     # the page, because its bands are a design decision the seam does not carry.
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
-    page = (i18n.apply(TEMPLATE.read_text(encoding="utf-8"), t)
+    page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
             .replace("{{TOKEN_CSS}}", strip_css_comments(token_css))
             .replace("{{RAMP_CSS}}", ramp_css(bins)))
     for token, value in {

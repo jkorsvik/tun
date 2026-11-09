@@ -37,6 +37,10 @@ from __future__ import annotations
 
 import datetime
 import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
+import tun_brand
+
 
 OUT = pathlib.Path(__file__).parent / "topbar-pattern-demo.html"
 BUILT = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -81,6 +85,7 @@ HTML = f"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Topbar-mønster — demo</title>
+{tun_brand.favicon_link()}
 <!--
   ============================================================================
   Topbar-mønster — demo (nøytral, ingen Eksempel AS-branding)
@@ -187,6 +192,7 @@ HTML = f"""<!DOCTYPE html>
 
   #fs-btn[aria-pressed="true"]{{background:rgba(255,255,255,.25)}}
 </style>
+<style>{tun_brand.CSS}</style>
 </head>
 <body>
 
@@ -330,6 +336,7 @@ HTML = f"""<!DOCTYPE html>
   // and by the Playwright interaction test in verify_topbar_demo.py.
   window.__TOPBAR_DEMO_READY__ = true;
 </script>
+<footer style="padding:1rem 1.5rem;font-size:.875rem;line-height:1.5">{tun_brand.HINT}</footer>
 </body>
 </html>
 """

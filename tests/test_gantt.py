@@ -78,7 +78,7 @@ def scratch(root: pathlib.Path, *pairs: tuple[str, str]) -> pathlib.Path:
     tools.mkdir(parents=True)
     shutil.copy2(BUILDER, tools / "build_gantt.py")
     for name in ("build_size.py", "build_stamp.py", "feedback_link.py", "i18n.py",
-                 "tun_core.py", "tun_tokens.py"):
+                 "tun_core.py", "tun_tokens.py", "tun_brand.py"):
         shutil.copy2(ROOT / "tools" / name, tools / name)
     shutil.copytree(ROOT / "tools" / "tokens", tools / "tokens")
     shutil.copytree(ROOT / "templates", root / "templates")

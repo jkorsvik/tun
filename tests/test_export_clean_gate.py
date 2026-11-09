@@ -17,6 +17,8 @@ A gate that passes when it has nothing to check is reported as an error, not a p
 from __future__ import annotations
 
 import io
+import base64
+import gzip
 import os
 import pathlib
 import subprocess
@@ -252,6 +254,52 @@ code, out, err = run(tree(clean), comments_only)
 chk("a denylist of comments and blanks exits 2", code, 2)
 chk("and says why, so the next reader does not read it as a pass",
     "refusing to report clean" in (out + err).lower(), True)
+
+print("encoded carriers are decoded, not searched as letter soup")
+def carrier(raw, compressed=False):
+    prefix = 'gzip:' if compressed else ''
+    encoded = base64.b64encode(gzip.compress(raw) if compressed else raw).decode('ascii')
+    return '<div data-live="' + prefix + encoded + '"></div>'
+
+for compressed in (True,):
+    code, out, _ = run(tree({'page.html': carrier(('<p>' + TERM + '</p>').encode(), compressed)}), deny)
+    chk('decoded identity fires alone: gzip=' + str(compressed), (code, findings(out)), (1, ['person']))
+nested = carrier(carrier(TERM.encode(), True).encode(), True)
+code, out, _ = run(tree({'page.html': nested}), deny)
+chk('nested gzip identity is found', (code, findings(out)), (1, ['person']))
+# Deliberately put the forbidden term in the ENCODED spelling, in binary bytes.
+encoded = ('AAAA' + TERM + 'A' * 80)
+encoded += '=' * (-len(encoded) % 4)
+raw = b'\x89PNG\r\n\x1a\n' + base64.b64decode(encoded)
+image = 'data:image/png;base64,' + base64.b64encode(raw).decode('ascii')
+code, out, _ = run(tree({'page.html': image}), deny)
+chk('binary entropy is not scanned as prose', (code, findings(out)), (0, []))
+for value in ('gzip:' + base64.b64encode(b'not gzip').decode('ascii'), '!broken!'):
+    code, out, _ = run(tree({'page.html': '<div data-live="' + value + '"></div>'}), deny)
+    chk('corrupt carrier fails alone', (code, findings(out)), (1, ['payload']))
+
+# Invalid deflate bodies must not crash or prevent other files from being scanned.
+broken = b'\x1f\x8b\x08\x00' + b'\x00' * 6 + b'\x07' + b'\x00' * 8
+value = 'gzip:' + base64.b64encode(broken).decode('ascii')
+code, out, _ = run(tree({'bad.html': '<p data-live="' + value + '"></p>', 'other.txt': TERM}), deny)
+chk('bad deflate and a separate identity both report', (code, sorted(findings(out))), (1, ['payload', 'person']))
+code, out, _ = run(tree({'page.html': '<p data-live="Kari Nord"></p>'}), deny)
+chk('unprefixed live payload is refused, not masked', (code, findings(out)), (1, ['payload']))
+code, out, _ = run(tree({'page.html': carrier(b'\xff' + TERM.encode(), True)}), deny)
+chk('a non-UTF8 embedded page fails closed', (code, findings(out)), (1, ['payload']))
+short = '<p>' + TERM + '</p>'
+code, out, _ = run(tree({'page.html': 'data:text/html;base64,' + base64.b64encode(short.encode()).decode('ascii')}), deny)
+chk('short text data URI is scanned', (code, findings(out)), (1, ['person']))
+code, out, _ = run(tree({'template.html': '<script type="application/gzip;base64">{{DATA}}</script>',
+                        'builder.py': 'data-live="{payload}"'}), deny)
+chk('source templates and code are not decoded as built carriers', (code, findings(out)), (0, []))
+previous = gate.MAX_PAYLOAD_BYTES
+gate.MAX_PAYLOAD_BYTES = 1024
+try:
+    code, out, _ = run(tree({'page.html': carrier(b'x' * 100000, True)}), deny)
+    chk('decompression stops at a shared file budget', (code, findings(out)), (1, ['payload']))
+finally:
+    gate.MAX_PAYLOAD_BYTES = previous
 
 print("\n" + "─" * 66)
 print(f"{passed} passed, {failed} failed")

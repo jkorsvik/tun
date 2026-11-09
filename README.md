@@ -1,5 +1,7 @@
 # Tún
 
+**New here? [Start here](START-HERE.md): build one file, open it, share it.**
+
 **Interactive dashboards that are files, not services.** Built as single self-contained
 HTML artefacts, distributed through SharePoint and OneDrive, openable by anyone who can
 open the folder, with no Power BI licence, no workspace, no capacity and no admin approval.
@@ -51,40 +53,12 @@ versioning, audit, sync and offline. Reuse that machinery instead of fighting it
 
 ## Try it
 
-You need Python 3. From a clone of this repo:
+**[Start here](START-HERE.md).** One command builds a real dashboard from the included
+synthetic data. Open the HTML file, try it, then use the same route with your own CSV.
 
-```bash
-python3 tools/build_dashboard.py \
-  --data examples/01-hello-dashboard/salgsdata.csv \
-  --title "Salg per region og produkt 2026" \
-  --dimension Produkt --measure Belop --time Maaned \
-  --filters Region,Produkt,Kanal \
-  --requested-by "Prosjekteier" \
-  --out /tmp/demo.html
-```
-
-Open `/tmp/demo.html` in a browser. That is the whole product: one file, no server.
-
-Before you share a file, prove it in a real browser. This needs
-[uv](https://docs.astral.sh/uv/):
-
-```bash
-uv sync --extra verify && uv run playwright install chromium   # once
-uv run python tools/verify_dashboard.py /tmp/demo.html
-```
-
-**Use it from your AI tool.** The skills are in the open
-[Agent Skills](https://agentskills.io/specification) format. Install them for your tool,
-then ask for *"a dashboard from this Excel file"*:
-
-| Tool | Install |
-|---|---|
-| Claude Code | `python3 setup.py --tool claude` |
-| Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode | `python3 setup.py --tool agents` |
-| RAIWork | `python3 setup.py` (when RAIWork is installed) |
-
-Tested on 2026-10-08: Gemini CLI and Claude Code load every skill. Codex is checked in its
-source code, the rest in each tool's own docs ([docs/28](docs/28-prior-art.md)).
+The short guide also covers verification, sharing, Windows, and the sentence to ask your AI
+tool. The [full onboarding](docs/04-onboarding.md) remains the reference for installation and
+publishing. [Tool compatibility and prior art](docs/28-prior-art.md) records what was tested.
 
 ![Example dashboard](examples/01-hello-dashboard/preview.png)
 

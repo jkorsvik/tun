@@ -10,6 +10,7 @@
 <html lang="{{T:html_lang}}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}}</title>
+{{TUN_FAVICON}}
 <!--
   PROVENANCE  (do not delete — this is how numbers get traced back)
     Source data : {{SOURCE_DESCRIPTION}}
@@ -97,6 +98,7 @@ button.rst:hover{border-color:var(--gr);color:var(--gr)}
 footer{padding:.5rem 1.5rem 2rem;max-width:1400px;margin:0 auto;
   font:14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);display:flex;gap:1.1rem;flex-wrap:wrap}
 footer b{color:var(--gr2);font-weight:650}
+#perf{display:contents}
 #boot{padding:3rem 1.5rem;text-align:center;color:var(--mut)}
 /* Without scripting (Quick Look on iOS and macOS blocks it) the cube never decodes, so
    this file showed the boot line forever. The build writes the facts it already knew into
@@ -134,6 +136,7 @@ html:not(.js) #boot,html:not(.js) #app{display:none}
   .ms,.rst,.filters{display:none}main{padding:0;max-width:none}
   .panel{break-inside:avoid;box-shadow:none}}
 table{display:block;max-width:100%;overflow-x:auto}
+{{TUN_CREDIT_CSS}}
 </style></head><body>
 <script>document.documentElement.className+=" js"</script>
 <section class="nojs" id="nojs">
@@ -160,8 +163,8 @@ table{display:block;max-width:100%;overflow-x:auto}
   <div class="grid2" id="charts"></div>
   <div class="panel" id="tablePanel"><h2>{{T:details}}</h2><div id="tbl"></div></div>
 </main>
-<footer id="perf"></footer>
-</div>{{FEEDBACK_BLOCK}}
+</div>
+<footer><span id="perf"></span>{{TUN_CREDIT}}</footer>{{FEEDBACK_BLOCK}}
 
 <script id="cube" type="application/gzip;base64">{{DATA}}</script>
 <script>

@@ -54,6 +54,7 @@ DATA = EXAMPLE / "omsetning.csv"
 PIN = "1792836000"          # a fixed clock: one input, one file, on any day
 
 sys.path.insert(0, str(ROOT / "tools"))
+from verify_standalone_core import check_self_contained  # noqa: E402
 import build_waterfall as B  # noqa: E402  the layout constants the geometry is checked against
 
 FAILURES: list[str] = []
@@ -89,7 +90,7 @@ def scratch(root: pathlib.Path, *pairs: tuple[str, str]) -> pathlib.Path:
     tools.mkdir(parents=True)
     shutil.copy2(BUILDER, tools / "build_waterfall.py")
     for name in ("build_size.py", "build_stamp.py", "feedback_link.py", "i18n.py",
-                 "tun_core.py", "tun_tokens.py"):
+                 "tun_core.py", "tun_tokens.py", "tun_brand.py"):
         shutil.copy2(ROOT / "tools" / name, tools / name)
     # tun_tokens resolves the token files from its own location, so the scratch tree needs them:
     # the template carries {{TOKEN_CSS}} and the builder cannot produce a page without the seam.
@@ -387,7 +388,7 @@ def main() -> int:
 
         print("\n10. no script, and the English build carries no Norwegian")
         chk("<script" not in page.lower(), "the page holds no script element")
-        chk(not re.search(r'(src|href)="(https?:)?//', page),
+        chk(check_self_contained(page)[0],
             "and fetches nothing from anywhere")
         en_out = work / "en.html"
         done = subprocess.run([sys.executable, str(BUILDER), "--data", str(DATA),
