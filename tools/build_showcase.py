@@ -30,6 +30,7 @@ empty frames. Stdlib for everything else.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import base64
 import gzip
 import html
@@ -195,21 +196,36 @@ def kind_of(slug: str) -> str:
 def shoot(pages: list[pathlib.Path], width: int, height: int, quality: int) -> dict[pathlib.Path, bytes]:
     """A JPEG per page, taken from a file:// URL. No browser, no page: fail loudly."""
     try:
-        from playwright.sync_api import sync_playwright
+        from playwright.async_api import async_playwright
     except ImportError:  # pragma: no cover - the gate exists for exactly this
         sys.exit("build_showcase: Playwright is required to photograph the examples.\n"
                  "  uv sync --extra verify && uv run playwright install chromium")
-    shots: dict[pathlib.Path, bytes] = {}
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": width, "height": height})
-        for path in pages:
-            page.goto(path.resolve().as_uri(), wait_until="load")
-            page.wait_for_timeout(350)
-            shots[path.resolve()] = page.screenshot(type="jpeg", quality=quality)
-            print(f"  photographed {path.parent.name}/{path.name}", flush=True)
-        browser.close()
-    return shots
+
+    async def capture_all() -> dict[pathlib.Path, bytes]:
+        shots: dict[pathlib.Path, bytes] = {}
+        async with async_playwright() as pw:
+            browser = await pw.chromium.launch()
+            limit = asyncio.Semaphore(min(4, max(1, len(pages))))
+
+            async def capture(path: pathlib.Path) -> None:
+                async with limit:
+                    page = await browser.new_page(viewport={"width": width, "height": height})
+                    try:
+                        await page.goto(path.resolve().as_uri(), wait_until="load")
+                        await page.wait_for_timeout(350)
+                        shot = await page.screenshot(type="jpeg", quality=quality)
+                    finally:
+                        await page.close()
+                shots[path.resolve()] = shot
+                print(f"  photographed {path.parent.name}/{path.name}", flush=True)
+
+            try:
+                await asyncio.gather(*(capture(path) for path in pages))
+            finally:
+                await browser.close()
+        return shots
+
+    return asyncio.run(capture_all())
 
 
 def main(argv: list[str] | None = None) -> int:
