@@ -163,7 +163,7 @@ def is_numeric_column(rows: list[dict], col: str) -> bool:
                                 for v in values)
 
 
-def as_script_json(value) -> str:
+def as_script_json(value, *, separators=(",", ":")) -> str:
     """JSON that is safe inside a <script> element.
 
     A value holding the text `</script>` ends the script element when it is written raw,
@@ -172,12 +172,16 @@ def as_script_json(value) -> str:
     do it: `<` and `>` (which also covers `</script>`, `<!--` and `<script`) and `&`. The
     page reads the values back unchanged, because `\u003c` is the same string in JSON.
 
-    Lives here rather than in one builder: two builders inline data, and a second copy of
-    this rule is a second place for it to be subtly weaker.
+    Template-shaped braces are escaped too, so no later template fill can interpret
+    a JSON string as a placeholder. Both escapes decode to the original text.
+    Callers can retain their JSON spacing with separators=None.
+
+    Lives here rather than in one builder: shared callers must use the same boundary.
     """
-    text = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    text = json.dumps(value, ensure_ascii=False, separators=separators)
     return (text.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
-                .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
+                .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+                .replace("{{", "{\\u007b"))
 
 
 def strip_licence_header(text: str) -> str:

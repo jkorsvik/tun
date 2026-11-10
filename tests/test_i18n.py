@@ -1129,10 +1129,10 @@ DELIBERATE_NB_CHANGES = [
 # Neither paired data.js changed. tests/test_tun_brand.py checks identity separately.
 BASELINE = {
     "fx-deck/fx-deck.html": "cde971c4b080887b2b7b1c446f48ed0b5d63a3c7fcb7fb1466c446cfa24342a0",
-    "dash-bundled/dash-bundled.html": "6389d641723df6e7fc35b814205d466a6a72dff79de8736f10cb7c70f9254b4e",
-    "dash-paired/paired/dash.html": "7ab16b35085d8a8cda303b00323218cf79f2c29f0da227902fd9281356b65eb3",
+    "dash-bundled/dash-bundled.html": "af9780da1c7bee263c7ecda48123ed52be6aa1d4158de38f667f9aeca5028046",
+    "dash-paired/paired/dash.html": "52bf8e03446c47c9f2b306f9d6e6876697ac7e49de1b0f5440cb7cdfffc579cd",
     "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",
-    "dash-feedback/dash-feedback.html": "e371a624084daf0b4e2e6556b670862cd9def0b95fafb3ce11c4ebbd0526e0c5",
+    "dash-feedback/dash-feedback.html": "cd2ac2d17ab829b5f30e9fe850357d3d690c81e0eff497acba978d1330066267",
     # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
     # change to its nb output is visible.
     "scorecard/scorecard.html": "9175c9a7b790c4c4fbc7fc045f201268c22ed07dd31817c2966374d79bc0a030",
@@ -1154,10 +1154,10 @@ BASELINE = {
     "cube/cube.html": "92cab0225d983ff6a8e4849fb586ce3b74f4397f559552b8782f2f9b41878791",
     "cube-feedback/cube-feedback.html": "7e89466dfaab3a542ff8445ca0ee36441e6db7eb74fb79e6d1df68a16e1e0a78",
     "process/process.html": "3112b3d1ccda91d7e0fb253700f6577af964ccc7b29f225f11b9b77405d3e422",
-    "fx-dash/fx-dash.html": "0a006a1d7b1f91d8b321a7aa245b2066c8fdbabdb30604d262b7dd5a0cc44f2d",
-    "fx-dash-paired/fxp/dash.html": "7d2e89e201722bc3af304017904a4750a8a36f15df15b3228dd6781452453667",
+    "fx-dash/fx-dash.html": "38d2578515c98f147357ed4e02d08eb9b23719e039c4646a3a35a88bbf92e8cc",
+    "fx-dash-paired/fxp/dash.html": "353353094d4bf0fa60f83aa08317967b2040efede5295092779d0e0be68e523b",
     "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
-    "fx-dash-notime/fx-dash-notime.html": "63db58eb132325f501a8e695e156b649ec0ba3a0bdf5d5881136070ffa64173d",
+    "fx-dash-notime/fx-dash-notime.html": "f6b0fcdbf3b1ef8d675f6342e5e2675e3a3fc62343acbddd92374ea9dbed99bc",
     "fx-cube/fx-cube.html": "d6ff32a0bca18e824aafce13889d6453a08379d8e24c8410674cf64fafb0ed92",
     "fx-process/fx-process.html": "e3fe3d7851c2ef22a57a9a5dc1fa152b1c040c0196c695869a4b980961c4bf94",
     # the survey board (2026-10-24): a new artefact, so its nb output is frozen here
@@ -1274,6 +1274,24 @@ def en_problems(html: str, tables: list[str]) -> tuple[list[str], int]:
                 if re.search(r"(?<![\w])" + re.escape(frag) + r"(?![\w])", html):
                     problems.append(f"nb text from {name}.{key}: {frag!r}")
     return problems, looked
+
+
+# 2026-11-10: security boundary fixes. Exact lines from the old adversarial builds;
+# all prior pairs remain active. New values decode to the same reader text.
+DELIBERATE_NB_CHANGES += [
+    (b'    { label: `Total ${META.measure}`, value: fmt(total) },\n',
+     b'    { label: `Total ${esc(META.measure)}`, value: fmt(total) },\n'),
+    (b'    { label: `Unike ${META.dimension}`, value: fmt(dims) },\n',
+     b'    { label: `Unike ${esc(META.dimension)}`, value: fmt(dims) },\n'),
+    (b'      "// Generert " + new Date().toISOString() + " fra " + (DATA_META.source || "ukjent kilde") + "\\n" +\n',
+     b'      "// Generert " + new Date().toISOString() + " fra " + String(DATA_META.source || "ukjent kilde").replace(/[\\r\\n\\u2028\\u2029]/g, " ") + "\\n" +\n'),
+    (b'window.DASHBOARD_DATA=[{"Month":"2026-01","Product":"{{T:reset}} {n} {measure} {dimension} {time} {name} {rows} {cells} {dims} {steps} {lanes}","Amount":10},{"Month":"2026-02","Product":"Cards","Amount":20}];\n',
+     b'window.DASHBOARD_DATA=[{"Month":"2026-01","Product":"{\\u007bT:reset}} {n} {measure} {dimension} {time} {name} {rows} {cells} {dims} {steps} {lanes}","Amount":10},{"Month":"2026-02","Product":"Cards","Amount":20}];\n'),
+    (b'window.DASHBOARD_META={"generated": "2026-01-02 03:04 UTC", "source": "{{T:reset}} {n} {measure} {dimension} {time} {name} {rows} {cells} {dims} {steps} {lanes}", "rows": 2};\n',
+     b'window.DASHBOARD_META={"generated": "2026-01-02 03:04 UTC", "source": "{\\u007bT:reset}} {n} {measure} {dimension} {time} {name} {rows} {cells} {dims} {steps} {lanes}", "rows": 2};\n'),
+    (b'  const src  = DATA_META.source || "{{T:reset}} {n} {measure} {dimension} {time} {name} {rows} {cells} {dims} {steps} {lanes}";\n',
+     b'  const src  = DATA_META.source || "{\\u007bT:reset}} {n} {measure} {dimension} {time} {name} {rows} {cells} {dims} {steps} {lanes}";\n'),
+]
 
 
 def main() -> int:

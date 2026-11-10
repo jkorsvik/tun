@@ -44,6 +44,7 @@ import csv
 import html
 import json
 import pathlib
+import re
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -375,32 +376,37 @@ def main(argv: list[str] | None = None) -> int:
     # one seam with every other artefact. auto_dark: the register is read on whatever machine
     # the reader has, and a reader whose system is dark gets a dark list with no script.
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
-    page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
-            .replace("{{TOKEN_CSS}}", strip_css_comments(token_css))
-            .replace("{{TITLE}}", html.escape(args.title))
-            .replace("{{SOURCE_DESCRIPTION}}", html.escape(source))
-            .replace("{{EXTRACT_TIMESTAMP}}", extracted)
-            .replace("{{BUILD_TIMESTAMP}}", built)
-            .replace("{{REQUESTED_BY}}", args.requested_by or NOT_STATED)
-            .replace("{{ROWS_INLINED}}", num(len(packed)))
-            .replace("{{COLUMNS_INLINED}}", num(len(names)))
-            .replace("{{PAGE_SIZE_OPTIONS}}",
-                     "".join(f'<option value="{n}"'
-                             f'{" selected" if n == args.page_size else ""}>{n}</option>'
-                             for n in PAGE_SIZES))
-            .replace("{{NOJS_NOTE}}", html.escape(nojs_note))
-            .replace("{{NOJS_HEAD}}", head_html(names, numeric, sort_col, t_head))
-            .replace("{{NOJS_ROWS}}", static_rows())
-            .replace("{{SORT_OPTIONS}}",
-                     "".join(f'<option value="{i}"'
-                             f'{" selected" if i == sort_col else ""}>{html.escape(n)}</option>'
-                             for i, n in enumerate(names)))
-            .replace("{{REGISTER_META}}", as_script_json(meta))
-            .replace("{{REGISTER_ROWS}}", as_script_json(packed))
-            .replace("{{REGISTER_STRINGS}}", as_script_json(strings))
-            .replace("{{FEEDBACK_BLOCK}}", feedback))
-    if "{{" in page.split("<script>")[0]:
-        die("a template placeholder was left unfilled; the file would ship a visible {{...}}")
+    template = i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
+    replacements = {
+        "TOKEN_CSS": strip_css_comments(token_css),
+        "TITLE": html.escape(args.title),
+        "SOURCE_DESCRIPTION": html.escape(source),
+        "EXTRACT_TIMESTAMP": extracted,
+        "BUILD_TIMESTAMP": built,
+        "REQUESTED_BY": html.escape(args.requested_by or NOT_STATED),
+        "ROWS_INLINED": num(len(packed)),
+        "COLUMNS_INLINED": num(len(names)),
+        "PAGE_SIZE_OPTIONS": "".join(
+            f'<option value="{n}"' + (' selected' if n == args.page_size else '')
+            + f'>{n}</option>' for n in PAGE_SIZES),
+        "NOJS_NOTE": html.escape(nojs_note),
+        "NOJS_HEAD": head_html(names, numeric, sort_col, t_head),
+        "NOJS_ROWS": static_rows(),
+        "SORT_OPTIONS": "".join(
+            f'<option value="{i}"' + (' selected' if i == sort_col else '')
+            + f'>{html.escape(n)}</option>' for i, n in enumerate(names)),
+        "REGISTER_META": as_script_json(meta),
+        "REGISTER_ROWS": as_script_json(packed),
+        "REGISTER_STRINGS": as_script_json(strings),
+        "FEEDBACK_BLOCK": feedback,
+    }
+    # Match the template once. Caller text may itself look like a placeholder;
+    # rescanning it could put JSON quotes into an already escaped HTML attribute.
+    pattern = r"\{\{([A-Z0-9_]+)\}\}"
+    missing = set(re.findall(pattern, template)) - replacements.keys()
+    if missing:
+        die(f"template placeholders not substituted: {sorted(missing)}")
+    page = re.sub(pattern, lambda match: replacements[match[1]], template)
 
     if args.annotate:
         # The review round trip (docs/31). A register is the artefact most likely to come

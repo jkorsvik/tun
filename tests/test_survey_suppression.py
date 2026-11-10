@@ -28,6 +28,7 @@ from __future__ import annotations
 import json
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -82,6 +83,89 @@ Sør,Fag,Lea Sor, Q1,2 Uenig
 Sør,Fag,Mo Sor, Q1,2 Uenig
 Sør,Fag,Nil Sor, Q1,2 Uenig
 """
+
+
+def requester_boundary(pw) -> None:
+    marker = 'Role --><svg onload=window.__requester=1></svg><!--'
+    out, error = build(CSV, 'requester', ['--requested-by', marker])
+    check(out.is_file(), 'survey requester fixture builds', error)
+    tree = TMP / 'requester-mutant'
+    for name in ('tools', 'templates', 'plugins'):
+        shutil.copytree(ROOT / name, tree / name,
+                        ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    builder = tree / 'tools/build_survey_dashboard.py'
+    source = builder.read_text(encoding='utf-8')
+    guard = 'html.escape(args.requested_by or NOT_STATED)'
+    check(source.count(guard) == 1, 'survey requester mutation names exactly one guard')
+    builder.write_text(source.replace(guard, 'args.requested_by or NOT_STATED', 1), encoding='utf-8')
+    mutant = TMP / 'requester-mutant.html'
+    result = subprocess.run([sys.executable, str(builder), '--data', str(TMP / 'requester.csv'),
+                             '--title', 'Synthetic', '--segments', 'Enhet',
+                             '--requested-by', marker, '--out', str(mutant)],
+                            capture_output=True, text=True)
+    check(result.returncode == 0, 'survey requester mutant builds', result.stderr[-120:])
+    for engine in ('chromium', 'webkit'):
+        browser = getattr(pw, engine).launch()
+        for path, is_mutant in ((out, False), (mutant, True)):
+            page = browser.new_page()
+            page.goto(path.as_uri());page.wait_for_timeout(120)
+            ran = page.evaluate('window.__requester === 1')
+            check(ran == is_mutant, f'{engine}: survey requester stays text; mutant executes', str(ran))
+            page.close()
+        browser.close()
+
+
+def payload_boundary(pw) -> None:
+    marker = '</script><svg onload=window.__survey=1></svg>'
+    literal = '{{KPI_CARDS}} {{QUESTION_CARDS}} {{SURVEY_DATA}}'
+    data = TMP / 'boundary.csv'
+    data.write_text('Enhet,Sporsmal,Svar\nNord,' + marker + ',Agree\nNord,' + literal + ',' + literal + '\n', encoding='utf-8')
+    def run(root, out):
+        result = subprocess.run([sys.executable, str(root / 'tools/build_survey_dashboard.py'),
+            '--data', str(data), '--title', literal, '--segments', 'Enhet', '--min-cell', '1',
+            '--source', literal, '--requested-by', literal, '--feedback-to', 'https://example.org/feedback',
+            '--out', str(out)], capture_output=True, text=True)
+        check(result.returncode == 0, 'survey payload fixture builds', result.stderr[-120:])
+    out = TMP / 'boundary.html';run(ROOT, out)
+    tree = TMP / 'payload-mutant'
+    for name in ('tools', 'templates', 'plugins'):
+        shutil.copytree(ROOT / name, tree / name,
+                        ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    builder = tree / 'tools/build_survey_dashboard.py';source = builder.read_text(encoding='utf-8')
+    mutants = []
+    for label, old, new in (
+        ('JSON', 'payload = as_script_json(data)', 'payload = json.dumps(data)'),
+        ('fill', 'page = re.sub(pattern, lambda match: replacements[match[1]], template)',
+         'page = template\n    for key, value in replacements.items(): page = page.replace("{{" + key + "}}", value)'),
+    ):
+        check(source.count(old) == 1, f'survey {label} mutation removes exactly one guard')
+        builder.write_text(source.replace(old, new, 1), encoding='utf-8')
+        target = TMP / f'boundary-{label}.html';run(tree, target);mutants.append((label, target))
+    builder.write_text(source, encoding='utf-8')
+    template = tree / 'templates/survey-dashboard.html'
+    template.write_text(template.read_text(encoding='utf-8') + '{{UNFILLED}}', encoding='utf-8')
+    result = subprocess.run([sys.executable, str(builder), '--data', str(data), '--title', 'Synthetic',
+                             '--segments', 'Enhet', '--out', str(TMP / 'missing.html')],
+                            capture_output=True, text=True)
+    check(result.returncode != 0 and 'UNFILLED' in result.stderr, 'unknown survey template token is refused by name')
+    for engine in ('chromium', 'webkit'):
+        browser = getattr(pw, engine).launch()
+        for label, path in [('safe', out), *mutants]:
+            page = browser.new_page();remote=[];errors=[]
+            page.route(re.compile(r'^https?://'), lambda route: (remote.append(route.request.url), route.abort())[1])
+            page.on('pageerror', lambda error: errors.append(str(error)))
+            page.goto(path.as_uri());page.wait_for_timeout(120)
+            observed = page.evaluate('({marker:window.__survey===1, questions:typeof SURVEY!=="undefined"?SURVEY.questions:[], heading:document.querySelector("h1").textContent, staticText:[...document.querySelectorAll("section.q h2")].map(e=>e.textContent)})')
+            if label == 'safe':
+                check(not observed['marker'] and not errors and not remote, f'{engine}: survey text never runs', str(errors))
+                check(observed['heading'] == literal and literal in observed['staticText'], f'{engine}: survey literal heading/question stays exact')
+                check(marker in observed['questions'] and literal in observed['questions'], f'{engine}: survey JSON question round-trip is exact')
+            elif label == 'JSON':
+                check(observed['marker'], f'{engine}: removing survey JSON guard executes the marker')
+            else:
+                check(literal not in observed['staticText'], f'{engine}: removing survey one-pass changes the literal question')
+            page.close()
+        browser.close()
 
 
 def main() -> int:
@@ -153,6 +237,8 @@ def main() -> int:
         return 1
     errors: list[str] = []
     with sync_playwright() as p:
+        requester_boundary(p)
+        payload_boundary(p)
         browser = p.chromium.launch()
         pg = browser.new_page(viewport={"width": 1366, "height": 1000})
         pg.on("pageerror", lambda e: errors.append(str(e)))

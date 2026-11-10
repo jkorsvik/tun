@@ -208,13 +208,17 @@ class Branding(unittest.TestCase):
         self.assertIn('{TUN_FAVICON}', text)
         self.assertIn('{TUN_CREDIT}', text)
         self.assertIn('Made with', text)
-        # Double braces remain the existing builder refusal, not a branding slot
-        # rescan. The brand helper itself is never given user data.
+        # Caller text that looks like a token is literal data. Brand slots are
+        # prepared before the one-pass fill and never see these input rows.
         data.write_text('Kind,Amount\n{{TUN_CREDIT}},1\nOther,2\n', encoding='utf-8')
         run = subprocess.run(cmd, capture_output=True, text=True)
-        self.assertNotEqual(run.returncode, 0)
-        self.assertIn('template placeholders not substituted', run.stderr)
-        self.assertIn('{{TUN_CREDIT}}', run.stderr)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        text = out.read_text(encoding='utf-8')
+        self.assertIn('{{TUN_CREDIT}}', text)
+        self.assertIn('"Kind":"{\\u007bTUN_CREDIT}}"', text)
+        self.assertNotIn('href="https://tun.community"', text)
+        self.assertEqual(text.count('rel="icon"'), 1)
+        self.assertNotIn('<svg onload=', text)
 
 
 

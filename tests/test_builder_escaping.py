@@ -70,10 +70,10 @@ def build(builder: pathlib.Path, data: pathlib.Path, out: pathlib.Path,
 # instead (this test did, to `origin/main`) dies the day the fix merges: the mutant then
 # carries the fix too and the control can never fail again.
 MUTATIONS = (
-    ("json.dumps(value, ensure_ascii=False)", "str(value)"),
+    ("tun_core.as_script_json(value)", "str(value)"),
     ("html.escape(args.title)", "str(args.title)"),
     ("html.escape(source_name)", "str(source_name)"),
-    ('"DATA_META.source || " + json.dumps(source_name, ensure_ascii=False)',
+    ('"DATA_META.source || " + tun_core.as_script_json(source_name)',
      '"DATA_META.source || \\"" + source_name + "\\""'),
 )
 
