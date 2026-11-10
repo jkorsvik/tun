@@ -55,6 +55,7 @@ import datetime
 import html
 import json
 import pathlib
+import re
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -69,7 +70,7 @@ import i18n  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
 from tun_tokens import strip_css_comments  # noqa: E402
-from tun_core import NOT_STATED, die  # noqa: E402
+from tun_core import NOT_STATED, as_script_json, die  # noqa: E402
 
 TEMPLATE = ROOT / "templates" / "survey-dashboard.html"
 STRINGS = "survey-dashboard"
@@ -410,26 +411,34 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as exc:
             die(f"--feedback-to: {exc}")
 
-    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    payload = as_script_json(data)
     # The tokens are inlined here rather than written into the template, so this page shares
     # one seam with every other artefact. auto_dark: a reader whose system is dark gets a dark
     # survey with no script.
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
-    page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
-            .replace("{{TOKEN_CSS}}", strip_css_comments(token_css))
-            .replace("{{TITLE}}", html.escape(args.title))
-            .replace("{{SOURCE_DESCRIPTION}}", html.escape(source))
-            .replace("{{EXTRACT_TIMESTAMP}}", extracted)
-            .replace("{{BUILD_TIMESTAMP}}", built)
-            .replace("{{REQUESTED_BY}}", args.requested_by or NOT_STATED)
-            .replace("{{ANSWERS_INLINED}}", f"{len(rows):,}")
-            .replace("{{MIN_CELL}}", str(args.min_cell))
-            .replace("{{FILTER_FIELDS}}", filter_fields(segments, data["segmentValues"], t))
-            .replace("{{KPI_CARDS}}", kpis)
-            .replace("{{QUESTION_CARDS}}", cards)
-            .replace("{{CROSS_SECTIONS}}", cross)
-            .replace("{{SURVEY_DATA}}", payload)
-            .replace("{{FEEDBACK_BLOCK}}", feedback))
+    template = i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
+    replacements = {
+        "TOKEN_CSS": strip_css_comments(token_css),
+        "TITLE": html.escape(args.title),
+        "SOURCE_DESCRIPTION": html.escape(source),
+        "EXTRACT_TIMESTAMP": extracted,
+        "BUILD_TIMESTAMP": built,
+        "REQUESTED_BY": html.escape(args.requested_by or NOT_STATED),
+        "ANSWERS_INLINED": f"{len(rows):,}",
+        "MIN_CELL": str(args.min_cell),
+        "FILTER_FIELDS": filter_fields(segments, data["segmentValues"], t),
+        "KPI_CARDS": kpis,
+        "QUESTION_CARDS": cards,
+        "CROSS_SECTIONS": cross,
+        "SURVEY_DATA": payload,
+        "FEEDBACK_BLOCK": feedback,
+    }
+    # Match the template only; survey text must not become a second template.
+    pattern = r"\{\{([A-Z0-9_]+)\}\}"
+    missing = set(re.findall(pattern, template)) - replacements.keys()
+    if missing:
+        die(f"template placeholders not substituted: {sorted(missing)}")
+    page = re.sub(pattern, lambda match: replacements[match[1]], template)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(page, encoding="utf-8")
 

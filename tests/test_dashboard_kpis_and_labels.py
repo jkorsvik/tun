@@ -103,9 +103,9 @@ def rate_rows() -> list[dict]:
 # template at 748ca6f with its {{T:...}} tokens filled from the nb table. A build with
 # neither new flag must still carry it, character for character.
 LEGACY_CARDS_NB = """  const cards = [
-    { label: `Total ${META.measure}`, value: fmt(total) },
+    { label: `Total ${esc(META.measure)}`, value: fmt(total) },
     { label: "Antall rader", value: fmt(rows.length) },
-    { label: `Unike ${META.dimension}`, value: fmt(dims) },
+    { label: `Unike ${esc(META.dimension)}`, value: fmt(dims) },
     { label: "Gjennomsnitt", value: fmt(avg) }
   ];
 """

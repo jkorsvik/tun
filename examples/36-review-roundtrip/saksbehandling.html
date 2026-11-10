@@ -685,9 +685,9 @@ function renderKpis(rows) {
   const n = valued(rows, META.measure).length;
   const avg = n ? total / n : 0;
   const cards = [
-    { label: `Total ${META.measure}`, value: fmt(total) },
+    { label: `Total ${esc(META.measure)}`, value: fmt(total) },
     { label: "Antall rader", value: fmt(rows.length) },
-    { label: `Unike ${META.dimension}`, value: fmt(dims) },
+    { label: `Unike ${esc(META.dimension)}`, value: fmt(dims) },
     { label: "Gjennomsnitt", value: fmt(avg) }
   ];
   $("kpis").innerHTML = cards.map(c =>
@@ -853,7 +853,7 @@ function readFile(file){
     // backticks / ${ would break a template literal, so ship JSON — always safe
     const body =
       "// Datafil for dette dashboardet. Bytt ut denne filen for å oppdatere tallene.\n" +
-      "// Generert " + new Date().toISOString() + " fra " + (DATA_META.source || "ukjent kilde") + "\n" +
+      "// Generert " + new Date().toISOString() + " fra " + String(DATA_META.source || "ukjent kilde").replace(/[\r\n\u2028\u2029]/g, " ") + "\n" +
       "window.DASHBOARD_DATA=" + JSON.stringify(LIVE) + ";\n" +
       "window.DASHBOARD_META=" + JSON.stringify({
         generated: DATA_META.generated, source: DATA_META.source, rows: LIVE.length }) + ";\n";

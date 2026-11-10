@@ -28,6 +28,7 @@ import html
 import json
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -197,8 +198,9 @@ def main(argv: list[str] | None = None) -> int:
     hostile.write_text('A,B\n<script>window.__x=1</script>,1\n"<img src=x onerror=1>",2\n',
                        encoding="utf-8")
     hostile_out = work / "hostile.html"
+    requester = 'Role --><svg onload=window.__requester=1></svg><!--'
     res = subprocess.run([sys.executable, str(BUILDER), "--data", str(hostile),
-                          "--title", "x", "--out", str(hostile_out)],
+                          "--title", "x", "--requested-by", requester, "--out", str(hostile_out)],
                          capture_output=True, text=True)
     chk(res.returncode == 0, "a hostile cell still builds", res.stderr.strip()[-120:])
     hostile_blob = hostile_out.read_text(encoding="utf-8")
@@ -207,6 +209,60 @@ def main(argv: list[str] | None = None) -> int:
         f"{hostile_blob.count('</script>')} occurrences, expected 2")
     chk("u003cscript" in hostile_blob,
         "the payload carries the cell as escaped text, and the page reads it back unchanged")
+
+    # Remove just the requester guard in a private copy. The browser check must
+    # catch it on its own, without relying on a broken build or another defect.
+    mutant = work / 'requester-mutant'
+    for name in ('tools', 'templates', 'plugins'):
+        shutil.copytree(ROOT / name, mutant / name,
+                        ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    mutant_builder = mutant / 'tools/build_register.py'
+    original = mutant_builder.read_text(encoding='utf-8')
+    guard = 'html.escape(args.requested_by or NOT_STATED)'
+    chk(original.count(guard) == 1, 'requester mutation removes exactly one guard')
+    mutant_builder.write_text(original.replace(guard, 'args.requested_by or NOT_STATED', 1),
+                              encoding='utf-8')
+    mutant_out = work / 'requester-mutant.html'
+    result = subprocess.run([sys.executable, str(mutant_builder), '--data', str(hostile),
+                             '--title', 'x', '--requested-by', requester, '--out', str(mutant_out)],
+                            capture_output=True, text=True)
+    chk(result.returncode == 0, 'requester mutant still builds', result.stderr[-120:])
+
+    placeholder_data = work / 'placeholder.csv'
+    placeholder_data.write_text('{{REGISTER_ROWS}},B\nx onmouseover=window.__attr=1 y,1\n', encoding='utf-8')
+    placeholder_out = work / 'placeholder.html'
+    result = subprocess.run([sys.executable, str(BUILDER), '--data', str(placeholder_data),
+                             '--title', 'Synthetic', '--out', str(placeholder_out)],
+                            capture_output=True, text=True)
+    chk(result.returncode == 0, 'a template-shaped column still builds as data', result.stderr[-120:])
+
+    once_mutant = mutant / 'tools/build_register.py'
+    safe_source = BUILDER.read_text(encoding='utf-8')
+    once_guard = 'page = re.sub(pattern, lambda match: replacements[match[1]], template)'
+    chk(safe_source.count(once_guard) == 1, 'single-pass mutation removes exactly one guard')
+    # The source guard is required once the corresponding fix exists.
+    if once_guard in safe_source:
+        once_mutant.write_text(safe_source.replace(once_guard,
+            'page = template\n    for key, value in replacements.items(): page = page.replace("{{" + key + "}}", value)', 1), encoding='utf-8')
+        attr_mutant_out = work / 'attribute-mutant.html'
+        result = subprocess.run([sys.executable, str(once_mutant), '--data', str(placeholder_data),
+                                 '--title', 'Synthetic', '--out', str(attr_mutant_out)],
+                                capture_output=True, text=True)
+        chk(result.returncode == 0, 'single-pass mutant still builds', result.stderr[-120:])
+    else:
+        attr_mutant_out = placeholder_out
+
+    # Check the literal attribute before the runtime replaces the static table.
+    static_placeholder = work / 'literal-static.html'
+    static_placeholder.write_bytes(placeholder_out.read_bytes())
+    template = mutant / 'templates/register.html'
+    template.write_text(template.read_text(encoding='utf-8') + '{{UNFILLED}}', encoding='utf-8')
+    once_mutant.write_bytes(BUILDER.read_bytes())
+    missing = subprocess.run([sys.executable, str(once_mutant), '--data', str(placeholder_data),
+                              '--title', 'Synthetic', '--out', str(work / 'missing.html')],
+                             capture_output=True, text=True)
+    chk(missing.returncode != 0 and 'UNFILLED' in missing.stderr,
+        'unknown register template token is refused by name')
 
     with sync_playwright() as pw:
         for engine in engines:
@@ -340,10 +396,46 @@ def main(argv: list[str] | None = None) -> int:
             hp.wait_for_selector("#tbl tbody tr")
             chk(hp.evaluate("() => window.__x === undefined"),
                 "a hostile cell does not run", engine)
+            chk(hp.evaluate("() => window.__requester === undefined")
+                and hp.locator('svg[onload]').count() == 0,
+                "requested-by stays in provenance, never active markup", engine)
+            chk(html.escape(requester) in hostile_blob,
+                "requested-by is retained as escaped provenance text", engine)
             chk("<script>window.__x=1</script>" in hp.eval_on_selector(
                     "#tbl tbody", "e => e.textContent"),
                 "and it is on screen as the text it was", engine)
             hp.close()
+            mp = ctx.new_page()
+            mp.goto(mutant_out.as_uri())
+            mp.wait_for_timeout(120)
+            chk(mp.evaluate('window.__requester === 1'),
+                'requester mutation is caught by actual marker execution', engine)
+            mp.close()
+            pp = ctx.new_page()
+            pp.add_init_script("""new MutationObserver(() => {
+                document.querySelectorAll('[onmouseover]').forEach(el =>
+                    el.dispatchEvent(new MouseEvent('mouseover')));
+            }).observe(document, {childList:true, subtree:true});""")
+            pp.goto(placeholder_out.as_uri())
+            pp.wait_for_timeout(120)
+            chk(pp.evaluate('window.__attr === undefined'),
+                'a template-shaped column cannot make a static event attribute', engine)
+            chk(pp.evaluate('META.columns[0]') == '{{REGISTER_ROWS}}',
+                'the original template-shaped column survives exactly', engine)
+            chk(pp.locator('#tbl thead').inner_text().strip().startswith('{{REGISTER_ROWS}}'),
+                'a template-shaped column displays literally in the table', engine)
+            pp.goto(attr_mutant_out.as_uri())
+            pp.wait_for_timeout(120)
+            chk(pp.evaluate('window.__attr === 1'),
+                'single-pass mutation is caught by actual attribute execution', engine)
+            pp.close()
+            nojs = browser.new_context(java_script_enabled=False)
+            np = nojs.new_page();np.goto(static_placeholder.as_uri())
+            chk(np.locator('td').first.get_attribute('data-label') == '{{REGISTER_ROWS}}',
+                'the static data-label keeps the literal column, not JSON', engine)
+            chk(np.locator('option[value="0"]').first.inner_text() == '{{REGISTER_ROWS}}',
+                'sort options keep literal column text', engine)
+            nojs.close()
             browser.close()
 
         print("  -- no script")

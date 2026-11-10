@@ -75,12 +75,12 @@ def kpi_cards(args, t: dict[str, str]) -> str:
     """The body of the `cards` array in renderKpis(), one card per line.
 
     With neither --kpis nor --measure-kind it is the four cards the template always had,
-    with their old labels, so a build without the new flags is byte for byte what it was.
+    with their old labels; dynamic column names are escaped before innerHTML.
     Exits with a message when a card is unknown, needs --time, or misleads for a rate."""
     if not args.kpis and not args.measure_kind:
-        return ("    { label: `" + t["kpi_total"] + " ${META.measure}`, value: fmt(total) },\n"
+        return ("    { label: `" + t["kpi_total"] + " ${esc(META.measure)}`, value: fmt(total) },\n"
                 '    { label: "' + t["kpi_rows"] + '", value: fmt(rows.length) },\n'
-                "    { label: `" + t["kpi_unique"] + " ${META.dimension}`, value: fmt(dims) },\n"
+                "    { label: `" + t["kpi_unique"] + " ${esc(META.dimension)}`, value: fmt(dims) },\n"
                 '    { label: "' + t["kpi_avg"] + '", value: fmt(avg) }')
     if args.kpis:
         kinds = [k.strip() for k in args.kpis.split(",") if k.strip()]
@@ -101,7 +101,7 @@ def kpi_cards(args, t: dict[str, str]) -> str:
         key, value = KPI_CARDS[k]
         label = i18n.fill(t[key], measure=args.measure, dimension=args.dimension, time=args.time)
         # The label lands in innerHTML, inside a script: escape it for both.
-        label = json.dumps(html.escape(label, quote=False), ensure_ascii=False).replace("</", "<\\/")
+        label = tun_core.as_script_json(html.escape(label, quote=False))
         lines.append(f"    {{ label: {label}, value: {value} }}")
     return ",\n".join(lines)
 
@@ -176,12 +176,12 @@ def main() -> None:
     now = build_stamp.local()
     extracted = build_stamp.from_mtime(args.data)
 
-    payload = json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
-    meta_js = json.dumps({
+    payload = tun_core.as_script_json(rows)
+    meta_js = tun_core.as_script_json({
         "generated": extracted,
         "source": args.source or args.data.name,
         "rows": len(rows),
-    }, ensure_ascii=False)
+    }, separators=None)
 
     if args.mode == "paired":
         data_path = args.out.parent / "data.js"
@@ -205,8 +205,8 @@ def main() -> None:
     # Nothing the caller types goes into the page raw (ROADMAP A0b, 2026-10-24): a title of
     # `<b>x` became bold text, a column named `Navn "sitert"` ended the JavaScript string it
     # was pasted into, and a `"` anywhere in a column name stopped the page. Two contexts, so
-    # two treatments: HTML gets html.escape, a JavaScript string gets json.dumps, which is the
-    # JSON escape and therefore also a valid JavaScript one.
+    # two treatments: HTML gets html.escape; JavaScript inside HTML gets as_script_json,
+    # which also prevents a data value from ending its script element.
     # The static view (docs/11 section 3c). A viewer that blocks scripting — Quick Look on
     # iOS and macOS does — shows what the build already knew: the totals, and the first rows
     # of the file. The same rows feed the script, so the two can only disagree if the file is
@@ -256,7 +256,7 @@ def main() -> None:
         "BUILD_TIMESTAMP": now,
         "REQUESTED_BY": html.escape(args.requested_by or NOT_STATED),
         "ROW_COUNT": i18n.group_int(len(rows), args.lang),
-        "FILTER_COLS_JSON": json.dumps(filters or [args.dimension], ensure_ascii=False),
+        "FILTER_COLS_JSON": tun_core.as_script_json(filters or [args.dimension], separators=None),
         "CHART1_TITLE": html.escape(i18n.fill(t["chart1_title"], measure=args.measure,
                                              dimension=args.dimension)),
         "CHART2_TITLE": html.escape(i18n.fill(t["chart2_title"], measure=args.measure, time=args.time)
@@ -273,19 +273,19 @@ def main() -> None:
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
     page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
             .replace("{{TOKEN_CSS}}", strip_css_comments(token_css)))
-    # The three column names and the source fallback sit inside a JavaScript string, so they
-    # are substituted on their quoted form, before the HTML pass below can escape them.
+    # Substitute only matches in the template. Values that contain template-shaped
+    # text must never be scanned again after HTML escaping or JSON serialization.
+    replacements = {"{{" + key + "}}": str(value) for key, value in subs.items()}
     for token, value in (("DIMENSION_COL", args.dimension), ("TIME_COL", args.time),
                          ("MEASURE_COL", args.measure)):
-        page = page.replace('"{{' + token + '}}"', json.dumps(value, ensure_ascii=False))
-    page = page.replace('DATA_META.source || "{{SOURCE_DESCRIPTION}}"',
-                        "DATA_META.source || " + json.dumps(source_name, ensure_ascii=False))
-    for key, value in subs.items():
-        page = page.replace("{{" + key + "}}", str(value))
-
-    leftover = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", page)))
-    if leftover:
-        die(f"template placeholders not substituted: {leftover}")
+        replacements['"{{' + token + '}}"'] = tun_core.as_script_json(value)
+    replacements['DATA_META.source || "{{SOURCE_DESCRIPTION}}"'] = (
+        "DATA_META.source || " + tun_core.as_script_json(source_name))
+    pattern = "|".join(re.escape(key) for key in sorted(replacements, key=len, reverse=True))
+    missing = set(re.findall(r"\{\{[A-Z0-9_]+\}\}", re.sub(pattern, "", page)))
+    if missing:
+        die(f"template placeholders not substituted: {sorted(missing)}")
+    page = re.sub(pattern, lambda match: replacements[match[0]], page)
 
     if args.annotate:
         # The review round trip (docs/31): the reader comments on a row and copies a text
@@ -322,8 +322,8 @@ def main() -> None:
 
     if data_path is not None:
         data_path.write_text(
-            "// Data for " + args.out.name + " — replace this file to update the dashboard.\n"
-            "// Generated " + now + " from " + (args.source or args.data.name) + "\n"
+            "// Data for " + re.sub(r"[\r\n\u2028\u2029]", " ", args.out.name) + " — replace this file to update the dashboard.\n"
+            "// Generated " + now + " from " + re.sub(r"[\r\n\u2028\u2029]", " ", source_name) + "\n"
             f"window.DASHBOARD_DATA={payload};\n"
             f"window.DASHBOARD_META={meta_js};\n",
             encoding="utf-8")
