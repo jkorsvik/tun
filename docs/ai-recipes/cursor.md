@@ -49,7 +49,7 @@ missing, run the `check` step and look at the file yourself in Chrome.
    frontmatter. Cursor reads `AGENTS.md` in the root and in subdirectories, and combines
    nested files with "more specific instructions taking precedence".
 
-3. No package install. The builders are standard library Python only. Python 3.9 or newer.
+3. No package install. The builders are standard library Python only. Python 3.12 or later for this guide.
 
 ## The prompt
 

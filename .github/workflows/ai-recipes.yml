@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   source-zip:
+    if: github.server_url == 'https://github.com'
     strategy:
       fail-fast: false
       matrix:
@@ -24,11 +25,15 @@ jobs:
       - run: python tests/test_ai_recipes.py
 
   offline-browser:
+    if: github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - run: uv run --python 3.12 --extra verify playwright install --with-deps chromium
-      - run: uv run --python 3.12 --extra verify python tools/ai_recipe.py build
-      - run: uv run --python 3.12 --extra verify python tools/ai_recipe.py browser
+      - name: Verify the downloadable reference file offline
+        run: |
+          mkdir -p work/ai-recipes
+          cp docs/ai-recipes/fixtures/tun-recipe.html work/ai-recipes/tun-recipe.html
+          uv run --python 3.12 --extra verify python tools/ai_recipe.py browser

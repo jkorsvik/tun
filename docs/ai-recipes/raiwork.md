@@ -45,7 +45,7 @@ as one HTML file*, version 0.1.9, public.
 **From the CLI:**
 
 ```bash
-raicode manage marketplace install plugin/tun@0.1.9
+raicode manage marketplace install plugin/tun@0.1.9 --accept=skills
 ```
 
 The CLI installs the plugin skeleton only unless you name the component groups:

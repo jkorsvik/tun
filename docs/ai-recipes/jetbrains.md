@@ -28,7 +28,7 @@ workaround, it is the interface: the commands are short and the output is a file
    ```
 
    Open the resulting `tun` folder as a project. The IDE may offer to configure a Python
-   interpreter; the builders are standard library only, so any Python 3.9+ SDK works. No
+   interpreter. Use Python 3.12 or later for this guide. The builders use the standard library only. No
    package installation.
 
 2. **For coding agents**, add `AGENTS.md` at the repo root. The vendor's agent-instructions

@@ -52,7 +52,7 @@ obstacle — approve the two Tún commands and nothing wider.
    mode-specific rules and before generic rules, and can be turned off with
    `"roo-cline.useAgentRules": false`.
 
-3. No package install. Python 3.9 or newer; the builders are standard library only.
+3. No package install. Python 3.12 or later for this guide; the builders are standard library only.
 
 ## The prompt
 

@@ -18,7 +18,7 @@ On Windows, macOS or Linux, open **Marketplace**, search for **Tún**, select th
 If your RAIWork CLI is already signed in, the equivalent install command for version 0.1.9 is:
 
 ```text
-raicode manage marketplace install plugin/tun@0.1.9
+raicode manage marketplace install plugin/tun@0.1.9 --accept=skills
 ```
 
 Use `raicode manage marketplace list` to check the installed version. If you previously copied Tún skills into `~/.raiwork/skills`, they can take precedence over the plugin. Ask the assistant to show the path of the `SKILL.md` it loaded. A Marketplace copy should be under `~/.raiwork/marketplace/plugins/tun/skills/`. Do not delete personal skills to fix this. Use [the RAIWork recipe](docs/ai-recipes/raiwork.md) to check the route.

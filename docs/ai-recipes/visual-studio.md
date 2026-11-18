@@ -119,9 +119,9 @@ Open it from Solution Explorer or Explorer. Your default browser is fine.
 
 In the Visual Studio terminal (**View → Terminal**):
 
-```bat
-py -3 tools\ai_recipe.py check
-py -3 tools\ai_recipe.py browser
+```powershell
+py -3 tools/ai_recipe.py check
+py -3 tools/ai_recipe.py browser
 ```
 
 `check` asserts four rows, total 10, the Origin Notice, and the builder-output and fixture digests. `browser` loads the file over `file://` with remote requests blocked, drives
@@ -129,8 +129,8 @@ the filter, and writes a screenshot you should look at.
 
 For a downloaded copy:
 
-```bat
-py -3 tools\ai_recipe.py check %USERPROFILE%\Downloads\tun-recipe.html
+```powershell
+py -3 tools/ai_recipe.py check "$HOME/Downloads/tun-recipe.html"
 ```
 
 ## Licence and the Origin Notice

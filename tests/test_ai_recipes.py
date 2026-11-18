@@ -93,6 +93,16 @@ class Recipes(unittest.TestCase):
 
 
 class Index(unittest.TestCase):
+    def test_marketplace_command_installs_skills(self):
+        commands = []
+        for doc in (ROOT / "INSTALL.md", RECIPE / "raiwork.md"):
+            lines = [line.split() for line in doc.read_text(encoding="utf-8").splitlines()
+                     if line.startswith("raicode manage marketplace install plugin/tun@")]
+            self.assertEqual(len(lines), 1, doc.name)
+            commands.append(lines[0])
+        self.assertEqual(*commands)
+        self.assertIn("--accept=skills", commands[0])
+
     def test_every_platform_is_listed_and_has_recipe_evidence(self):
         index = (RECIPE / "README.md").read_text(encoding="utf-8")
         self.assertEqual({p.stem for p in RECIPE.glob("*.md")} - {"README", "common-contract"}, DOCS)

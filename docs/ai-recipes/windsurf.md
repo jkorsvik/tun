@@ -71,7 +71,7 @@ conversations". Use **Devin Local**. Workflows are Cascade-only; do not build th
    only `.devin/global_rules.md` loads." A stale `.windsurf/` rule that contradicts the new
    one is a real failure mode here — if the agent disobeys, look there.
 
-4. No package install. Python 3.9 or newer; the builders are standard library only.
+4. No package install. Python 3.12 or later for this guide; the builders are standard library only.
 
 ## The prompt
 

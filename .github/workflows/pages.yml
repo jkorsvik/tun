@@ -38,7 +38,10 @@ jobs:
           cp examples/54-showcase/oversikt.html _site/index.html
           cp -r examples _site/examples
           cp -r docs _site/docs
-          cp README.md LICENSE COPYING.ARTEFACT-EXCEPTION AUTHORS.md _site/
+          cp README.md INSTALL.md START-HERE.md LICENSE COPYING.ARTEFACT-EXCEPTION AUTHORS.md _site/
+          test -f _site/INSTALL.md
+          test -f _site/START-HERE.md
+          test -f _site/docs/ai-recipes/fixtures/tun-recipe.html
           # A reader should not need a Markdown viewer to read the licence or the README.
           for f in README LICENSE COPYING.ARTEFACT-EXCEPTION AUTHORS; do
             test -f "_site/$f.md" && cp "_site/$f.md" "_site/$f.txt" || true

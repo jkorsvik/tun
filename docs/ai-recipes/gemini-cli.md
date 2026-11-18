@@ -124,7 +124,7 @@ Static PASS: 4 rows, total 10, exact canonical content and Origin Notice. Browse
 
 ```bash
 uv sync --extra verify && uv run playwright install chromium
-uv run python tools/ai_recipe.py browser
+uv run --extra verify python tools/ai_recipe.py browser
 ```
 
 ```

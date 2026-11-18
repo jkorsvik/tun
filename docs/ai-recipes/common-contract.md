@@ -13,7 +13,7 @@ Use the same small file to try Tún in any assistant. [Download the synthetic CS
 
 Open **`work/ai-recipes/tun-recipe.html`**. Building again replaces that example. The file contains its data, styles and code, not a link to an app. Reuse the original HTML if an assistant can return only text or a hosted preview. Do not paste a generated app into the file and call it Tún.
 
-`check` compares the HTML with a fresh build from this toolkit and the shared fixture. It checks the exact content, not just the filename. The provenance block records the source, synthetic reference timestamp, and row count. A recipe comment records the contract number, fixture digest, and builder-output digest. Keep the toolkit revision with your test record (Git commit or source ZIP reference). To check a download, add its quoted path after `check`, for example `python3 tools/ai_recipe.py check "$HOME/Downloads/tun-recipe.html"`. On PowerShell use `py -3 tools/ai_recipe.py check "$HOME/Downloads/tun-recipe.html"`.
+`check` compares the HTML with a fresh build from this toolkit and the shared fixture. It checks the exact content, not just the filename. The provenance block records the source and row count. Both dates are fixed to the synthetic reference time so a fresh build can reproduce the sample. They do not report when you ran the command. A recipe comment records the contract number, fixture digest, and builder-output digest. Keep the toolkit revision with your test record (Git commit or source ZIP reference). To check a download, add its quoted path after `check`, for example `python3 tools/ai_recipe.py check "$HOME/Downloads/tun-recipe.html"`. On PowerShell use `py -3 tools/ai_recipe.py check "$HOME/Downloads/tun-recipe.html"`.
 
 ## Verify before sharing
 
@@ -43,3 +43,10 @@ Keep Tún's [Origin Notice](../../COPYING.ARTEFACT-EXCEPTION) in the generated H
 ## Record what ran
 
 For a platform test, record the tool and edition, version (or observed date for a hosted tool), OS, toolkit revision, and whether the file was built, downloaded, checked and opened. Attach the actual command result or say why it could not run. Vendor documentation is evidence of a supported feature, not a test of this recipe. The Tún maintainers own this contract.
+
+### Refresh the download after a builder change
+
+Run `python3 tools/ai_recipe.py build` (`py -3` on Windows), then replace
+`fixtures/tun-recipe.html` in this directory with `work/ai-recipes/tun-recipe.html` from
+the toolkit root. Commit the refreshed sample with the builder change. Run the static
+check against the committed sample and the browser check against a copy under `work/`.
