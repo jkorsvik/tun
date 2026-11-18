@@ -4,8 +4,14 @@
 HTML artefacts, distributed through SharePoint and OneDrive, openable by anyone who can
 open the folder, with no Power BI licence, no workspace, no capacity and no admin approval.
 
-**New here? [Start here](START-HERE.md).** Try the [live Explorer](https://jkorsvik.github.io/tun/),
-or make your first file with Python, Claude Code, Codex, Gemini CLI, Copilot, ChatGPT or Grok.
+**New here? [Install Tún](INSTALL.md) · [Choose an AI recipe](docs/ai-recipes/README.md) · [Start here](START-HERE.md).** Try the [live Explorer](https://jkorsvik.github.io/tun/).
+
+| What you use | How to start |
+|---|---|
+| Browser only | Download the `.html` file and open it. Nothing to install. |
+| RAIWork | Search for **Tún** in Marketplace and select **Install**. |
+| Windows, macOS or Linux | [Download the toolkit ZIP and use Python](INSTALL.md#get-the-toolkit). |
+| AI chat or coding assistant | [Choose your tool](docs/ai-recipes/README.md). Follow a recipe that produces and checks the same reference dashboard. |
 
 ---
 
@@ -61,22 +67,7 @@ uv sync --extra verify && uv run playwright install chromium   # once
 uv run python tools/verify_dashboard.py work/demo.html
 ```
 
-**Use it from your AI tool.** The skills are in the open
-[Agent Skills](https://agentskills.io/specification) format. Install them for your tool,
-then ask for *"a dashboard from this Excel file"*:
-
-| Tool | Install |
-|---|---|
-| Claude Code | `python3 setup.py --tool claude` |
-| Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode | `python3 setup.py --tool agents` |
-| RAIWork | `python3 setup.py` (when RAIWork is installed) |
-
-Tested on 2026-10-08: Gemini CLI and Claude Code load every skill. Codex is checked in its
-source code, the rest in each tool's own docs ([docs/28](docs/28-prior-art.md)).
-
-**ChatGPT, Grok or another chat bot:** use the [starter prompt](START-HERE.md#3-chatgpt-grok-or-another-chat-bot).
-The bot writes its own code, not the tested Tún builders. Use the Python or coding-assistant
-route for the full toolkit and verification.
+**Use an AI tool?** [Pick a tested build path and find your assistant's recipe](docs/ai-recipes/README.md). RAIWork users can install Tún in Marketplace. Other local assistants can use the repository or copy the project skills with the [installer](INSTALL.md#copy-tun-skills-to-your-assistant). Hosted chats that cannot run Tún can help with the brief or the CSV, but their previews do not verify a portable HTML file. See [the platform background](docs/28-prior-art.md) for design context.
 
 ![Example dashboard](examples/01-hello-dashboard/preview.png)
 

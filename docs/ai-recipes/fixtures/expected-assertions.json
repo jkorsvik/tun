@@ -1,0 +1,10 @@
+{
+  "contract": 1,
+  "filename": "tun-recipe.html",
+  "title": "Excuses by category",
+  "rows": 4,
+  "total": 10,
+  "filter": "Traffic",
+  "filtered_rows": 2,
+  "filtered_total": 5
+}

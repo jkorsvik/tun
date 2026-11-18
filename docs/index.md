@@ -25,7 +25,9 @@ Power BI and the skill says so.
 
 This site is the project's public documentation, served from `docs/` on `main`.
 The product introduction and live demos are at [tun.community](https://tun.community).
-For a first build, use [START-HERE.md](../START-HERE.md).
+For a first build, use [Start here](https://github.com/jkorsvik/tun/blob/main/START-HERE.md).
+For Windows, macOS and Linux setup, see [Install Tún](https://github.com/jkorsvik/tun/blob/main/INSTALL.md).
+For assistant-specific steps, see the [AI recipes](https://github.com/jkorsvik/tun/tree/main/docs/ai-recipes).
 
 > **This is Tunkallen's project.** The idea and direction are his. What is written down
 > here is the plumbing: the awkward constraints measured so that nobody has to rediscover them.
