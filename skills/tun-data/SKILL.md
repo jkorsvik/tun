@@ -13,6 +13,10 @@ numbers are replaced, so rebuild rather than hand-edit.
 tooling at all, and if that fits, say so instead of doing it for them — it makes them
 self-sufficient, which is worth more than one refresh.
 
+**Toolkit path:** Commands in `tools/` live in the Tún checkout (`repo:` in
+`.installed-by-tun` next to this `SKILL.md`, or `TUN_HOME`). Write refreshed files in the
+user's folder, never inside the Tún repository.
+
 ## The no-tooling routes (offer these first)
 
 **A — drag in, click, drag out.** No text editing, no terminal.

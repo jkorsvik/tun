@@ -61,7 +61,7 @@ HOST = """<!doctype html><meta charset="utf-8">
 
 MEASURE = """sel => [...document.querySelectorAll(sel)].map(s => ({
   id: s.id || s.parentElement.id,
-  vb: s.viewBox && s.viewBox.baseVal ? Math.round(s.viewBox.baseVal.width) : null,
+  vb: s.hasAttribute("viewBox") && s.viewBox && s.viewBox.baseVal ? Math.round(s.viewBox.baseVal.width) : null,
   px: Math.round(s.getBoundingClientRect().width)
 }))"""
 

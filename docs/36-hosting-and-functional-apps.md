@@ -1,4 +1,4 @@
-# 35. Hosting and functional apps
+# 36. Hosting and functional apps
 
 **Reader:** user - you want to choose a host or decide whether an app needs a backend, not change the toolkit.
 

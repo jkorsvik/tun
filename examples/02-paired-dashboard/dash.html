@@ -308,7 +308,8 @@
      surface in the dark theme, so a KPI figure lettered with it disappears into its own card
      (measured 1.00:1). It becomes --brand there, the light-on-dark teal. */
   @media screen and (prefers-color-scheme: dark){
-    .kpi .value{color:var(--brand)}
+    :root:not([data-theme]) .kpi .value{color:var(--brand)}
+    :root:not([data-theme]) .controls select{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23DCE6F5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
   }
 table{display:block;max-width:100%;overflow-x:auto}
 .tun-credit{font-size:inherit;font-weight:400;white-space:normal}.tun-credit a{color:inherit;text-decoration:underline;text-underline-offset:.15em}.tun-credit a:hover{color:inherit;text-decoration-thickness:.125em}.tun-credit a:focus-visible{outline:.125rem solid currentColor;outline-offset:.25rem}
@@ -383,7 +384,7 @@ const META = {
   dimension:   "Produkt",   // primary categorical column (bar chart, filter)
   timeColumn:  "Maaned",        // ordered column for the line chart ("" to disable)
   measure:     "Belop",     // numeric column being summed
-  filters:     ["Region", "Produkt", "Kanal"],  // e.g. ["Region","Produkt"]
+  filters:     ["Region","Produkt","Kanal"],  // e.g. ["Region","Produkt"]
   numberFormat: new Intl.NumberFormat("nb-NO",{maximumFractionDigits:0})
 };
 
@@ -860,7 +861,11 @@ if (typeof ResizeObserver === "function") {
     });
     if (widthChanged) queueChartRedraw();
   });
-  ["chart1", "chart2"].forEach(id => chartObserver.observe($(id)));
+  ["chart1", "chart2"].forEach(id => {
+    const el = $(id);
+    seenW.set(el, Math.round(el.getBoundingClientRect().width));
+    chartObserver.observe(el);
+  });
 }
 
 (function footNote(){

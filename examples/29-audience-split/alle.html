@@ -308,7 +308,8 @@
      surface in the dark theme, so a KPI figure lettered with it disappears into its own card
      (measured 1.00:1). It becomes --brand there, the light-on-dark teal. */
   @media screen and (prefers-color-scheme: dark){
-    .kpi .value{color:var(--brand)}
+    :root:not([data-theme]) .kpi .value{color:var(--brand)}
+    :root:not([data-theme]) .controls select{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23DCE6F5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
   }
 table{display:block;max-width:100%;overflow-x:auto}
 .tun-credit{font-size:inherit;font-weight:400;white-space:normal}.tun-credit a{color:inherit;text-decoration:underline;text-underline-offset:.15em}.tun-credit a:hover{color:inherit;text-decoration-thickness:.125em}.tun-credit a:focus-visible{outline:.125rem solid currentColor;outline-offset:.25rem}
@@ -376,7 +377,7 @@ table{display:block;max-width:100%;overflow-x:auto}
      =========================================================================== -->
 <script>
 window.DASHBOARD_DATA=[{"Selger":"Kari Nordmann","Team":"Nord","Produkt":"Bolig","Maaned":"2026-01","Belop":412000},{"Selger":"Kari Nordmann","Team":"Nord","Produkt":"Bolig","Maaned":"2026-02","Belop":388000},{"Selger":"Kari Nordmann","Team":"Nord","Produkt":"Fritid","Maaned":"2026-01","Belop":152000},{"Selger":"Kari Nordmann","Team":"Nord","Produkt":"Fritid","Maaned":"2026-02","Belop":161000},{"Selger":"Ola Hansen","Team":"Nord","Produkt":"Bolig","Maaned":"2026-01","Belop":296000},{"Selger":"Ola Hansen","Team":"Nord","Produkt":"Bolig","Maaned":"2026-02","Belop":305000},{"Selger":"Ola Hansen","Team":"Nord","Produkt":"Fritid","Maaned":"2026-01","Belop":98000},{"Selger":"Ola Hansen","Team":"Nord","Produkt":"Fritid","Maaned":"2026-02","Belop":104000},{"Selger":"Ingrid Solberg","Team":"Vest","Produkt":"Bolig","Maaned":"2026-01","Belop":501000},{"Selger":"Ingrid Solberg","Team":"Vest","Produkt":"Bolig","Maaned":"2026-02","Belop":477000},{"Selger":"Ingrid Solberg","Team":"Vest","Produkt":"Fritid","Maaned":"2026-01","Belop":143000},{"Selger":"Ingrid Solberg","Team":"Vest","Produkt":"Fritid","Maaned":"2026-02","Belop":138000},{"Selger":"Petter Aas","Team":"Vest","Produkt":"Bolig","Maaned":"2026-01","Belop":268000},{"Selger":"Petter Aas","Team":"Vest","Produkt":"Bolig","Maaned":"2026-02","Belop":274000},{"Selger":"Petter Aas","Team":"Vest","Produkt":"Fritid","Maaned":"2026-01","Belop":87000},{"Selger":"Petter Aas","Team":"Vest","Produkt":"Fritid","Maaned":"2026-02","Belop":92000},{"Selger":"Mari Linde","Team":"Sør","Produkt":"Bolig","Maaned":"2026-01","Belop":355000},{"Selger":"Mari Linde","Team":"Sør","Produkt":"Bolig","Maaned":"2026-02","Belop":362000},{"Selger":"Mari Linde","Team":"Sør","Produkt":"Fritid","Maaned":"2026-01","Belop":121000},{"Selger":"Mari Linde","Team":"Sør","Produkt":"Fritid","Maaned":"2026-02","Belop":118000},{"Selger":"Jon Berg","Team":"Sør","Produkt":"Bolig","Maaned":"2026-01","Belop":233000},{"Selger":"Jon Berg","Team":"Sør","Produkt":"Bolig","Maaned":"2026-02","Belop":241000},{"Selger":"Jon Berg","Team":"Sør","Produkt":"Fritid","Maaned":"2026-01","Belop":76000},{"Selger":"Jon Berg","Team":"Sør","Produkt":"Fritid","Maaned":"2026-02","Belop":81000}];
-window.DASHBOARD_META={"generated": "2026-10-24 10:00 UTC", "source": "Syntetiske salgstall (generate_data.py) — salg-alle.csv", "rows": 24};
+window.DASHBOARD_META={"generated":"2026-10-24 10:00 UTC","source":"Syntetiske salgstall (generate_data.py) — salg-alle.csv","rows":24};
 </script>
 <script>
 const DATA = window.DASHBOARD_DATA || [];
@@ -863,7 +864,11 @@ if (typeof ResizeObserver === "function") {
     });
     if (widthChanged) queueChartRedraw();
   });
-  ["chart1", "chart2"].forEach(id => chartObserver.observe($(id)));
+  ["chart1", "chart2"].forEach(id => {
+    const el = $(id);
+    seenW.set(el, Math.round(el.getBoundingClientRect().width));
+    chartObserver.observe(el);
+  });
 }
 
 (function footNote(){

@@ -5,8 +5,8 @@ large live stage, the example's own build recipe, a full-screen view, a byte-exa
 and a shareable example link. The full visual card collection remains below for browsing.
 
 The page carries every built example and a real browser photograph of each. The live stage opens
-example 55, the raw-WebGL task space, so the first view is itself an artefact rather than a video
-or a marketing illustration. No library, framework, server or runtime request is added.
+example 01, the default dashboard, so the first view is itself a runnable artefact rather than a
+video or a marketing illustration. No library, framework, server or runtime request is added.
 
 ## Build it
 

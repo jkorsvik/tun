@@ -1122,17 +1122,16 @@ DELIBERATE_NB_CHANGES = [
      b'    font-family:"' + _NK + b'",'),
 ]
 
-# 2026-11-09: re-pinned after proving all 22 old fixture hashes against HEAD
-# ab821b1. Removing the default favicon, credit CSS and credit restores the old
-# bytes. The cube additionally wraps #perf in a span and moves its footer outside
-# the hidden app; the index reports its input register growing from 128 to 130 kB.
-# Neither paired data.js changed. tests/test_tun_brand.py checks identity separately.
+# 2026-11-26: re-pinned after hardening script-embedded JSON via tun_core.as_script_json
+# across build_dashboard, build_cube_dashboard and build_survey_dashboard (closing
+# </script> breakout XSS) and adding light-stroke dark-mode select chevrons to the five
+# templates that style <select> with appearance:none.
 BASELINE = {
     "fx-deck/fx-deck.html": "cde971c4b080887b2b7b1c446f48ed0b5d63a3c7fcb7fb1466c446cfa24342a0",
-    "dash-bundled/dash-bundled.html": "6389d641723df6e7fc35b814205d466a6a72dff79de8736f10cb7c70f9254b4e",
-    "dash-paired/paired/dash.html": "7ab16b35085d8a8cda303b00323218cf79f2c29f0da227902fd9281356b65eb3",
-    "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",
-    "dash-feedback/dash-feedback.html": "e371a624084daf0b4e2e6556b670862cd9def0b95fafb3ce11c4ebbd0526e0c5",
+    "dash-bundled/dash-bundled.html": "b0bf9155a82e6863acb577bf0a001d82fe6adc6c44975720a042184b103318fe",
+    "dash-paired/paired/dash.html": "2cc2948681e66d64582eb6ab6d46dc56c71d170a01c0ffbbf5c13b9b71159b52",
+    "dash-paired/paired/data.js": "35713a604fb90dd269c35b033e73054f6e4353f43ab7f381ef051e7d20dab78a",
+    "dash-feedback/dash-feedback.html": "b83931e8dd6ae4d50ce2f6e02b315c5df157c1253f4b528cde43466ef49d4071",
     # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
     # change to its nb output is visible.
     "scorecard/scorecard.html": "9175c9a7b790c4c4fbc7fc045f201268c22ed07dd31817c2966374d79bc0a030",
@@ -1146,32 +1145,32 @@ BASELINE = {
     # is a line diff of the old and new builds: six `data-col` attributes on the headers,
     # `id="tbl"` on the table, and two attribute writes in the row script. Nothing else in
     # the file moved, and no visible text changed.
-    "compare/compare.html": "f2382172264cfc55b22a02d5b528a9350a649f25a307d94eff20eb4f18526d2b",
+    "compare/compare.html": "1a024b649c827edd9b1d805feeadb8c0f3737aa93a8ff0b25ba5ba238da742bd",
     "index/index.html": "1d35c55136a1b5afc598c24128c809566cafe79b6fabcc33a94b516364dd7263",
     # New artefact 2026-10-24: its first build, pinned so a change to its nb output is
     # visible. No older builder exists to compare it against.
     "timeline/timeline.html": "e6e92c53c9c77ce51489fb2f9ae1911ecf9c0a0f9e9bce4216b5bdc4b1802693",
-    "cube/cube.html": "92cab0225d983ff6a8e4849fb586ce3b74f4397f559552b8782f2f9b41878791",
-    "cube-feedback/cube-feedback.html": "7e89466dfaab3a542ff8445ca0ee36441e6db7eb74fb79e6d1df68a16e1e0a78",
+    "cube/cube.html": "8bd90b6802361288c53542ac59635dba0d99347b53e0a3adcc0f4b102b0408f3",
+    "cube-feedback/cube-feedback.html": "7acd95b98ab5d85b64eaf5b5da220c0f25bce4889db73587569af08016275497",
     "process/process.html": "3112b3d1ccda91d7e0fb253700f6577af964ccc7b29f225f11b9b77405d3e422",
-    "fx-dash/fx-dash.html": "0a006a1d7b1f91d8b321a7aa245b2066c8fdbabdb30604d262b7dd5a0cc44f2d",
-    "fx-dash-paired/fxp/dash.html": "7d2e89e201722bc3af304017904a4750a8a36f15df15b3228dd6781452453667",
-    "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
-    "fx-dash-notime/fx-dash-notime.html": "63db58eb132325f501a8e695e156b649ec0ba3a0bdf5d5881136070ffa64173d",
-    "fx-cube/fx-cube.html": "d6ff32a0bca18e824aafce13889d6453a08379d8e24c8410674cf64fafb0ed92",
+    "fx-dash/fx-dash.html": "f4242ec55408233abf7116de5aa6655239e6de1df192dac4061d6f455575f03d",
+    "fx-dash-paired/fxp/dash.html": "c73bdaaa620734aae8e2f5880b4c7f43ef9a59331942195e4426fafe410ab99c",
+    "fx-dash-paired/fxp/data.js": "b780577d6b85764ed4e15a5de4d81bdcdafca25565bbfe7521276ab5efdf4ecd",
+    "fx-dash-notime/fx-dash-notime.html": "fa54bc95366db99f91e82e3a1f62bfd04a6b803dc82f10fd19954d2e09f2ee0d",
+    "fx-cube/fx-cube.html": "56d4dc8b901d92ce8ac722586141a574490512d2181658d44ebd54b81596a700",
     "fx-process/fx-process.html": "e3fe3d7851c2ef22a57a9a5dc1fa152b1c040c0196c695869a4b980961c4bf94",
     # the survey board (2026-10-24): a new artefact, so its nb output is frozen here
     # 2026-10-24: the survey template gained a cross-tab block (table, its CSS, the
     # note a filter shows), so the two survey builds below moved and nothing else did.
-    "survey/survey.html": "afdfb6e9719a0fc13be31399ba77f02d4e89f2e702219b65208057e07ad3dfd6",
+    "survey/survey.html": "7ecb749f2a5e96ad2c3a42ba4565ed573bc14315864910746d5d01decc02d855",
     # the register (2026-10-24): a new artefact, so its nb output is frozen here.
     # 2026-10-24: the register gained group bands (--group-by): the band CSS, the group
     # constant, the comparator clause and the band renderer are in every build, and the
     # group strings and the groupCol fact only when the build groups. So the hash below
     # moved and nothing else did; no probe in section 6 builds this template, which is
     # why it is re-pinned here rather than paired.
-    "register/register.html": "fbbba3bc5f7f7de5df20db1ebda81c383cf7e0225b14641482c13b56791f03cb",
-    "fx-survey/fx-survey.html": "9b05a7ec1a16bcacb0133c84a1ce1adc30a57d4fef6f11cac5bc1f8fb113310c",
+    "register/register.html": "3013f82f63e2ad8bc2c2b880aae975a168696e9996921ffe7f25c65ab83c668a",
+    "fx-survey/fx-survey.html": "a33df5c970f97a406e19422528672894bc709fba8a7e2df051eaca9fcfe096ee",
 }
 
 FORBIDDEN_IN_EN = ("'", '"', "\\", "`", "${")   # would break the string or comment it lands in

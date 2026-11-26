@@ -12,6 +12,10 @@ This is a **gate, not a formality**. The entire premise of a portable dashboard 
 it works on *someone else's* machine, opened from *their* folder, with no server. The
 only way to know that is to do it.
 
+**Toolkit path:** Verifiers under `tools/` live in the Tún checkout (`repo:` in
+`.installed-by-tun` next to this `SKILL.md`, or `TUN_HOME`). Run `<repo>/tools/verify_*.py`
+against the artefact in the user's folder.
+
 `tools/verify_dashboard.py` composes two layers (see `docs/08-generic-artifact-model.md`):
 a generic core (`tools/verify_standalone_core.py` — self-contained, size, no leftover
 `{{PLACEHOLDER}}`, provenance, console-clean render, screenshot) that any standalone-HTML

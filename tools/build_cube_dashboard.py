@@ -56,7 +56,7 @@ import i18n  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
 from tun_tokens import strip_css_comments  # noqa: E402
-from tun_core import NOT_STATED, die, number_or_zero  # noqa: E402
+from tun_core import NOT_STATED, as_script_json, die, number_or_zero  # noqa: E402
 
 TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "cube-dashboard.html"
 # The strings table is named, not derived from TEMPLATE: a test points TEMPLATE at a copy.
@@ -332,7 +332,7 @@ def main() -> int:
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
     page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
             .replace("{{TOKEN_CSS}}", strip_css_comments(token_css))
-            .replace("{{META}}", json.dumps(meta, ensure_ascii=False))
+            .replace("{{META}}", as_script_json(meta))
             .replace("{{DATA}}", b64)
             .replace("{{NOJS_FACTS}}", nojs_facts)
             .replace("{{NOJS_DIMS}}", nojs_dims)

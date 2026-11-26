@@ -77,6 +77,9 @@ FAST = (
     # Docs are filed by reader, and a filing nobody checks becomes a pile again. Pure text,
     # no browser, 0.2 s.
     "tests/test_docs_readers.py",
+    # Architecture decisions and cross-tool AI bootstrap/verb manifests are pure text (<0.2 s).
+    "tests/test_adrs.py",
+    "tests/test_agent_bootstrap.py",
 )
 
 

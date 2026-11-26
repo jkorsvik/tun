@@ -32,7 +32,7 @@ For a first build, use [START-HERE.md](../START-HERE.md).
 
 ## Read this by who you are
 
-Thirty-three documents is too many to read in order, and reading the wrong one wastes the
+Thirty-five documents is too many to read in order, and reading the wrong one wastes the
 ten minutes that decides whether this project is for you. So every document opens with one
 line saying who it is for, and this page files it under that same reader:
 
@@ -53,7 +53,7 @@ reader and marked as another fails the suite.
 |---|---|
 | [START-HERE](../START-HERE.md) | **The shortest route.** Build an example, install the Agent Skills, or use the chat-bot prompt |
 | [Onboarding](04-onboarding.md) | Windows details, verification, publishing and the data boundary |
-| [Which shape answers which question](33-artefact-shapes.md) | Thirty builders, the question each answers in the words people use, what to do when two shapes compete, and the five questions this format does not answer |
+| [Which shape answers which question](33-artefact-shapes.md) | Twenty-seven builders, the question each answers in the words people use, what to do when two shapes compete, and the five questions this format does not answer |
 | [The skill tree](03-skill-tree.md) | What you can ask for, in your own words: build, check, ship, and the honest exit |
 | [Vision](00-vision.md) | Why an information tool should be a document, and who that serves |
 | [What was built](27-what-was-built.md) | Applications made this way, by pattern, and the one lesson each taught |
@@ -103,6 +103,7 @@ that has already been argued.
 
 | | |
 |---|---|
+| [Architecture Decision Records](adr/README.md) | Six short records for the boundaries that must not drift: folder security, download delivery, stdlib builders, colour seam, AGPL + Artefact Exception, and no server in core |
 | [Licensing](17-licensing.md) | **AGPL v3 plus the Tún Artefact Exception v1.1**, why AGPL, and which layer each licence applies to. Documents you generate are yours |
 | [The name](18-naming.md) | What `Tún` and `tun` mean, what each is used for, the coinage, and where the name already lives |
 | [The no-JavaScript question](15-no-javascript-findings.md) | What a file can still do when scripts never run, and one earlier finding falsified |

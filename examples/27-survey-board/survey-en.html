@@ -11,14 +11,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Working environment 2026 — synthetic example</title>
+<title>Arbeidsmiljø 2026 — syntetisk eksempel</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20class%3D%22logo%22%20viewBox%3D%220%200%20160%20160%22%20role%3D%22img%22%20aria-label%3D%22T%C3%BAn%22%3E%0A%20%20%20%20%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22148%22%20height%3D%22148%22%20rx%3D%2226%22%20fill%3D%22none%22%20stroke%3D%22%230d2b21%22%20stroke-width%3D%227%22%2F%3E%0A%20%20%20%20%3Ctext%20x%3D%2280%22%20y%3D%22112%22%20text-anchor%3D%22middle%22%20font-family%3D%22-apple-system%2CBlinkMacSystemFont%2CSegoe%20UI%2CHelvetica%2CArial%2Csans-serif%22%0A%20%20%20%20%20%20%20%20%20%20font-size%3D%2286%22%20font-weight%3D%22500%22%20fill%3D%22%230d2b21%22%20letter-spacing%3D%221%22%3Eu%3C%2Ftext%3E%0A%20%20%20%20%3Cpath%20d%3D%22M69%2048%20l11%2012%2022%20-25%22%20fill%3D%22none%22%20stroke%3D%22%233f8f3f%22%20stroke-width%3D%229%22%0A%20%20%20%20%20%20%20%20%20%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3C%2Fsvg%3E">
 <!--
-  Working environment 2026 — synthetic example
+  Arbeidsmiljø 2026 — syntetisk eksempel
   PROVENANCE  (do not delete — this is how output gets traced back)
-    Source data : Synthetic example data (survey.csv) — 293 answers to 5 questions
-    Extracted   : 2026-10-24 03:21
-    Built       : 2026-10-24 03:24
+    Source data : Syntetisk eksempeldata (survey.csv) — 293 answers to 5 questions
+    Extracted   : 2026-10-24 10:00
+    Built       : 2026-10-24 10:00
     Requested by: HR
     Made with   : Tún — tun.community
     Answers     : 293 inlined, long format {segment…, question, answer}
@@ -44,12 +44,110 @@
   builder. The script only re-renders them when a filter changes.
 -->
 <style>
+/* The colour tokens are inlined by the builder from tools/tokens/: one seam shared with
+   every other artefact, which is also how this page follows the operating system's dark
+   setting with no script. Add no hex of your own here.
+
+   A five-colour --s1 to --s5 series was declared here and painted nowhere: no rule and no
+   line in the builder referenced it. It is gone rather than themed, for the same reason the
+   timeline lost --bar-done and --bar-late: a colour nobody paints is a claim about support
+   the page does not make. */
 :root{
-  --bg:#f7f8f9;--panel:#fff;--ink:#0a0a0a;--muted:#595959;--line:#dcdcdc;--rule:#ececec;
-  --brand:#2F5D9E;--brand-dark:#1B2A4A;--brand-soft:#e3f0ef;--on-brand:#fff;
-  /* The palette is the design system's Eksempel AS theme, values inlined: importing the CSS package
-     would add a remote dependency and break the offline guarantee. */
-  --s1:#2F5D9E;--s2:#6B3FA0;--s3:#1B2A4A;--s4:#8fb3ae;--s5:#dc2a2a;
+  --palette-ink:             #111418;
+  --palette-surface:         #FFFFFF;
+  --palette-primary:         #2B4C7E;
+  --palette-primary-dark:    #1B3559;
+  --palette-primary-darkest: #0E1C2E;
+  --palette-primary-on-dark: #9CC0E8;
+  --palette-accent:          #B8860B;
+  --palette-accent-light:    #E8D48B;
+  --palette-on-dark:         #F7F5EF;
+}
+:root{
+  --status-negative:          #dc2a2a;
+  --status-negative-bg:       #fdeeee;
+  --status-positive:          #007b5e;
+  --status-positive-bg-25:    #e9f8f4;
+  --status-positive-bg-12:    #f4fbf9;
+  --status-neutral:           #737373;
+}
+:root,
+:root[data-theme="light"]{
+  --ink:        var(--palette-ink);
+  --muted:      #666666;
+  --line:       #ebebeb;
+  --bg:         var(--palette-surface);
+  --panel:      #f8f8f8;
+  --brand:      var(--palette-primary);
+  --on-brand:   var(--palette-surface);
+  --brand-dark: var(--palette-primary-dark);
+  --brand-soft: #e3f0ef;
+  --on-brand-soft: var(--brand-dark);
+  --rule:       #ececec;
+  --series-2:   var(--palette-accent);
+  --cat-1: #2F5D9E;
+  --cat-2: #1a8f66;
+  --cat-3: #1B2A4A;
+  --cat-4: #5f8f89;
+  --cat-5: #dc2a2a;
+  --ok:    var(--status-positive);
+  --ok-bg: var(--status-positive-bg-12);
+  --bad:   var(--status-negative);
+  --bad-ink: #d42626;
+  --bad-soft:  #fdeeee;
+  --bad-bg:var(--palette-surface);
+}
+:root[data-theme="dark"]{
+  --ink:        var(--palette-on-dark);
+  --muted:      #DCE6F5;
+  --line:       #1B2A4A;
+  --bg:         var(--palette-primary-dark);
+  --panel:      var(--palette-primary-darkest);
+  --brand:      var(--palette-primary-on-dark);
+  --on-brand:   var(--bg);
+  --brand-dark: var(--palette-primary-darkest);
+  --brand-soft: #123a44;
+  --on-brand-soft: var(--palette-on-dark);
+  --rule:       #1d4a52;
+  --series-2:   var(--palette-accent-light);
+  --cat-1: #7FD4C8;
+  --cat-2: #8FD98A;
+  --cat-3: #E8D48B;
+  --cat-4: #B9C7E8;
+  --cat-5: #FF8A8A;
+  --ok:    #66ccb0;
+  --ok-bg: #12332c;
+  --bad:   #ff7a7a;
+  --bad-ink: var(--bad);
+  --bad-soft: #4a2026;
+  --bad-bg:#4a2026;
+}
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --ink: var(--palette-on-dark);
+    --muted: #DCE6F5;
+    --line: #1B2A4A;
+    --bg: var(--palette-primary-dark);
+    --panel: var(--palette-primary-darkest);
+    --brand: var(--palette-primary-on-dark);
+    --on-brand: var(--bg);
+    --brand-dark: var(--palette-primary-darkest);
+    --brand-soft: #123a44;
+    --on-brand-soft: var(--palette-on-dark);
+    --rule: #1d4a52;
+    --series-2: var(--palette-accent-light);
+    --cat-1: #7FD4C8;
+    --cat-2: #8FD98A;
+    --cat-3: #E8D48B;
+    --cat-4: #B9C7E8;
+    --cat-5: #FF8A8A;
+    --ok: #66ccb0;
+    --ok-bg: #12332c;
+    --bad: #ff7a7a;
+    --bad-ink: var(--bad);
+    --bad-soft: #4a2026;
+    --bad-bg: #4a2026;
+  }
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -99,6 +197,15 @@ main{max-width:78rem;margin:0 auto;padding:1.5rem}
 .rows .sw{flex:none;width:.875rem;height:.875rem;border-radius:.1875rem}
 .rows .v,.rows .p{text-align:right;font-variant-numeric:tabular-nums}
 .rows .p{color:var(--muted)}
+.x{margin:1.5rem 0 0;padding:1rem 1.25rem;border:1px solid var(--rule);border-radius:.5rem}
+.x h2{margin:0 0 .25rem;font-size:1rem}
+.scroll{overflow-x:auto}
+.x table{border-collapse:collapse;width:100%;font-size:.875rem}
+.x th,.x td{padding:.375rem .5rem;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+.x thead th:nth-child(1),.x tbody th{text-align:left}
+.x thead th{font-weight:600}
+.x td.t,.x tfoot th,.x tfoot td{font-weight:600;background:var(--rule)}
+.x td.h{color:var(--muted)}
 .rows .hidden{color:var(--muted);font-style:italic}
 .supp{padding:1rem 0 0;color:var(--muted);font-size:.875rem;line-height:1.5}
 .supp strong{color:var(--ink);display:block}
@@ -109,20 +216,29 @@ footer a{color:var(--brand)}
   .rows li{grid-template-columns:1fr auto;gap:.25rem .75rem}
   .rows .p{grid-column:2;text-align:right}
 }
+/* Dark, for a reader whose operating system asks for it and who has chosen no theme of
+   their own. The declarations above come from theme-dark.css; the only place this page picks
+   a slot by its LIGHT role is the header band, which fills with --brand-dark and writes
+   --on-brand on it: two darks in dark, 1.39:1. It uses the pair the theme defines for a
+   brand fill. */
+@media screen and (prefers-color-scheme: dark){
+  :root:not([data-theme]) header{background:var(--brand);color:var(--on-brand)}
+  :root:not([data-theme]) .controls select{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23DCE6F5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+}
 @media print{
   body{background:#fff}
   header{background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
   .controls,.note{display:none}
   .q{break-inside:avoid;border:0;border-bottom:1px solid var(--line);border-radius:0}
 }
+.tun-credit{font-size:inherit;font-weight:400;white-space:normal}.tun-credit a{color:inherit;text-decoration:underline;text-underline-offset:.15em}.tun-credit a:hover{color:inherit;text-decoration-thickness:.125em}.tun-credit a:focus-visible{outline:.125rem solid currentColor;outline-offset:.25rem}
 </style>
-<style>.tun-credit{font-size:inherit;font-weight:400;white-space:normal}.tun-credit a{color:inherit;text-decoration:underline;text-underline-offset:.15em}.tun-credit a:hover{color:inherit;text-decoration-thickness:.125em}.tun-credit a:focus-visible{outline:.125rem solid currentColor;outline-offset:.25rem}</style>
 </head>
 <body>
 <script>document.documentElement.className += " js"</script>
 <header><div class="in">
-  <h1>Working environment 2026 — synthetic example</h1>
-  <p class="sub">Synthetic example data (survey.csv) — 293 answers to 5 questions</p>
+  <h1>Arbeidsmiljø 2026 — syntetisk eksempel</h1>
+  <p class="sub">Syntetisk eksempeldata (survey.csv) — 293 answers to 5 questions</p>
 </div></header>
 <main>
   <form class="controls" id="controls" hidden>
@@ -132,17 +248,19 @@ footer a{color:var(--brand)}
   </form>
   <ul class="kpis" id="kpis"><li><span class="label">Answers in selection</span><span class="num">293</span></li><li><span class="label">Questions</span><span class="num">5</span></li><li><span class="label">Hidden cells</span><span class="num">0</span></li></ul>
   <p class="note">The numbers are counts of answers, not a share of everyone who was asked. A question with fewer than 5 answers is not shown, and an option with fewer than 5 answers shows no count. Free text is not in this file.</p>
-  <div id="questions"><section class="q"><h2>Jeg får svar på det jeg spør om</h2><p class="n">60 answered</p><div class="stack" aria-hidden="true"><span style="width:23.33%;background:var(--s1)"></span><span style="width:23.33%;background:var(--s2)"></span><span style="width:16.67%;background:var(--s3)"></span><span style="width:16.67%;background:var(--s4)"></span><span style="width:20.00%;background:var(--s5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--s1)"></i>3 Verken</span><span class="v">14</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s2)"></i>4 Enig</span><span class="v">14</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s3)"></i>5 Helt enig</span><span class="v">10</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s4)"></i>1 Helt uenig</span><span class="v">10</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s5)"></i>2 Uenig</span><span class="v">12</span><span class="p">0.2 %</span></li></ul></section>
-  <section class="q"><h2>Verktøyene jeg bruker passer til oppgaven</h2><p class="n">60 answered</p><div class="stack" aria-hidden="true"><span style="width:23.33%;background:var(--s1)"></span><span style="width:23.33%;background:var(--s2)"></span><span style="width:16.67%;background:var(--s3)"></span><span style="width:16.67%;background:var(--s4)"></span><span style="width:20.00%;background:var(--s5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--s1)"></i>4 Enig</span><span class="v">14</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s2)"></i>5 Helt enig</span><span class="v">14</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s3)"></i>1 Helt uenig</span><span class="v">10</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s4)"></i>2 Uenig</span><span class="v">10</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s5)"></i>3 Verken</span><span class="v">12</span><span class="p">0.2 %</span></li></ul></section>
-  <section class="q"><h2>Jeg vet hvem som bestemmer i saken</h2><p class="n">60 answered</p><div class="stack" aria-hidden="true"><span style="width:23.33%;background:var(--s1)"></span><span style="width:23.33%;background:var(--s2)"></span><span style="width:16.67%;background:var(--s3)"></span><span style="width:16.67%;background:var(--s4)"></span><span style="width:20.00%;background:var(--s5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--s1)"></i>5 Helt enig</span><span class="v">14</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s2)"></i>1 Helt uenig</span><span class="v">14</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s3)"></i>2 Uenig</span><span class="v">10</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s4)"></i>3 Verken</span><span class="v">10</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s5)"></i>4 Enig</span><span class="v">12</span><span class="p">0.2 %</span></li></ul></section>
-  <section class="q"><h2>Overgangen mellom enheter er smidig</h2><p class="n">60 answered</p><div class="stack" aria-hidden="true"><span style="width:23.33%;background:var(--s1)"></span><span style="width:23.33%;background:var(--s2)"></span><span style="width:16.67%;background:var(--s3)"></span><span style="width:16.67%;background:var(--s4)"></span><span style="width:20.00%;background:var(--s5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--s1)"></i>1 Helt uenig</span><span class="v">14</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s2)"></i>2 Uenig</span><span class="v">14</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s3)"></i>3 Verken</span><span class="v">10</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s4)"></i>4 Enig</span><span class="v">10</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s5)"></i>5 Helt enig</span><span class="v">12</span><span class="p">0.2 %</span></li></ul></section>
-  <section class="q"><h2>Jeg bruker under en time på å finne tallene</h2><p class="n">53 answered</p><div class="stack" aria-hidden="true"><span style="width:24.53%;background:var(--s1)"></span><span style="width:22.64%;background:var(--s2)"></span><span style="width:15.09%;background:var(--s3)"></span><span style="width:16.98%;background:var(--s4)"></span><span style="width:20.75%;background:var(--s5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--s1)"></i>2 Uenig</span><span class="v">13</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s2)"></i>3 Verken</span><span class="v">12</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s3)"></i>4 Enig</span><span class="v">8</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s4)"></i>5 Helt enig</span><span class="v">9</span><span class="p">0.2 %</span></li><li><span class="k"><i class="sw" style="background:var(--s5)"></i>1 Helt uenig</span><span class="v">11</span><span class="p">0.2 %</span></li></ul></section></div>
+  <div id="questions"><section class="q"><h2>Jeg får svar på det jeg spør om</h2><p class="n">60 answered</p><div class="stack" aria-hidden="true"><span style="width:23.33%;background:var(--cat-1)"></span><span style="width:23.33%;background:var(--cat-2)"></span><span style="width:16.67%;background:var(--cat-3)"></span><span style="width:16.67%;background:var(--cat-4)"></span><span style="width:20.00%;background:var(--cat-5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--cat-1)"></i>3 Verken</span><span class="v">14</span><span class="p">23.3 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-2)"></i>4 Enig</span><span class="v">14</span><span class="p">23.3 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-3)"></i>5 Helt enig</span><span class="v">10</span><span class="p">16.7 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-4)"></i>1 Helt uenig</span><span class="v">10</span><span class="p">16.7 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-5)"></i>2 Uenig</span><span class="v">12</span><span class="p">20.0 %</span></li></ul></section>
+  <section class="q"><h2>Verktøyene jeg bruker passer til oppgaven</h2><p class="n">60 answered</p><div class="stack" aria-hidden="true"><span style="width:23.33%;background:var(--cat-1)"></span><span style="width:23.33%;background:var(--cat-2)"></span><span style="width:16.67%;background:var(--cat-3)"></span><span style="width:16.67%;background:var(--cat-4)"></span><span style="width:20.00%;background:var(--cat-5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--cat-1)"></i>4 Enig</span><span class="v">14</span><span class="p">23.3 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-2)"></i>5 Helt enig</span><span class="v">14</span><span class="p">23.3 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-3)"></i>1 Helt uenig</span><span class="v">10</span><span class="p">16.7 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-4)"></i>2 Uenig</span><span class="v">10</span><span class="p">16.7 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-5)"></i>3 Verken</span><span class="v">12</span><span class="p">20.0 %</span></li></ul></section>
+  <section class="q"><h2>Jeg vet hvem som bestemmer i saken</h2><p class="n">60 answered</p><div class="stack" aria-hidden="true"><span style="width:23.33%;background:var(--cat-1)"></span><span style="width:23.33%;background:var(--cat-2)"></span><span style="width:16.67%;background:var(--cat-3)"></span><span style="width:16.67%;background:var(--cat-4)"></span><span style="width:20.00%;background:var(--cat-5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--cat-1)"></i>5 Helt enig</span><span class="v">14</span><span class="p">23.3 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-2)"></i>1 Helt uenig</span><span class="v">14</span><span class="p">23.3 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-3)"></i>2 Uenig</span><span class="v">10</span><span class="p">16.7 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-4)"></i>3 Verken</span><span class="v">10</span><span class="p">16.7 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-5)"></i>4 Enig</span><span class="v">12</span><span class="p">20.0 %</span></li></ul></section>
+  <section class="q"><h2>Overgangen mellom enheter er smidig</h2><p class="n">60 answered</p><div class="stack" aria-hidden="true"><span style="width:23.33%;background:var(--cat-1)"></span><span style="width:23.33%;background:var(--cat-2)"></span><span style="width:16.67%;background:var(--cat-3)"></span><span style="width:16.67%;background:var(--cat-4)"></span><span style="width:20.00%;background:var(--cat-5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--cat-1)"></i>1 Helt uenig</span><span class="v">14</span><span class="p">23.3 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-2)"></i>2 Uenig</span><span class="v">14</span><span class="p">23.3 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-3)"></i>3 Verken</span><span class="v">10</span><span class="p">16.7 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-4)"></i>4 Enig</span><span class="v">10</span><span class="p">16.7 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-5)"></i>5 Helt enig</span><span class="v">12</span><span class="p">20.0 %</span></li></ul></section>
+  <section class="q"><h2>Jeg bruker under en time på å finne tallene</h2><p class="n">53 answered</p><div class="stack" aria-hidden="true"><span style="width:24.53%;background:var(--cat-1)"></span><span style="width:22.64%;background:var(--cat-2)"></span><span style="width:15.09%;background:var(--cat-3)"></span><span style="width:16.98%;background:var(--cat-4)"></span><span style="width:20.75%;background:var(--cat-5)"></span></div><ul class="rows"><li><span class="k"><i class="sw" style="background:var(--cat-1)"></i>2 Uenig</span><span class="v">13</span><span class="p">24.5 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-2)"></i>3 Verken</span><span class="v">12</span><span class="p">22.6 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-3)"></i>4 Enig</span><span class="v">8</span><span class="p">15.1 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-4)"></i>5 Helt enig</span><span class="v">9</span><span class="p">17.0 %</span></li><li><span class="k"><i class="sw" style="background:var(--cat-5)"></i>1 Helt uenig</span><span class="v">11</span><span class="p">20.8 %</span></li></ul></section></div>
+  <p class="note" id="cross-note" hidden>The cross-tabs cover the whole selection. Reset the filter to see them again.</p>
+  <div id="cross"></div>
 </main>
 <footer>
   Standalone file: the numbers are inside it, and nothing is fetched when it opens &middot; No server, no sign-in &middot;
-  Built 2026-10-24 03:24 from Synthetic example data (survey.csv) — 293 answers to 5 questions.<br>
+  Built 2026-10-24 10:00 from Syntetisk eksempeldata (survey.csv) — 293 answers to 5 questions.<span class="tun-credit"> <a href="https://tun.community" rel="noreferrer">Tún · tun.community</a></span><br>
   <noscript>The numbers are counts of answers, not a share of everyone who was asked. A question with fewer than 5 answers is not shown, and an option with fewer than 5 answers shows no count. Free text is not in this file.</noscript>
-<span class="tun-credit"> <a href="https://tun.community" rel="noreferrer">Tún · tun.community</a></span></footer>
+</footer>
 <script>
 /* Survey state: the answers, long format, one entry per answer given. */
 var SURVEY = {"questions":["Jeg får svar på det jeg spør om","Verktøyene jeg bruker passer til oppgaven","Jeg vet hvem som bestemmer i saken","Overgangen mellom enheter er smidig","Jeg bruker under en time på å finne tallene"],"options":[["3 Verken","4 Enig","5 Helt enig","1 Helt uenig","2 Uenig"],["4 Enig","5 Helt enig","1 Helt uenig","2 Uenig","3 Verken"],["5 Helt enig","1 Helt uenig","2 Uenig","3 Verken","4 Enig"],["1 Helt uenig","2 Uenig","3 Verken","4 Enig","5 Helt enig"],["2 Uenig","3 Verken","4 Enig","5 Helt enig","1 Helt uenig"]],"segments":["Enhet","Rolle"],"segmentValues":[["Bemanning","Innhold","Teknisk","Erfaring"],["Leder","Fag","Stotte"]],"rows":[[0,0,0,0],[0,1,0,0],[0,2,0,0],[0,3,0,0],[0,4,0,1],[0,0,0,1],[0,1,0,1],[0,2,0,1],[0,3,0,1],[0,4,0,1],[0,4,0,2],[0,0,0,2],[0,1,0,2],[0,4,1,0],[0,0,1,0],[0,1,1,0],[0,2,1,0],[0,3,1,0],[0,3,1,1],[0,4,1,1],[0,0,1,1],[0,1,1,1],[0,2,1,1],[0,3,1,1],[0,4,1,1],[0,0,1,1],[0,1,1,1],[0,3,1,2],[0,4,1,2],[0,0,1,2],[0,1,1,2],[0,1,2,0],[0,2,2,0],[0,3,2,0],[0,0,2,1],[0,1,2,1],[0,2,2,1],[0,3,2,1],[0,4,2,1],[0,0,2,1],[0,1,2,1],[0,2,2,1],[0,0,2,2],[0,1,2,2],[0,2,2,2],[0,3,2,2],[0,4,2,2],[0,0,3,0],[0,1,3,0],[0,4,3,1],[0,0,3,1],[0,1,3,1],[0,2,3,1],[0,3,3,1],[0,4,3,1],[0,0,3,1],[0,4,3,2],[0,0,3,2],[0,1,3,2],[0,2,3,2],[1,0,0,0],[1,1,0,0],[1,2,0,0],[1,3,0,0],[1,4,0,1],[1,0,0,1],[1,1,0,1],[1,2,0,1],[1,3,0,1],[1,4,0,1],[1,4,0,2],[1,0,0,2],[1,1,0,2],[1,4,1,0],[1,0,1,0],[1,1,1,0],[1,2,1,0],[1,3,1,0],[1,3,1,1],[1,4,1,1],[1,0,1,1],[1,1,1,1],[1,2,1,1],[1,3,1,1],[1,4,1,1],[1,0,1,1],[1,1,1,1],[1,3,1,2],[1,4,1,2],[1,0,1,2],[1,1,1,2],[1,1,2,0],[1,2,2,0],[1,3,2,0],[1,0,2,1],[1,1,2,1],[1,2,2,1],[1,3,2,1],[1,4,2,1],[1,0,2,1],[1,1,2,1],[1,2,2,1],[1,0,2,2],[1,1,2,2],[1,2,2,2],[1,3,2,2],[1,4,2,2],[1,0,3,0],[1,1,3,0],[1,4,3,1],[1,0,3,1],[1,1,3,1],[1,2,3,1],[1,3,3,1],[1,4,3,1],[1,0,3,1],[1,4,3,2],[1,0,3,2],[1,1,3,2],[1,2,3,2],[2,0,0,0],[2,1,0,0],[2,2,0,0],[2,3,0,0],[2,4,0,1],[2,0,0,1],[2,1,0,1],[2,2,0,1],[2,3,0,1],[2,4,0,1],[2,4,0,2],[2,0,0,2],[2,1,0,2],[2,4,1,0],[2,0,1,0],[2,1,1,0],[2,2,1,0],[2,3,1,0],[2,3,1,1],[2,4,1,1],[2,0,1,1],[2,1,1,1],[2,2,1,1],[2,3,1,1],[2,4,1,1],[2,0,1,1],[2,1,1,1],[2,3,1,2],[2,4,1,2],[2,0,1,2],[2,1,1,2],[2,1,2,0],[2,2,2,0],[2,3,2,0],[2,0,2,1],[2,1,2,1],[2,2,2,1],[2,3,2,1],[2,4,2,1],[2,0,2,1],[2,1,2,1],[2,2,2,1],[2,0,2,2],[2,1,2,2],[2,2,2,2],[2,3,2,2],[2,4,2,2],[2,0,3,0],[2,1,3,0],[2,4,3,1],[2,0,3,1],[2,1,3,1],[2,2,3,1],[2,3,3,1],[2,4,3,1],[2,0,3,1],[2,4,3,2],[2,0,3,2],[2,1,3,2],[2,2,3,2],[3,0,0,0],[3,1,0,0],[3,2,0,0],[3,3,0,0],[3,4,0,1],[3,0,0,1],[3,1,0,1],[3,2,0,1],[3,3,0,1],[3,4,0,1],[3,4,0,2],[3,0,0,2],[3,1,0,2],[3,4,1,0],[3,0,1,0],[3,1,1,0],[3,2,1,0],[3,3,1,0],[3,3,1,1],[3,4,1,1],[3,0,1,1],[3,1,1,1],[3,2,1,1],[3,3,1,1],[3,4,1,1],[3,0,1,1],[3,1,1,1],[3,3,1,2],[3,4,1,2],[3,0,1,2],[3,1,1,2],[3,1,2,0],[3,2,2,0],[3,3,2,0],[3,0,2,1],[3,1,2,1],[3,2,2,1],[3,3,2,1],[3,4,2,1],[3,0,2,1],[3,1,2,1],[3,2,2,1],[3,0,2,2],[3,1,2,2],[3,2,2,2],[3,3,2,2],[3,4,2,2],[3,0,3,0],[3,1,3,0],[3,4,3,1],[3,0,3,1],[3,1,3,1],[3,2,3,1],[3,3,3,1],[3,4,3,1],[3,0,3,1],[3,4,3,2],[3,0,3,2],[3,1,3,2],[3,2,3,2],[4,0,0,0],[4,1,0,0],[4,2,0,0],[4,3,0,0],[4,4,0,1],[4,0,0,1],[4,1,0,1],[4,2,0,1],[4,3,0,1],[4,4,0,1],[4,4,0,2],[4,0,0,2],[4,1,0,2],[4,4,1,0],[4,0,1,0],[4,1,1,0],[4,2,1,0],[4,3,1,0],[4,3,1,1],[4,4,1,1],[4,0,1,1],[4,1,1,1],[4,2,1,1],[4,3,1,1],[4,4,1,1],[4,0,1,1],[4,1,1,1],[4,3,1,2],[4,4,1,2],[4,0,1,2],[4,1,1,2],[4,1,2,0],[4,2,2,0],[4,3,2,0],[4,0,2,1],[4,1,2,1],[4,2,2,1],[4,3,2,1],[4,4,2,1],[4,0,2,1],[4,1,2,1],[4,2,2,1],[4,0,2,2],[4,1,2,2],[4,2,2,2],[4,3,2,2],[4,4,2,2],[4,0,3,0],[4,1,3,0],[4,4,3,1],[4,0,3,1],[4,4,3,2],[4,0,3,2]],"minCell":5};
@@ -200,13 +318,13 @@ var SURVEY = {"questions":["Jeg får svar på det jeg spør om","Verktøyene jeg
     var stack = "";
     for (var o = 0; o < opts.length; o++) {
       if (!res.counts[o]) continue;
-      stack += '<span style="width:' + (res.counts[o] / res.n * 100).toFixed(2) + '%;background:var(--s'
+      stack += '<span style="width:' + (res.counts[o] / res.n * 100).toFixed(2) + '%;background:var(--cat-'
         + ((o % 5) + 1) + ')"></span>';
     }
     for (o = 0; o < opts.length; o++) {
       var c = res.counts[o];
       var shown = c >= 5;
-      html += '<li><span class="k"><i class="sw" style="background:var(--s' + ((o % 5) + 1) + ')"></i>'
+      html += '<li><span class="k"><i class="sw" style="background:var(--cat-' + ((o % 5) + 1) + ')"></i>'
         + esc(opts[o]) + '</span>'
         + '<span class="v">' + (shown ? num.format(c) : '<i class="hidden">Fewer than 5 answers</i>') + '</span>'
         + '<span class="p">' + (shown ? pct(c, res.n) : "") + '</span></li>';
@@ -239,8 +357,20 @@ var SURVEY = {"questions":["Jeg får svar på det jeg spør om","Verktøyene jeg
       + num.format(hidden) + '</span></li>';
   }
 
-  form.addEventListener("change", render);
-  form.addEventListener("reset", function () { setTimeout(render, 0); });
+  /* The cross-tabs are painted by the builder over the whole selection and are not
+     recomputed here: one implementation of that rule is the point. Say so instead of
+     showing a number that no longer matches the filter above it. */
+  var cross = document.getElementById("cross");
+  var crossNote = document.getElementById("cross-note");
+  function crossState() {
+    if (!cross) return;
+    var on = chosen().some(function (v) { return v !== -1; });
+    for (var i = 0; i < cross.children.length; i++) cross.children[i].hidden = on;
+    if (crossNote) crossNote.hidden = !on || !cross.children.length;
+  }
+
+  form.addEventListener("change", function () { render(); crossState(); });
+  form.addEventListener("reset", function () { setTimeout(function () { render(); crossState(); }, 0); });
 })();
 </script>
 </body>

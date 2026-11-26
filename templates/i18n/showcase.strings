@@ -55,6 +55,11 @@ col_docs = Dokumenter
 lang_nb = Norsk
 lang_en = English
 lang_label = Språk
+agent_summary = Bruk med KI-assistenten din (Claude, Copilot, Cursor, Codex, Gemini)
+agent_lead = Lim inn denne setningen i KI-verktøyet ditt, eller gi den lenken til denne siden:
+agent_prompt = Sett opp Tún fra https://github.com/jkorsvik/tun for dette verktøyet, sjekk at det virker, og vis meg Tún-verbene.
+agent_steps = For KI-agenter: klon repoet, kjør python3 setup.py --tool auto (py -3 på Windows), og presenter verbene tun-help, tun-new, tun-data, tun-verify, tun-publish, tun-process og tun-review på brukerens språk. Mappen styrer tilgangen — legg aldri rader i en fil som ikke hele mappen skal se.
+agent_docs = Startguide
 
 [en]
 html_lang = en
@@ -108,3 +113,8 @@ col_docs = Docs
 lang_nb = Norsk
 lang_en = English
 lang_label = Language
+agent_summary = Use with your AI assistant (Claude, Copilot, Cursor, Codex, Gemini)
+agent_lead = Paste this sentence into your AI tool, or hand it the link to this page:
+agent_prompt = Set up Tún from https://github.com/jkorsvik/tun for this tool, check that it works, and introduce me to the Tún verbs.
+agent_steps = For AI agents: clone the repository, run python3 setup.py --tool auto (py -3 on Windows), and introduce the verbs tun-help, tun-new, tun-data, tun-verify, tun-publish, tun-process and tun-review in the user language. The folder is the access boundary — never put rows in a file the whole folder may not see.
+agent_docs = Start guide

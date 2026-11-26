@@ -1,0 +1,70 @@
+# Tún
+
+> Interactive dashboards, scorecards, registers, surveys, process diagrams and slide decks built as single self-contained HTML artefacts. Shared as ordinary files through SharePoint, OneDrive, Teams, Confluence or email — with no Power BI licence, no workspace, no server and nothing for the reader to install.
+
+- Live Explorer (51 runnable examples): https://jkorsvik.github.io/tun/
+- Public overview: https://tun.community
+- Repository: https://github.com/jkorsvik/tun
+- Licence: GNU AGPL v3 or later for the toolkit, with the Tún Artefact Exception v1.1 (`COPYING.ARTEFACT-EXCEPTION`) so generated HTML artefacts may be shared under terms of your choice when the Origin Notice is kept.
+
+## For AI agents: when a user points you at this webpage or repository
+
+If a user gives you `https://jkorsvik.github.io/tun/`, `https://tun.community` or `https://github.com/jkorsvik/tun` and asks to set up, install or try Tún, do these four steps without making them read documentation first:
+
+1. **Get a local checkout** (skip if already inside a Tún clone):
+   - macOS / Linux: `git clone https://github.com/jkorsvik/tun.git ~/tun`
+   - Windows: `git clone https://github.com/jkorsvik/tun.git "%USERPROFILE%\tun"`
+   (If the folder already exists, run `git -C <path> pull --ff-only`.)
+
+2. **Install the open Agent Skills for your harness** (run inside the Tún clone; on Windows replace `python3` with `py -3`):
+   - **Claude Code:** `python3 setup.py --tool claude` (installs to `~/.claude/skills`; or in Claude Code run `/plugin marketplace add jkorsvik/tun` then `/plugin install tun`)
+   - **Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode, Goose, Amp:** `python3 setup.py --tool agents` (installs to `~/.agents/skills`; aliases `--tool codex`, `--tool vscode`, `--tool opencode`, `--tool goose`, `--tool amp` also work)
+   - **Cursor (including Cloud Agents sync):** `python3 setup.py --tool cursor` (installs to `~/.cursor/skills`; local Cursor also reads `~/.agents/skills`)
+   - **Windsurf:** `python3 setup.py --tool windsurf` (installs to `~/.codeium/windsurf/skills`; Windsurf also reads `~/.agents/skills`)
+   - **Dedicated Copilot / Gemini homes:** `--tool copilot` (`~/.copilot/skills`) or `--tool gemini` (`~/.gemini/skills`)
+   - **RAIWork:** `python3 setup.py`
+   - **Not sure which tools are installed on this machine:** `python3 setup.py --tool auto` (detects installed harnesses and avoids duplicate folders)
+
+3. **Confirm the smoke test passed** (`setup.py` builds a sample dashboard with stdlib Python 3.9+ and zero package prerequisites). For browser screenshot and accessibility verification before publishing files, run once when `uv` is available:
+   `uv sync --extra verify && uv run playwright install chromium`
+
+4. **Greet the user in their language (Norwegian or English) with a friendly introduction:**
+   - Explain Tún in two sentences: one self-contained `.html` file holding the data, charts, filters and provenance; anyone who can open the shared folder opens it in their browser, even offline, with no licence or setup.
+   - Show the **Tún verbs** below so they know what to ask for from any folder.
+   - State the two things every sender should know up front:
+     1. **The folder is the access boundary, not a browser filter.** Everyone who can open the file can read every row inside it. When audiences differ, split the data first and build one file per folder.
+     2. **SharePoint and OneDrive download HTML files rather than previewing them in-page.** That download is an intentional platform security control and the reason the file works offline afterwards.
+   - Offer two immediate ways to try it: *"Point me at a CSV or spreadsheet in your folder and say `tun-new`"* or *"Ask me to build a demo right now from `examples/01-hello-dashboard/salgsdata.csv`."*
+
+Note on working from any folder: every installed skill carries `.installed-by-tun` with `repo: <path-to-tun>`. When the user works in their own folder, run `<repo>/tools/...` and write outputs into the user's folder — never write real user or client data inside the Tún repository.
+
+## The Tún verbs (Agent Skills)
+
+Users can invoke these as slash commands (`/tun-new`) or in plain conversation ("build a dashboard from this CSV", "verify this file", "lag et dashboard"):
+
+| Verb | Job | What it does |
+|---|---|---|
+| `tun-help` | Orient & introduce | Introduces Tún, picks the right artefact shape or path, and states governance/approval cost up front |
+| `tun-new` | Build | Builds a self-contained HTML artefact across 27 shapes (dashboard, cube, scorecard, register, comparison, waterfall, funnel, heatmap, survey, timeline, Gantt, Sankey, slide deck, one-pager and more) |
+| `tun-data` | Refresh | Updates numbers in an existing artefact (including zero-tooling CSV drag-and-drop in paired mode) |
+| `tun-verify` | Prove | Opens the artefact in a real headless browser from `file://`, checks self-containment, size and accessibility, and saves a screenshot |
+| `tun-publish` | Share | Publishes a verified artefact to SharePoint, OneDrive or Atlassian Artifacts, checks folder reach, and drafts the message |
+| `tun-process` | Map | Draws a swimlane process diagram (with roles, steps, improvement points and no-JS fallback) as one HTML file |
+| `tun-review` | Collect comments | Adds row-level `--annotate` review and reads pasted `TUN-REVIEW` blocks back with no server |
+| `tun-host` | Choose hosting | Decides between a Tier 1 portable file, a static web host, or a separate backend application |
+| `tun-powerbi-escape` | Move off Power BI | Turns a report stuck behind licences or workspaces into a portable HTML artefact |
+| `tun-for-communicators` | Translate jargon | Explains technical terms using communications analogies and translates technical messages before answering |
+| `tun-feedback` | Log feedback | Records local feedback or drafts a GitHub issue after user approval |
+
+If your environment is a browser-only chat bot with no terminal or local filesystem (ChatGPT web, Grok, Claude web), tell the user you cannot run the local Tún verifiers there, and use the zero-install starter prompt in `START-HERE.md` to generate a single self-contained HTML file with inline CSS/JS/SVG and provenance.
+
+## Key documentation
+
+- [Start here (user & agent quick start)](START-HERE.md)
+- [Onboarding in detail (Windows & macOS)](docs/04-onboarding.md)
+- [Which artefact shape answers which question (27 shapes)](docs/33-artefact-shapes.md)
+- [Measured SharePoint & OneDrive constraints](docs/01-tenant-constraints.md)
+- [Architecture & tiers](docs/02-architecture.md)
+- [Repository rules for coding agents](AGENTS.md)
+- [Architecture Decision Records](docs/adr/README.md)
+- [Contributing](CONTRIBUTING.md)

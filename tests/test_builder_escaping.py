@@ -70,10 +70,10 @@ def build(builder: pathlib.Path, data: pathlib.Path, out: pathlib.Path,
 # instead (this test did, to `origin/main`) dies the day the fix merges: the mutant then
 # carries the fix too and the control can never fail again.
 MUTATIONS = (
-    ("json.dumps(value, ensure_ascii=False)", "str(value)"),
+    ("as_script_json(value)", "str(value)"),
     ("html.escape(args.title)", "str(args.title)"),
     ("html.escape(source_name)", "str(source_name)"),
-    ('"DATA_META.source || " + json.dumps(source_name, ensure_ascii=False)',
+    ('"DATA_META.source || " + as_script_json(source_name)',
      '"DATA_META.source || \\"" + source_name + "\\""'),
 )
 
@@ -117,6 +117,7 @@ def probe(page, path: pathlib.Path) -> dict:
     out = page.evaluate("""() => ({
         h1: document.querySelector('h1') ? document.querySelector('h1').textContent : null,
         injected: !!document.querySelector('h1 b, h1 img'),
+        xss: window.__xss || 0,
         meta: (typeof META !== 'undefined') ? META.dimension : null,
         headers: [...document.querySelectorAll('#tbl thead th')].map(e => e.dataset.col),
         chart: !!document.querySelector('#chart1 svg text, #chart1 svg rect'),
@@ -129,6 +130,7 @@ def probe(page, path: pathlib.Path) -> dict:
 def assertions(name: str, got: dict) -> None:
     check(got["h1"] == TITLE, f"{name}: the heading reads the title back", repr(got["h1"])[:120])
     check(not got["injected"], f"{name}: nothing in the title became an element")
+    check(got["xss"] == 0, f"{name}: </script> cell did not break out of script", repr(got["xss"]))
     check(got["meta"] == COLUMN, f"{name}: the column name survived its JavaScript string",
           repr(got["meta"]))
     check(COLUMN in got["headers"], f"{name}: the table header shows the column name",
@@ -145,17 +147,58 @@ def main() -> int:
         print("    install: uv sync --extra verify && uv run playwright install chromium")
         return 1
 
+    breakout = "</script><script>window.__xss=(window.__xss||0)+1;</script>"
+
     with tempfile.TemporaryDirectory() as td:
         tmp = pathlib.Path(td)
         data = tmp / "nasty.csv"
-        data.write_text(f'{COLUMN},Maaned,Belop\nA,2026-01,10\nB,2026-02,20\n',
-                        encoding="utf-8")
+        data.write_text(
+            f'{COLUMN},Maaned,Belop\n'
+            f'"{breakout}",2026-01,10\n'
+            f'B,2026-02,20\n',
+            encoding="utf-8",
+        )
         new_out = tmp / "new.html"
         r = build(BUILDER, data, new_out)
         check(new_out.is_file(), "the hostile build succeeds", (r.stderr or r.stdout)[-200:])
         if not new_out.is_file():
             print(f"\n{checks - failed}/{checks} checks passed")
             return 1
+
+        # Cube and survey builders inline JSON in <script> too; verify </script> stays inert.
+        cube_csv = tmp / "cube.csv"
+        cube_csv.write_text(
+            f'Region,Produkt,Belop\n"{breakout}",A,100\nBergen,B,200\n',
+            encoding="utf-8",
+        )
+        cube_out = tmp / "cube.html"
+        rc_cube = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "build_cube_dashboard.py"),
+             "--data", str(cube_csv), "--title", "Hostile Cube",
+             "--dims", "Region,Produkt", "--measures", "Belop",
+             "--source", SOURCE, "--requested-by", REQUESTED_BY, "--out", str(cube_out)],
+            capture_output=True, text=True, cwd=ROOT, timeout=120,
+        )
+        check(rc_cube.returncode == 0 and cube_out.is_file(),
+              "cube: hostile </script> build succeeds", (rc_cube.stderr or rc_cube.stdout)[-200:])
+
+        survey_csv = tmp / "survey.csv"
+        survey_csv.write_text(
+            'Sporsmal,Svar,Enhet\n'
+            + (f'Q1,5,"{breakout}"\n' * 6)
+            + ('Q1,4,Bergen\n' * 6),
+            encoding="utf-8",
+        )
+        survey_out = tmp / "survey.html"
+        rc_survey = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "build_survey_dashboard.py"),
+             "--data", str(survey_csv), "--title", "Hostile Survey",
+             "--segments", "Enhet",
+             "--source", SOURCE, "--requested-by", REQUESTED_BY, "--out", str(survey_out)],
+            capture_output=True, text=True, cwd=ROOT, timeout=120,
+        )
+        check(rc_survey.returncode == 0 and survey_out.is_file(),
+              "survey: hostile </script> build succeeds", (rc_survey.stderr or rc_survey.stdout)[-200:])
 
         tree, mutant, applied = mutated_builder(tmp)
         old_out = tmp / "mutant.html"
@@ -170,6 +213,19 @@ def main() -> int:
             page = browser.new_page()
             assertions("current", probe(page, new_out))
             page.close()
+            for label, target in (("cube", cube_out), ("survey", survey_out)):
+                if not target.is_file():
+                    continue
+                page = browser.new_page()
+                errs: list[str] = []
+                page.on("pageerror", lambda e: errs.append(str(e)))
+                page.goto(target.resolve().as_uri())
+                page.wait_for_timeout(300)
+                xss = page.evaluate("() => window.__xss || 0")
+                check(xss == 0 and not errs,
+                      f"{label}: </script> cell stays inside JSON with no page error",
+                      f"xss={xss} errors={errs[:2]}")
+                page.close()
             if mutant.is_file() and old_out.is_file():
                 page = browser.new_page()
                 was = probe(page, old_out)

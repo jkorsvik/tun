@@ -1,6 +1,6 @@
 ---
 name: tun-help
-description: Figure out which dashboard skill fits a situation, and what it will cost in approvals and effort. Use when someone wants to share data interactively but does not know where to start, asks whether this can replace a Power BI report, or asks what is possible with dashboards in SharePoint, OneDrive, Confluence or Atlassian Artifacts.
+description: Introduce Tún, show its verbs, and figure out which skill or artefact shape fits a situation and what it costs in approvals and effort. Use when someone is new to Tún, asks what Tún can do or which verbs exist, wants to share data interactively without knowing where to start, asks whether this can replace a Power BI report, or asks what is possible in SharePoint, OneDrive, Confluence or Atlassian Artifacts.
 ---
 
 # Which dashboard path fits?
@@ -8,8 +8,35 @@ description: Figure out which dashboard skill fits a situation, and what it will
 **Tier and cost, for the first reply:** none of its own. It names the skill that fits, and
 that skill's first reply states the cost before any work starts.
 
-Route the user. Ask as few questions as possible and answer in plain language. Never
-make someone read the architecture doc to get started.
+Route the user. Ask as few questions as possible, match the user's language (Norwegian or
+English), and answer in plain words. Never make someone read the architecture doc to get
+started.
+
+## When someone is new ("what is Tún / introduce me / what verbs do I have?")
+
+Give a short, warm introduction in their language:
+
+1. **The idea in two sentences:** Tún turns a CSV, spreadsheet or query extract into **one
+   self-contained HTML file** with interactive charts, filters, sortable tables and
+   provenance. Drop it in SharePoint, OneDrive or Teams (or attach it to an email) — anyone
+   who can open the folder opens it in their browser, offline too, with no Power BI licence,
+   no workspace and nothing to install.
+2. **The verbs you can invoke from any folder** (as `/tun-...` or in plain words):
+   - **`tun-new`** — *build* a dashboard, scorecard, register, survey board, timeline, slide deck or any of the 27 shapes from a file
+   - **`tun-data`** — *refresh* the numbers in an existing artefact (or show the no-tooling drag-and-drop refresh)
+   - **`tun-verify`** — *prove* a file in a real browser and inspect its screenshot before sharing
+   - **`tun-publish`** — *share* via SharePoint, OneDrive or Atlassian Artifacts and draft the message
+   - **`tun-process`** — *map* how work flows across people or teams as a swimlane HTML file
+   - **`tun-review`** — *collect & read back* row-level comments from recipients with no server
+   - **`tun-host`** — *decide* between a portable file, a static web host, or a real backend
+   - **`tun-powerbi-escape`** — *move* a report stuck behind licences into a portable file
+   - **`tun-for-communicators`** — *translate* technical terms into plain communications language
+   - **`tun-feedback`** — *log* what worked or broke locally, or prepare a GitHub issue
+3. **The one rule to know up front:** the **folder** is the access control, not a browser
+   filter. Everyone who can open the file can read every row inside it; when audiences differ,
+   Tún splits the data first and builds one file per folder.
+4. **Offer an immediate next step:** *"Point me at a CSV or Excel file, or ask me to build a
+   quick demo from the built-in example data (`examples/01-hello-dashboard/salgsdata.csv`)."*
 
 ## The one question that comes first
 

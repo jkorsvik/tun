@@ -166,3 +166,6 @@ even in a comment. Row 25 in
 [`docs/01-tenant-constraints.md`](../../docs/01-tenant-constraints.md): a text scan at the
 tenant disables all script execution in the file if those letters appear anywhere in it.
 Say "the sidecar file" or "the script element" instead.
+
+Need a standalone prompt for a colleague using plain chat with no installed skills? Hand
+over [`quick-prompt.md`](quick-prompt.md) in this folder.

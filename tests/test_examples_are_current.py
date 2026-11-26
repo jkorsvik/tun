@@ -132,7 +132,13 @@ def run(root: pathlib.Path, quiet: bool = False) -> int:
             # A quoted title is one argument. Splitting on whitespace turns
             # --title "Henvendelser per arsak" into four and argparse refuses it.
             words = shlex.split(command)
-            inputs = [t for t in words if t.endswith((".csv", ".json")) and not t.startswith("-")]
+            prose_flags = {"--source", "--title", "--requested-by",
+                           "--before-label", "--after-label", "--target-note"}
+            inputs = [
+                t for i, t in enumerate(words)
+                if t.endswith((".csv", ".json")) and not t.startswith("-")
+                and (i == 0 or words[i - 1] not in prose_flags)
+            ]
             for out_rel in outs_of(command):
                 if not tracked(root, out_rel):
                     skipped.append((folder.name, f"{out_rel} is not committed"))

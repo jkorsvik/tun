@@ -47,10 +47,13 @@ sys.path.insert(0, str(HERE))
 
 import build_stamp  # noqa: E402
 import tun_brand  # noqa: E402
+from tun_core import as_script_json  # noqa: E402
 import i18n  # noqa: E402
 
 TEMPLATE = ROOT / "templates" / "showcase.html"
 STRINGS = "showcase"
+# Internal helpers shared by builders, not artefact builders a reader can invoke.
+HELPER_MODULES = frozenset({"build_size.py", "build_stamp.py"})
 
 HEADING = re.compile(r"^#\s+(.+?)\s*$", re.M)
 BASH = re.compile(r"```(?:bash|sh|console)\n(.*?)```", re.S)
@@ -290,7 +293,9 @@ def main(argv: list[str] | None = None) -> int:
             f'<h2>{html.escape(ex["title"])}</h2>'
             f'<p>{html.escape(ex["purpose"])}</p>{command}</div></li>')
 
-    builders = len(list((ROOT / "tools").glob("build_*.py")))
+    builder_paths = [p for p in (ROOT / "tools").glob("build_*.py")
+                     if p.is_file() and p.name not in HELPER_MODULES]
+    builders = len(builder_paths)
     suites = len(list((ROOT / "tests").glob("test_*.py")))
     values = {"chip_examples": len(examples), "chip_builders": builders,
               "chip_with_command": len([e for e in examples if e["command"]]),
@@ -305,12 +310,12 @@ def main(argv: list[str] | None = None) -> int:
         return (f'<div><h3 data-i18n="{key}">{html.escape(strings[key])}</h3>'
                 f"<ul>{items}</ul></div>")
 
-    def stems(glob: str, trim: str) -> list[str]:
+    def stems(glob: str, trim: str, exclude: frozenset[str] = frozenset()) -> list[str]:
         return sorted(p.stem.replace(trim, "").replace("_", " ")
-                      for p in ROOT.glob(glob) if p.is_file())
+                      for p in ROOT.glob(glob) if p.is_file() and p.name not in exclude)
 
     things = "".join([
-        column("col_builders", stems("tools/build_*.py", "build_")),
+        column("col_builders", stems("tools/build_*.py", "build_", HELPER_MODULES)),
         column("col_skills", sorted(p.parent.name for p in (ROOT / "skills").rglob("SKILL.md"))),
         column("col_suites", stems("tests/test_*.py", "test_")),
         column("col_docs", stems("docs/*.md", "")),
@@ -318,15 +323,15 @@ def main(argv: list[str] | None = None) -> int:
 
     newest = max(with_page, key=lambda e: e["page"].stat().st_mtime)["page"]
     page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), strings)
-            .replace("{{LANG_JSON}}", json.dumps(tables, ensure_ascii=False))
-            .replace("{{START_LANG}}", json.dumps(args.start_lang))
+            .replace("{{LANG_JSON}}", as_script_json(tables))
+            .replace("{{START_LANG}}", as_script_json(args.start_lang))
             .replace("{{TITLE}}", html.escape(args.title))
             .replace("{{CHIPS}}", chips)
             .replace("{{TECH_STATS}}", tech_stats)
             .replace("{{THINGS}}", things)
             .replace("{{CARDS}}", "\n".join(cards))
-            .replace("{{COUNT_ONE_JS}}", json.dumps(strings["count_one"]))
-            .replace("{{COUNT_MANY_JS}}", json.dumps(strings["count_many"]))
+            .replace("{{COUNT_ONE_JS}}", as_script_json(strings["count_one"]))
+            .replace("{{COUNT_MANY_JS}}", as_script_json(strings["count_many"]))
             .replace("{{SOURCE_DESCRIPTION}}", html.escape(args.source))
             .replace("{{EXTRACT_TIMESTAMP}}", build_stamp.from_mtime(newest, "%Y-%m-%d %H:%M", aware=False))
             .replace("{{BUILD_TIMESTAMP}}", build_stamp.naive())
