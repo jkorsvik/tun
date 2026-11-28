@@ -27,7 +27,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import html
-import json
 import pathlib
 import re
 import sys
@@ -42,7 +41,7 @@ import review_layer  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
 from tun_tokens import strip_css_comments  # noqa: E402
-from tun_core import NOT_STATED, die  # noqa: E402
+from tun_core import NOT_STATED, as_script_json, die  # noqa: E402
 
 TEMPLATE = pathlib.Path(__file__).resolve().parents[1] / "templates" / "single-file-dashboard.html"
 # The strings table is named, not derived from TEMPLATE: a test points TEMPLATE at a copy.
@@ -101,7 +100,7 @@ def kpi_cards(args, t: dict[str, str]) -> str:
         key, value = KPI_CARDS[k]
         label = i18n.fill(t[key], measure=args.measure, dimension=args.dimension, time=args.time)
         # The label lands in innerHTML, inside a script: escape it for both.
-        label = json.dumps(html.escape(label, quote=False), ensure_ascii=False).replace("</", "<\\/")
+        label = as_script_json(html.escape(label, quote=False))
         lines.append(f"    {{ label: {label}, value: {value} }}")
     return ",\n".join(lines)
 
@@ -176,12 +175,12 @@ def main() -> None:
     now = build_stamp.local()
     extracted = build_stamp.from_mtime(args.data)
 
-    payload = json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
-    meta_js = json.dumps({
+    payload = as_script_json(rows)
+    meta_js = as_script_json({
         "generated": extracted,
         "source": args.source or args.data.name,
         "rows": len(rows),
-    }, ensure_ascii=False)
+    })
 
     if args.mode == "paired":
         data_path = args.out.parent / "data.js"
@@ -205,8 +204,8 @@ def main() -> None:
     # Nothing the caller types goes into the page raw (ROADMAP A0b, 2026-10-24): a title of
     # `<b>x` became bold text, a column named `Navn "sitert"` ended the JavaScript string it
     # was pasted into, and a `"` anywhere in a column name stopped the page. Two contexts, so
-    # two treatments: HTML gets html.escape, a JavaScript string gets json.dumps, which is the
-    # JSON escape and therefore also a valid JavaScript one.
+    # two treatments: HTML gets html.escape, a JavaScript string inside a <script> gets
+    # as_script_json, which is the JSON escape plus the escape for <, > and &.
     # The static view (docs/11 section 3c). A viewer that blocks scripting — Quick Look on
     # iOS and macOS does — shows what the build already knew: the totals, and the first rows
     # of the file. The same rows feed the script, so the two can only disagree if the file is
@@ -256,7 +255,7 @@ def main() -> None:
         "BUILD_TIMESTAMP": now,
         "REQUESTED_BY": html.escape(args.requested_by or NOT_STATED),
         "ROW_COUNT": i18n.group_int(len(rows), args.lang),
-        "FILTER_COLS_JSON": json.dumps(filters or [args.dimension], ensure_ascii=False),
+        "FILTER_COLS_JSON": as_script_json(filters or [args.dimension]),
         "CHART1_TITLE": html.escape(i18n.fill(t["chart1_title"], measure=args.measure,
                                              dimension=args.dimension)),
         "CHART2_TITLE": html.escape(i18n.fill(t["chart2_title"], measure=args.measure, time=args.time)
@@ -277,9 +276,9 @@ def main() -> None:
     # are substituted on their quoted form, before the HTML pass below can escape them.
     for token, value in (("DIMENSION_COL", args.dimension), ("TIME_COL", args.time),
                          ("MEASURE_COL", args.measure)):
-        page = page.replace('"{{' + token + '}}"', json.dumps(value, ensure_ascii=False))
+        page = page.replace('"{{' + token + '}}"', as_script_json(value))
     page = page.replace('DATA_META.source || "{{SOURCE_DESCRIPTION}}"',
-                        "DATA_META.source || " + json.dumps(source_name, ensure_ascii=False))
+                        "DATA_META.source || " + as_script_json(source_name))
     for key, value in subs.items():
         page = page.replace("{{" + key + "}}", str(value))
 

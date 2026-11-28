@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import argparse
 import html
-import json
 import math
 import pathlib
 import sys
@@ -43,7 +42,7 @@ import i18n  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
 from tun_tokens import strip_css_comments  # noqa: E402
-from tun_core import NOT_STATED, die  # noqa: E402
+from tun_core import NOT_STATED, as_script_json, die  # noqa: E402
 
 TEMPLATE = ROOT / "templates" / "task-space.html"
 STRINGS = "task-space"
@@ -161,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
                     f'<td>{html.escape(task["label"])}</td><td>{html.escape(task["text"])}</td>'
                     + "".join(f'<td class="num" data-{axis}="{value:g}">{value:g}</td>'
                               for axis, value in zip(("x", "y", "z"), task["pos"])) + "</tr>")
-    payload = json.dumps(tasks, ensure_ascii=False).replace("</", "<\\/")
+    payload = as_script_json(tasks)
     token_css, _ = tun_tokens.load_token_css(auto_dark=True)
     page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), t)
             .replace("{{TOKEN_CSS}}", strip_css_comments(token_css)))

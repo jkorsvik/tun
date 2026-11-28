@@ -1127,12 +1127,21 @@ DELIBERATE_NB_CHANGES = [
 # bytes. The cube additionally wraps #perf in a span and moves its footer outside
 # the hidden app; the index reports its input register growing from 128 to 130 kB.
 # Neither paired data.js changed. tests/test_tun_brand.py checks identity separately.
+# 2026-11-28: re-pinned after the script-context escaping change (PR #29).
+# `as_script_json` now writes &, < and > as \u0026, \u003c and \u003e in the
+# inlined JSON, and U+2028/U+2029 as \u2028/\u2029, so the nb bytes changed while
+# every page decodes to the same text. Most of the byte movement in the dashboard
+# builds is the compact separators: `meta_js` and `FILTER_COLS_JSON` used the
+# default `json.dumps` separators before, and `as_script_json` uses (",", ":").
+# Ten artefacts moved: the bundled and paired dashboards, their feedback
+# variants, the cube and fx-cube, and the two paired data.js files. The other
+# baselines stayed byte-identical.
 BASELINE = {
     "fx-deck/fx-deck.html": "cde971c4b080887b2b7b1c446f48ed0b5d63a3c7fcb7fb1466c446cfa24342a0",
-    "dash-bundled/dash-bundled.html": "6389d641723df6e7fc35b814205d466a6a72dff79de8736f10cb7c70f9254b4e",
-    "dash-paired/paired/dash.html": "7ab16b35085d8a8cda303b00323218cf79f2c29f0da227902fd9281356b65eb3",
-    "dash-paired/paired/data.js": "4dd301d51138aa47e2808dbe8451ad4f91f13ebb76855883070a0bfc8cf0581f",
-    "dash-feedback/dash-feedback.html": "e371a624084daf0b4e2e6556b670862cd9def0b95fafb3ce11c4ebbd0526e0c5",
+    "dash-bundled/dash-bundled.html": "82edc7286fb4f6ce9af98360e40133d702e627a8100c1a92054785eb357fc385",
+    "dash-paired/paired/dash.html": "6d951bc10b681b2076ade347341d757fc5ba72fdd4514cef8da582b870da8bca",
+    "dash-paired/paired/data.js": "35713a604fb90dd269c35b033e73054f6e4353f43ab7f381ef051e7d20dab78a",
+    "dash-feedback/dash-feedback.html": "c9552a54d6429278b19d35f44f567d130751639b0d4f4e778d104c653fb8f7b1",
     # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
     # change to its nb output is visible.
     "scorecard/scorecard.html": "9175c9a7b790c4c4fbc7fc045f201268c22ed07dd31817c2966374d79bc0a030",
@@ -1151,14 +1160,14 @@ BASELINE = {
     # New artefact 2026-10-24: its first build, pinned so a change to its nb output is
     # visible. No older builder exists to compare it against.
     "timeline/timeline.html": "e6e92c53c9c77ce51489fb2f9ae1911ecf9c0a0f9e9bce4216b5bdc4b1802693",
-    "cube/cube.html": "92cab0225d983ff6a8e4849fb586ce3b74f4397f559552b8782f2f9b41878791",
-    "cube-feedback/cube-feedback.html": "7e89466dfaab3a542ff8445ca0ee36441e6db7eb74fb79e6d1df68a16e1e0a78",
+    "cube/cube.html": "44d2ea7cbf10c1a1930d08edea6a2b3e8b16446a40508f64095c0752ead05935",
+    "cube-feedback/cube-feedback.html": "f6737bc4e0f6f089c9ea585b8e2a773fb2b33c29b1db70a577a687779eece216",
     "process/process.html": "3112b3d1ccda91d7e0fb253700f6577af964ccc7b29f225f11b9b77405d3e422",
-    "fx-dash/fx-dash.html": "0a006a1d7b1f91d8b321a7aa245b2066c8fdbabdb30604d262b7dd5a0cc44f2d",
+    "fx-dash/fx-dash.html": "303a871f7fc2d6b2dffeb12c8f08ab4c1e859ca6a0ab77859a588cf95ec4d1ea",
     "fx-dash-paired/fxp/dash.html": "7d2e89e201722bc3af304017904a4750a8a36f15df15b3228dd6781452453667",
-    "fx-dash-paired/fxp/data.js": "360bafa7d429d90f75a86aa7bc2f73f80db69634e8451dbf996c9001721f85bb",
-    "fx-dash-notime/fx-dash-notime.html": "63db58eb132325f501a8e695e156b649ec0ba3a0bdf5d5881136070ffa64173d",
-    "fx-cube/fx-cube.html": "d6ff32a0bca18e824aafce13889d6453a08379d8e24c8410674cf64fafb0ed92",
+    "fx-dash-paired/fxp/data.js": "b780577d6b85764ed4e15a5de4d81bdcdafca25565bbfe7521276ab5efdf4ecd",
+    "fx-dash-notime/fx-dash-notime.html": "2b207b3c25417de1c65cb48abd87ffff659d6c7f555bda4775b5133707f1b7e4",
+    "fx-cube/fx-cube.html": "d161eba56ae1cee51130411eee3f2f38b92ba362c7bb0e760a7299844127d882",
     "fx-process/fx-process.html": "e3fe3d7851c2ef22a57a9a5dc1fa152b1c040c0196c695869a4b980961c4bf94",
     # the survey board (2026-10-24): a new artefact, so its nb output is frozen here
     # 2026-10-24: the survey template gained a cross-tab block (table, its CSS, the
