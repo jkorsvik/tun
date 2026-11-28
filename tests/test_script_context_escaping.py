@@ -17,9 +17,10 @@ payload must not appear as raw markup, and the escaped `\\u003c` form must be
 present. It also checks that `&`, `>` and U+2028 travel as `\\u0026`, `\\u003e`
 and `\\u2028`, and that a benign non-ASCII value still decodes.
 
-The parent commit bf92fd7 was measured with the 20-check version of this suite:
-15 of 20 checks failed. That measurement, not a run of this suite on today's
-tree, is the mutation evidence for the gate.
+The parent commit bf92fd7 was measured against this suite: the earlier 16-check
+version failed 15 of 16, and today's 34-check version fails 18 of 34. That
+measurement, not a run of this suite on today's tree, is the mutation evidence
+for the gate.
 """
 from __future__ import annotations
 
