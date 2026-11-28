@@ -18,9 +18,11 @@ Checks:
   4. provenance          — a traceability comment block is present (source, built,
                             built by — see templates/_generic-provenance-block.html)
   5. no stray "<script"  — docs/01-tenant-constraints.md row 25
+  5b. script tags balanced — an injected end tag has not closed a script early
   6. no :target-driven visibility — docs/01-tenant-constraints.md row 24
   7. no scroll-persistent positioning — docs/01-tenant-constraints.md row 26
-  8. console-clean render — renders from file:// without a console/page error
+  8. console-clean render — renders from file:// without a console error, a page
+                            error or a dialog
   9. screenshot           — written for human review
 
 Checks 5-7 all encode the same class of fact: a mechanism that works perfectly from
@@ -95,6 +97,25 @@ def label_failures(failures: list[str], mark: int, engine: str,
     three-engine run says which browser broke. One engine: leave the text alone."""
     if len(engines) > 1:
         failures[mark:] = [f"{engine}: {f}" for f in failures[mark:]]
+
+
+def watch_dialogs(page) -> list[str]:
+    """Record every dialog `page` opens, dismissing it, and return the live list.
+
+    An injected `onerror=alert(1)` leaves no console error and no page error
+    behind, so a verifier that listens only to those two calls the page clean.
+    The caller reads the list after its observation window and turns a non-empty
+    list into a failure. Dismissing matters too: a dialog left open blocks the
+    page the rest of the checks and the screenshot need.
+    """
+    messages: list[str] = []
+
+    def _on_dialog(dialog) -> None:
+        messages.append(dialog.message)
+        dialog.dismiss()
+
+    page.on("dialog", _on_dialog)
+    return messages
 
 
 def check_self_contained(html: str) -> tuple[bool, str]:
@@ -185,6 +206,58 @@ def check_no_stray_script_text(html: str) -> tuple[bool, str]:
             "docs/01-tenant-constraints.md row 25)"
         )
     return True, f'all {counter.n} "<script" occurrence(s) are real elements'
+
+
+def check_script_tag_balance(html: str) -> tuple[bool, str]:
+    """Every <script> start tag is closed by exactly one </script> end tag.
+
+    This is the script-context injection check (#26). `check_no_stray_script_text`
+    counts opening "<script" occurrences, so a data value containing "</script>"
+    leaves it green: the injected text adds a closing tag, not an opening one. A
+    browser closes the element at that end tag and runs whatever markup follows.
+    An `onerror=alert(1)` there opens a dialog on a page the old check called
+    clean.
+
+    Parses with `html.parser` rather than counting substrings, for the same reason
+    as the row-25 check: a regex that pairs tags by proximity was fooled once
+    already. The parser enters script data at a start tag and leaves it at the
+    first end tag, so an injected end tag makes the two counts disagree and
+    leaves the real closing tag with no element left to close.
+
+    A "</script>" inside a comment or a `<style>` element is not a tag and is not
+    counted. One written as visible text is an end tag to `html.parser`, so it is
+    counted and reported: a page that needs to show that text has to entity-encode
+    it, which is the same trade the row-25 check makes for "<script".
+    """
+    from html.parser import HTMLParser
+
+    class _Balance(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__(convert_charrefs=False)
+            self.starts = 0
+            self.ends = 0
+
+        def handle_starttag(self, tag: str, attrs: list) -> None:
+            if tag.lower() == "script":
+                self.starts += 1
+
+        def handle_endtag(self, tag: str) -> None:
+            if tag.lower() == "script":
+                self.ends += 1
+
+    probe = _Balance()
+    probe.feed(html)
+    if probe.starts == probe.ends:
+        return True, (f"{probe.starts} <script> start tag(s) closed by "
+                      f"{probe.ends} </script> end tag(s)")
+    detail = (f"{probe.starts} <script> start tag(s) but {probe.ends} "
+              f"</script> end tag(s)")
+    if probe.ends > probe.starts:
+        detail += (f"; {probe.ends - probe.starts} end tag(s) had no open script, so "
+                   "markup closed a script early (issue #26)")
+    else:
+        detail += f"; {probe.starts - probe.ends} script element(s) left unclosed"
+    return False, detail
 
 
 def _css_rules(html: str) -> list[tuple[str, str, int]]:
@@ -407,6 +480,11 @@ def main() -> int:
     if not ok:
         failures.append(msg)
 
+    ok, msg = check_script_tag_balance(html)
+    print(f"  {'✓' if ok else '✗'} script-balance     {msg}")
+    if not ok:
+        failures.append(msg)
+
     ok, msg = check_no_target_driven_visibility(html)
     print(f"  {'✓' if ok else '✗'} no-target-nav      {msg}")
     if not ok:
@@ -437,6 +515,7 @@ def main() -> int:
             errors: list[str] = []
             page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
             page.on("pageerror", lambda e: errors.append(str(e)))
+            dialogs = watch_dialogs(page)
             page.goto(path.as_uri())
             page.wait_for_timeout(800)
 
@@ -445,6 +524,13 @@ def main() -> int:
                 print(f"  ✗ console            {len(errors)} error(s): {errors[0][:80]}")
             else:
                 print("  ✓ console            clean")
+
+            if dialogs:
+                failures.append(f"injected dialog: {dialogs[0]}")
+                print(f"  ✗ dialog             {len(dialogs)} dialog(s), "
+                      f"first: {dialogs[0][:80]}")
+            else:
+                print("  ✓ dialog             none")
 
             page.screenshot(path=str(shot), full_page=True)
             print(f"  ✓ screenshot         {shot.name}")

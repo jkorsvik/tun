@@ -18,7 +18,8 @@ Per docs/08-generic-artifact-model.md, the checks below split into two layers:
     2. size within the Tier 1 budget
     3. no unsubstituted {{PLACEHOLDER}} left in the shipped file
     4. provenance block intact
-    5. renders from file:// without a console error
+    4b. no stray script text and balanced script tags (rows 25 and #26)
+    5. renders from file:// without a console error or a dialog
     6. screenshot written for human review
 
   DASHBOARD-SPECIFIC (this file only):
@@ -42,10 +43,12 @@ from verify_standalone_core import (  # noqa: E402
     check_no_leftover_placeholders,
     check_no_stray_script_text,
     check_provenance,
+    check_script_tag_balance,
     check_self_contained,
     check_size,
     label_failures,
     shot_path,
+    watch_dialogs,
 )
 
 
@@ -120,6 +123,15 @@ def main() -> int:
     if not ok:
         failures.append(msg)
 
+    # 4c — script tag balance (#26). The row-25 check above counts opening tags, so a
+    # data value containing "</script>" leaves it green. A browser closes the script at
+    # that tag and runs the markup after it; the injected payload needs no opening tag
+    # of its own to execute.
+    ok, msg = check_script_tag_balance(html)
+    print(f"  {'✓' if ok else '✗'} script-balance     {msg}")
+    if not ok:
+        failures.append(msg)
+
     # 5..7 — real browser render (generic console-clean + screenshot, dashboard DOM checks)
     try:
         from playwright.sync_api import sync_playwright
@@ -142,6 +154,7 @@ def main() -> int:
             errors: list[str] = []
             page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
             page.on("pageerror", lambda e: errors.append(str(e)))
+            dialogs = watch_dialogs(page)
 
             page.goto(path.as_uri())
             page.wait_for_timeout(1200)
@@ -151,6 +164,16 @@ def main() -> int:
                 print(f"  ✗ console            {len(errors)} error(s): {errors[0][:80]}")
             else:
                 print("  ✓ console            clean")
+
+            # An injected `onerror=alert(1)` opens a dialog and leaves no console
+            # error and no page error behind. Before this handler existed the tool
+            # called such a file safe to publish.
+            if dialogs:
+                failures.append(f"injected dialog: {dialogs[0]}")
+                print(f"  ✗ dialog             {len(dialogs)} dialog(s), "
+                      f"first: {dialogs[0][:80]}")
+            else:
+                print("  ✓ dialog             none")
 
             kpis = page.locator(".kpi").count()
             bars = page.locator(".bar").count()
