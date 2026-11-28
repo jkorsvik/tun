@@ -1130,9 +1130,12 @@ DELIBERATE_NB_CHANGES = [
 # 2026-11-28: re-pinned after the script-context escaping change (PR #29).
 # `as_script_json` now writes &, < and > as \u0026, \u003c and \u003e in the
 # inlined JSON, and U+2028/U+2029 as \u2028/\u2029, so the nb bytes changed while
-# every page decodes to the same text. Ten artefacts moved: the bundled and
-# paired dashboards, their feedback variants, the cube and fx-cube, and the two
-# paired data.js files. The other baselines stayed byte-identical.
+# every page decodes to the same text. Most of the byte movement in the dashboard
+# builds is the compact separators: `meta_js` and `FILTER_COLS_JSON` used the
+# default `json.dumps` separators before, and `as_script_json` uses (",", ":").
+# Ten artefacts moved: the bundled and paired dashboards, their feedback
+# variants, the cube and fx-cube, and the two paired data.js files. The other
+# baselines stayed byte-identical.
 BASELINE = {
     "fx-deck/fx-deck.html": "cde971c4b080887b2b7b1c446f48ed0b5d63a3c7fcb7fb1466c446cfa24342a0",
     "dash-bundled/dash-bundled.html": "82edc7286fb4f6ce9af98360e40133d702e627a8100c1a92054785eb357fc385",
