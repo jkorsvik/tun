@@ -241,9 +241,17 @@
   #stage-recipe{color:var(--sage)}
   #stage-recipe summary{color:var(--mint)}
   #stage-recipe code{background:var(--night);color:var(--on-night)}
+  .agent-guide{margin:1rem 0 0;background:var(--deep);border:1px solid var(--slate);border-radius:.625rem;padding:0 .875rem;color:var(--sage)}
+  .agent-guide summary{color:var(--mint);font-weight:650}
+  .agent-guide summary:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+  .agent-guide p{margin:.5rem 0;font-size:.875rem;color:var(--sage)}
+  .agent-guide code{background:var(--night);color:var(--on-night);border:1px solid var(--slate)}
+  .agent-guide a{color:var(--mint);font-weight:650}
+  .agent-guide a:hover{color:var(--on-night)}
+  .agent-guide .agent-links{padding-bottom:.5rem}
   @media(max-width:70rem){.hero{grid-template-columns:1fr;gap:1.75rem}.hero-copy{max-width:50rem}.stage-frame,.stage-empty{height:32rem}}
   @media(max-width:40rem){.top.explorer .wrap{padding:1rem}.hero{margin-top:2rem;gap:1.5rem}.hero-copy h1{font-size:3rem}.stage-top{padding:.85rem;flex-direction:column;gap:.35rem}#stage-pos{white-space:normal}.stage-frame,.stage-empty{height:28rem}.stage-bottom{padding:.85rem}.stage-actions button{flex:1 1 auto}.stage-kicker{font-size:.875rem}}
-  @media print{.stage,.paths{display:none}}
+  @media print{.stage,.paths,.agent-guide{display:none}}
 {{TUN_CREDIT_CSS}}
 </style>
 </head>
@@ -262,6 +270,13 @@
         <h1 data-i18n="explorer_title">{{T:explorer_title}}</h1>
         <p class="sub" data-i18n="explorer_intro">{{T:explorer_intro}}</p>
         <p class="hero-actions"><a class="primary" id="start-example" href="#example-01" data-i18n="start_example">{{T:start_example}}</a><a class="primary" href="{{T:start_url}}" data-i18n="hero_start" data-i18n-href="start_url">{{T:hero_start}}</a><a href="https://github.com/jkorsvik/tun">GitHub&nbsp;↗</a></p>
+        <details class="agent-guide">
+          <summary data-i18n="agent_summary">{{T:agent_summary}}</summary>
+          <p data-i18n="agent_lead">{{T:agent_lead}}</p>
+          <code data-i18n="agent_prompt">{{T:agent_prompt}}</code>
+          <p data-i18n="agent_steps">{{T:agent_steps}}</p>
+          <p class="agent-links"><a href="https://github.com/jkorsvik/tun/blob/main/START-HERE.md" data-i18n="agent_docs">{{T:agent_docs}}</a> · <a href="https://github.com/jkorsvik/tun/blob/main/llms.txt">llms.txt</a></p>
+        </details>
         <ul class="chips">{{CHIPS}}</ul>
         <div class="paths" role="group" aria-label="{{T:explorer_eyebrow}}">
           <button type="button" class="active" data-path="all" data-i18n="path_all">{{T:path_all}}</button>

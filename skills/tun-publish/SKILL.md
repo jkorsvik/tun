@@ -9,6 +9,9 @@ description: Publish a built standalone dashboard to SharePoint, OneDrive or Atl
 real decision is who can open the folder, and that belongs to the folder's owner rather than
 to IT.
 
+**Toolkit path:** Helper scripts under `tools/` live in the Tún checkout (`repo:` in
+`.installed-by-tun` next to this `SKILL.md`, or `TUN_HOME`).
+
 ## Before you publish
 
 **The dashboard must have passed `tun-verify`.** If you have not seen a PASS

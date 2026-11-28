@@ -32,9 +32,9 @@ versioning, audit, sync and offline. Reuse that machinery instead of fighting it
 | **[Portable slide deck](examples/18-portable-slide-deck/README.md)** (one file, offline) | ✅ **working**. Responsive portrait/landscape controls, Chromium/WebKit matrix, guarded fullscreen |
 | In-page embedding (SPFx) | 🔶 designed, **blocked** on proving SPFx is approvable at Eksempel AS |
 | Tier 3 (Parquet + DuckDB-WASM) | 🔶 designed. HTTP Range **measured and confirmed**, but it **cannot run from a portable file** and needs Tier 2 to host it |
-| Skills | ✅ 9 written (`tun-help`, `-new`, `-data`, `-verify`, `-publish`, `-process`, `-feedback`, `tun-powerbi-escape`, `tun-for-communicators`) |
+| Skills | ✅ 11 written (`tun-help`, `-new`, `-data`, `-verify`, `-publish`, `-host`, `-process`, `-review`, `-feedback`, `tun-powerbi-escape`, `tun-for-communicators`) |
 | Onboarding | ✅ [zero to published, Windows or macOS](docs/04-onboarding.md) |
-| Shapes | ✅ 30 builders, and a chooser: [which shape answers which question](docs/33-artefact-shapes.md) |
+| Shapes | ✅ 28 builders (27 shapes + Explorer), and a chooser: [which shape answers which question](docs/33-artefact-shapes.md) |
 
 ## Try it
 
@@ -61,14 +61,24 @@ uv sync --extra verify && uv run playwright install chromium   # once
 uv run python tools/verify_dashboard.py work/demo.html
 ```
 
-**Use it from your AI tool.** The skills are in the open
-[Agent Skills](https://agentskills.io/specification) format. Install them for your tool,
-then ask for *"a dashboard from this Excel file"*:
+**Use it from any AI tool.** Point your coding assistant at this repository or at
+`https://jkorsvik.github.io/tun/` and say:
+
+> *"Set up Tún from https://github.com/jkorsvik/tun for this tool, check that it works, and introduce me to the Tún verbs."*
+
+Both the webpage and the repository carry [`llms.txt`](llms.txt) and [`START-HERE.md`](START-HERE.md)
+so any agent knows how to clone, install the open [Agent Skills](https://agentskills.io/specification)
+for its harness, and greet you with the verbs (`tun-help`, `tun-new`, `tun-data`,
+`tun-verify`, `tun-publish`, `tun-process`, `tun-review` and more). Or install directly
+(on Windows, use `py -3` instead of `python3`):
 
 | Tool | Install |
 |---|---|
-| Claude Code | `python3 setup.py --tool claude` |
-| Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode | `python3 setup.py --tool agents` |
+| Auto-detect installed tools | `python3 setup.py --tool auto` |
+| Claude Code | `python3 setup.py --tool claude` (or `/plugin marketplace add jkorsvik/tun`) |
+| Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode, Goose, Amp | `python3 setup.py --tool agents` |
+| Cursor (personal + Cloud Agents sync) | `python3 setup.py --tool cursor` |
+| Windsurf | `python3 setup.py --tool windsurf` |
 | RAIWork | `python3 setup.py` (when RAIWork is installed) |
 
 Tested on 2026-10-08: Gemini CLI and Claude Code load every skill. Codex is checked in its
