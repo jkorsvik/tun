@@ -99,6 +99,25 @@ def label_failures(failures: list[str], mark: int, engine: str,
         failures[mark:] = [f"{engine}: {f}" for f in failures[mark:]]
 
 
+def watch_dialogs(page) -> list[str]:
+    """Record every dialog `page` opens, dismissing it, and return the live list.
+
+    An injected `onerror=alert(1)` leaves no console error and no page error
+    behind, so a verifier that listens only to those two calls the page clean.
+    The caller reads the list after its observation window and turns a non-empty
+    list into a failure. Dismissing matters too: a dialog left open blocks the
+    page the rest of the checks and the screenshot need.
+    """
+    messages: list[str] = []
+
+    def _on_dialog(dialog) -> None:
+        messages.append(dialog.message)
+        dialog.dismiss()
+
+    page.on("dialog", _on_dialog)
+    return messages
+
+
 def check_self_contained(html: str) -> tuple[bool, str]:
     """No remote http(s) subresource — the offline/portability promise."""
     remote = REMOTE_SUBRESOURCE.findall(html)
@@ -217,35 +236,27 @@ def check_script_tag_balance(html: str) -> tuple[bool, str]:
             super().__init__(convert_charrefs=False)
             self.starts = 0
             self.ends = 0
-            self.stray_ends = 0
-            self.open = 0
 
         def handle_starttag(self, tag: str, attrs: list) -> None:
             if tag.lower() == "script":
                 self.starts += 1
-                self.open += 1
 
         def handle_endtag(self, tag: str) -> None:
-            if tag.lower() != "script":
-                return
-            self.ends += 1
-            if self.open:
-                self.open -= 1
-            else:
-                self.stray_ends += 1
+            if tag.lower() == "script":
+                self.ends += 1
 
     probe = _Balance()
     probe.feed(html)
-    if probe.starts == probe.ends and probe.open == 0:
+    if probe.starts == probe.ends:
         return True, (f"{probe.starts} <script> start tag(s) closed by "
                       f"{probe.ends} </script> end tag(s)")
     detail = (f"{probe.starts} <script> start tag(s) but {probe.ends} "
               f"</script> end tag(s)")
-    if probe.stray_ends:
-        detail += (f"; {probe.stray_ends} end tag(s) had no open script, so markup "
-                   "closed a script early (issue #26)")
-    elif probe.open:
-        detail += f"; {probe.open} script element(s) left unclosed"
+    if probe.ends > probe.starts:
+        detail += (f"; {probe.ends - probe.starts} end tag(s) had no open script, so "
+                   "markup closed a script early (issue #26)")
+    else:
+        detail += f"; {probe.starts - probe.ends} script element(s) left unclosed"
     return False, detail
 
 
@@ -502,15 +513,9 @@ def main() -> int:
             browser = getattr(pw, engine).launch()
             page = browser.new_page(viewport={"width": 1200, "height": 900})
             errors: list[str] = []
-            dialogs: list[str] = []
             page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
             page.on("pageerror", lambda e: errors.append(str(e)))
-
-            def _on_dialog(dialog) -> None:
-                dialogs.append(dialog.message)
-                dialog.dismiss()
-
-            page.on("dialog", _on_dialog)
+            dialogs = watch_dialogs(page)
             page.goto(path.as_uri())
             page.wait_for_timeout(800)
 

@@ -48,6 +48,7 @@ from verify_standalone_core import (  # noqa: E402
     check_size,
     label_failures,
     shot_path,
+    watch_dialogs,
 )
 
 
@@ -151,15 +152,9 @@ def main() -> int:
             browser = getattr(pw, engine).launch()
             page = browser.new_page(viewport={"width": 1440, "height": 1000})
             errors: list[str] = []
-            dialogs: list[str] = []
             page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
             page.on("pageerror", lambda e: errors.append(str(e)))
-
-            def _on_dialog(dialog) -> None:
-                dialogs.append(dialog.message)
-                dialog.dismiss()
-
-            page.on("dialog", _on_dialog)
+            dialogs = watch_dialogs(page)
 
             page.goto(path.as_uri())
             page.wait_for_timeout(1200)
