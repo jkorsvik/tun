@@ -14,12 +14,17 @@ script, which is why it passed while this defect was live.
 The gate is static and needs no browser: the number of real `</script>` closers in
 a hostile build must equal the number in a benign build of the same builder, the
 payload must not appear as raw markup, and the escaped `\\u003c` form must be
-present. Run it on the tree before `tools/build_*.py` used `as_script_json` and
-four of these checks fail, which is the mutation evidence for this gate.
+present. It also checks that `&`, `>` and U+2028 travel as `\\u0026`, `\\u003e`
+and `\\u2028`, and that a benign non-ASCII value still decodes.
+
+The parent commit bf92fd7 was measured with the 20-check version of this suite:
+15 of 20 checks failed. That measurement, not a run of this suite on today's
+tree, is the mutation evidence for the gate.
 """
 from __future__ import annotations
 
 import csv
+import json
 import pathlib
 import subprocess
 import sys
@@ -41,9 +46,13 @@ def check(label: str, ok: bool, detail: str = "") -> None:
         print(f"  FAIL {label}{(' — ' + detail) if detail else ''}")
 
 
-def run(script: str, args: list[str], out: pathlib.Path) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, str(TOOLS / script), *args, "--out", str(out)],
+def run(label: str, script: str, args: list[str],
+        out: pathlib.Path) -> subprocess.CompletedProcess:
+    done = subprocess.run([sys.executable, str(TOOLS / script), *args, "--out", str(out)],
                           capture_output=True, text=True, cwd=ROOT, timeout=120)
+    check(f"{label}: builder exits 0", done.returncode == 0,
+          (done.stderr or done.stdout).strip()[-400:])
+    return done
 
 
 def write_csv(path: pathlib.Path, head: list[str], rows: list[list[str]]) -> None:
@@ -54,6 +63,10 @@ def write_csv(path: pathlib.Path, head: list[str], rows: list[list[str]]) -> Non
 
 
 def verdict(label: str, clean: pathlib.Path, hostile: pathlib.Path) -> None:
+    if not clean.is_file() or not hostile.is_file():
+        check(f"{label}: both builds wrote a file", False,
+              f"clean={clean.is_file()} hostile={hostile.is_file()}")
+        return
     good = clean.read_text(encoding="utf-8")
     bad = hostile.read_text(encoding="utf-8")
     check(f"{label}: build wrote a file", bool(bad))
@@ -79,17 +92,21 @@ def main() -> int:
         dash = ["--title", "T", "--dimension", "Produkt", "--measure", "Belop",
                 "--time", "Maaned", "--filters", "Region,Produkt",
                 "--requested-by", "r"]
-        run("build_dashboard.py", ["--data", str(tmp / "clean.csv"), *dash,
-                                   "--source", "s"], tmp / "dash-clean.html")
-        run("build_dashboard.py", ["--data", str(tmp / "cell.csv"), *dash,
-                                   "--source", "s"], tmp / "dash-cell.html")
-        run("build_dashboard.py", ["--data", str(tmp / "clean.csv"), *dash,
-                                   "--source", PAYLOAD], tmp / "dash-source.html")
+        run("dashboard clean", "build_dashboard.py",
+            ["--data", str(tmp / "clean.csv"), *dash, "--source", "s"],
+            tmp / "dash-clean.html")
+        run("dashboard cell", "build_dashboard.py",
+            ["--data", str(tmp / "cell.csv"), *dash, "--source", "s"],
+            tmp / "dash-cell.html")
+        run("dashboard source", "build_dashboard.py",
+            ["--data", str(tmp / "clean.csv"), *dash, "--source", PAYLOAD],
+            tmp / "dash-source.html")
         col_dash = ["--title", "T", "--dimension", "Produkt", "--measure", "Belop",
                     "--time", "Maaned", "--filters", "Region,Produkt," + PAYLOAD,
                     "--requested-by", "r"]
-        run("build_dashboard.py", ["--data", str(tmp / "col.csv"), *col_dash,
-                                   "--source", "s"], tmp / "dash-col.html")
+        run("dashboard column", "build_dashboard.py",
+            ["--data", str(tmp / "col.csv"), *col_dash, "--source", "s"],
+            tmp / "dash-col.html")
 
         verdict("dashboard cell", tmp / "dash-clean.html", tmp / "dash-cell.html")
         verdict("dashboard source", tmp / "dash-clean.html", tmp / "dash-source.html")
@@ -101,10 +118,10 @@ def main() -> int:
         write_csv(tmp / "survey-evil.csv", head, [[PAYLOAD, "Q", "3 Verken"]])
         surv = ["--title", "S", "--segments", "Enhet", "--question-col", "Sporsmal",
                 "--answer-col", "Svar"]
-        run("build_survey_dashboard.py", ["--data", str(tmp / "survey-clean.csv"), *surv],
-            tmp / "survey-clean.html")
-        run("build_survey_dashboard.py", ["--data", str(tmp / "survey-evil.csv"), *surv],
-            tmp / "survey-evil.html")
+        run("survey clean", "build_survey_dashboard.py",
+            ["--data", str(tmp / "survey-clean.csv"), *surv], tmp / "survey-clean.html")
+        run("survey evil", "build_survey_dashboard.py",
+            ["--data", str(tmp / "survey-evil.csv"), *surv], tmp / "survey-evil.html")
         verdict("survey cell", tmp / "survey-clean.html", tmp / "survey-evil.html")
 
         # Cube: the dimension name is written into META.
@@ -114,11 +131,36 @@ def main() -> int:
                   [["A", "2026-01", "10"], ["B", "2026-02", "20"]])
         cube = ["--time", "Maaned", "--time-grain", "month", "--measures", "Belop:sum",
                 "--title", "T", "--requested-by", "r"]
-        run("build_cube_dashboard.py", ["--data", str(tmp / "cube-clean.csv"),
-                                        "--dims", "Team", *cube], tmp / "cube-clean.html")
-        run("build_cube_dashboard.py", ["--data", str(tmp / "cube-evil.csv"),
-                                        "--dims", PAYLOAD, *cube], tmp / "cube-evil.html")
+        run("cube clean", "build_cube_dashboard.py",
+            ["--data", str(tmp / "cube-clean.csv"), "--dims", "Team", *cube],
+            tmp / "cube-clean.html")
+        run("cube evil", "build_cube_dashboard.py",
+            ["--data", str(tmp / "cube-evil.csv"), "--dims", PAYLOAD, *cube],
+            tmp / "cube-evil.html")
         verdict("cube dimension", tmp / "cube-clean.html", tmp / "cube-evil.html")
+
+        # Characters that can end or confuse a script, beyond the payload above.
+        # `as_script_json` escapes them; a plain json.dumps leaves them raw.
+        write_csv(tmp / "chars.csv", ["Region", "Produkt", "Belop", "Maaned"],
+                 [["A & B > C\u2028D", "Tromsø", "100", "2026-01"]])
+        run("dashboard characters", "build_dashboard.py",
+            ["--data", str(tmp / "chars.csv"), *dash, "--source", "s"],
+            tmp / "dash-chars.html")
+        chars = (tmp / "dash-chars.html").read_text(encoding="utf-8")
+        check("dashboard characters: & is escaped as \\u0026",
+              "\\u0026" in chars, "no \\u0026 in the build")
+        check("dashboard characters: > is escaped as \\u003e",
+              "\\u003e" in chars, "no \\u003e in the build")
+        check("dashboard characters: U+2028 is escaped as \\u2028",
+              "\\u2028" in chars, "no \\u2028 in the build")
+        data_start = chars.index("window.DASHBOARD_DATA=") + len("window.DASHBOARD_DATA=")
+        rows, _ = json.JSONDecoder().raw_decode(chars[data_start:])
+        check("dashboard characters: benign non-ASCII round-trips",
+              any(row.get("Produkt") == "Tromsø" for row in rows),
+              f"Produkt values: {sorted({row.get('Produkt') for row in rows})}")
+        check("dashboard characters: the escaped cell decodes to the original",
+              any(row.get("Region") == "A & B > C\u2028D" for row in rows),
+              f"Region values: {sorted({row.get('Region') for row in rows})}")
 
     print(f"\n{PASS} passed, {FAIL} failed")
     return 1 if FAIL else 0
