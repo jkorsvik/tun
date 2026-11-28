@@ -172,12 +172,16 @@ def as_script_json(value) -> str:
     do it: `<` and `>` (which also covers `</script>`, `<!--` and `<script`) and `&`. The
     page reads the values back unchanged, because `\u003c` is the same string in JSON.
 
+    Template-shaped braces are escaped too, so a later template fill can never interpret
+    a JSON string as a placeholder. `{\u007b` is still the same two characters in JSON.
+
     Lives here rather than in one builder: two builders inline data, and a second copy of
     this rule is a second place for it to be subtly weaker.
     """
     text = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
     return (text.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
-                .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
+                .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+                .replace("{{", "{\\u007b"))
 
 
 def strip_licence_header(text: str) -> str:

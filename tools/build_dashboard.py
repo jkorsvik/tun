@@ -274,17 +274,19 @@ def main() -> None:
             .replace("{{TOKEN_CSS}}", strip_css_comments(token_css)))
     # The three column names and the source fallback sit inside a JavaScript string, so they
     # are substituted on their quoted form, before the HTML pass below can escape them.
+    replacements = {"{{" + key + "}}": str(value) for key, value in subs.items()}
     for token, value in (("DIMENSION_COL", args.dimension), ("TIME_COL", args.time),
                          ("MEASURE_COL", args.measure)):
-        page = page.replace('"{{' + token + '}}"', as_script_json(value))
-    page = page.replace('DATA_META.source || "{{SOURCE_DESCRIPTION}}"',
-                        "DATA_META.source || " + as_script_json(source_name))
-    for key, value in subs.items():
-        page = page.replace("{{" + key + "}}", str(value))
-
-    leftover = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", page)))
+        replacements['"{{' + token + '}}"'] = as_script_json(value)
+    replacements['DATA_META.source || "{{SOURCE_DESCRIPTION}}"'] = (
+        "DATA_META.source || " + as_script_json(source_name))
+    # Fill the template once. Caller text may itself look like a placeholder; rescanning it
+    # after insertion would rewrite a data cell that contains `{{REQUESTED_BY}}`.
+    pattern = "|".join(re.escape(key) for key in sorted(replacements, key=len, reverse=True))
+    leftover = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", re.sub(pattern, "", page))))
     if leftover:
         die(f"template placeholders not substituted: {leftover}")
+    page = re.sub(pattern, lambda match: replacements[match[0]], page)
 
     if args.annotate:
         # The review round trip (docs/31): the reader comments on a row and copies a text
@@ -320,9 +322,13 @@ def main() -> None:
     args.out.write_text(page, encoding="utf-8")
 
     if data_path is not None:
+        # A line break in the filename or the source label would start a new line in the
+        # sidecar, so it is flattened before it is written into a JavaScript comment.
         data_path.write_text(
-            "// Data for " + args.out.name + " — replace this file to update the dashboard.\n"
-            "// Generated " + now + " from " + (args.source or args.data.name) + "\n"
+            "// Data for " + re.sub(r"[\r\n\u2028\u2029]", " ", args.out.name)
+            + " — replace this file to update the dashboard.\n"
+            "// Generated " + now + " from "
+            + re.sub(r"[\r\n\u2028\u2029]", " ", source_name) + "\n"
             f"window.DASHBOARD_DATA={payload};\n"
             f"window.DASHBOARD_META={meta_js};\n",
             encoding="utf-8")

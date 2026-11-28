@@ -853,7 +853,7 @@ function readFile(file){
     // backticks / ${ would break a template literal, so ship JSON — always safe
     const body =
       "// Data file for this dashboard. Replace this file to update the numbers.\n" +
-      "// Generated " + new Date().toISOString() + " from " + (DATA_META.source || "unknown source") + "\n" +
+      "// Generated " + new Date().toISOString() + " from " + String(DATA_META.source || "unknown source").replace(/[\r\n\u2028\u2029]/g, " ") + "\n" +
       "window.DASHBOARD_DATA=" + JSON.stringify(LIVE) + ";\n" +
       "window.DASHBOARD_META=" + JSON.stringify({
         generated: DATA_META.generated, source: DATA_META.source, rows: LIVE.length }) + ";\n";
