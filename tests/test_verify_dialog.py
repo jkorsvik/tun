@@ -2,7 +2,7 @@
 # Copyright (C) 2026 The Tún authors (see AUTHORS.md)
 # This file is part of Tún. Licence: GNU AGPL v3 or later, see LICENSE.
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Injected script must fail the verifier, whatever the builder did (#26).
+"""Injected dialogs and unbalanced script tags must fail the verifier (#26).
 
 `tools/verify_dashboard.py` used to report a clean file while the page ran an injected
 `onerror=alert(1)`. Two holes made that possible: the row-25 text check counted
@@ -15,6 +15,10 @@ a JSON string value in `window.DASHBOARD_DATA` with `</script><img src=x
 onerror=alert(1)>` and keeps the JSON string valid. A second fixture adds an
 `<svg onload=alert(1)>` with no stray closing tag at all, which proves the dialog
 handler is load-bearing on its own.
+
+The gate is narrow on purpose. It sees a dialog and a script tag that cannot be
+paired. An injected `<img onerror="fetch(...)">` runs with no dialog, no console
+error and balanced tags, and this gate would not catch it.
 
 Needs Playwright, like the other browser suites, and fails rather than skipping
 without it.
