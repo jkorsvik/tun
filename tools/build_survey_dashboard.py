@@ -53,7 +53,6 @@ import argparse
 import collections
 import datetime
 import html
-import json
 import pathlib
 import sys
 

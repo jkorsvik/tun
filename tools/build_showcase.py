@@ -34,7 +34,6 @@ import asyncio
 import base64
 import gzip
 import html
-import json
 import pathlib
 import re
 import struct

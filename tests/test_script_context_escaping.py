@@ -46,13 +46,11 @@ def check(label: str, ok: bool, detail: str = "") -> None:
         print(f"  FAIL {label}{(' — ' + detail) if detail else ''}")
 
 
-def run(label: str, script: str, args: list[str],
-        out: pathlib.Path) -> subprocess.CompletedProcess:
+def run(label: str, script: str, args: list[str], out: pathlib.Path) -> None:
     done = subprocess.run([sys.executable, str(TOOLS / script), *args, "--out", str(out)],
                           capture_output=True, text=True, cwd=ROOT, timeout=120)
     check(f"{label}: builder exits 0", done.returncode == 0,
           (done.stderr or done.stdout).strip()[-400:])
-    return done
 
 
 def write_csv(path: pathlib.Path, head: list[str], rows: list[list[str]]) -> None:

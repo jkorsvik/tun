@@ -41,7 +41,6 @@ import array
 import base64
 import datetime as dt
 import html
-import json
 import pathlib
 import struct
 import sys
