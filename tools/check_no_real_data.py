@@ -90,6 +90,8 @@ ALLOWED_DATA: dict[str, str] = {
         "invented survey answers, 288 respondents, written out as a matrix in the generate_data.py beside it",
     "examples/32-rows-register/avvik.csv":
         "invented deviation cases, 1200 rows, deterministic from the generate_data.py beside it",
+    "examples/57-service-book/service-book.json":
+        "invented three-day desk roster staffed by role labels, deterministic from the generate_data.py beside it",
     "examples/35-timeline/milepaeler.csv":
         "invented programme milestones, 13 rows, deterministic from the generate_data.py beside it",
     "tests/fixtures/i18n-distribution-en.csv":

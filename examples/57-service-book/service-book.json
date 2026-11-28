@@ -1,0 +1,469 @@
+{
+  "schema": 1,
+  "sourceRevision": "2027-03-08-synthetic",
+  "title": "Servicebok · Informasjonsdisk Fjordhallen",
+  "subtitle": "Tre dager · alle tider Europe/Oslo · syntetisk eksempel",
+  "footer": "Syntetisk eksempeldata. Roller, ikke personer. Ingen telefonnumre, koder eller tilgangsnøkler finnes i dette dokumentet.",
+  "panes": [
+    {
+      "id": "naa",
+      "title": "Nå",
+      "type": "naa",
+      "badge": true
+    },
+    {
+      "id": "rullering",
+      "title": "Rullering",
+      "heading": "Gjeldende vaktliste",
+      "type": "rullering",
+      "badge": true
+    },
+    {
+      "id": "poster",
+      "title": "Poster",
+      "heading": "Faste poster",
+      "type": "posts",
+      "badge": true
+    },
+    {
+      "id": "folk",
+      "title": "Folk",
+      "heading": "Folk",
+      "type": "folk",
+      "badge": true
+    },
+    {
+      "id": "beskjed",
+      "title": "Beskjed",
+      "heading": "Beskjed",
+      "type": "beskjed"
+    },
+    {
+      "id": "regler",
+      "title": "Regler",
+      "heading": "Regler",
+      "type": "instruks"
+    },
+    {
+      "id": "sjekk",
+      "title": "Sjekk",
+      "heading": "Sjekk",
+      "type": "sjekk",
+      "badge": true
+    }
+  ],
+  "days": [
+    {
+      "date": "2027-03-08",
+      "label": "Mandag 8.3",
+      "note": "oppstartsdag"
+    },
+    {
+      "date": "2027-03-09",
+      "label": "Tirsdag 9.3",
+      "note": "full rullering"
+    },
+    {
+      "date": "2027-03-10",
+      "label": "Onsdag 10.3",
+      "note": "faste poster fra 12.00"
+    }
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "name": "Desk A",
+      "lag": "Skift 1",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p2",
+      "name": "Desk B",
+      "lag": "Skift 1",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p3",
+      "name": "Desk C",
+      "lag": "Skift 1",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p4",
+      "name": "Desk D",
+      "lag": "Skift 2",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p5",
+      "name": "Desk E",
+      "lag": "Skift 2",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p6",
+      "name": "Desk F",
+      "lag": "Skift 2",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p7",
+      "name": "Desk G",
+      "lag": "Skift 3",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p8",
+      "name": "Desk H",
+      "lag": "Skift 3",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p9",
+      "name": "Desk I",
+      "lag": "Skift 3",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p10",
+      "name": "Desk J",
+      "lag": "Skift 4",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p11",
+      "name": "Desk K",
+      "lag": "Skift 4",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p12",
+      "name": "Desk L",
+      "lag": "Skift 4",
+      "note": "",
+      "reserve": false
+    },
+    {
+      "id": "p13",
+      "name": "Reserve 1",
+      "lag": "Reserve",
+      "note": "",
+      "reserve": true
+    },
+    {
+      "id": "p14",
+      "name": "Reserve 2",
+      "lag": "Reserve",
+      "note": "",
+      "reserve": true
+    }
+  ],
+  "watches": [
+    {
+      "id": "w1",
+      "crew": [
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "note": "",
+      "start": "2027-03-08T00:00",
+      "end": "2027-03-08T04:00"
+    },
+    {
+      "id": "w2",
+      "crew": [
+        "p4",
+        "p5",
+        "p6"
+      ],
+      "note": "",
+      "start": "2027-03-08T04:00",
+      "end": "2027-03-08T08:00"
+    },
+    {
+      "id": "w3",
+      "crew": [
+        "p7",
+        "p8",
+        "p9"
+      ],
+      "note": "",
+      "start": "2027-03-08T08:00",
+      "end": "2027-03-08T12:00"
+    },
+    {
+      "id": "w4",
+      "crew": [
+        "p10",
+        "p11",
+        "p12"
+      ],
+      "note": "",
+      "start": "2027-03-08T12:00",
+      "end": "2027-03-08T16:00"
+    },
+    {
+      "id": "w5",
+      "crew": [
+        "p1",
+        "p5",
+        "p8"
+      ],
+      "note": "",
+      "start": "2027-03-08T16:00",
+      "end": "2027-03-08T20:00"
+    },
+    {
+      "id": "w6",
+      "crew": [
+        "p2",
+        "p6",
+        "p9"
+      ],
+      "note": "",
+      "start": "2027-03-08T20:00",
+      "end": "2027-03-09T00:00"
+    },
+    {
+      "id": "w7",
+      "crew": [
+        "p3",
+        "p4",
+        "p7"
+      ],
+      "note": "",
+      "start": "2027-03-09T00:00",
+      "end": "2027-03-09T04:00"
+    },
+    {
+      "id": "w8",
+      "crew": [
+        "p1",
+        "p6",
+        "p11"
+      ],
+      "note": "",
+      "start": "2027-03-09T04:00",
+      "end": "2027-03-09T08:00"
+    },
+    {
+      "id": "w9",
+      "crew": [
+        "p2",
+        "p7",
+        "p12"
+      ],
+      "note": "",
+      "start": "2027-03-09T08:00",
+      "end": "2027-03-09T12:00"
+    },
+    {
+      "id": "w10",
+      "crew": [
+        "p3",
+        "p8",
+        "p10"
+      ],
+      "note": "",
+      "start": "2027-03-09T12:00",
+      "end": "2027-03-09T16:00"
+    },
+    {
+      "id": "w11",
+      "crew": [
+        "p1",
+        "p4",
+        "p9"
+      ],
+      "note": "",
+      "start": "2027-03-09T16:00",
+      "end": "2027-03-09T20:00"
+    },
+    {
+      "id": "w12",
+      "crew": [
+        "p2",
+        "p5",
+        "p10"
+      ],
+      "note": "",
+      "start": "2027-03-09T20:00",
+      "end": "2027-03-10T00:00"
+    },
+    {
+      "id": "w13",
+      "crew": [
+        "p3",
+        "p6",
+        "p11"
+      ],
+      "note": "",
+      "start": "2027-03-10T00:00",
+      "end": "2027-03-10T04:00"
+    },
+    {
+      "id": "w14",
+      "crew": [
+        "p1",
+        "p7",
+        "p12"
+      ],
+      "note": "",
+      "start": "2027-03-10T04:00",
+      "end": "2027-03-10T08:00"
+    },
+    {
+      "id": "w15",
+      "crew": [
+        "p2",
+        "p8",
+        "p9"
+      ],
+      "note": "",
+      "start": "2027-03-10T08:00",
+      "end": "2027-03-10T12:00"
+    },
+    {
+      "id": "w16",
+      "crew": [
+        "p3",
+        "p4",
+        "p10"
+      ],
+      "note": "",
+      "start": "2027-03-10T12:00",
+      "end": "2027-03-10T16:00"
+    },
+    {
+      "id": "w17",
+      "crew": [
+        "p1",
+        "p5",
+        "p11"
+      ],
+      "note": "",
+      "start": "2027-03-10T16:00",
+      "end": "2027-03-10T20:00"
+    },
+    {
+      "id": "w18",
+      "crew": [
+        "p2",
+        "p6",
+        "p12"
+      ],
+      "note": "",
+      "start": "2027-03-10T20:00",
+      "end": "2027-03-11T00:00"
+    }
+  ],
+  "beskjed": {
+    "from": "12.00 onsdag 10.3",
+    "posts": [
+      {
+        "id": "v1",
+        "name": "Hovedinngang · vest",
+        "radio": "Kanal 1",
+        "places": 1,
+        "at": "12.00",
+        "people": [
+          "p1"
+        ]
+      },
+      {
+        "id": "v2",
+        "name": "Hovedinngang · øst",
+        "radio": "Kanal 1",
+        "places": 1,
+        "at": "12.00",
+        "people": [
+          "p2"
+        ]
+      },
+      {
+        "id": "v3",
+        "name": "Informasjonsdisk",
+        "radio": "Kanal 2",
+        "places": 2,
+        "at": "12.00",
+        "people": [
+          "p3",
+          "p4"
+        ]
+      },
+      {
+        "id": "v4",
+        "name": "Utstillingshall · runde",
+        "radio": "Kanal 2",
+        "places": 1,
+        "at": "12.30",
+        "people": [
+          "p5"
+        ]
+      }
+    ]
+  },
+  "handover": {
+    "rotationEnds": "2027-03-10T12:00",
+    "replacedBy": "Faste poster",
+    "changed": "Rulleringsvaktene etter 10.3 kl. 12.00 er strøket.",
+    "unchanged": "Navnene på de faste postene er uendret.",
+    "undecided": [
+      "Hva de på vakt gjør i overgangen mellom rullering og faste poster.",
+      "Hvilke oppgaver reservene har etter at de faste postene er satt."
+    ]
+  },
+  "lists": {
+    "beskjed-bakgrunn": [
+      "Tredagers arrangement i Fjordhallen med publikum, utstillere og leverandører."
+    ],
+    "beskjed-oppgave": [
+      "Holde hovedinngangene betjent, drive informasjonsdisken og gå runder i utstillingshallen."
+    ],
+    "beskjed-bemanning": [
+      "To roller på hovedinngang, to på informasjonsdisk, én på runde.",
+      "Reservene brukes bare ved frafall."
+    ],
+    "utstyr": [
+      "Refleksvest brukes av alle som går runder.",
+      "Radio testes ved skiftstart."
+    ],
+    "orden": [
+      "Ingen går av før avløser er på plass.",
+      "Påtroppende møter ti minutter før skiftet."
+    ],
+    "klargjoring": [
+      "Utstyr til neste vakt ligger klart.",
+      "Radioene er testet før overlevering."
+    ],
+    "plan": [],
+    "forhold": [
+      "Publikum sluses gjennom hovedinngang vest."
+    ],
+    "spesielt": [
+      "Ingen slippes inn uten billett eller utstillerpass."
+    ],
+    "kontakter": [
+      "Vaktmester",
+      "Arrangementsleder",
+      "Førstehjelp"
+    ],
+    "kommunikasjon": [
+      "Kanal 1 for inngang, kanal 2 for disk og runder.",
+      "Telefonnumre og koder står ikke i dette dokumentet."
+    ],
+    "open": []
+  }
+}
