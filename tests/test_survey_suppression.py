@@ -144,6 +144,22 @@ def main() -> int:
               "no row carries an extra field")
         check(data["minCell"] == 5, "the threshold travels with the payload")
 
+    print("\n4. caller text is data, not a second template")
+    marker = 'Role --><svg onload=window.__requester=1></svg><!--'
+    requester_page, error = build(CSV, "requester", ["--requested-by", marker])
+    check(requester_page.is_file(), "survey requester fixture builds", error[:300])
+    requester_text = requester_page.read_text(encoding="utf-8")
+    check("<svg onload" not in requester_text and "&lt;svg onload" in requester_text,
+          "requested-by is escaped provenance text, never active markup")
+    literal = "{{KPI_CARDS}} {{SURVEY_DATA}}"
+    token_csv = ("Enhet,Sporsmal,Svar\nNord," + literal + ",Agree\n"
+                 "Sør," + literal + "," + literal + "\n")
+    token_page, error = build(token_csv, "tokens")
+    check(token_page.is_file(), "a survey holding template-shaped text builds", error[:300])
+    token_text = token_page.read_text(encoding="utf-8")
+    check("{{KPI_CARDS}}" in token_text and "{{SURVEY_DATA}}" in token_text,
+          "template-shaped question and answer text stay literal")
+
     print("\n4. the page's script runs, and its numbers agree with the static view")
     try:
         from playwright.sync_api import sync_playwright
@@ -166,6 +182,24 @@ def main() -> int:
         pg.click("#reset")
         pg.wait_for_timeout(200)
         restored = pg.inner_text("#kpis").split("\n")[1]
+        browser.close()
+
+        print("  -- chromium: caller text that looks like a template token")
+        browser = p.chromium.launch()
+        for path, label in ((requester_page, "requester"), (token_page, "tokens")):
+            cp = browser.new_page()
+            cp.goto(path.as_uri())
+            cp.wait_for_timeout(120)
+            if label == "requester":
+                check(cp.evaluate("window.__requester === undefined")
+                      and cp.locator("svg[onload]").count() == 0,
+                      "chromium: requested-by never runs or parses as markup")
+            else:
+                check(cp.locator("h1").inner_text() == "Test",
+                      "chromium: the title stays the title")
+                check(literal in cp.evaluate("SURVEY.questions"),
+                      "chromium: the survey JSON keeps the literal question")
+            cp.close()
         browser.close()
 
     check(not errors, "the page loads with no script error", "; ".join(errors[:2]))

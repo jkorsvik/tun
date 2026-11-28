@@ -1136,12 +1136,16 @@ DELIBERATE_NB_CHANGES = [
 # Ten artefacts moved: the bundled and paired dashboards, their feedback
 # variants, the cube and fx-cube, and the two paired data.js files. The other
 # baselines stayed byte-identical.
+# 2026-11-28: re-pinned after the caller-text single-pass fill and the sidecar
+# scrub (PR follow-up to #21). Six dashboard builds moved: the export header now
+# flattens a source label that contains CR/LF/U+2028/U+2029, so the page writes a
+# comment that cannot start a new line. The two paired data.js files are unchanged.
 BASELINE = {
     "fx-deck/fx-deck.html": "cde971c4b080887b2b7b1c446f48ed0b5d63a3c7fcb7fb1466c446cfa24342a0",
-    "dash-bundled/dash-bundled.html": "82edc7286fb4f6ce9af98360e40133d702e627a8100c1a92054785eb357fc385",
-    "dash-paired/paired/dash.html": "6d951bc10b681b2076ade347341d757fc5ba72fdd4514cef8da582b870da8bca",
+    "dash-bundled/dash-bundled.html": "d85549a9b2ac4299a3a1a7cf1ba171852253f06cda3f23b495c10b99fd155ffe",
+    "dash-paired/paired/dash.html": "001d73c1816ad246bd4423ea248cd82da74dca04e54c20d4942e7e861276341f",
     "dash-paired/paired/data.js": "35713a604fb90dd269c35b033e73054f6e4353f43ab7f381ef051e7d20dab78a",
-    "dash-feedback/dash-feedback.html": "c9552a54d6429278b19d35f44f567d130751639b0d4f4e778d104c653fb8f7b1",
+    "dash-feedback/dash-feedback.html": "e8b2cdce003972c1b6aa6d265de40097e5c8426015d7ae43aac580fb4608f895",
     # New artefact 2026-10-25 (the scorecard, ROADMAP A24): its first build, pinned so any
     # change to its nb output is visible.
     "scorecard/scorecard.html": "9175c9a7b790c4c4fbc7fc045f201268c22ed07dd31817c2966374d79bc0a030",
@@ -1163,10 +1167,10 @@ BASELINE = {
     "cube/cube.html": "44d2ea7cbf10c1a1930d08edea6a2b3e8b16446a40508f64095c0752ead05935",
     "cube-feedback/cube-feedback.html": "f6737bc4e0f6f089c9ea585b8e2a773fb2b33c29b1db70a577a687779eece216",
     "process/process.html": "3112b3d1ccda91d7e0fb253700f6577af964ccc7b29f225f11b9b77405d3e422",
-    "fx-dash/fx-dash.html": "303a871f7fc2d6b2dffeb12c8f08ab4c1e859ca6a0ab77859a588cf95ec4d1ea",
-    "fx-dash-paired/fxp/dash.html": "7d2e89e201722bc3af304017904a4750a8a36f15df15b3228dd6781452453667",
+    "fx-dash/fx-dash.html": "a1d822b71b0d54b8032b6d61a4194cd9934fe4c145de94ef19327523833306c4",
+    "fx-dash-paired/fxp/dash.html": "bf0a3c3017bae5d46d7f4583c34b8b8256f5f9b3602bd76c3854bb07f6d0f77b",
     "fx-dash-paired/fxp/data.js": "b780577d6b85764ed4e15a5de4d81bdcdafca25565bbfe7521276ab5efdf4ecd",
-    "fx-dash-notime/fx-dash-notime.html": "2b207b3c25417de1c65cb48abd87ffff659d6c7f555bda4775b5133707f1b7e4",
+    "fx-dash-notime/fx-dash-notime.html": "eadbc012a7f413c329c7f3a9d21661012c5f15e7c95d87d3e66ab66a2dfdbd5c",
     "fx-cube/fx-cube.html": "d161eba56ae1cee51130411eee3f2f38b92ba362c7bb0e760a7299844127d882",
     "fx-process/fx-process.html": "e3fe3d7851c2ef22a57a9a5dc1fa152b1c040c0196c695869a4b980961c4bf94",
     # the survey board (2026-10-24): a new artefact, so its nb output is frozen here

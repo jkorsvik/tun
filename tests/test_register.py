@@ -208,6 +208,30 @@ def main(argv: list[str] | None = None) -> int:
     chk("u003cscript" in hostile_blob,
         "the payload carries the cell as escaped text, and the page reads it back unchanged")
 
+    requester = 'Role --><svg onload=window.__requester=1></svg><!--'
+    requester_out = work / "requester.html"
+    res = subprocess.run([sys.executable, str(BUILDER), "--data", str(hostile),
+                          "--title", "x", "--requested-by", requester, "--out", str(requester_out)],
+                         capture_output=True, text=True)
+    chk(res.returncode == 0, "a hostile requester still builds", res.stderr.strip()[-120:])
+    requester_blob = requester_out.read_text(encoding="utf-8")
+    chk("<svg onload" not in requester_blob and "&lt;svg onload" in requester_blob,
+        "requested-by is escaped provenance text, never active markup")
+
+    # A column name that looks like a template token must stay data. The chained
+    # .replace() fill used to rewrite it with the JSON payload of that name.
+    placeholder_data = work / "placeholder.csv"
+    placeholder_data.write_text('{{REGISTER_ROWS}},B\nx,1\n', encoding="utf-8")
+    placeholder_out = work / "placeholder.html"
+    res = subprocess.run([sys.executable, str(BUILDER), "--data", str(placeholder_data),
+                          "--title", "Synthetic", "--out", str(placeholder_out)],
+                         capture_output=True, text=True)
+    chk(res.returncode == 0, "a template-shaped column still builds as data",
+        res.stderr.strip()[-120:])
+    placeholder_blob = placeholder_out.read_text(encoding="utf-8")
+    chk("{{REGISTER_ROWS}}" in placeholder_blob,
+        "a template-shaped column keeps its literal text")
+
     with sync_playwright() as pw:
         for engine in engines:
             print(f"  -- {engine}")
@@ -359,6 +383,23 @@ def main(argv: list[str] | None = None) -> int:
             "and it says, in words, that it is the first page of a larger list")
         chk(p.eval_on_selector("#controls", "e => e.hidden"),
             "the controls stay hidden without script, rather than doing nothing")
+        browser.close()
+
+        print("  -- chromium: caller text that looks like a template token")
+        browser = pw.chromium.launch()
+        cp = browser.new_page()
+        cp.goto(placeholder_out.as_uri())
+        cp.wait_for_selector("#tbl tbody tr")
+        chk(cp.locator("#tbl thead").inner_text().strip().startswith("{{REGISTER_ROWS}}"),
+            "a template-shaped column displays literally in the table")
+        chk(cp.evaluate("META.columns[0]") == "{{REGISTER_ROWS}}",
+            "and the script data keeps it exactly")
+        cp.goto(requester_out.as_uri())
+        cp.wait_for_timeout(120)
+        chk(cp.evaluate("window.__requester === undefined")
+            and cp.locator("svg[onload]").count() == 0,
+            "requested-by never runs or parses as markup")
+        cp.close()
         browser.close()
 
     print(f"\n{'FAIL' if FAILURES else 'PASS'}: {CHECKS - len(FAILURES)} of {CHECKS} checks")

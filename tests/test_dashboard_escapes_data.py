@@ -24,6 +24,8 @@ without a browser is worse than none (AGENTS.md, verification gate).
 """
 from __future__ import annotations
 
+import json
+import os
 import pathlib
 import re
 import shutil
@@ -99,6 +101,229 @@ def probe(page, path: pathlib.Path) -> dict:
     })""")
 
 
+# No exfiltration or remote endpoint: the marker changes one local boolean only.
+BOUNDARY_MARKER = '<svg onload=window.__boundary=1></svg>'
+BOUNDARY_TEXT = '</ScRiPt>' + BOUNDARY_MARKER + '&\u2028\u2029'
+
+
+def boundary_build(root: pathlib.Path, folder: pathlib.Path, case: str) -> pathlib.Path:
+    """Use the real CLI. Each case isolates one input-to-output boundary."""
+    folder.mkdir(parents=True, exist_ok=True)
+    dim, measure, time_col = 'Category', 'Value', 'Month'
+    row = {dim: 'A', measure: 1, time_col: '2026-01'}
+    source = 'Synthetic test'
+    mode = 'paired' if case.startswith('paired-') else 'bundled'
+    extra = []
+    if case in ('row', 'paired-row'):
+        row[dim] = BOUNDARY_TEXT
+    elif case == 'meta':
+        source = BOUNDARY_TEXT
+    elif case in ('time', 'filter'):
+        column = BOUNDARY_TEXT + 'end'
+        if case == 'time':
+            row[column] = row.pop(time_col); time_col = column
+        else:
+            row[column] = 'A'; extra += ['--filters', column]
+    elif case == 'paired-source':
+        source = 'Synthetic\nwindow.__boundary=1;//\r\u2028\u2029'
+    elif case == 'paired-filename':
+        pass
+    elif case == 'placeholder':
+        dim = '+(window.__boundary=1)+'
+        row[dim] = row.pop('Category')
+        row['Note'] = '{{FILTER_COLS_JSON}}'
+    elif case == 'static-placeholder':
+        dim = '{{FEEDBACK_BLOCK}}'
+        row[dim] = row.pop('Category')
+        extra += ['--feedback-to', 'https://example.org/feedback']
+    elif case != 'export':
+        raise AssertionError(case)
+    data = folder / 'input.json'
+    data.write_text(json.dumps([row]), encoding='utf-8')
+    out = folder / ('page\u2028control.html' if case == 'paired-filename' else 'page.html')
+    command = [sys.executable, str(root / 'tools/build_dashboard.py'), '--data', str(data),
+               '--title', 'Boundary test', '--dimension', dim, '--measure', measure,
+               '--time', time_col, '--source', source, '--requested-by', 'Test role',
+               '--mode', mode, '--out', str(out), *extra]
+    result = subprocess.run(command, capture_output=True, text=True,
+                            env=dict(os.environ, SOURCE_DATE_EPOCH='1794265200'))
+    if result.returncode:
+        raise AssertionError((case, result.stdout, result.stderr))
+    return out
+
+
+def boundary_probe(browser, path: pathlib.Path, case: str, folder: pathlib.Path) -> dict:
+    context = browser.new_context(accept_downloads=True)
+    remote, errors = [], []
+    context.route(re.compile(r'^https?://'), lambda route: (remote.append(route.request.url), route.abort())[1])
+    page = context.new_page()
+    page.on('pageerror', lambda error: errors.append(str(error)))
+    page.goto(path.as_uri())
+    page.wait_for_timeout(120)
+    exported = None
+    if case == 'export':
+        # Same source field the normal file refresh/export UI reads. A filename can
+        # contain a line break on supported desktop filesystems.
+        page.evaluate("source => { DATA_META.source = source; document.getElementById('export').disabled = false; }",
+                      'Synthetic\nwindow.__boundary=1;//\r\u2028\u2029')
+        with page.expect_download() as info:
+            page.click('#export')
+        sidecar = folder / 'download.js'
+        info.value.save_as(sidecar)
+        exported = sidecar.read_text(encoding='utf-8')
+        # Read the downloaded JavaScript as the next paired recipient does.
+        target = folder / 'recipient.html'
+        target.write_text('<!doctype html><script src="./download.js"></script>')
+        page.goto(target.as_uri())
+    observed = page.evaluate("""() => ({
+        marker: window.__boundary === 1,
+        parsed: document.querySelectorAll('svg[onload]').length,
+        rows: (window.DASHBOARD_DATA || []).length,
+        data: window.DASHBOARD_DATA,
+        source: (window.DASHBOARD_META || {}).source,
+        tableRows: document.querySelectorAll('#tbl tbody tr').length,
+        staticHeaders: [...document.querySelectorAll('#nojs th')].map(e => e.textContent),
+    })""")
+    observed.update(errors=errors, remote=remote, exported=exported)
+    context.close()
+    return observed
+
+
+def script_boundaries(tmp: pathlib.Path, pw) -> dict:
+    """Chromium only. The WebKit run of this matrix crashed the runner in CI, and a gate
+    that cannot finish proves nothing; the base escape suite above still runs both engines."""
+    cases = ('row', 'meta', 'time', 'filter', 'paired-row',
+             'paired-source', 'paired-filename', 'placeholder', 'static-placeholder', 'export')
+    outputs = {case: boundary_build(ROOT, tmp / case, case) for case in cases}
+    receipts = {}
+    browser = pw.chromium.launch()
+    for case, path in outputs.items():
+        got = boundary_probe(browser, path, case, path.parent)
+        receipts[case] = got
+        check(f'chromium/{case}: no marker or markup crosses the output boundary',
+              not got['marker'] and not got['parsed'])
+        check(f'chromium/{case}: JavaScript and data survive',
+              not got['errors'] and got['rows'] == 1, str(got['errors']))
+        check(f'chromium/{case}: no remote request', not got['remote'])
+        if case in ('row', 'paired-row'):
+            check(f'chromium/{case}: original cell survives exactly',
+                  got['data'][0]['Category'] == BOUNDARY_TEXT if got['data'] else False)
+        if case == 'meta':
+            check(f'chromium/{case}: original source survives exactly', got['source'] == BOUNDARY_TEXT)
+        if case == 'static-placeholder':
+            check(f'chromium/{case}: no HTML template expansion in static headers',
+                  '{{FEEDBACK_BLOCK}}' in got['staticHeaders'])
+        if case == 'placeholder':
+            check(f'chromium/{case}: no JSON template expansion',
+                  got['data'][0]['Note'] == '{{FILTER_COLS_JSON}}' if got['data'] else False)
+        if case in ('paired-source', 'paired-filename', 'export'):
+            check(f'chromium/{case}: the exported comment keeps one line',
+                  got['exported'] is None or '\nwindow.__boundary' not in got['exported'])
+    browser.close()
+    return receipts
+
+
+def literal_boundaries(tmp: pathlib.Path, pw) -> None:
+    """Caller text that looks like every template token must survive as data."""
+    tmp.mkdir(parents=True, exist_ok=True)
+    literal = '{{DATA_MODE}} {{REQUESTED_BY}} {{FEEDBACK_BLOCK}}'
+    data = tmp / 'literal.json'
+    data.write_text(json.dumps([{literal: literal, 'Value': 1}]), encoding='utf-8')
+    out = tmp / 'literal.html'
+    result = subprocess.run([sys.executable, str(ROOT / 'tools/build_dashboard.py'),
+        '--data', str(data), '--title', literal, '--dimension', literal, '--measure', 'Value',
+        '--source', literal, '--requested-by', literal, '--feedback-to', 'https://example.org/feedback',
+        '--out', str(out)], capture_output=True, text=True)
+    check('literal dashboard: template-shaped caller text builds', result.returncode == 0, result.stderr)
+    if result.returncode:
+        return
+    browser = pw.chromium.launch()
+    for scripting in (True, False):
+        context = browser.new_context(java_script_enabled=scripting)
+        page = context.new_page(); page.goto(out.as_uri())
+        check(f'chromium/{scripting}: static header and cell keep all literal tokens',
+              literal in page.locator('#nojs th').all_text_contents()
+              and literal in page.locator('#nojs td').all_text_contents())
+        check(f'chromium/{scripting}: heading keeps literal tokens', page.locator('h1').inner_text() == literal)
+        if scripting:
+            check('chromium: source and row keep literal tokens',
+                  page.evaluate('window.DASHBOARD_META.source') == literal
+                  and page.evaluate('window.DASHBOARD_DATA[0]') == {literal: literal, 'Value': 1})
+        context.close()
+    browser.close()
+
+
+def boundary_mutations(tmp: pathlib.Path, pw) -> None:
+    """Delete each boundary guard independently in a private copy, never this tree."""
+    mutations = (
+        ('rows', 'row', 'tools/build_dashboard.py',
+         'payload = as_script_json(rows)', 'payload = json.dumps(rows)'),
+        ('meta', 'meta', 'tools/build_dashboard.py',
+         'meta_js = as_script_json({', 'meta_js = json.dumps({'),
+        ('filter', 'filter', 'tools/build_dashboard.py',
+         'as_script_json(filters or [args.dimension])', 'json.dumps(filters or [args.dimension])'),
+        ('keys', 'time', 'tools/build_dashboard.py',
+         'as_script_json(value)', 'json.dumps(value)'),
+        ('source fallback', 'meta', 'tools/build_dashboard.py',
+         '"DATA_META.source || " + as_script_json(source_name)',
+         '"DATA_META.source || " + json.dumps(source_name)'),
+        ('sidecar source', 'paired-source', 'tools/build_dashboard.py',
+         're.sub(r"[\\r\\n\\u2028\\u2029]", " ", source_name)', 'source_name'),
+        ('sidecar filename', 'paired-filename', 'tools/build_dashboard.py',
+         're.sub(r"[\\r\\n\\u2028\\u2029]", " ", args.out.name)', 'args.out.name'),
+        ('single-pass fill', 'static-placeholder', 'tools/build_dashboard.py',
+         'page = re.sub(pattern, lambda match: replacements[match[0]], page)',
+         'for key, value in replacements.items(): page = page.replace(key, value)'),
+        ('client export', 'export', 'templates/single-file-dashboard.html',
+         '.replace(/[\\r\\n\\u2028\\u2029]/g, " ")', ''),
+    )
+    tree = tmp / 'tree'
+    for name in ('tools', 'templates', 'plugins'):
+        shutil.copytree(ROOT / name, tree / name,
+                        ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    # The builder no longer imports json; the mutations that restore json.dumps need it.
+    builder = tree / 'tools/build_dashboard.py'
+    source = builder.read_text(encoding='utf-8')
+    assert source.count('import html\n') == 1
+    builder.write_text(source.replace('import html\n', 'import html\nimport json\n', 1), encoding='utf-8')
+    browser = pw.chromium.launch()
+    for label, case, rel, before, after in mutations:
+        path = tree / rel
+        original = path.read_text(encoding='utf-8')
+        count = original.count(before)
+        check(f'mutation/{label}: applied to exactly one guard', count == 1, str(count))
+        if count != 1:
+            continue
+        path.write_text(original.replace(before, after, 1), encoding='utf-8')
+        try:
+            out = boundary_build(tree, tmp / label.replace(' ', '-'), case)
+            got = boundary_probe(browser, out, case, out.parent)
+            check(f'mutation/{label}: boundary assertions catch its removal',
+                  got['marker'] or got['parsed'] > 0 or bool(got['errors'])
+                  or case == 'static-placeholder' and '{{FEEDBACK_BLOCK}}' not in got['staticHeaders'],
+                  str(got))
+        finally:
+            path.write_text(original, encoding='utf-8')
+    # Unknown placeholders in the template still fail closed; inserted data is not
+    # an unresolved template. This is independent of every guard-removal control.
+    template = tree / 'templates/single-file-dashboard.html'
+    template.write_text(template.read_text(encoding='utf-8') + '{{UNFILLED}}', encoding='utf-8')
+    failed = False
+    try:
+        boundary_build(tree, tmp / 'missing-template', 'row')
+    except AssertionError as error:
+        failed = 'UNFILLED' in str(error)
+    check('unknown dashboard template token is refused by name', failed)
+    template.write_text(template.read_text(encoding='utf-8').replace('{{UNFILLED}}', '{{DIMENSION_COL}}'), encoding='utf-8')
+    failed = False
+    try:
+        boundary_build(tree, tmp / 'unquoted-template', 'row')
+    except AssertionError as error:
+        failed = 'DIMENSION_COL' in str(error)
+    check('unquoted column template token is refused by name', failed)
+    browser.close()
+
+
 def main() -> int:
     try:
         from playwright.sync_api import sync_playwright
@@ -133,6 +358,9 @@ def main() -> int:
               poison_data_js(builds["paired"][1]))
 
         with sync_playwright() as p:
+            script_boundaries(tmp / 'script-boundaries', p)
+            literal_boundaries(tmp / 'literal-boundaries', p)
+            boundary_mutations(tmp / 'boundary-mutants', p)
             try:
                 browser = p.chromium.launch()
             except Exception as e:  # browser binary missing
