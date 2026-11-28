@@ -34,7 +34,6 @@ import asyncio
 import base64
 import gzip
 import html
-import json
 import pathlib
 import re
 import struct
@@ -48,6 +47,7 @@ sys.path.insert(0, str(HERE))
 import build_stamp  # noqa: E402
 import tun_brand  # noqa: E402
 import i18n  # noqa: E402
+from tun_core import as_script_json  # noqa: E402
 
 TEMPLATE = ROOT / "templates" / "showcase.html"
 STRINGS = "showcase"
@@ -318,15 +318,15 @@ def main(argv: list[str] | None = None) -> int:
 
     newest = max(with_page, key=lambda e: e["page"].stat().st_mtime)["page"]
     page = (i18n.apply(tun_brand.prepare(TEMPLATE.read_text(encoding="utf-8"), args), strings)
-            .replace("{{LANG_JSON}}", json.dumps(tables, ensure_ascii=False))
-            .replace("{{START_LANG}}", json.dumps(args.start_lang))
+            .replace("{{LANG_JSON}}", as_script_json(tables))
+            .replace("{{START_LANG}}", as_script_json(args.start_lang))
             .replace("{{TITLE}}", html.escape(args.title))
             .replace("{{CHIPS}}", chips)
             .replace("{{TECH_STATS}}", tech_stats)
             .replace("{{THINGS}}", things)
             .replace("{{CARDS}}", "\n".join(cards))
-            .replace("{{COUNT_ONE_JS}}", json.dumps(strings["count_one"]))
-            .replace("{{COUNT_MANY_JS}}", json.dumps(strings["count_many"]))
+            .replace("{{COUNT_ONE_JS}}", as_script_json(strings["count_one"]))
+            .replace("{{COUNT_MANY_JS}}", as_script_json(strings["count_many"]))
             .replace("{{SOURCE_DESCRIPTION}}", html.escape(args.source))
             .replace("{{EXTRACT_TIMESTAMP}}", build_stamp.from_mtime(newest, "%Y-%m-%d %H:%M", aware=False))
             .replace("{{BUILD_TIMESTAMP}}", build_stamp.naive())

@@ -53,7 +53,6 @@ import argparse
 import collections
 import datetime
 import html
-import json
 import pathlib
 import sys
 
@@ -69,7 +68,7 @@ import i18n  # noqa: E402
 import tun_core  # noqa: E402
 import tun_tokens  # noqa: E402
 from tun_tokens import strip_css_comments  # noqa: E402
-from tun_core import NOT_STATED, die  # noqa: E402
+from tun_core import NOT_STATED, as_script_json, die  # noqa: E402
 
 TEMPLATE = ROOT / "templates" / "survey-dashboard.html"
 STRINGS = "survey-dashboard"
@@ -410,7 +409,7 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as exc:
             die(f"--feedback-to: {exc}")
 
-    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    payload = as_script_json(data)
     # The tokens are inlined here rather than written into the template, so this page shares
     # one seam with every other artefact. auto_dark: a reader whose system is dark gets a dark
     # survey with no script.
