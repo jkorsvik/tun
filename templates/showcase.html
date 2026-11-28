@@ -127,6 +127,12 @@
   .body h2 { font-size: 1rem; line-height: 1.3; margin: 0; }
   .body h2 span { color: var(--ink-soft); font-weight: 400; font-variant-numeric: tabular-nums; }
   .body p { margin: 0; font-size: 0.875rem; color: var(--ink-soft); }
+  /* Every card is a static link as well as a live button: with scripting off, this is the
+     path that opens the example at its published URL. 44 px keeps the touch target. */
+  .card-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.25rem;
+    min-height: 2.75rem; font-size: 0.875rem; font-weight: 650; text-decoration: underline;
+    text-underline-offset: 0.2em; }
+  .card-link:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .kind { font-size: 0.875rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
   details { font-size: 0.875rem; }
   details summary { cursor: pointer; color: var(--ink-soft); min-height: 2.75rem; display: flex; align-items: center; }

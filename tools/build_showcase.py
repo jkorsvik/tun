@@ -24,6 +24,11 @@ page itself, the way tun.community does, rather than asking the builder for one 
         --requested-by "Prosjekteier" \
         --out examples/54-showcase/oversikt.html
 
+The same document is published both as the site root (`_site/index.html`) and as the
+committed example (`examples/54-showcase/oversikt.html`). A relative link would resolve
+against two different directories, so every card's static link is built from `--base-url`
+(default `https://jkorsvik.github.io/tun/`) instead.
+
 Requires Playwright, like the verifiers, and fails without it rather than shipping a page of
 empty frames. Stdlib for everything else.
 """
@@ -38,6 +43,7 @@ import pathlib
 import re
 import struct
 import sys
+import urllib.parse
 import zlib
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -135,6 +141,19 @@ SIBLING_CSS = re.compile(r'<link\b[^>]*\bhref="((?:\./)?[^"/:]+)"[^>]*>', re.I)
 
 LIVE_PREFIX = "gzip:"
 GZIP_HEADER = bytes((0x1F, 0x8B, 8, 0, 0, 0, 0, 0, 2, 0xFF))
+DEFAULT_BASE_URL = "https://jkorsvik.github.io/tun/"
+
+
+def static_url(base_url: str, slug: str, page: pathlib.Path | str) -> str:
+    """The shareable Pages URL for one example's selected page.
+
+    The gallery is published at two paths, so the link cannot be relative. A base without
+    its trailing slash still has to append to the published root, not replace its last
+    component, which is why the slash is normalised here rather than left to urljoin.
+    """
+    return (f"{base_url.strip().rstrip('/')}/examples/"
+            f"{urllib.parse.quote(slug, safe='')}/"
+            f"{urllib.parse.quote(pathlib.Path(page).name, safe='')}")
 
 
 def encode_live(raw: bytes) -> str:
@@ -234,6 +253,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--examples", default="examples", help="the examples folder")
     ap.add_argument("--out", required=True, help="the HTML file to write")
     ap.add_argument("--title", default="Tun: alle eksempel")
+    ap.add_argument("--base-url", default=DEFAULT_BASE_URL,
+                    help="the published site root the cards link under "
+                         f"(default {DEFAULT_BASE_URL})")
     ap.add_argument("--source", required=True, help="what these artefacts came from, in words")
     ap.add_argument("--requested-by", required=True, help="a role, not a person")
     ap.add_argument("--width", type=int, default=900)
@@ -243,6 +265,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="the language the page opens in; the reader can switch")
     tun_brand.add_arguments(ap)
     args = ap.parse_args(argv)
+    if not args.base_url.strip():
+        sys.exit("build_showcase: --base-url must not be empty")
 
     folder = pathlib.Path(args.examples)
     if not folder.is_dir():
@@ -273,8 +297,13 @@ def main(argv: list[str] | None = None) -> int:
         command = (f'<details><summary data-i18n="card_command">'
                    f'{html.escape(strings["card_command"])}</summary>'
                    f'<code>{html.escape(ex["command"])}</code></details>') if ex["command"] else ""
-        live = ""
+        link = live = ""
         if ex["page"]:
+            href = static_url(args.base_url, ex["slug"], ex["page"])
+            link = (f'<a class="card-link" href="{html.escape(href, quote=True)}">'
+                    f'<span data-i18n="card_open">{html.escape(strings["card_open"])}</span>'
+                    f'<span class="sr-only">: {html.escape(ex["title"])}</span>'
+                    f'<span aria-hidden="true"> ↗</span></a>')
             raw = inline_siblings(ex["page"])
             payload = encode_live(raw)
             live = f' data-live="{payload}"'
@@ -288,7 +317,7 @@ def main(argv: list[str] | None = None) -> int:
             f'<div class="body"><span class="kind">{html.escape(kind_of(ex["slug"]))}'
             f' &middot; {html.escape(ex["slug"].split("-")[0])}{more}</span>'
             f'<h2>{html.escape(ex["title"])}</h2>'
-            f'<p>{html.escape(ex["purpose"])}</p>{command}</div></li>')
+            f'<p>{html.escape(ex["purpose"])}</p>{link}{command}</div></li>')
 
     builders = len(list((ROOT / "tools").glob("build_*.py")))
     suites = len(list((ROOT / "tests").glob("test_*.py")))
