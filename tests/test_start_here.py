@@ -37,9 +37,15 @@ def run(command: list[str], cwd: pathlib.Path) -> subprocess.CompletedProcess:
 def main() -> None:
     text = DOC.read_text(encoding="utf-8")
     assert "[Start here](START-HERE.md)" in (ROOT / "README.md").read_text(encoding="utf-8")
-    for expected in ("setup.py --tool claude", "setup.py --tool agents", "ChatGPT, Grok",
+    for expected in ("[Install Tún for your tool](INSTALL.md)",
+                     "[the AI recipes](docs/ai-recipes/README.md)", "ChatGPT, Grok",
                      "not the tested Tún builders", "Split the data"):
         assert expected in text, f"quick start is missing {expected!r}"
+    install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
+    for tool in ("claude", "agents"):
+        for python in ("python3", "py -3"):
+            command = f"{python} setup.py --install --tool {tool}"
+            assert command in install, f"install guide is missing {command!r}"
     argv = documented_build(text)
 
     with tempfile.TemporaryDirectory(prefix="tun-start-here-") as tmp:

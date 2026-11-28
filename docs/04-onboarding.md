@@ -103,22 +103,15 @@ script can distinguish a refused input from a crash.
 ## Part 2: the same job, by asking
 
 The skills are open [Agent Skills](https://agentskills.io/specification): editable Markdown
-recipes that tell an assistant how to build and check the file. Clone the repository, then
-run the command for your tool:
+recipes that tell an assistant how to build and check the file. Follow the [installation guide](../INSTALL.md)
+for Windows, macOS or Linux. Use Marketplace for RAIWork. For other tools, use the
+[recipe for your assistant](ai-recipes/README.md) to install or find the skills. For example, to copy the Tún skills for Claude Code on Windows:
 
-| Tool | Install |
-|---|---|
-| Claude Code | `python3 setup.py --tool claude` |
-| Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode | `python3 setup.py --tool agents` |
-| RAIWork | `python3 setup.py` |
-
-On Windows, use `py -3 setup.py --tool claude` or `py -3 setup.py --tool agents`.
-
-Check the installation afterwards:
-
-```bash
-python3 setup.py --check
+```powershell
+py -3 setup.py --install --tool claude
 ```
+
+On macOS or Linux, use `python3 setup.py --install --tool claude` instead.
 
 Then open your assistant with this repository as its working folder and ask:
 

@@ -66,6 +66,10 @@ SKIP_SUFFIXES = {
 DATA_SUFFIXES = {".csv", ".tsv", ".json", ".geojson", ".ndjson", ".parquet", ".xlsx", ".xls"}
 
 ALLOWED_DATA: dict[str, str] = {
+    "docs/ai-recipes/fixtures/excuses.csv":
+        "Four invented category/count/month rows for the AI recipe reference dashboard.",
+    "docs/ai-recipes/fixtures/expected-assertions.json":
+        "Expected counts and labels for the same synthetic reference dashboard.",
     "examples/01-hello-dashboard/salgsdata.csv":
         "synthetic sales figures, written by hand for the hello example",
     "examples/15-chart-library-comparison-poc/data/fylker-6.geojson":

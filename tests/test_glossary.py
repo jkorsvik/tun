@@ -113,10 +113,11 @@ def strip_exempt_paths(line: str) -> str:
     but it writes it inside a path, and the path is the exemption. Stripping it keeps the
     link legal without whitelisting the whole sentence around it.
     """
+    line = re.sub(r"https?://[^\s<>)]+", "<url>", line)
     line = CODE_SPAN.sub("<code>", line)
     line = PRODUCT_NAME.sub("<product>", line)
     line = QUOTED.sub("<quoted>", line)
-    for path in US_SPELLING_EXEMPT:
+    for path in US_SPELLING_EXEMPT | {"docs/ai-recipes/claude-artifacts.md"}:
         line = line.replace(path, "<exempt-path>")
         name = pathlib.Path(path)
         line = line.replace(name.name, "<exempt-path>")

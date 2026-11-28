@@ -11,11 +11,11 @@ needed to read it.
 
 ### 1. No AI: build an example
 
-You need Git and Python 3.9 or newer. On Windows, use `py -3` instead of `python3`.
+[Get the toolkit by ZIP or Git](INSTALL.md#get-the-toolkit). Use Python 3.12 or later for this guide. The build commands below run from the extracted or cloned folder. On Windows, use PowerShell and `py -3`.
+
+macOS or Linux:
 
 ```bash
-git clone https://github.com/jkorsvik/tun.git
-cd tun
 python3 tools/build_dashboard.py \
   --data examples/01-hello-dashboard/salgsdata.csv \
   --title "Salg per region og produkt 2026" \
@@ -26,20 +26,20 @@ python3 tools/build_dashboard.py \
   --out work/demo.html
 ```
 
-Open `work/demo.html` in your browser. On Windows, `start work\demo.html` does the same.
+Open `work/demo.html` in your browser. On Windows, paste the following single line into PowerShell instead of the macOS/Linux command above:
+
+```powershell
+py -3 tools/build_dashboard.py --data examples/01-hello-dashboard/salgsdata.csv --title "Salg per region og produkt 2026" --dimension Produkt --measure Belop --time Maaned --filters Region,Produkt,Kanal --source "Eksempeldata (syntetisk) - salgsdata.csv" --requested-by "Prosjekteier" --out work/demo.html
+```
+
+Then run `Invoke-Item work/demo.html` to open the file.
 
 The builders use only the Python standard library. There is no package installation or
 server to start.
 
 ### 2. Claude Code, Codex, Gemini CLI, Copilot, VS Code or OpenCode
 
-Clone the repository, then install the open Agent Skills for your tool:
-
-| Tool | Run in the repository |
-|---|---|
-| Claude Code | `python3 setup.py --tool claude` |
-| Codex, Gemini CLI, GitHub Copilot, VS Code, OpenCode | `python3 setup.py --tool agents` |
-| RAIWork | `python3 setup.py` |
+[Install Tún for your tool](INSTALL.md), then open [the AI recipes](docs/ai-recipes/README.md). Use Marketplace for RAIWork. For local coding assistants, open the toolkit folder and follow the recipe for your tool. The recipes all start with synthetic data and give the commands to build and check one HTML file.
 
 Then open your assistant in the repository and ask:
 

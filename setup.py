@@ -8,7 +8,9 @@ setup.py — install the Tún skills and check this machine. Cross-platform.
 Replaces the old setup-skills.sh + doctor.sh, which were bash-only and full of
 macOS assumptions. Works on Windows, macOS and Linux. Stdlib only.
 
-    python3 setup.py           # check tools, run a smoke test; skills for RAIWork if installed
+    python3 setup.py --install --tool claude      # only Tún skills, no developer checks
+    python3 setup.py --install --tool claude --check  # inspect without changes
+    python3 setup.py           # developer checks and skill setup
     python3 setup.py --check   # check only, change nothing (reports stale copies)
     python3 setup.py --link    # symlink instead of copy, for editing the skills
     python3 setup.py --hooks   # install the pre-commit gate, then exit
@@ -127,11 +129,12 @@ def _drift(src: Path, dst: Path) -> int:
     return len(set(a) ^ set(b)) + sum(1 for k in set(a) & set(b) if a[k] != b[k])
 
 
-def _install_copy(src: Path, dst: Path) -> None:
-    if dst.is_symlink():
-        dst.unlink()
-    elif dst.exists():
-        shutil.rmtree(dst)
+def _install_copy(src: Path, dst: Path, *, replace: bool = True) -> None:
+    if replace:
+        if dst.is_symlink():
+            dst.unlink()
+        elif dst.exists():
+            shutil.rmtree(dst)
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns(*SKIP_NAMES))
     # Never write the marker through a link. If dst were still a symlink at this point,
     # the write would land inside the source repository — which is exactly the coupling
@@ -141,7 +144,8 @@ def _install_copy(src: Path, dst: Path) -> None:
     (dst / MARKER).write_text(
         f"Installed by {PY_CMD} setup.py. Safe to delete.\n"
         f"source: {src}\n"
-        "Edit the skill in that repo and re-run setup.py; edits made here are overwritten.\n"
+        "This copy does not update itself. Use INSTALL.md to check or replace it.\n",
+        encoding="utf-8",
     )
 
 
@@ -289,6 +293,40 @@ def install_skills(check_only: bool, use_symlinks: bool = False,
     if not check_only and not use_symlinks:
         print(f"  {D}note: these are copies. Edit the skill in this repo, then re-run"
               f"\n        this script. `--check` reports copies that have gone stale.{Z}")
+
+
+def install_project_skills(tool: str, check_only: bool) -> int:
+    """Install only Tún skills for the selected assistant. Keep every existing copy."""
+    skills_dir = TOOLS[tool]
+    sources = sorted(p.parent for p in (REPO / "skills").glob("tun-*/SKILL.md"))
+    if not sources:
+        bad("Tún skills", "not found; extract the complete toolkit ZIP first")
+        return 1
+    print(f"Tún skills for {tool}: {skills_dir}")
+    failures = 0
+    for src in sources:
+        dst = skills_dir / src.name
+        try:
+            if dst.is_symlink() or dst.exists():
+                if not dst.is_symlink() and dst.is_dir() and _drift(src, dst) == 0:
+                    ok(src.name, "files match this toolkit")
+                    continue
+                warn(src.name, f"existing skill differs or is not a regular folder; kept: {dst}")
+            elif check_only:
+                bad(src.name, "not installed")
+            else:
+                skills_dir.mkdir(parents=True, exist_ok=True)
+                _install_copy(src, dst, replace=False)
+                ok(src.name, "installed")
+                continue
+        except OSError as exc:
+            bad(src.name, str(exc))
+        failures += 1
+    if failures:
+        print("See INSTALL.md for missing skills and existing copies. No existing skill was replaced.")
+    else:
+        print("Keep this toolkit folder. Open it in your assistant, then use the recipe in INSTALL.md.")
+    return int(failures != 0)
 
 
 def _remove(path: Path) -> None:
@@ -575,7 +613,14 @@ def main() -> int:
                          "included when ~/.raiwork exists): "
                          "agents = ~/.agents/skills (Codex, Gemini CLI, Copilot, VS Code, OpenCode), "
                          "claude = ~/.claude/skills (Claude Code, VS Code, OpenCode)")
+    ap.add_argument("--install", action="store_true",
+                    help="copy only Tún skills for one explicit assistant; no developer checks")
     args = ap.parse_args()
+    if args.install:
+        if args.hooks or args.link or len(args.tool) != 1 or args.tool[0] == "raiwork":
+            ap.error("use --install --tool claude or --install --tool agents; "
+                     "for RAIWork, use Marketplace (see INSTALL.md)")
+        return install_project_skills(args.tool[0], args.check)
 
     print(f"{B}Tún setup + check{Z}  {D}({platform.system()}, {REPO}){Z}")
     if args.hooks:
