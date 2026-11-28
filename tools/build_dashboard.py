@@ -101,7 +101,7 @@ def kpi_cards(args, t: dict[str, str]) -> str:
         key, value = KPI_CARDS[k]
         label = i18n.fill(t[key], measure=args.measure, dimension=args.dimension, time=args.time)
         # The label lands in innerHTML, inside a script: escape it for both.
-        label = json.dumps(html.escape(label, quote=False), ensure_ascii=False).replace("</", "<\\/")
+        label = as_script_json(html.escape(label, quote=False))
         lines.append(f"    {{ label: {label}, value: {value} }}")
     return ",\n".join(lines)
 
@@ -205,8 +205,8 @@ def main() -> None:
     # Nothing the caller types goes into the page raw (ROADMAP A0b, 2026-10-24): a title of
     # `<b>x` became bold text, a column named `Navn "sitert"` ended the JavaScript string it
     # was pasted into, and a `"` anywhere in a column name stopped the page. Two contexts, so
-    # two treatments: HTML gets html.escape, a JavaScript string gets json.dumps, which is the
-    # JSON escape and therefore also a valid JavaScript one.
+    # two treatments: HTML gets html.escape, a JavaScript string inside a <script> gets
+    # as_script_json, which is the JSON escape plus the escape for <, > and &.
     # The static view (docs/11 section 3c). A viewer that blocks scripting — Quick Look on
     # iOS and macOS does — shows what the build already knew: the totals, and the first rows
     # of the file. The same rows feed the script, so the two can only disagree if the file is
