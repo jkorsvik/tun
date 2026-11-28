@@ -18,7 +18,10 @@ handler is load-bearing on its own.
 
 The gate is narrow on purpose. It sees a dialog and a script tag that cannot be
 paired. An injected `<img onerror="fetch(...)">` runs with no dialog, no console
-error and balanced tags, and this gate would not catch it.
+error and balanced tags, and this gate would not catch it. The dialog handler
+also observes only 1200 ms in `verify_dashboard.py` and 800 ms in the core
+verifier, so a `setTimeout(() => alert(1), 2000)` passes as `✓ dialog none` and
+`✓ PASS`; that was measured on a file with a 2-second delayed alert.
 
 Needs Playwright, like the other browser suites, and fails rather than skipping
 without it.
