@@ -42,12 +42,32 @@
         "path": "skills/tun-publish"
       },
       {
+        "name": "tun-host",
+        "path": "skills/tun-host"
+      },
+      {
+        "name": "tun-process",
+        "path": "skills/tun-process"
+      },
+      {
+        "name": "tun-review",
+        "path": "skills/tun-review"
+      },
+      {
+        "name": "tun-feedback",
+        "path": "skills/tun-feedback"
+      },
+      {
         "name": "tun-powerbi-escape",
         "path": "skills/tun-powerbi-escape"
       },
       {
-        "name": "writing-for-agents",
-        "path": "skills/dev/writing-for-agents"
+        "name": "tun-for-communicators",
+        "path": "skills/tun-for-communicators"
+      },
+      {
+        "name": "adding-an-artefact-kind",
+        "path": "skills/dev/adding-an-artefact-kind"
       },
       {
         "name": "hotshot",
@@ -56,6 +76,18 @@
       {
         "name": "magnus-review",
         "path": "skills/dev/magnus-review"
+      },
+      {
+        "name": "refresh-artefacts",
+        "path": "skills/dev/refresh-artefacts"
+      },
+      {
+        "name": "template-on-the-seam",
+        "path": "skills/dev/template-on-the-seam"
+      },
+      {
+        "name": "writing-for-agents",
+        "path": "skills/dev/writing-for-agents"
       }
     ],
     "mcp_servers": [],

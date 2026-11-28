@@ -1,6 +1,13 @@
 # AGENTS.md
 
-Repo instructions for RAIWork / Claude Code working in this repository.
+Repo instructions for coding agents (Claude Code, Codex, Gemini CLI, GitHub Copilot,
+Cursor, Windsurf, OpenCode, RAIWork and others) working in this repository.
+
+> **Helping a user install or use Tún rather than editing the toolkit?** Read
+> [`START-HERE.md`](START-HERE.md) and [`llms.txt`](llms.txt): install the open Agent Skills
+> for your harness (`python3 setup.py --tool <auto|claude|agents|cursor|windsurf>`, `py -3`
+> on Windows), greet the user in their language with the `tun-*` verbs, and write their
+> artefacts in their own folder (or gitignored `work/`), never into tracked paths here.
 
 ## What this repo is
 
@@ -146,25 +153,25 @@ See [`docs/06-way-of-working.md`](docs/06-way-of-working.md). The load-bearing o
 
 ```
 docs/       00-vision, 01-tenant-constraints (empirical), 02-architecture,
-            03-skill-tree, 04-onboarding, 05-toolchain,
-            06-way-of-working, 07-portable-cube, 08-generic-artifact-model
-            (adopted — Layer 0/1 split, external vendoring), 09-13 (usability,
-            palettes, browser support, maintainability, paired-data contract),
-            14-generic-layer-manifest (what's safe to vendor into another repo)
-skills/     the six dashboard skills — this project's own
-skills/dev/ hotshot, magnus-review, writing-for-agents — how the work gets done,
-            deliberately stack-agnostic. See skills/README.md for the split.
-            Both groups are copied into ~/.raiwork/skills by setup.py (--link to
-            symlink instead, only when editing the skills themselves)
-templates/  single-file-dashboard.html (rows), cube-dashboard.html (dense cube),
-            survey-dashboard.html (counted answers), register.html (the list itself),
-            process-diagram.html, portable-slide-deck.html. Hand-rolled, zero dependencies
-tools/      build_dashboard.py, build_cube_dashboard.py, build_survey_dashboard.py,
-            build_register.py, build_process_diagram.py, build_slide_deck.py, and the
-            verifiers — stdlib only. tun_core.py is the one place a table is read, a
-            number is parsed out of a cell, and a build is refused
+            03-skill-tree, 04-onboarding, 05-toolchain, 06-way-of-working,
+            07-portable-cube, 08-generic-artifact-model, 09-36 (usability,
+            palettes, browser support, maintainability, paired-data contract,
+            plugins, shapes, hosting). Full reader-indexed map: docs/index.md
+docs/adr/   Architecture Decision Records (docs/adr/README.md) — durable boundaries
+skills/     11 user-facing verb skills (`tun-help`, `-new`, `-data`, `-verify`,
+            `-publish`, `-host`, `-process`, `-review`, `-feedback`,
+            `tun-powerbi-escape`, `tun-for-communicators`)
+skills/dev/ 6 contributor skills (`hotshot`, `magnus-review`, `writing-for-agents`,
+            `template-on-the-seam`, `adding-an-artefact-kind`, `refresh-artefacts`).
+            See skills/README.md. Installed by setup.py (--tool auto|claude|agents|cursor)
+templates/  28 HTML templates (27 artefact shapes + showcase Explorer; docs/33-artefact-shapes.md).
+            Hand-rolled, zero external dependencies
+tools/      28 builders (`build_*.py`) and the verifiers (`verify_*.py`) — stdlib only.
+            tun_core.py is the one place a table is read, a number is parsed, JSON is
+            escaped for inline script blocks (`as_script_json`), and a build is refused
+llms.txt    Cross-tool AI agent bootstrap and verb reference (published on Pages too)
 probe/      tenant-probe.py — reproducible tenant constraint check
-examples/   working examples + sample data (03 regenerates its own source data)
+examples/   52 working example directories + synthetic sample data (54-showcase is Explorer)
 ```
 
 ## Verification gate
@@ -237,18 +244,21 @@ python3 tests/test_timeline.py               # the timeline: bars placed by thei
 python3 tests/test_gate_inputs.py  # every documented verify path and every mutation anchor still resolves
 python3 tests/test_skill_tier_line.py  # every skill states its tier and cost before its first section
 python3 tests/test_examples_are_current.py  # every generated example equals its own pinned rebuild, byte for byte
+python3 tests/test_adrs.py                  # every ADR indexed, complete, and reachable
+python3 tests/test_agent_bootstrap.py       # webpage + repo AI bootstrap and verb manifest in sync
 ```
 
 One command runs every suite at once and prints one verdict
-(`python3 tools/check_all.py`; `--no-browser` holds back the thirteen that need Playwright
-and says so; `--fast` runs only the eleven the pre-commit hook runs, which is what the hook
-calls now). It refuses an empty list and a count that changed, so a suite that vanishes is
-loud rather than a shorter green run.
+(`python3 tools/check_all.py`; `--no-browser` holds back the suites that need Playwright
+and says so; `--fast` runs the fast static set that the pre-commit hook runs on every
+commit). If you changed a template, shared token or builder, run the `refresh-artefacts`
+dev skill (`skills/dev/refresh-artefacts/SKILL.md`) so committed examples, `test_i18n.py`
+baselines and `examples/54-showcase/oversikt.html` stay byte-current.
 
 `test_skill_links.py` covers `setup.py`, which decides whether to replace or preserve a
-path in `~/.raiwork/skills`; getting that wrong deletes a skill the user wrote, or
-silently moves authority for a global tool into this checkout. Both happened during
-development.
+path in `~/.raiwork/skills` (and `--tool` targets); getting that wrong deletes a skill the
+user wrote, or silently moves authority for a global tool into this checkout. Both happened
+during development.
 
 `test_row_24_26_checks.py` covers the tenant-constraint gates for rows 24, 25 and 26 —
 failures that cannot be reproduced locally, so a static check is the only mechanism that
@@ -309,7 +319,8 @@ is safe — the template is the whole product.
 
 ## Things that are deliberately not here
 
-Don't add them without a conversation:
+Don't add them without a conversation (and see [`docs/adr/README.md`](docs/adr/README.md)
+for the recorded decisions behind these boundaries):
 
 - a semantic layer or lineage graph. Provenance is written into each dashboard (source,
   extract time, requester) and is traceable by reading the file
@@ -328,11 +339,11 @@ self-hosted box: a pull every five minutes plus `docker compose up -d`, reached 
 through a Cloudflare tunnel. There is no Cloudflare deploy step and no credential to hold.
 
 That stack already has stronger gates than a copy here could have. `web/page_test.go` runs
-inside the Docker build and fails it if the page grows past 64 KB, gains a script element,
-loses its provenance block, or loses the fence around the interest link.
-`tools/verify-live.sh` fetches the public URL and compares it **byte for byte** with the
-source, because Cloudflare rewrites HTML at the edge and once silently injected
-`email-decode.min.js` into a page that promises no scripts.
+inside the Docker build and fails it if the page grows past its size budget, gains any
+external script or network dependency, loses its provenance block, or loses the fence around
+the interest link. `tools/verify-live.sh` fetches the public URL and compares it **byte for
+byte** with the source, because Cloudflare rewrites HTML at the edge and once silently
+injected `email-decode.min.js`.
 
 The lessons from running it live there too, in that stack's README and tests: a
 content-derived ETag instead of a fixed date (an old `If-Modified-Since` once kept a

@@ -225,12 +225,49 @@ def main() -> int:
         chk("agents: every skill", {p.name for p in agents.iterdir()} if agents.is_dir() else set(), want)
         chk("agents: a real copy with our marker",
             (agents / "tun-new" / MARKER).is_file() and not (agents / "tun-new").is_symlink(), True)
+        chk("marker records repo root for running builders outside the checkout",
+            f"repo: {REPO}\n" in (agents / "tun-new" / MARKER).read_text(), True)
         chk("claude: every skill but the user's own", {p.name for p in claude.iterdir()} if claude.is_dir() else set(), want)
         chk("claude: the user's own skill is left alone",
             (claude / "hotshot" / "SKILL.md").read_text(), "mine\n")
         chk("says where it was left alone", "~/.claude/skills/hotshot" in out, True)
+        chk("prints the installed Tún verbs",
+            "Tún skills are ready" in out and "tun-new" in out and "tun-verify" in out, True)
         out = run_setup(tmp, "--tool", "agents", "--check")
         chk("--check reports the extra folder up to date", "not installed" in out, False)
+
+        print("--- 15. dedicated folders, harness aliases and --tool auto ---")
+        tmp2 = pathlib.Path(tempfile.mkdtemp())
+        try:
+            # Fresh home with no tool dirs: --tool auto falls back to ~/.agents/skills.
+            out = run_setup(tmp2, "--tool", "auto")
+            chk("auto on fresh home installs ~/.agents/skills",
+                {p.name for p in (tmp2 / ".agents" / "skills").iterdir()}, want)
+            chk("auto on fresh home leaves ~/.claude untouched",
+                (tmp2 / ".claude").exists(), False)
+            # Harness alias (codex -> agents) and dedicated Cursor folder (~/.cursor/skills).
+            shutil.rmtree(tmp2 / ".agents")
+            out = run_setup(tmp2, "--tool", "codex", "--tool", "cursor", "--tool", "windsurf")
+            chk("alias codex installs ~/.agents/skills",
+                (tmp2 / ".agents" / "skills" / "tun-new" / MARKER).is_file(), True)
+            chk("cursor installs ~/.cursor/skills",
+                (tmp2 / ".cursor" / "skills" / "tun-new" / MARKER).is_file(), True)
+            chk("windsurf installs ~/.codeium/windsurf/skills",
+                (tmp2 / ".codeium" / "windsurf" / "skills" / "tun-new" / MARKER).is_file(), True)
+            # When ~/.claude and ~/.gemini exist, --tool auto populates claude + agents once.
+            tmp3 = pathlib.Path(tempfile.mkdtemp())
+            try:
+                (tmp3 / ".claude").mkdir()
+                (tmp3 / ".gemini").mkdir()
+                out = run_setup(tmp3, "--tool", "auto")
+                chk("auto detects ~/.claude",
+                    (tmp3 / ".claude" / "skills" / "tun-new" / MARKER).is_file(), True)
+                chk("auto detects ~/.gemini via ~/.agents/skills",
+                    (tmp3 / ".agents" / "skills" / "tun-new" / MARKER).is_file(), True)
+            finally:
+                shutil.rmtree(tmp3, ignore_errors=True)
+        finally:
+            shutil.rmtree(tmp2, ignore_errors=True)
 
         print()
         print(f"PASS: {passed}  FAIL: {failed}")

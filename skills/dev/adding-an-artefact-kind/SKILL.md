@@ -109,13 +109,13 @@ Miss one and a gate goes red, or worse, stays green while the artefact is invisi
 
 | # | Where | What |
 |---|---|---|
-| 1 | `skills/tun-new/SKILL.md` | a section with a runnable block (`test_skill_routes` requires it, and every printed flag must exist) |
+| 1 | `skills/tun-new/shapes.md` + `skills/tun-new/SKILL.md` | a section with a runnable block in `shapes.md` plus a row in `SKILL.md`'s routing table (`test_skill_routes` checks both) |
 | 2 | `tools/check_no_real_data.py` → `ALLOWED_DATA` | the example CSV and a one-line reason; "it was already there" is not a reason |
 | 3 | `tests/test_dark_scheme_gate.py` → `REQUIRED_FOLLOWERS` | the example path and what it proves |
 | 4 | `tools/core_generic_baseline.json` | bank AFTER `git add`, or the scan cannot see the new files |
-| 5 | `docs/33-artefact-shapes.md` | a row, the count in the title, and the competing-shape note |
+| 5 | `docs/33-artefact-shapes.md` | a row and the competing-shape note |
 | 6 | `docs/34-artefact-ideas.md` | remove the candidate, and say it shipped |
-| 7 | `docs/index.md` | the count in the blurb |
+| 7 | `docs/index.md` | the builder count in the blurb, then run `refresh-artefacts` for the Explorer |
 | 8 | `ROADMAP.md` | the count and the names, including how many are on the seam |
 
 `tests/test_gate_inputs.py` also requires every example path the suite resolves to be git-tracked,

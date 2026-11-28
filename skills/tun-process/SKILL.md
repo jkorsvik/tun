@@ -12,6 +12,10 @@ You are producing a **Tier 1 portable artefact**: one `.html` file, no server, n
 It opens from SharePoint, OneDrive, an attachment or a USB stick. See
 `docs/08-generic-artifact-model.md`, section "Process diagrams".
 
+**Toolkit path:** Commands in `tools/` live in the Tún checkout (`repo:` in
+`.installed-by-tun` next to this `SKILL.md`, or `TUN_HOME`). Write `--out` in the user's
+folder, never inside the Tún repository.
+
 The file has two layers. The floor is a static drawing plus plain HTML: with JavaScript
 off, five sections show one after the other (the flow, a card per step, the roles, the
 improvement points, a text version). On top, a small script turns them into five tabs

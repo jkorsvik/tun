@@ -64,11 +64,11 @@ def builders() -> list[pathlib.Path]:
 
 
 def skill_files() -> list[pathlib.Path]:
-    return sorted(SKILLS.glob("*/SKILL.md"))
+    return sorted(p for p in SKILLS.glob("*/*.md") if p.parent.name != "dev")
 
 
 def route_text(name: str, texts: dict[pathlib.Path, str]) -> list[tuple[pathlib.Path, str]]:
-    """Every skill that names this builder, with the fenced bash blocks that name it."""
+    """Every skill file that names this builder, with the fenced bash blocks that name it."""
     found = []
     for path, text in texts.items():
         if name not in text:
@@ -77,6 +77,19 @@ def route_text(name: str, texts: dict[pathlib.Path, str]) -> list[tuple[pathlib.
             if name in block:
                 found.append((path, block))
     return found
+
+
+def unlinked_references(texts: dict[pathlib.Path, str]) -> list[str]:
+    """Supporting .md files inside a skill folder that SKILL.md forgets to point at."""
+    orphans = []
+    for path in sorted(texts):
+        if path.name == "SKILL.md":
+            continue
+        entry = path.parent / "SKILL.md"
+        entry_text = texts.get(entry, "")
+        if path.name not in entry_text:
+            orphans.append(f"{path.parent.name}/{path.name}")
+    return orphans
 
 
 def hosting_route_gaps(help_text: str, publish_text: str) -> list[str]:
@@ -108,9 +121,17 @@ def main() -> int:
     found_builders = builders()
 
     print("\n1. the scan sees the real tree, and would notice if it did not")
-    chk(len(texts) >= 8, "every skill file was read", f"{len(texts)} file(s)")
+    chk(len(texts) >= 11, "every skill and reference file was read", f"{len(texts)} file(s)")
     chk(len(found_builders) >= 15, "every builder was found", f"{len(found_builders)} builder(s)")
     chk(all(len(t) > 200 for t in texts.values()), "no skill file came back empty")
+    orphans = unlinked_references(texts)
+    chk(not orphans, "every supporting skill doc is linked from its SKILL.md", ", ".join(orphans))
+    fake_orphan = {
+        **texts,
+        SKILLS / "tun-new" / "SKILL.md": texts[SKILLS / "tun-new" / "SKILL.md"].replace("shapes.md", "gone.md"),
+    }
+    chk(unlinked_references(fake_orphan) == ["tun-new/shapes.md"],
+        "an unlinked supporting doc is reported at once")
 
     print("\n2. every builder is reachable from a skill")
     unrouted = [b.name for b in found_builders

@@ -9,10 +9,13 @@ Replaces the old setup-skills.sh + doctor.sh, which were bash-only and full of
 macOS assumptions. Works on Windows, macOS and Linux. Stdlib only.
 
     python3 setup.py           # check tools, run a smoke test; skills for RAIWork if installed
-    python3 setup.py --check   # check only, change nothing (reports stale copies)
-    python3 setup.py --link    # symlink instead of copy, for editing the skills
-    python3 setup.py --hooks   # install the pre-commit gate, then exit
-    python3 setup.py --tool claude                 # skills for Claude Code (repeatable: agents)
+    python3 setup.py --tool auto     # detect installed AI tools and install skills
+    python3 setup.py --tool claude   # Claude Code (~/.claude/skills)
+    python3 setup.py --tool agents   # Codex, Gemini CLI, Copilot, VS Code, Cursor, Windsurf, OpenCode
+    python3 setup.py --tool cursor   # Cursor personal + Cloud Agents sync (~/.cursor/skills)
+    python3 setup.py --check         # check only, change nothing (reports stale copies)
+    python3 setup.py --link          # symlink instead of copy, for editing the skills
+    python3 setup.py --hooks         # install the pre-commit gate, then exit
 
 On Windows every one of these is `py -3 setup.py ...`: `python3` is not a command there
 unless the Microsoft Store alias is installed, so this script prints the spelling the
@@ -20,9 +23,11 @@ machine it runs on actually has.
 
 Read-only apart from installing the skills into ~/.raiwork/skills when RAIWork is
 installed, and into the folders --tool names. The skills are in the open Agent Skills format, so other tools read the same
-folders (docs/28): ~/.agents/skills is read by Codex, Gemini CLI, GitHub Copilot, VS Code
-and OpenCode; ~/.claude/skills by Claude Code, VS Code and OpenCode. VS Code and OpenCode read
-both, so installing both shows them each skill twice; pick the one your tool reads.
+folders (docs/28): ~/.agents/skills is read by Codex, Gemini CLI, GitHub Copilot, VS Code,
+Cursor, Windsurf and OpenCode; ~/.claude/skills by Claude Code, VS Code and OpenCode;
+~/.cursor/skills by Cursor (including Cloud Agents sync). VS Code, Cursor and OpenCode scan
+more than one folder, so installing two folders they both read lists each skill twice; pick
+one folder per tool, or let `--tool auto` choose the non-overlapping set.
 
 Skills are copied, not symlinked. A symlink makes ~/.raiwork/skills/<name>/SKILL.md the
 same file as a tracked file in this checkout, so editing a skill silently edits the repo
@@ -45,9 +50,26 @@ HOME = Path.home()
 RAIWORK = HOME / ".raiwork"
 SKILLS_DIR = RAIWORK / "skills"
 # --tool name -> the folder that tool reads. Same files everywhere; see the docstring.
-TOOLS = {"raiwork": SKILLS_DIR,
-         "agents": HOME / ".agents" / "skills",
-         "claude": HOME / ".claude" / "skills"}
+TOOLS = {
+    "raiwork": SKILLS_DIR,
+    "agents": HOME / ".agents" / "skills",
+    "claude": HOME / ".claude" / "skills",
+    "cursor": HOME / ".cursor" / "skills",
+    "copilot": HOME / ".copilot" / "skills",
+    "gemini": HOME / ".gemini" / "skills",
+    "windsurf": HOME / ".codeium" / "windsurf" / "skills",
+}
+# Harnesses that read ~/.agents/skills directly (docs/28). Accepting their own names means
+# an AI agent asked to install Tún never fails argparse by naming itself.
+TOOL_ALIASES = {
+    "codex": "agents",
+    "vscode": "agents",
+    "opencode": "agents",
+    "goose": "agents",
+    "amp": "agents",
+    "antigravity": "agents",
+}
+TOOL_CHOICES = (*TOOLS, *TOOL_ALIASES, "auto")
 IS_WIN = platform.system() == "Windows"
 IS_MAC = platform.system() == "Darwin"
 # How a person on this machine starts Python. `python3` does not exist on Windows unless the
@@ -140,6 +162,7 @@ def _install_copy(src: Path, dst: Path) -> None:
         raise OSError(f"refusing to write the install marker through a link: {dst}")
     (dst / MARKER).write_text(
         f"Installed by {PY_CMD} setup.py. Safe to delete.\n"
+        f"repo: {REPO}\n"
         f"source: {src}\n"
         "Edit the skill in that repo and re-run setup.py; edits made here are overwritten.\n"
     )
@@ -559,6 +582,57 @@ def smoke() -> None:
             fix(f"{PY_CMD} tools/verify_dashboard.py <a built dashboard>   # see detail")
 
 
+def detect_tools(home: Path = HOME) -> list[str]:
+    """Choose skill folders from the AI tool directories present in `home`.
+
+    Codex, Gemini CLI, GitHub Copilot, VS Code, Cursor (local), Windsurf and OpenCode all
+    read `~/.agents/skills`, so one install there serves all of them without duplicating
+    entries in tools that scan multiple folders. Claude Code needs `~/.claude/skills`;
+    RAIWork needs `~/.raiwork/skills`. When no tool folder exists yet, fall back to
+    `agents` so `--tool auto` on a fresh machine still installs a usable skill set.
+    """
+    found: list[str] = []
+    if (home / ".raiwork").exists():
+        found.append("raiwork")
+    if (home / ".claude").exists():
+        found.append("claude")
+    agents_markers = (
+        ".agents", ".codex", ".gemini", ".copilot", ".cursor",
+        ".codeium", ".vscode", ".config/opencode",
+    )
+    if any((home / rel).exists() for rel in agents_markers) or not found:
+        found.append("agents")
+    return found
+
+
+def resolve_tools(requested: list[str], home: Path = HOME) -> list[str]:
+    """Expand `auto` and tool aliases into deduplicated canonical `TOOLS` keys."""
+    out: list[str] = ["raiwork"] if (home / ".raiwork").exists() else []
+    for name in requested:
+        if name == "auto":
+            out.extend(detect_tools(home))
+        else:
+            out.append(TOOL_ALIASES.get(name, name))
+    return list(dict.fromkeys(out))
+
+
+def print_welcome() -> None:
+    print(f"{G}Tún skills are ready.{Z} Use these verbs from any folder:\n")
+    print("  tun-help             orient, choose a shape, and see what it costs")
+    print("  tun-new              build a self-contained HTML artefact from CSV, Excel or JSON")
+    print("  tun-data             refresh the numbers in an existing artefact")
+    print("  tun-verify           open the file in a real browser and check the screenshot")
+    print("  tun-publish          share via SharePoint, OneDrive or Atlassian Artifacts")
+    print("  tun-process          draw a swimlane process diagram as one HTML file")
+    print("  tun-review           let readers flag a row and read their comments back")
+    print("  tun-host             decide between a portable file, a static host or a backend")
+    print("  tun-powerbi-escape   move a report off Power BI into a portable file")
+    print("  tun-feedback         log feedback locally or prepare a GitHub issue\n")
+    print("  Try asking your AI assistant:\n")
+    print('    "Use tun-new to build a dashboard from examples/01-hello-dashboard/salgsdata.csv')
+    print('     showing amounts by product and the trend over months, filterable by region."\n')
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -570,11 +644,16 @@ def main() -> int:
     ap.add_argument("--link", action="store_true",
                     help="symlink the skills instead of copying them — for editing the "
                          "skills themselves. Edits then change this repo's working tree.")
-    ap.add_argument("--tool", action="append", choices=list(TOOLS), default=[],
+    ap.add_argument("--tool", action="append", choices=TOOL_CHOICES, default=[],
                     help="install into the folder this tool reads (repeatable; RAIWork is "
                          "included when ~/.raiwork exists): "
-                         "agents = ~/.agents/skills (Codex, Gemini CLI, Copilot, VS Code, OpenCode), "
-                         "claude = ~/.claude/skills (Claude Code, VS Code, OpenCode)")
+                         "auto = detect installed tools (falls back to ~/.agents/skills), "
+                         "agents = ~/.agents/skills (Codex, Gemini CLI, Copilot, VS Code, "
+                         "Cursor, Windsurf, OpenCode; aliases: codex, vscode, opencode, goose, amp), "
+                         "claude = ~/.claude/skills (Claude Code), "
+                         "cursor = ~/.cursor/skills (Cursor + Cloud Agents sync), "
+                         "copilot = ~/.copilot/skills, gemini = ~/.gemini/skills, "
+                         "windsurf = ~/.codeium/windsurf/skills")
     args = ap.parse_args()
 
     print(f"{B}Tún setup + check{Z}  {D}({platform.system()}, {REPO}){Z}")
@@ -589,27 +668,29 @@ def main() -> int:
     check_repo()
     install_hooks(args.check)
     # RAIWork gets the skills when it is installed, as before. Anyone else names
-    # their tool; with neither, say how instead of failing on a tool they never had.
-    tools = (["raiwork"] if RAIWORK.exists() else []) + args.tool
+    # their tool (or `--tool auto`); with neither, say how instead of failing on a tool
+    # they never had.
+    tools = resolve_tools(args.tool)
     if not tools:
         section("Skills")
         warn("no AI tool chosen", "skills not installed")
-        fix(f"Install the skills for your AI tool: {PY_CMD} setup.py --tool claude "
-            "(Claude Code) or --tool agents (Codex, Gemini CLI, Copilot, VS Code, OpenCode)")
-    for tool in dict.fromkeys(tools):
+        fix(f"Install the skills for your AI tool: {PY_CMD} setup.py --tool auto "
+            "(or --tool claude, --tool agents, --tool cursor)")
+    for tool in tools:
         install_skills(args.check, use_symlinks=args.link, skills_dir=TOOLS[tool])
+    if "claude" in tools and "agents" in tools and not args.check:
+        print(f"  {D}note: VS Code and OpenCode read both ~/.claude/skills and ~/.agents/skills;"
+              f"\n        if skills appear twice there, keep only the folder you need.{Z}")
     check_mcp()
     check_onedrive()
     smoke()
 
     print("\n" + "-" * 60)
-    if not fixes:
+    if tools and not args.check and not blocking:
+        print_welcome()
+    elif not fixes:
         print(f"{G}Everything the Tún skills need is in place.{Z}\n")
-        print("  Open your AI tool in this repo and try:\n")
-        print('    "Build me a dashboard from examples/01-hello-dashboard/salgsdata.csv')
-        print('     showing amounts by product and the trend over months,')
-        print('     filterable by region."\n')
-    else:
+    if fixes:
         print(f"{B}To fix:{Z}")
         for f in dict.fromkeys(fixes):
             print(f"  - {f}")

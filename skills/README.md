@@ -3,9 +3,9 @@
 Two groups, and the split is the point.
 
 ```
-skills/                 what this project produces
-  tun-help/         you use these to make and ship dashboards
-  tun-new/
+skills/                 what this project produces (11 verb skills)
+  tun-help/               orient, introduce Tún, and pick the right path
+  tun-new/                build any of the 27 shapes (supporting recipes in shapes.md)
   tun-data/
   tun-verify/
   tun-publish/
@@ -13,16 +13,25 @@ skills/                 what this project produces
   tun-powerbi-escape/
   tun-process/
   tun-review/
+  tun-for-communicators/
+  tun-feedback/
 
-skills/dev/             how any project gets built
-  hotshot/                these have nothing to do with dashboards
-  magnus-review/          and everything to do with the round of work
-  writing-for-agents/
-  template-on-the-seam/   one exception: putting a template on the colour seam
+skills/dev/             how the toolkit itself gets built (6 contributor skills)
+  hotshot/                stack-agnostic round: understand, implement, verify, review, PR
+  magnus-review/          adversarial correctness + architecture review
+  writing-for-agents/     writing instructions an agent actually follows
+  template-on-the-seam/   putting a template on the shared colour seam
+  adding-an-artefact-kind/ end-to-end checklist for a new builder, template and suite
+  refresh-artefacts/      pinned-clock rebuild of examples, test_i18n hashes and Explorer
 ```
 
-`python3 setup.py` installs both groups. RAIWork looks one level deep, so they end up flat in
-`~/.raiwork/skills/`; the directory split is for the reader, not the loader.
+`python3 setup.py --tool <auto|claude|agents|cursor|windsurf>` (`py -3` on Windows; bare
+`python3 setup.py` for RAIWork) installs both groups as copies into the folder your AI tool
+reads (`~/.agents/skills/`, `~/.claude/skills/`, `~/.cursor/skills/`,
+`~/.codeium/windsurf/skills/` or `~/.raiwork/skills/`). Each installed copy carries
+`.installed-by-tun` with `repo: <checkout>` so the skills can run `<repo>/tools/...` from
+any folder on the machine. The `skills/` vs `skills/dev/` split is for the human reader,
+not the loader.
 
 ## What an instruction file is
 
@@ -31,9 +40,9 @@ works. The closest thing you have written before is a documented operating proce
 runbook for the night shift: whoever follows it cannot ring you at three in the morning, so an
 ambiguous sentence becomes a stopped job.
 
-That is the whole mechanism, and it is why this is different from ordering a report. If RAIWork
-words something badly or does something dumb, **edit the instruction.** It is live the next
-time you ask.
+That is the whole mechanism, and it is why this is different from ordering a report. If an
+agent words something badly or does something dumb, **edit the instruction** and re-run
+`setup.py`. It is live the next time you ask.
 
 Use `writing-for-agents` when you do. The failure mode is always the same: prose that reads
 fine to a human who already knows the answer, and underdetermines the action for something that
@@ -41,33 +50,35 @@ does not.
 
 ---
 
-## skills/ — the project skills
+## skills/ — the eleven project skills
 
 Specific to this project. This repo is their home and they will change as it does.
 
 | Skill | What it does |
 |---|---|
-| `tun-help` | Router. Describe what you want; it picks the path and says what the choice costs. |
-| `tun-new` | Builds a dashboard from a file. Row mode, or cube mode for millions of rows. |
-| `tun-data` | New extract, new numbers, existing dashboard. |
-| `tun-verify` | Opens it in a real browser, screenshots it, proves it renders. |
-| `tun-publish` | Uploads it, confirms who can see it, drafts the announcement. |
+| `tun-help` | Introduces Tún, lists the verbs, picks the path and states what the choice costs. |
+| `tun-new` | Builds an artefact from a file across 27 shapes (`shapes.md` holds the specialised recipes). |
+| `tun-data` | New extract, new numbers, existing artefact (including zero-tooling CSV drag-and-drop). |
+| `tun-verify` | Opens it in a real browser, checks accessibility and self-containment, proves it renders. |
+| `tun-publish` | Uploads it, confirms who can see the folder, drafts the announcement. |
 | `tun-host` | Chooses static hosting or a separate backend for a functional app, then verifies the hosted release. |
 | `tun-powerbi-escape` | Moves a report off Power BI, and answers the objections honestly. |
 | `tun-process` | Draws a process as swimlanes, with the steps that should improve flagged. |
 | `tun-review` | A reader who disagrees says which row and hands it back as one text block; `tools/read_review.py` finds the row and shows the file's number beside theirs. |
-| `tun-feedback` | Logs what went wrong or right, and files it as an issue if you want. |
+| `tun-for-communicators` | Explains technical vocabulary with communications analogies (`quick-prompt.md` for plain chat). |
+| `tun-feedback` | Logs what went wrong or right locally, and files it as an issue after user approval. |
 
 ---
 
-## skills/dev/ — the five for the work itself
+## skills/dev/ — the six for the work itself
 
-**Deliberately agnostic, in three of the five.** `hotshot`, `magnus-review` and
+**Deliberately agnostic, in three of the six.** `hotshot`, `magnus-review` and
 `writing-for-agents` name no build tool, no test runner, no branch convention and no forge,
 because the method is identical whether the thing being built is a dashboard, a batch job or a
 payments API. Take those three to your next project unchanged; that is the test they are
-written to pass. `template-on-the-seam` and `adding-an-artefact-kind` are the two exceptions:
-they document how THIS repo's artefacts are built, and they say so.
+written to pass. `template-on-the-seam`, `adding-an-artefact-kind` and `refresh-artefacts`
+are the three repo-specific skills: they document how THIS repo's artefacts are built and
+kept current, and they say so.
 
 | Skill | The method, in one line |
 |---|---|
@@ -76,6 +87,7 @@ they document how THIS repo's artefacts are built, and they say so.
 | `writing-for-agents` | How to write an instruction a machine will actually follow. |
 | `template-on-the-seam` | Putting a template on the shared colour seam, and keeping it there. |
 | `adding-an-artefact-kind` | A new kind end to end: builder, seam template, two languages, a suite that can fail, eight registration points. |
+| `refresh-artefacts` | Pinned-clock rebuild of committed examples, `test_i18n.py` hashes and the showcase Explorer after a template or builder change. |
 
 ### hotshot
 
