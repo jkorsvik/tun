@@ -25,6 +25,10 @@ Requires Playwright, and fails without it rather than shipping a page of empty f
 uv sync --extra verify && uv run playwright install chromium
 ```
 
+`--base-url` defaults to `https://jkorsvik.github.io/tun/`, the published Pages root. Pass
+the site's own root when the gallery is published somewhere else; every card's static link
+is built from it.
+
 ## What is on the page
 
 - Six guided paths: all possibilities, data, stories, processes, scale and browser capability.
@@ -32,6 +36,8 @@ uv sync --extra verify && uv run playwright install chromium
 - Byte-exact HTML downloads from the embedded artefact bytes, plus deep links by path and example.
 - Every example as a searchable visual card, with builders, skills, test suites and docs read from
   the tree at build time.
+- Every card also links to its example's published static URL, so it can be shared and opened
+  with JavaScript off. The button and gzip payload remain the progressive enhancement.
 
 It is a document, not a dashboard, so it is verified as one: `verify_standalone_core.py`,
 `verify_viewports.py` at the 14 px floor, `verify_a11y.py`, and `tests/test_explorer.py` for the

@@ -20,6 +20,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
@@ -168,6 +169,29 @@ def browser_checks(payloads: list[str], expected: list[str]) -> None:
             page.click("#start-example")
             chk(page.evaluate("location.hash") == "#example-01", f"{engine}: no-JS action reaches the readable card")
             chk(len(page.locator("body").inner_text()) > 10000, f"{engine}: no-JS content remains readable")
+            link = page.locator("#example-01 a.card-link")
+            chk(link.count() == 1, f"{engine}: the first card has one static link")
+            href = link.get_attribute("href")
+            chk(href == "https://jkorsvik.github.io/tun/examples/01-hello-dashboard/salg-dashboard.html",
+                f"{engine}: the card links to its published example", str(href))
+            # Serve the same path the link names, locally: clicking it with scripting off
+            # must navigate to the example rather than do nothing.
+            base_path = urllib.parse.urlsplit(build_showcase.DEFAULT_BASE_URL).path
+
+            def serve(route):
+                path = urllib.parse.urlsplit(route.request.url).path
+                local = ROOT / path[len(base_path):]
+                if local.is_file():
+                    route.fulfill(path=str(local))
+                else:
+                    route.fulfill(status=404, body="missing example")
+            page.route("https://jkorsvik.github.io/tun/examples/**", serve)
+            link.click()
+            page.wait_for_url(href)
+            page.wait_for_load_state("load")
+            chk(page.url == href, f"{engine}: no-JS card click opens the static example", page.url)
+            chk(len(page.locator("body").inner_text()) > 100,
+                f"{engine}: the opened example has readable content")
             context.close()
             browser.close()
 
