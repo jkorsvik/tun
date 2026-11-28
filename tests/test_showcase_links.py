@@ -24,6 +24,7 @@ import html.parser
 import pathlib
 import re
 import sys
+import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
@@ -109,7 +110,7 @@ def audit(text: str, expected: dict[str, dict]) -> tuple[list[str], list[dict]]:
                 problems.append(f"example {number}: href is outside the published base "
                                 f"({href})")
                 continue
-            target = (ROOT / href[len(prefix):]).resolve()
+            target = (ROOT / urllib.parse.unquote(href[len(prefix):])).resolve()
             try:
                 target.relative_to(EXAMPLES.resolve())
             except ValueError:
@@ -137,8 +138,7 @@ def main() -> int:
 
     # The gate must see a loss. Remove the first card's Pages href and require the audit to
     # name it; otherwise a parser that stopped matching cards would report success.
-    mutated = re.sub(r'href="https://jkorsvik\.github\.io/tun/examples/[^"]*"', "", text,
-                     count=1)
+    mutated = re.sub(r'(<a class="card-link"[^>]*?)\s+href="[^"]*"', r"\1", text, count=1)
     chk(mutated != text, "the mutation removed one static href")
     changed, changed_cards = audit(mutated, expected)
     chk(any("has no static href" in problem for problem in changed),

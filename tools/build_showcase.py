@@ -151,7 +151,8 @@ def static_url(base_url: str, slug: str, page: pathlib.Path | str) -> str:
     its trailing slash still has to append to the published root, not replace its last
     component, which is why the slash is normalised here rather than left to urljoin.
     """
-    return (f"{base_url.rstrip('/')}/examples/{urllib.parse.quote(slug, safe='')}/"
+    return (f"{base_url.strip().rstrip('/')}/examples/"
+            f"{urllib.parse.quote(slug, safe='')}/"
             f"{urllib.parse.quote(pathlib.Path(page).name, safe='')}")
 
 
