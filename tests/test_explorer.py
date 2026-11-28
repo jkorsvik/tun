@@ -15,7 +15,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 import build_showcase  # noqa: E402
 
-PAGE = ROOT / "examples" / "54-showcase" / "oversikt.html"
+SHOWCASE_DIR = ROOT / "examples" / "54-showcase"
+PAGE = SHOWCASE_DIR / "oversikt.html"
 TASK = ROOT / "examples" / "55-task-space" / "arbeidsflyt.html"
 CHECKS = 0
 
@@ -27,10 +28,30 @@ def ok(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
+def expected_examples() -> int:
+    """How many examples the gallery SHOULD hold, derived from the tree.
+
+    Pinning a literal here makes every new example break the suite for no reason and,
+    worse, tempts the next person to bump the number without checking that the new
+    example was actually selected. The count comes from the same selector the builder
+    uses, so the two cannot drift apart silently.
+    """
+    folder = SHOWCASE_DIR.parent          # examples/, exactly what the builder walks
+    selected = [e for e in (build_showcase.read_example(p)
+                            for p in sorted(folder.iterdir()) if p.is_dir())
+                if e and e["dir"].resolve() != SHOWCASE_DIR.resolve() and e["page"]]
+    return len(selected)
+
+
+EXPECTED = expected_examples()
+
+
 def static_checks() -> None:
     text = PAGE.read_text(encoding="utf-8")
     slugs = re.findall(r'data-slug="([^"]+)"', text)
-    ok(len(slugs) == 51, f"expected 51 examples, found {len(slugs)}")
+    expected = EXPECTED
+    ok(expected > 40, f"the selector resolved {expected} examples, which is too few to be real")
+    ok(len(slugs) == expected, f"expected {expected} examples, found {len(slugs)}")
     ok(len(set(slugs)) == len(slugs), "duplicate example slug")
     ok("55-task-space" in slugs, "the 3D example is not in the Explorer")
     for key in ("all", "explore", "explain", "process", "scale", "native"):
@@ -45,7 +66,7 @@ def static_checks() -> None:
     for leaked in ("https://example.com/tun/issues", "[issue #", "Rører ikke", "Eksempel AS-branding"):
         ok(leaked not in text, f"internal note leaked into the public gallery: {leaked}")
     payloads = re.findall(r'data-live="([^"]+)"', text)
-    ok(len(payloads) == 51 and all(p.startswith("gzip:") for p in payloads),
+    ok(len(payloads) == expected and all(p.startswith("gzip:") for p in payloads),
        "every live example must use the gzip payload contract")
     first = build_showcase.read_example(ROOT / "examples/01-hello-dashboard")
     ok(build_showcase.decode_live(payloads[0]) == build_showcase.inline_siblings(first["page"]),
@@ -187,7 +208,7 @@ def browser_checks() -> None:
             context = browser.new_context(java_script_enabled=False, viewport={"width": 390, "height": 844})
             plain = context.new_page(); plain.goto(url)
             ok(plain.locator("#stage-empty").is_visible(), "no-JS stage explanation is missing")
-            ok(plain.locator("#grid .card").count() == 51, "no-JS collection is incomplete")
+            ok(plain.locator("#grid .card").count() == EXPECTED, "no-JS collection is incomplete")
             context.close()
             browser.close()
 

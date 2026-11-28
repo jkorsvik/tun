@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Servicebok · Informasjonsdisk Fjordhallen</title>
+<!--
+PROVENANCE (do not delete — this is how output gets traced back)
+  Source data : synthetic example data (service-book.json)
+  Extracted   : 2026-10-29 00:00 UTC
+  Built       : 2026-10-29 00:00 UTC
+  Requested by: Tún example
+  Made with   : Tún - tun.community
+  Rows        : 18 watches, 14 roles, 4 posts
+A standalone, editable plan. Open the file, edit it, press "Lagre fil", and the
+browser downloads a new standalone copy that carries your edits. No server, no
+network request.
+-->
+<style>
+:root{
+  --ink:#1b2a4a; --muted:#556070; --line:#d7dce5; --soft:#f1f4f8;
+  --blue:#2f5d9e; --purple:#6b3fa0; --red:#dc2a2a; --green:#007b5e;
+  --paper:#fff;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--soft); color:var(--ink);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:1rem; line-height:1.5;
+}
+main{max-width:68rem;margin:0 auto;padding:1rem 1rem 3rem}
+.toolbar{
+  position:sticky; top:0; z-index:20; display:flex; gap:.5rem; flex-wrap:wrap;
+  align-items:center; background:var(--paper); border:1px solid var(--line);
+  border-radius:.5rem; padding:.5rem .75rem; margin-bottom:1rem;
+}
+.toolbar .status{margin-left:auto;color:var(--muted);font-size:.875rem}
+button{
+  font:inherit; font-size:.875rem; padding:.375rem .75rem; min-height:2rem;
+  border:1px solid var(--line); border-radius:.25rem; background:var(--paper);
+  color:var(--ink); cursor:pointer;
+}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.primary:hover{background:#254a80}
+button.tiny{font-size:.875rem;padding:.25rem .5rem;min-height:1.75rem}
+header h1{font-size:1.5rem;margin:0 0 .25rem}
+header p{margin:0;color:var(--muted);font-size:.875rem}
+nav.tabs{display:flex;gap:.25rem;overflow-x:auto;margin:1rem 0 0;border-bottom:2px solid var(--ink);padding-bottom:0}
+/* A tab holds a label AND its count. Without a gap of its own, a wrapped label runs into
+   the next tab's text, which reads as one long word ("Rullering 18Poster 5Folk 14"). */
+.tab{display:inline-flex;align-items:baseline;gap:.375rem}
+.tab b{margin-left:0}
+@media (max-width:600px){
+  nav.tabs{flex-wrap:wrap;overflow-x:visible;row-gap:.25rem}
+  .tab{padding:.5rem .625rem}
+}
+.tab{
+  border:1px solid transparent; border-bottom:none; border-radius:.25rem .25rem 0 0;
+  background:transparent; padding:.5rem .75rem; white-space:nowrap; min-height:2.5rem;
+}
+.tab[aria-selected="true"]{background:var(--paper);border-color:var(--ink);font-weight:600}
+.tab b{font-weight:400;margin-left:.375rem;color:var(--muted);font-size:.875rem}
+.tab b.alert{color:#fff;background:var(--red);padding:0 .375rem;border-radius:99px}
+.pane{display:none;background:var(--paper);border:1px solid var(--line);border-top:none;padding:1rem}
+.pane.active{display:block}
+h2{font-size:1.125rem;margin:0 0 .5rem;text-transform:uppercase;letter-spacing:.02em}
+h3{font-size:.9375rem;margin:1rem 0 .25rem}
+.sub{color:var(--muted);font-size:.875rem;margin:.25rem 0 .75rem}
+.box{border:1px solid var(--line);border-radius:.375rem;padding:.75rem;margin:.75rem 0;background:var(--soft)}
+.box.warn{border-left:4px solid var(--purple)}
+.box.alert{border-left:4px solid var(--red)}
+.box p{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+th,td{text-align:left;padding:.5rem .375rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
+tr.rday td{background:var(--soft);font-weight:700}
+tr.superseded{opacity:.62}
+tr.superseded .watch-names{text-decoration:line-through}
+.gone-tag{text-decoration:none;display:inline-block;margin-left:.375rem;padding:0 .375rem;border-radius:99px;background:var(--soft);font-size:.85em;color:var(--muted)}
+.empty-day td{color:var(--muted);font-style:italic}
+.watch-time{font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroller{overflow-x:auto}
+ul{margin:.25rem 0;padding-left:1.25rem}
+li.row{display:flex;gap:.375rem;align-items:flex-start;margin:.25rem 0;list-style:none}
+li.row textarea{
+  font:inherit;font-size:.875rem;width:100%;padding:.375rem .5rem;border:1px solid var(--line);
+  border-radius:.25rem;resize:none;min-height:2rem;
+}
+.pane-row{display:flex;gap:.375rem;align-items:center;margin:.1875rem 0;flex-wrap:nowrap}
+.pane-row input.plain{
+  width:auto;flex:1 1 8rem;min-width:5rem;font-weight:600;border:0;border-bottom:1px solid var(--line);
+  background:transparent;font:inherit;padding:.125rem 0;
+}
+.pane-row .sub{flex:0 0 auto;font-size:.875rem;color:var(--muted)}
+.layout-tools{margin:1.5rem 0 .5rem;border-top:1px solid var(--line);padding-top:.5rem}
+.layout-tools summary{cursor:pointer;font-weight:600;padding:.375rem 0}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.75rem}
+.big .card{border:1px solid var(--line);border-radius:.375rem;padding:.75rem;background:var(--paper)}
+.big .card.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.big .card.dark h4,.big .card.dark .v{color:#fff}
+.big .card-label{margin:0 0 .25rem;font-size:.875rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.big .card.dark .card-label{color:#fff}
+.big .v{font-size:1.25rem;font-weight:600}
+.chip{border-radius:99px;border:1px solid var(--line);padding:.25rem .625rem;background:var(--paper);font-size:.8125rem;min-height:2rem}
+.chip.picked{background:var(--purple);color:#fff;border-color:var(--purple)}
+.chips{display:flex;gap:.375rem;flex-wrap:wrap;margin:.5rem 0}
+.slot{display:inline-flex;align-items:center;gap:.25rem;border:1px dashed var(--line);border-radius:.25rem;padding:.25rem .5rem;font-size:.875rem;min-height:2rem;background:var(--paper)}
+.slot.filled{border-style:solid;border-color:var(--purple)}
+/* 44 px is the touch minimum docs/11 sets. Keying it only on `pointer:coarse` misses a
+   narrow window on a desktop, which is exactly the case the viewport sweep measures, so
+   the width query carries it too. The arrow buttons and the small "+ punkt" controls are
+   the ones that were under it. */
+@media (pointer:coarse){button,.tab,.chip,.slot,.tiny{min-height:2.75rem;min-width:2.75rem}}
+@media (max-width:1024px){
+  button,.tiny,.slot{min-height:2.75rem}
+  button.tiny{min-height:2.75rem;min-width:2.75rem;display:inline-flex;align-items:center;justify-content:center}
+  summary{cursor:pointer;min-height:2.75rem;display:flex;align-items:center}
+  input.plain,li.row textarea{min-height:2.75rem}
+}
+@media print{
+  body{background:#fff}
+  .toolbar,nav.tabs,.layout-tools,li.row button,li.row textarea{display:none!important}
+  .pane{display:block!important;border:none;page-break-before:always}
+  .pane:first-of-type{page-break-before:auto}
+  details>*{display:block!important}
+  details summary{display:none!important}
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="toolbar">
+    <button class="primary" id="save-file" type="button">Lagre fil</button>
+    <button id="open-file" type="button">Åpne fil</button>
+    <button id="print" type="button">Skriv ut</button>
+    <button id="open-layout" type="button">Faner</button>
+    <button id="reset" type="button">Nullstill</button>
+    <span class="status" id="status">Klar</span>
+  </div>
+
+  <header>
+    <h1 id="title"></h1>
+    <p id="subtitle"></p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Faner"></nav>
+  <div id="panes"></div>
+
+  <details id="layout-tools" class="layout-tools">
+    <summary>Oppsett · faner og dager</summary>
+    <h2>Oppsett</h2>
+    <h3>Faner</h3>
+    <p class="sub">Legg til, gi nytt navn, flytt eller fjern faner. Rekkefølgen her er rekkefølgen i visningen.</p>
+    <div id="pane-editor"></div>
+    <div style="margin-top:.5rem"><button class="tiny" id="add-pane" type="button">+ fane</button></div>
+    <h3>Dager</h3>
+    <p class="sub">En dag vises når den finnes i daglisten. Endre navn og merknad per dag.</p>
+    <div id="day-editor"></div>
+  </details>
+
+  <footer id="footer" class="sub" style="margin-top:1.5rem;border-top:1px solid var(--line);padding-top:.75rem"></footer>
+</main>
+
+<script id="appstate" type="application/json">{"schema": 1, "sourceRevision": "2027-03-08-synthetic", "title": "Servicebok · Informasjonsdisk Fjordhallen", "subtitle": "Tre dager · alle tider Europe/Oslo · syntetisk eksempel", "footer": "Syntetisk eksempeldata. Roller, ikke personer. Ingen telefonnumre, koder eller tilgangsnøkler finnes i dette dokumentet.", "panes": [{"id": "naa", "title": "Nå", "type": "naa", "badge": true}, {"id": "rullering", "title": "Rullering", "heading": "Gjeldende vaktliste", "type": "rullering", "badge": true}, {"id": "poster", "title": "Poster", "heading": "Faste poster", "type": "posts", "badge": true}, {"id": "folk", "title": "Folk", "heading": "Folk", "type": "folk", "badge": true}, {"id": "beskjed", "title": "Beskjed", "heading": "Beskjed", "type": "beskjed"}, {"id": "regler", "title": "Regler", "heading": "Regler", "type": "instruks"}, {"id": "sjekk", "title": "Sjekk", "heading": "Sjekk", "type": "sjekk", "badge": true}], "days": [{"date": "2027-03-08", "label": "Mandag 8.3", "note": "oppstartsdag"}, {"date": "2027-03-09", "label": "Tirsdag 9.3", "note": "full rullering"}, {"date": "2027-03-10", "label": "Onsdag 10.3", "note": "faste poster fra 12.00"}], "people": [{"id": "p1", "name": "Desk A", "lag": "Skift 1", "note": "", "reserve": false}, {"id": "p2", "name": "Desk B", "lag": "Skift 1", "note": "", "reserve": false}, {"id": "p3", "name": "Desk C", "lag": "Skift 1", "note": "", "reserve": false}, {"id": "p4", "name": "Desk D", "lag": "Skift 2", "note": "", "reserve": false}, {"id": "p5", "name": "Desk E", "lag": "Skift 2", "note": "", "reserve": false}, {"id": "p6", "name": "Desk F", "lag": "Skift 2", "note": "", "reserve": false}, {"id": "p7", "name": "Desk G", "lag": "Skift 3", "note": "", "reserve": false}, {"id": "p8", "name": "Desk H", "lag": "Skift 3", "note": "", "reserve": false}, {"id": "p9", "name": "Desk I", "lag": "Skift 3", "note": "", "reserve": false}, {"id": "p10", "name": "Desk J", "lag": "Skift 4", "note": "", "reserve": false}, {"id": "p11", "name": "Desk K", "lag": "Skift 4", "note": "", "reserve": false}, {"id": "p12", "name": "Desk L", "lag": "Skift 4", "note": "", "reserve": false}, {"id": "p13", "name": "Reserve 1", "lag": "Reserve", "note": "", "reserve": true}, {"id": "p14", "name": "Reserve 2", "lag": "Reserve", "note": "", "reserve": true}], "watches": [{"id": "w1", "crew": ["p1", "p2", "p3"], "note": "", "start": "2027-03-08T00:00", "end": "2027-03-08T04:00"}, {"id": "w2", "crew": ["p4", "p5", "p6"], "note": "", "start": "2027-03-08T04:00", "end": "2027-03-08T08:00"}, {"id": "w3", "crew": ["p7", "p8", "p9"], "note": "", "start": "2027-03-08T08:00", "end": "2027-03-08T12:00"}, {"id": "w4", "crew": ["p10", "p11", "p12"], "note": "", "start": "2027-03-08T12:00", "end": "2027-03-08T16:00"}, {"id": "w5", "crew": ["p1", "p5", "p8"], "note": "", "start": "2027-03-08T16:00", "end": "2027-03-08T20:00"}, {"id": "w6", "crew": ["p2", "p6", "p9"], "note": "", "start": "2027-03-08T20:00", "end": "2027-03-09T00:00"}, {"id": "w7", "crew": ["p3", "p4", "p7"], "note": "", "start": "2027-03-09T00:00", "end": "2027-03-09T04:00"}, {"id": "w8", "crew": ["p1", "p6", "p11"], "note": "", "start": "2027-03-09T04:00", "end": "2027-03-09T08:00"}, {"id": "w9", "crew": ["p2", "p7", "p12"], "note": "", "start": "2027-03-09T08:00", "end": "2027-03-09T12:00"}, {"id": "w10", "crew": ["p3", "p8", "p10"], "note": "", "start": "2027-03-09T12:00", "end": "2027-03-09T16:00"}, {"id": "w11", "crew": ["p1", "p4", "p9"], "note": "", "start": "2027-03-09T16:00", "end": "2027-03-09T20:00"}, {"id": "w12", "crew": ["p2", "p5", "p10"], "note": "", "start": "2027-03-09T20:00", "end": "2027-03-10T00:00"}, {"id": "w13", "crew": ["p3", "p6", "p11"], "note": "", "start": "2027-03-10T00:00", "end": "2027-03-10T04:00"}, {"id": "w14", "crew": ["p1", "p7", "p12"], "note": "", "start": "2027-03-10T04:00", "end": "2027-03-10T08:00"}, {"id": "w15", "crew": ["p2", "p8", "p9"], "note": "", "start": "2027-03-10T08:00", "end": "2027-03-10T12:00"}, {"id": "w16", "crew": ["p3", "p4", "p10"], "note": "", "start": "2027-03-10T12:00", "end": "2027-03-10T16:00"}, {"id": "w17", "crew": ["p1", "p5", "p11"], "note": "", "start": "2027-03-10T16:00", "end": "2027-03-10T20:00"}, {"id": "w18", "crew": ["p2", "p6", "p12"], "note": "", "start": "2027-03-10T20:00", "end": "2027-03-11T00:00"}], "beskjed": {"from": "12.00 onsdag 10.3", "posts": [{"id": "v1", "name": "Hovedinngang · vest", "radio": "Kanal 1", "places": 1, "at": "12.00", "people": ["p1"]}, {"id": "v2", "name": "Hovedinngang · øst", "radio": "Kanal 1", "places": 1, "at": "12.00", "people": ["p2"]}, {"id": "v3", "name": "Informasjonsdisk", "radio": "Kanal 2", "places": 2, "at": "12.00", "people": ["p3", "p4"]}, {"id": "v4", "name": "Utstillingshall · runde", "radio": "Kanal 2", "places": 1, "at": "12.30", "people": ["p5"]}]}, "handover": {"rotationEnds": "2027-03-10T12:00", "replacedBy": "Faste poster", "changed": "Rulleringsvaktene etter 10.3 kl. 12.00 er strøket.", "unchanged": "Navnene på de faste postene er uendret.", "undecided": ["Hva de på vakt gjør i overgangen mellom rullering og faste poster.", "Hvilke oppgaver reservene har etter at de faste postene er satt."]}, "lists": {"beskjed-bakgrunn": ["Tredagers arrangement i Fjordhallen med publikum, utstillere og leverandører."], "beskjed-oppgave": ["Holde hovedinngangene betjent, drive informasjonsdisken og gå runder i utstillingshallen."], "beskjed-bemanning": ["To roller på hovedinngang, to på informasjonsdisk, én på runde.", "Reservene brukes bare ved frafall."], "utstyr": ["Refleksvest brukes av alle som går runder.", "Radio testes ved skiftstart."], "orden": ["Ingen går av før avløser er på plass.", "Påtroppende møter ti minutter før skiftet."], "klargjoring": ["Utstyr til neste vakt ligger klart.", "Radioene er testet før overlevering."], "plan": [], "forhold": ["Publikum sluses gjennom hovedinngang vest."], "spesielt": ["Ingen slippes inn uten billett eller utstillerpass."], "kontakter": ["Vaktmester", "Arrangementsleder", "Førstehjelp"], "kommunikasjon": ["Kanal 1 for inngang, kanal 2 for disk og runder.", "Telefonnumre og koder står ikke i dette dokumentet."], "open": []}}</script>
+<script>
+'use strict';
+
+/* =====================================================================
+   THE MODEL
+   ---------------------------------------------------------------------
+   Everything the page shows is derived from one object, `state`. Nothing
+   is written into the markup except the tab bar and the pane shells, and
+   those are built from `state.panes` at boot.
+
+   Two rules make the rest of the file work:
+
+   1. PANES AND DAYS ARE DATA. Adding a section is adding a record to
+      `state.panes`. There is no switch statement over pane ids anywhere.
+   2. A RECORD IS NEVER DELETED TO EXPRESS A CHANGE OF PLAN. When the
+      rotation stops and fixed posts take over, the later watches stay in
+      `state.watches` and are marked superseded. A reader can see what the
+      plan was and why it changed, which is the whole point of a service
+      book.
+   ===================================================================== */
+
+var PANE_TYPES = ['naa', 'rullering', 'posts', 'folk', 'beskjed', 'instruks', 'sjekk', 'tekst'];
+
+var state = null;
+var currentPane = 'naa';
+var lastChecks = { problems: [], warnings: [] };
+
+/* ---------------- time helpers ----------------
+   Times are stored as "YYYY-MM-DDTHH:MM" with no zone, and every label says
+   Europe/Oslo. Converting to minutes is done in UTC arithmetic so a reader in
+   another timezone sees the same wall clock the author wrote. */
+
+function minutesOf(iso) {
+  if (!iso) return null;
+  var m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+  if (!m) return null;
+  var t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  if (!Number.isFinite(t) || isoOf(t / 60000) !== iso) return null;
+  return t / 60000;
+}
+
+function isoOf(minutes) {
+  var d = new Date(minutes * 60000);
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) +
+    'T' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+}
+
+function pretty(iso) { return iso ? String(iso).slice(11) : ''; }
+
+/* Oslo wall clock, independent of where the reader sits. */
+function osloNow() {
+  var parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Oslo', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).formatToParts(new Date());
+  var get = function (type) { for (var i = 0; i < parts.length; i++) if (parts[i].type === type) return parts[i].value; return ''; };
+  return get('year') + '-' + get('month') + '-' + get('day') + 'T' + get('hour') + ':' + get('minute');
+}
+
+/* ---------------- the handover ----------------
+   This is the logic worth reading.
+
+   `rotationEnds` is a moment, not a deletion. Three functions depend on it:
+
+   - superseded(watch): does this watch start at or after the cut? If so it is
+     history, not an assignment.
+   - effectiveEnd(watch): a watch that straddles the cut is shown as ending at
+     the cut, not at its nominal end. The plan ends where the next thing starts.
+   - the checks: a superseded watch that still holds roles produces a WARNING,
+     not silence. The names are kept on purpose, and the reader is told to
+     resolve them. */
+
+function rotationCut() { return (state.handover && state.handover.rotationEnds) || ''; }
+
+function superseded(watch) {
+  var cut = rotationCut();
+  if (!cut) return false;
+  var start = minutesOf(watch.start), end = minutesOf(cut);
+  return start !== null && end !== null && start >= end;
+}
+
+function effectiveEnd(watch) {
+  var cut = rotationCut();
+  if (!cut) return watch.end;
+  var end = minutesOf(watch.end), cutM = minutesOf(cut);
+  if (end === null || cutM === null) return watch.end;
+  return end > cutM && minutesOf(watch.start) < cutM ? cut : watch.end;
+}
+
+/* ---------------- days ----------------
+   The day list drives the roster. A day with no watches still appears and says
+   so, because "nothing planned here yet" is information. */
+
+function dayRecord(date) {
+  return (state.days || []).filter(function (day) { return day.date === date; })[0] || null;
+}
+
+var WEEKDAYS = ['s\u00f8ndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'l\u00f8rdag'];
+
+function dayLabel(date) {
+  var record = dayRecord(date);
+  if (record) return record.label + (record.note ? ' \u00b7 ' + record.note : '');
+  var stamp = new Date(date + 'T12:00:00Z');
+  return (WEEKDAYS[stamp.getUTCDay()] || '') + ' ' + date.slice(8, 10) + '.' + date.slice(5, 7);
+}
+
+function dayDates() {
+  var seen = {};
+  state.watches.forEach(function (watch) { var d = (watch.start || '').slice(0, 10); if (d) seen[d] = true; });
+  (state.days || []).forEach(function (day) { if (day.date) seen[day.date] = true; });
+  return Object.keys(seen).sort();
+}
+
+/* ---------------- DOM helpers ---------------- */
+
+function el(tag, attrs, text) {
+  var node = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(function (key) {
+    if (key === 'class') node.className = attrs[key];
+    else node.setAttribute(key, attrs[key]);
+  });
+  if (text !== undefined && text !== null) node.appendChild(document.createTextNode(String(text)));
+  return node;
+}
+
+function input(value, placeholder, onInput, type) {
+  var field = document.createElement('input');
+  field.type = type || 'text';
+  field.value = value === null || value === undefined ? '' : value;
+  if (placeholder) field.placeholder = placeholder;
+  if (onInput) field.addEventListener('input', function () { onInput(field.value); });
+  return field;
+}
+
+function personById(id) {
+  for (var i = 0; i < state.people.length; i++) if (state.people[i].id === id) return state.people[i];
+  return null;
+}
+
+function nameOf(id) { var p = personById(id); return p && p.name ? p.name : '\u00e5pen'; }
+
+/* ---------------- the pane builder ----------------
+   Each pane type has one builder. Adding a type means adding a branch here and
+   one entry to PANE_TYPES; nothing else in the file needs to know about it. */
+
+function paneById(id) {
+  return (state.panes || []).filter(function (pane) { return pane.id === id; })[0];
+}
+
+function badgeIdFor(pane) {
+  if (!pane.badge) return '';
+  var map = { naa: 't-naa', rullering: 't-rullering', folk: 't-folk', sjekk: 't-sjekk' };
+  if (pane.type === 'posts') return 't-posts';
+  return map[pane.type] || '';
+}
+
+function buildTabs() {
+  var nav = document.getElementById('tabs');
+  nav.innerHTML = '';
+  (state.panes || []).forEach(function (pane) {
+    var tab = el('button', { class: 'tab', type: 'button', 'data-pane': pane.id, role: 'tab', 'aria-selected': 'false' });
+    tab.appendChild(document.createTextNode(pane.title || pane.id));
+    var badge = badgeIdFor(pane);
+    if (badge) tab.appendChild(el('b', { id: badge }));
+    nav.appendChild(tab);
+  });
+  /* buildTabs() recreates the badge elements empty, so their text must be put back.
+     Without this, renaming a pane blanks every badge until the next tick. */
+  renderBadges();
+}
+
+function paneHeader(section, pane, subtitle) {
+  section.appendChild(el('h2', null, pane.heading || pane.title || pane.id));
+  if (subtitle) section.appendChild(el('p', { class: 'sub' }, subtitle));
+}
+
+/* One add-point button, wherever a list lives.
+   The button is rebuilt with its pane, so it binds its own handler here. A global
+   getElementById lookup in a later pass is what makes add buttons silently dead
+   after a rebuild: the node it found has been replaced. */
+function addButton(key, label) {
+  var button = el('button', { class: 'tiny', type: 'button', id: 'add-' + key }, label || '+ punkt');
+  button.addEventListener('click', function () {
+    if (!state.lists[key]) state.lists[key] = [];
+    state.lists[key].push('');
+    persist();
+    renderLists();
+  });
+  return button;
+}
+
+function listBlock(section, key, heading, addLabel) {
+  if (heading) section.appendChild(el('h3', null, heading));
+  var ul = el('ul', { id: key });
+  section.appendChild(ul);
+  var wrap = el('div', { style: 'margin-top:.5rem' });
+  wrap.appendChild(addButton(key, addLabel));
+  section.appendChild(wrap);
+}
+
+function buildPanes() {
+  var host = document.getElementById('panes');
+  host.innerHTML = '';
+  (state.panes || []).forEach(function (pane) {
+    var section = el('section', { class: 'pane', id: 'pane-' + pane.id, role: 'tabpanel' });
+    host.appendChild(section);
+    if (pane.type === 'naa') buildNowPane(section, pane);
+    else if (pane.type === 'rullering') buildRosterPane(section, pane);
+    else if (pane.type === 'posts') buildPostsPane(section, pane);
+    else if (pane.type === 'folk') buildPeoplePane(section, pane);
+    else if (pane.type === 'beskjed') buildOrdersPane(section, pane);
+    else if (pane.type === 'instruks') buildRulesPane(section, pane);
+    else if (pane.type === 'sjekk') buildChecksPane(section, pane);
+    else buildTextPane(section, pane);
+  });
+}
+
+function buildNowPane(section, pane) {
+  section.appendChild(el('div', { id: 'now' }));
+}
+
+function buildRosterPane(section, pane) {
+  paneHeader(section, pane, 'Dager og vakter. \u00abEndre\u00bb \u00e5pner manuell redigering. Ingen automatisk omfordeling.');
+  section.appendChild(el('div', { id: 'watches' }));
+  var bar = el('div', { style: 'margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center' });
+  bar.appendChild(el('button', { class: 'tiny', id: 'add-watch', type: 'button' }, '+ vakt'));
+  bar.appendChild(el('button', { class: 'tiny', id: 'sort-watch', type: 'button' }, 'Sorter p\u00e5 tid'));
+  bar.appendChild(el('button', { class: 'tiny', id: 'add-day', type: 'button' }, '+ dag'));
+  section.appendChild(bar);
+  var details = el('details');
+  details.appendChild(el('summary', null, 'Klargj\u00f8ring'));
+  details.appendChild(el('ul', { id: 'klargjoring' }));
+  var klWrap = el('div', { style: 'margin-top:.5rem' });
+  klWrap.appendChild(addButton('klargjoring'));
+  details.appendChild(klWrap);
+  section.appendChild(details);
+}
+
+function buildPostsPane(section, pane) {
+  paneHeader(section, pane, pane.sub || 'Navnene hentes fra kilden og kan endres manuelt.');
+  if (pane.warn) section.appendChild(el('p', { class: 'box warn' }, pane.warn));
+  section.appendChild(el('div', { id: 'posts' }));
+}
+
+function buildPeoplePane(section, pane) {
+  paneHeader(section, pane, 'Tom avreise betyr ukjent, ikke midnatt.');
+  section.appendChild(el('div', { id: 'people' }));
+  var bar = el('div', { style: 'margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap' });
+  bar.appendChild(el('button', { class: 'tiny', id: 'add-person', type: 'button' }, '+ rolle'));
+  section.appendChild(bar);
+  section.appendChild(el('span', { class: 'sub', id: 'filled' }));
+}
+
+function buildOrdersPane(section, pane) {
+  paneHeader(section, pane, 'Beskjeden gjelder fra ' + ((state.beskjed && state.beskjed.from) || '') + '.');
+  ['beskjed-bakgrunn', 'beskjed-oppgave', 'beskjed-bemanning'].forEach(function (key, index) {
+    listBlock(section, key, ['Bakgrunn', 'Oppgave', 'Bemanning'][index]);
+  });
+}
+
+function buildRulesPane(section, pane) {
+  paneHeader(section, pane, null);
+  [['utstyr', 'Utstyr'], ['orden', 'Orden og innsjekk'], ['forhold', 'Forhold p\u00e5 stedet'],
+   ['spesielt', 'Spesielle prosedyrer'], ['kontakter', 'Kontakter'], ['kommunikasjon', 'Kommunikasjon']].forEach(function (pair) {
+    listBlock(section, pair[0], pair[1]);
+  });
+  section.appendChild(el('h3', null, 'Overlevering'));
+  section.appendChild(el('div', { id: 'handover' }));
+  var details = el('details');
+  details.appendChild(el('summary', null, 'Tidligere plan \u00b7 ikke gjeldende'));
+  details.appendChild(el('ul', { id: 'plan' }));
+  var planWrap = el('div', { style: 'margin-top:.5rem' });
+  planWrap.appendChild(addButton('plan'));
+  details.appendChild(planWrap);
+  section.appendChild(details);
+}
+
+function buildChecksPane(section, pane) {
+  paneHeader(section, pane, null);
+  section.appendChild(el('div', { id: 'checks' }));
+  listBlock(section, 'open', 'Egne notater');
+}
+
+function buildTextPane(section, pane) {
+  paneHeader(section, pane, pane.sub || null);
+  if (pane.text) section.appendChild(el('p', null, pane.text));
+  listBlock(section, 'list-' + pane.id, null, '+ punkt');
+}
+
+/* ---------------- the roster ----------------
+   Driven by `dayDates()`, not by a pass over the watches. That is what makes an
+   empty day visible instead of absent. */
+
+function renderRoster() {
+  var host = document.getElementById('watches');
+  if (!host) return;
+  host.innerHTML = '';
+  var table = el('table');
+  var head = el('tr');
+  ['#', 'Tid', 'P\u00e5 vakt'].forEach(function (label) { head.appendChild(el('th', null, label)); });
+  head.appendChild(el('th', null, 'Endre'));
+  var thead = el('thead'); thead.appendChild(head); table.appendChild(thead);
+  var body = el('tbody'); table.appendChild(body);
+
+  var index = 0;
+  dayDates().forEach(function (day) {
+    var heading = el('tr', { class: 'rday' });
+    heading.appendChild(el('td', { colspan: '4' }, dayLabel(day)));
+    body.appendChild(heading);
+
+    var rows = state.watches.filter(function (watch) { return (watch.start || '').slice(0, 10) === day; })
+      .sort(function (a, b) { return String(a.start).localeCompare(String(b.start)); });
+
+    if (!rows.length) {
+      var empty = el('tr', { class: 'empty-day' });
+      empty.appendChild(el('td', { colspan: '4' }, 'Ingen vakter p\u00e5 denne dagen enn\u00e5. Bruk \u00ab+ vakt\u00bb og sett datoen.'));
+      body.appendChild(empty);
+      return;
+    }
+
+    rows.forEach(function (watch) {
+      index += 1;
+      var gone = superseded(watch);
+      var tr = el('tr', { 'data-watch': watch.id });
+      if (gone) tr.className = 'superseded';
+      tr.appendChild(el('td', null, String(index)));
+      tr.appendChild(el('td', { class: 'watch-time' }, pretty(watch.start) + '\u2013' + pretty(effectiveEnd(watch))));
+      var names = el('td', { class: 'watch-names' }, (watch.crew || []).map(nameOf).join(', '));
+      if (gone) names.appendChild(el('span', { class: 'gone-tag' }, ' erstattet av ' + (state.handover.replacedBy || 'neste plan')));
+      tr.appendChild(names);
+
+      var controls = el('details');
+      controls.appendChild(el('summary', null, 'Endre'));
+      ['start', 'end'].forEach(function (key) {
+        var field = input(watch[key], '', null, 'datetime-local');
+        field.className = 'time';
+        field.setAttribute('aria-label', (key === 'start' ? 'Fra' : 'Til') + ' vakt ' + index);
+        field.addEventListener('change', function () { watch[key] = field.value; persist(); renderRoster(); });
+        controls.appendChild(field);
+      });
+      for (var slot = 0; slot < 3; slot++) (function (position) {
+        var select = el('select', { 'aria-label': 'Rolle ' + (position + 1) + ' vakt ' + index });
+        select.appendChild(el('option', { value: '' }, 'Ikke satt'));
+        state.people.forEach(function (person) { select.appendChild(el('option', { value: person.id }, person.name)); });
+        select.value = (watch.crew || [])[position] || '';
+        select.addEventListener('change', function () { watch.crew[position] = select.value; persist(); renderRoster(); });
+        controls.appendChild(select);
+      })(slot);
+      var cell = el('td'); cell.appendChild(controls); tr.appendChild(cell);
+      body.appendChild(tr);
+    });
+  });
+
+  var scroll = el('div', { class: 'scroller' }); scroll.appendChild(table); host.appendChild(scroll);
+
+  if (rotationCut()) {
+    var box = el('div', { class: 'box warn' });
+    var cutIso = rotationCut();
+    var cutText = cutIso.slice(8, 10) + '.' + cutIso.slice(5, 7) + ' kl. ' + pretty(cutIso);
+    box.appendChild(el('strong', null, 'Planen skifter ' + cutText + '. ' + (state.handover.replacedBy || 'Neste plan') + ' tar over.'));
+    if (state.handover.changed) box.appendChild(el('p', null, 'Endret: ' + state.handover.changed));
+    if (state.handover.unchanged) box.appendChild(el('p', null, 'Uendret: ' + state.handover.unchanged));
+    host.appendChild(box);
+  }
+  renderChecks();
+}
+
+/* ---------------- people ---------------- */
+
+function renderPeople() {
+  var host = document.getElementById('people');
+  if (!host) return;
+  host.innerHTML = '';
+  var table = el('table');
+  var head = el('tr');
+  ['Rolle', 'Lag', 'Notat'].forEach(function (label) { head.appendChild(el('th', null, label)); });
+  var thead = el('thead'); thead.appendChild(head); table.appendChild(thead);
+  var body = el('tbody'); table.appendChild(body);
+  state.people.forEach(function (person) {
+    var tr = el('tr');
+    tr.appendChild(el('td', null, person.name || '\u00e5pen'));
+    tr.appendChild(el('td', null, person.lag || ''));
+    var note = input(person.note || '', 'notat', function (value) { person.note = value; persist(); });
+    var cell = el('td'); cell.appendChild(note); tr.appendChild(cell);
+    body.appendChild(tr);
+  });
+  host.appendChild(el('div', { class: 'scroller' })).appendChild(table);
+  var filled = document.getElementById('filled');
+  if (filled) filled.textContent = state.people.length + ' roller';
+}
+
+/* ---------------- posts ---------------- */
+
+function renderPosts() {
+  var host = document.getElementById('posts');
+  if (!host) return;
+  host.innerHTML = '';
+  var posts = (state.beskjed && state.beskjed.posts) || [];
+  var table = el('table');
+  var head = el('tr');
+  ['Post', 'Fra', 'Rolle', 'Radio'].forEach(function (label) { head.appendChild(el('th', null, label)); });
+  var thead = el('thead'); thead.appendChild(head); table.appendChild(thead);
+  var body = el('tbody'); table.appendChild(body);
+  posts.forEach(function (post) {
+    var tr = el('tr');
+    tr.appendChild(el('td', null, post.name));
+    tr.appendChild(el('td', null, post.at || ''));
+    var names = el('td');
+    (post.people || []).forEach(function (id) {
+      var slot = el('span', { class: 'slot filled' }, nameOf(id));
+      names.appendChild(slot);
+      names.appendChild(document.createTextNode(' '));
+    });
+    tr.appendChild(names);
+    tr.appendChild(el('td', null, post.radio || '\u2013'));
+    body.appendChild(tr);
+  });
+  host.appendChild(el('div', { class: 'scroller' })).appendChild(table);
+}
+
+/* ---------------- handover ---------------- */
+
+function renderHandover() {
+  var host = document.getElementById('handover');
+  if (!host) return;
+  host.innerHTML = '';
+  var box = el('div', { class: 'box' });
+  box.appendChild(el('strong', null, 'Planen skifter'));
+  var field = input(state.handover.rotationEnds || '', 'n\u00e5r neste plan tar over', function (value) {
+    state.handover.rotationEnds = value;
+    persist(); renderRoster(); renderNow(); renderChecks();
+  }, 'datetime-local');
+  box.appendChild(field);
+  box.appendChild(el('p', { class: 'sub' }, 'Vaktene etter dette tidspunktet beholdes som historikk, men gjelder ikke som vakt.'));
+  host.appendChild(box);
+
+  if (state.handover.undecided && state.handover.undecided.length) {
+    var open = el('div', { class: 'box warn' });
+    open.appendChild(el('strong', null, 'Ikke avklart i kilden'));
+    var ul = el('ul');
+    state.handover.undecided.forEach(function (text) { ul.appendChild(el('li', null, text)); });
+    open.appendChild(ul);
+    host.appendChild(open);
+  }
+}
+
+/* ---------------- lists ---------------- */
+
+function renderList(hostId, items, onRemove) {
+  var host = document.getElementById(hostId);
+  if (!host) return;
+  host.innerHTML = '';
+  items.forEach(function (text, index) {
+    var li = el('li', { class: 'row' });
+    var field = document.createElement('textarea');
+    field.className = 'line';
+    field.value = text;
+    field.rows = 1;
+    field.setAttribute('aria-label', 'Punkt ' + (index + 1));
+    field.addEventListener('input', function () { items[index] = field.value; persist(); });
+    li.appendChild(field);
+    var del = el('button', { class: 'tiny', type: 'button', title: 'Fjern' }, '\u00d7');
+    del.addEventListener('click', function () { onRemove(index); });
+    li.appendChild(del);
+    host.appendChild(li);
+  });
+}
+
+function renderLists() {
+  var keys = ['beskjed-bakgrunn', 'beskjed-oppgave', 'beskjed-bemanning', 'utstyr', 'orden', 'klargjoring',
+    'plan', 'forhold', 'spesielt', 'kontakter', 'kommunikasjon', 'open'];
+  (state.panes || []).forEach(function (pane) { if (pane.type === 'tekst') keys.push('list-' + pane.id); });
+  keys.forEach(function (key) {
+    var items = state.lists[key];
+    if (!items) return;
+    renderList(key, items, function (index) {
+      items.splice(index, 1);
+      persist();
+      renderLists();
+    });
+  });
+}
+
+/* ---------------- checks ----------------
+   Every warning names the record it is about. A check that says "something may
+   be wrong" is worse than no check. */
+
+function renderChecks() {
+  var host = document.getElementById('checks');
+  if (!host) return;
+  var problems = [], warnings = [], notes = [];
+
+  state.watches.forEach(function (watch, i) {
+    var start = minutesOf(watch.start), end = minutesOf(watch.end);
+    if (start === null || end === null) { problems.push('Vakt ' + (i + 1) + ': tid mangler eller er ugyldig.'); return; }
+    if (end <= start) { problems.push('Vakt ' + (i + 1) + ': slutt er f\u00f8r start.'); return; }
+    if (end - start !== 240) warnings.push('Vakt ' + (i + 1) + ' er ' + ((end - start) / 60) + ' timer, ikke fire.');
+    var crew = (watch.crew || []).filter(Boolean);
+    if (crew.length !== 3) warnings.push('Vakt ' + (i + 1) + ': ' + crew.length + ' roller satt, tre forventet.');
+    if (superseded(watch) && crew.length) {
+      warnings.push('Vakt ' + (i + 1) + ' (' + pretty(watch.start) + ') er erstattet av ' + (state.handover.replacedBy || 'neste plan') + '. Rollene er beholdt, men vakten gjelder ikke som vakt.');
+    }
+  });
+
+  var seen = {};
+  state.people.forEach(function (person) { if (seen[person.name]) problems.push('To roller heter \u00ab' + person.name + '\u00bb.'); seen[person.name] = true; });
+
+  (state.handover.undecided || []).forEach(function (text) { notes.push(text); });
+
+  lastChecks = { problems: problems, warnings: warnings };
+
+  host.innerHTML = '';
+  var summary = el('div', { class: problems.length ? 'box alert' : 'box' });
+  summary.appendChild(el('strong', null, problems.length + ' feil \u00b7 ' + warnings.length + ' advarsler'));
+  host.appendChild(summary);
+  if (problems.length) {
+    var ul = el('ul');
+    problems.forEach(function (text) { ul.appendChild(el('li', null, text)); });
+    host.appendChild(ul);
+  }
+  if (warnings.length) {
+    var ul2 = el('ul');
+    warnings.forEach(function (text) { ul2.appendChild(el('li', null, text)); });
+    host.appendChild(ul2);
+  }
+  if (!problems.length && !warnings.length) host.appendChild(el('p', { class: 'sub' }, 'Ingen funn.'));
+}
+
+/* ---------------- now ---------------- */
+
+function renderNow() {
+  var host = document.getElementById('now');
+  if (!host) return;
+  host.innerHTML = '';
+  var now = osloNow(), current = null, next = null;
+  state.watches.forEach(function (watch) {
+    if (superseded(watch)) return;
+    var start = minutesOf(watch.start), end = minutesOf(effectiveEnd(watch));
+    if (start === null || end === null) return;
+    var nowMinutes = minutesOf(now);
+    if (nowMinutes === null) return;
+    if (nowMinutes >= start && nowMinutes < end) current = watch;
+    if (start > nowMinutes && (!next || start < minutesOf(next.start))) next = watch;
+  });
+  var grid = el('div', { class: 'big' });
+  [['N\u00e5', current], ['Neste', next]].forEach(function (pair, position) {
+    var card = el('div', { class: 'card' + (position === 0 ? ' dark' : '') });
+    card.appendChild(el('p', { class: 'card-label' }, pair[0]));
+    card.appendChild(el('div', { class: 'v' }, pair[1] ? pretty(pair[1].start) + '\u2013' + pretty(effectiveEnd(pair[1])) : 'Ingen vakt i listen'));
+    card.appendChild(el('p', null, pair[1] ? (pair[1].crew || []).map(nameOf).join(', ') : 'Ingen vakt akkurat n\u00e5.'));
+    grid.appendChild(card);
+  });
+  host.appendChild(grid);
+  host.appendChild(el('p', { class: 'sub' }, 'Klokken er ' + pretty(now) + ' Europe/Oslo. Vakter som er erstattet telles ikke.'));
+}
+
+/* ---------------- badges ---------------- */
+
+function renderBadges() {
+  function set(id, text, alert) {
+    var node = document.getElementById(id);
+    if (!node) return;
+    node.textContent = text || '';
+    node.className = alert ? 'alert' : '';
+  }
+  var index = 0;
+  var nowMinutes = minutesOf(osloNow());
+  state.watches.forEach(function (watch, i) {
+    if (superseded(watch)) return;
+    var from = minutesOf(watch.start), to = minutesOf(effectiveEnd(watch));
+    if (from !== null && to !== null && nowMinutes !== null && nowMinutes >= from && nowMinutes < to) index = i + 1;
+  });
+  set('t-naa', index ? 'vakt ' + index : '');
+  set('t-rullering', String(state.watches.length));
+  set('t-folk', String(state.people.length));
+  var filled = ((state.beskjed && state.beskjed.posts) || []).reduce(function (sum, post) { return sum + (post.people || []).filter(Boolean).length; }, 0);
+  set('t-posts', String(filled));
+  var problems = (lastChecks.problems || []).length;
+  set('t-sjekk', String(problems + (lastChecks.warnings || []).length), problems > 0);
+}
+
+/* ---------------- pane switching ---------------- */
+
+function showPane(name, scroll) {
+  var panes = document.querySelectorAll('.pane');
+  for (var i = 0; i < panes.length; i++) panes[i].classList.toggle('active', panes[i].id === 'pane-' + name);
+  var tabs = document.querySelectorAll('.tab');
+  for (var j = 0; j < tabs.length; j++) tabs[j].setAttribute('aria-selected', tabs[j].dataset.pane === name ? 'true' : 'false');
+  currentPane = name;
+  renderChecks();
+  if (scroll) window.scrollTo(0, 0);
+}
+
+/* ---------------- persistence ----------------
+   The file is the artefact and the only source of truth on load: boot() reads the state
+   embedded in the copy it was opened from, and nothing else. There is no browser store,
+   so two copies of a plan cannot silently disagree. Downloading writes the current state
+   into a copy of this document; the saved file reopens with everything. */
+
+/* There is no browser store. The file is the plan: a save writes a new file, and a page
+   loads the payload embedded in the copy it was opened from. A localStorage copy would
+   outrank the file on the next load and let two "current" plans disagree, which is the one
+   thing a service book must not do. So persist() only marks the page dirty. */
+function persist() { markSaved('Ulagret endring'); }
+
+/* The saved state lives in a script element whose id this file must find again.
+   The marker is assembled from parts on purpose: a literal occurrence of the tag in
+   the source counts against the tenant's preview scanner and can switch scripting
+   off for the whole page (docs/01-tenant-constraints.md row 25). */
+function payloadPattern() {
+  var tag = 'scr' + 'ipt';
+  /* Three groups so the replacer in download() gets (open, body, close), matching
+     the three-argument callback it was written with. */
+  return new RegExp('(<' + tag + ' id="appstate" type="application\\/json">)([\\s\\S]*?)(<\\/' + tag + '>)');
+}
+
+function markSaved(text) { var node = document.getElementById('status'); if (node) node.textContent = text; }
+
+/* ---------------- layout editor ----------------
+   Panes are records. These four functions are the whole editor. */
+
+function paneAdd() {
+  var title = prompt('Navn p\u00e5 den nye fanen:', '');
+  if (title === null) return;
+  var type = (prompt('Type: ' + PANE_TYPES.join(', '), 'tekst') || 'tekst').trim();
+  if (PANE_TYPES.indexOf(type) < 0) type = 'tekst';
+  var id = 'x' + Date.now().toString(36);
+  state.panes.push({ id: id, title: title || 'Ny fane', type: type });
+  if (type === 'tekst') state.lists['list-' + id] = [''];
+  persist(); buildTabs(); buildPanes(); wire(); render(); showPane(id, true);
+}
+
+function paneMove(id, delta) {
+  var ids = state.panes.map(function (p) { return p.id; });
+  var index = ids.indexOf(id), target = index + delta;
+  if (index < 0 || target < 0 || target >= state.panes.length) return;
+  var moved = state.panes.splice(index, 1)[0];
+  state.panes.splice(target, 0, moved);
+  persist(); buildTabs(); buildPanes(); wire(); render(); showPane(id, false);
+}
+
+function paneRemove(id) {
+  if (id === 'naa' || id === 'rullering') { alert('Denne fanen kan ikke fjernes.'); return; }
+  if (!confirm('Fjerne fanen \u00ab' + ((paneById(id) || {}).title || id) + '\u00bb?')) return;
+  state.panes = state.panes.filter(function (p) { return p.id !== id; });
+  delete state.lists['list-' + id];
+  persist(); buildTabs(); buildPanes(); wire(); render(); showPane('naa', false);
+}
+
+function renderPanes() {
+  var host = document.getElementById('pane-editor');
+  if (!host) return;
+  host.innerHTML = '';
+  state.panes.forEach(function (pane) {
+    var row = el('div', { class: 'pane-row' });
+    var field = input(pane.title || '', 'fanenavn', function (value) {
+      pane.title = value; persist();
+      /* buildTabs() replaces the tab buttons, so their click handlers must be
+         re-attached afterwards. Rebuilding without wire() leaves every tab dead. */
+      buildTabs(); wire();
+    });
+    field.className = 'plain';
+    field.setAttribute('aria-label', 'Navn på fanen ' + (pane.title || pane.id));
+    row.appendChild(field);
+    row.appendChild(el('span', { class: 'sub' }, pane.type));
+    var up = el('button', { class: 'tiny', type: 'button', title: 'Flytt venstre' }, '\u2190');
+    up.addEventListener('click', function () { paneMove(pane.id, -1); });
+    var down = el('button', { class: 'tiny', type: 'button', title: 'Flytt h\u00f8yre' }, '\u2192');
+    down.addEventListener('click', function () { paneMove(pane.id, 1); });
+    var del = el('button', { class: 'tiny', type: 'button' }, 'Fjern');
+    del.addEventListener('click', function () { paneRemove(pane.id); });
+    row.appendChild(up); row.appendChild(down); row.appendChild(del);
+    host.appendChild(row);
+  });
+}
+
+function renderDays() {
+  var host = document.getElementById('day-editor');
+  if (!host) return;
+  host.innerHTML = '';
+  dayDates().forEach(function (date) {
+    var record = dayRecord(date);
+    var row = el('div', { class: 'pane-row' });
+    row.appendChild(el('span', { class: 'sub' }, date));
+    var label = input(record ? record.label : dayLabel(date), 'dagsnavn', function (value) {
+      var target = dayRecord(date);
+      if (!target) { target = { date: date, label: '', note: '' }; state.days.push(target); }
+      target.label = value; persist(); renderRoster();
+    });
+    label.className = 'plain';
+    label.setAttribute('aria-label', 'Navn på dagen ' + date);
+    var note = input(record ? record.note : '', 'merknad', function (value) {
+      var target = dayRecord(date);
+      if (!target) { target = { date: date, label: dayLabel(date).split(' \u00b7 ')[0], note: '' }; state.days.push(target); }
+      target.note = value; persist(); renderRoster();
+    });
+    note.className = 'plain';
+    note.setAttribute('aria-label', 'Merknad for dagen ' + date);
+    row.appendChild(label); row.appendChild(note);
+    host.appendChild(row);
+  });
+}
+
+/* ---------------- actions ---------------- */
+
+function addWatch() {
+  var last = state.watches.slice().sort(function (a, b) { return String(a.start).localeCompare(String(b.start)); }).slice(-1)[0];
+  var startMinutes = last ? minutesOf(last.end) : minutesOf('2027-03-08T00:00');
+  if (startMinutes === null) startMinutes = minutesOf('2027-03-08T00:00');
+  state.watches.push({ id: 'w' + Date.now().toString(36), start: isoOf(startMinutes), end: isoOf(startMinutes + 240), crew: ['', '', ''], note: '' });
+  persist(); renderRoster(); renderBadges();
+}
+
+function sortWatches() {
+  state.watches.sort(function (a, b) { return String(a.start).localeCompare(String(b.start)); });
+  persist(); renderRoster();
+}
+
+function addDay() {
+  var dates = dayDates();
+  var last = dates.slice(-1)[0] || '2027-03-08';
+  var stamp = new Date(last + 'T12:00:00Z');
+  stamp.setUTCDate(stamp.getUTCDate() + 1);
+  var next = stamp.toISOString().slice(0, 10);
+  var label = prompt('Navn p\u00e5 den nye dagen:', '');
+  if (label === null) return;
+  state.days.push({ date: next, label: label || dayLabel(next), note: '' });
+  persist(); renderRoster(); renderDays();
+}
+
+function addPerson() {
+  state.people.push({ id: 'p' + Date.now().toString(36), name: '', lag: '', note: '', reserve: false });
+  persist(); renderPeople(); renderBadges();
+}
+
+function download() {
+  var text = JSON.stringify(state).replace(/</g, '\\u003c');
+  var shell = document.documentElement.outerHTML;
+  var html = '<!DOCTYPE html>\n' + shell.replace(payloadPattern(), function (all, open, body, close) {
+    return open + text + close;
+  });
+  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = 'servicebok-' + new Date().toISOString().slice(0, 10) + '.html';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  markSaved('Lagret som fil');
+}
+
+function importFile(file) {
+  var reader = new FileReader();
+  reader.onload = function () {
+    var text = String(reader.result || '');
+    var match = text.match(payloadPattern());
+    if (!match) { alert('Fant ingen lagret tilstand i fila.'); return; }
+    try {
+      state = normalize(JSON.parse(match[2]));
+      persist(); buildTabs(); buildPanes(); wire(); render(); showPane('naa', false);
+      markSaved('Apnet fil');
+    } catch (error) {
+      alert('Kunne ikke lese fila: ' + error.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetAll() {
+  if (!confirm('Nullstille til den innebygde planen? Endringer i denne visningen blir borte.')) return;
+  state = normalize(JSON.parse(document.getElementById('appstate').textContent));
+  persist(); buildTabs(); buildPanes(); wire(); render(); showPane('naa', false);
+}
+
+/* ---------------- normalize ----------------
+   A file saved by an older version may lack panes or days. Migrate rather than
+   refuse, and fill the lists each pane type needs. */
+
+function normalize(data) {
+  if (!data || typeof data !== 'object') throw new Error('Tom fil');
+  if (!Array.isArray(data.people) || !Array.isArray(data.watches) || !data.lists) throw new Error('Ufullstendig fil');
+  if (!Array.isArray(data.panes) || !data.panes.length) {
+    data.panes = [
+      { id: 'naa', title: 'N\u00e5', type: 'naa', badge: true },
+      { id: 'rullering', title: 'Rullering', heading: 'Gjeldende vaktliste', type: 'rullering', badge: true }
+    ];
+  }
+  data.panes.forEach(function (pane) {
+    if (!pane.id) pane.id = 'x' + Math.random().toString(36).slice(2, 9);
+    if (PANE_TYPES.indexOf(pane.type) < 0) pane.type = 'tekst';
+    if (!pane.title) pane.title = pane.id;
+    if (pane.type === 'tekst' && !data.lists['list-' + pane.id]) data.lists['list-' + pane.id] = [''];
+  });
+  if (!Array.isArray(data.days)) data.days = [];
+  data.handover = data.handover || {};
+  data.beskjed = data.beskjed || { posts: [] };
+  if (!Array.isArray(data.beskjed.posts)) data.beskjed.posts = [];
+  data.watches.forEach(function (watch) { if (!Array.isArray(watch.crew)) watch.crew = ['', '', '']; });
+  return data;
+}
+
+function syncText() {
+  var title = document.getElementById('title');
+  var subtitle = document.getElementById('subtitle');
+  var footer = document.getElementById('footer');
+  if (title) title.textContent = state.title || '';
+  if (subtitle) subtitle.textContent = state.subtitle || '';
+  if (footer) footer.textContent = state.footer || '';
+}
+
+function render() {
+  syncText();
+  renderPeople();
+  renderPosts();
+  renderRoster();
+  renderLists();
+  renderHandover();
+  renderChecks();
+  renderPanes();
+  renderDays();
+  renderNow();
+  renderBadges();
+}
+
+/* ---------------- wiring ----------------
+   The pane builder recreates the DOM on every structural change, so handlers are
+   attached in one function that runs after every rebuild. A button that binds its
+   own handler at creation (the list buttons) does not need to be here; a button
+   that is looked up by id does. */
+
+function wire() {
+  var nav = document.getElementById('tabs');
+  var tabs = nav ? nav.querySelectorAll('.tab') : [];
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].addEventListener('click', function () { showPane(this.dataset.pane, true); });
+  }
+  function on(id, handler) { var node = document.getElementById(id); if (node) node.addEventListener('click', handler); }
+  on('add-watch', addWatch);
+  on('sort-watch', sortWatches);
+  on('add-day', addDay);
+  on('add-person', addPerson);
+  on('add-pane', paneAdd);
+  on('open-layout', function () {
+    var panel = document.getElementById('layout-tools');
+    if (!panel) return;
+    panel.open = true;
+    renderPanes(); renderDays();
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+/* A file that will not load says so, in the page, and stops. Anything else is a page
+   that looks like a plan and is not one. */
+function showLoadError(message) {
+  var host = document.getElementById('panes');
+  var nav = document.getElementById('tabs');
+  if (nav) nav.innerHTML = '';
+  if (!host) return;
+  host.innerHTML = '';
+  var box = el('div', { class: 'pane active', id: 'pane-error' });
+  box.appendChild(el('h2', null, 'Filen kunne ikke leses'));
+  box.appendChild(el('p', { class: 'box alert' }, 'Denne filen har en lagret tilstand som ikke kan leses: ' + message));
+  box.appendChild(el('p', { class: 'sub' }, 'Filen er skadet eller laget av en annen versjon. Apne den opprinnelige filen, eller bygg den pa nytt.'));
+  host.appendChild(box);
+  var status = document.getElementById('status');
+  if (status) status.textContent = 'Lastet ikke';
+}
+
+function boot() {
+  var embedded = null;
+  try {
+    var block = document.getElementById('appstate');
+    if (block && block.textContent && block.textContent.trim() !== 'null') embedded = JSON.parse(block.textContent);
+  } catch (error) { embedded = null; }
+  try { state = normalize(embedded); }
+  catch (error) {
+    /* A file whose payload will not parse is a broken file, and re-parsing the same text
+       would throw again and leave a dead page with no explanation. So the reader gets a
+       message, the event is recorded for the tests, and the page shows an error pane
+       instead of pretending to be a plan. */
+    window.__loadError = error.message;
+    showLoadError(error.message);
+    return;
+  }
+
+  buildTabs();
+  buildPanes();
+  wire();
+  render();
+  showPane((state.panes[0] || {}).id || 'naa', false);
+
+  setInterval(function () { renderNow(); renderBadges(); }, 30000);
+  window.addEventListener('beforeprint', function () { /* height is CSS-only here */ });
+
+  document.getElementById('save-file').addEventListener('click', download);
+  document.getElementById('open-file').addEventListener('click', function () {
+    var picker = document.createElement('input');
+    picker.type = 'file';
+    picker.accept = '.html,text/html';
+    picker.addEventListener('change', function () { if (picker.files && picker.files[0]) importFile(picker.files[0]); });
+    picker.click();
+  });
+  document.getElementById('print').addEventListener('click', function () { window.print(); });
+  document.getElementById('reset').addEventListener('click', resetAll);
+  markSaved('Klar');
+}
+
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
