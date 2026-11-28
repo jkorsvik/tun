@@ -140,6 +140,24 @@ A fifth, putting a wrong day note back into the data, reddens that day's
 `carries its own text` check. It is not in the script because it edits the committed JSON,
 not the built page.
 
+The rendered page is also swept at six viewports:
+
+```bash
+uv run --extra verify python3 tools/verify_viewports.py examples/57-service-book/service-book.html
+```
+
+That sweep found four defects the first version shipped, and it is worth knowing they
+existed because a measurement passing is not a layout being right:
+
+* card labels and the tab badge rendered at 12–13 px, under the 14 px floor;
+* eighteen controls were below the 44 px touch minimum, because the rule was keyed only on
+  `pointer:coarse` while the sweep measures by viewport width;
+* the tab bar did not wrap, so labels ran together as one word
+  ("Rullering 18Poster 5Folk 14") on a phone.
+
+All three are fixed in the stylesheet, and the sweep now passes at all six sizes. Look at
+`viewport-shots/` as well: the sweep proves measurements, not layout.
+
 Two limits worth stating. `verify_service_book.py` **fails** rather than skips when
 Playwright is missing, because a gate that reports success having never opened the file
 is worse than one that reports nothing. And the browser suite is the only thing that

@@ -44,16 +44,24 @@ button{
 button:hover{border-color:var(--muted)}
 button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
 button.primary:hover{background:#254a80}
-button.tiny{font-size:.8125rem;padding:.25rem .5rem;min-height:1.75rem}
+button.tiny{font-size:.875rem;padding:.25rem .5rem;min-height:1.75rem}
 header h1{font-size:1.5rem;margin:0 0 .25rem}
 header p{margin:0;color:var(--muted);font-size:.875rem}
 nav.tabs{display:flex;gap:.25rem;overflow-x:auto;margin:1rem 0 0;border-bottom:2px solid var(--ink);padding-bottom:0}
+/* A tab holds a label AND its count. Without a gap of its own, a wrapped label runs into
+   the next tab's text, which reads as one long word ("Rullering 18Poster 5Folk 14"). */
+.tab{display:inline-flex;align-items:baseline;gap:.375rem}
+.tab b{margin-left:0}
+@media (max-width:600px){
+  nav.tabs{flex-wrap:wrap;overflow-x:visible;row-gap:.25rem}
+  .tab{padding:.5rem .625rem}
+}
 .tab{
   border:1px solid transparent; border-bottom:none; border-radius:.25rem .25rem 0 0;
   background:transparent; padding:.5rem .75rem; white-space:nowrap; min-height:2.5rem;
 }
 .tab[aria-selected="true"]{background:var(--paper);border-color:var(--ink);font-weight:600}
-.tab b{font-weight:400;margin-left:.375rem;color:var(--muted);font-size:.8125rem}
+.tab b{font-weight:400;margin-left:.375rem;color:var(--muted);font-size:.875rem}
 .tab b.alert{color:#fff;background:var(--red);padding:0 .375rem;border-radius:99px}
 .pane{display:none;background:var(--paper);border:1px solid var(--line);border-top:none;padding:1rem}
 .pane.active{display:block}
@@ -85,22 +93,32 @@ li.row textarea{
   width:auto;flex:1 1 8rem;min-width:5rem;font-weight:600;border:0;border-bottom:1px solid var(--line);
   background:transparent;font:inherit;padding:.125rem 0;
 }
-.pane-row .sub{flex:0 0 auto;font-size:.75rem;color:var(--muted)}
+.pane-row .sub{flex:0 0 auto;font-size:.875rem;color:var(--muted)}
 .layout-tools{margin:1.5rem 0 .5rem;border-top:1px solid var(--line);padding-top:.5rem}
 .layout-tools summary{cursor:pointer;font-weight:600;padding:.375rem 0}
 .big{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.75rem}
 .big .card{border:1px solid var(--line);border-radius:.375rem;padding:.75rem;background:var(--paper)}
 .big .card.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
 .big .card.dark h4,.big .card.dark .v{color:#fff}
-.big .card-label{margin:0 0 .25rem;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.big .card-label{margin:0 0 .25rem;font-size:.875rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 .big .card.dark .card-label{color:#fff}
 .big .v{font-size:1.25rem;font-weight:600}
 .chip{border-radius:99px;border:1px solid var(--line);padding:.25rem .625rem;background:var(--paper);font-size:.8125rem;min-height:2rem}
 .chip.picked{background:var(--purple);color:#fff;border-color:var(--purple)}
 .chips{display:flex;gap:.375rem;flex-wrap:wrap;margin:.5rem 0}
-.slot{display:inline-flex;align-items:center;gap:.25rem;border:1px dashed var(--line);border-radius:.25rem;padding:.25rem .5rem;font-size:.8125rem;min-height:2rem;background:var(--paper)}
+.slot{display:inline-flex;align-items:center;gap:.25rem;border:1px dashed var(--line);border-radius:.25rem;padding:.25rem .5rem;font-size:.875rem;min-height:2rem;background:var(--paper)}
 .slot.filled{border-style:solid;border-color:var(--purple)}
-@media (pointer:coarse){button,.tab,.chip,.slot{min-height:2.75rem}}
+/* 44 px is the touch minimum docs/11 sets. Keying it only on `pointer:coarse` misses a
+   narrow window on a desktop, which is exactly the case the viewport sweep measures, so
+   the width query carries it too. The arrow buttons and the small "+ punkt" controls are
+   the ones that were under it. */
+@media (pointer:coarse){button,.tab,.chip,.slot,.tiny{min-height:2.75rem;min-width:2.75rem}}
+@media (max-width:1024px){
+  button,.tiny,.slot{min-height:2.75rem}
+  button.tiny{min-height:2.75rem;min-width:2.75rem;display:inline-flex;align-items:center;justify-content:center}
+  summary{cursor:pointer;min-height:2.75rem;display:flex;align-items:center}
+  input.plain,li.row textarea{min-height:2.75rem}
+}
 @media print{
   body{background:#fff}
   .toolbar,nav.tabs,.layout-tools,li.row button,li.row textarea{display:none!important}
